@@ -62,9 +62,12 @@ struct player_t *player0 = NULL;
 struct entity_t *entity0;
 
 int match_begun = 0;
+int match_over = 0;
 uint32_t match_start_tick;
 
 uint32_t next_player_index = 0;
+
+struct player_t *winner;
 
 struct player_t *new_player()
 {
@@ -1008,19 +1011,63 @@ void spawn_player(struct player_t *player)
 }
 
 
+void return_to_lobby()
+{
+	struct player_t *cplayer = player0;
+		
+	while(cplayer)
+	{
+		net_emit_uint8(cplayer->conn, EMNETMSG_LOBBY);
+		
+		if(!cplayer->craft)
+		{
+			spawn_player(cplayer);
+		}
+		else
+		{
+			if(cplayer != winner)
+			{
+				net_emit_uint8(cplayer->conn, EMEVENT_FOLLOW_ME);
+				net_emit_uint32(cplayer->conn, game_tick);
+				net_emit_uint32(cplayer->conn, cplayer->craft->index);
+			}
+		}
+		
+		net_emit_end_of_stream(cplayer->conn);
+		cplayer = cplayer->next;
+	}
+	
+	match_begun = 0;
+	match_over = 0;
+}
+
+
 void respawn_craft(struct entity_t *craft, struct player_t *responsibility)
 {
-	if(!responsibility)
-		responsibility = craft->craft_data.owner;
+	if(match_begun && match_over && craft->craft_data.owner == winner)
+	{
+		return_to_lobby();
+		return;
+	}
+	
+	if(!match_over)
+	{
+		if(!responsibility)
+			responsibility = craft->craft_data.owner;
 
-	if(responsibility == craft->craft_data.owner)
-		responsibility->frags--;
+		if(responsibility == craft->craft_data.owner)
+			responsibility->frags--;
+		else
+			responsibility->frags++;
+	
+		responsibility->propagate_info = 1;
+		
+		spawn_player(craft->craft_data.owner);
+	}
 	else
-		responsibility->frags++;
-	
-	responsibility->propagate_info = 1;
-	
-	spawn_player(craft->craft_data.owner);
+	{
+		craft->craft_data.owner->craft = NULL;
+	}
 }
 
 
@@ -1291,6 +1338,7 @@ void begin_match()
 	}
 	
 	match_begun = 1;
+	match_over = 0;
 	
 	console_print("The match has begun.\n");
 }
@@ -1298,7 +1346,66 @@ void begin_match()
 
 void end_match()
 {
-	;
+	assert(player0);
+	
+	
+	// find winner
+	
+	winner = player0;
+	struct player_t *cplayer = player0->next;
+	
+	while(cplayer)
+	{
+		if(cplayer->frags > winner->frags)
+			winner = cplayer;
+		
+		cplayer = cplayer->next;
+	}
+	
+	
+	cplayer = player0;
+	
+	while(cplayer)
+	{
+		if(cplayer != winner)
+		{
+			cplayer->firing_left = 0;
+			cplayer->firing_right = 0;
+			cplayer->craft->craft_data.acc = 0;
+			cplayer->craft->craft_data.rolling_left = 0;
+			cplayer->craft->craft_data.rolling_right = 0;
+			
+			propagate_entity(cplayer->craft);
+		}
+			
+		cplayer = cplayer->next;
+	}
+
+
+	cplayer = player0;
+	
+	while(cplayer)
+	{
+		net_emit_uint8(cplayer->conn, EMNETMSG_MATCH_OVER);
+		net_emit_uint32(cplayer->conn, game_tick);
+		
+		if(cplayer == winner)
+			net_emit_uint8(cplayer->conn, WINNER_YOU);
+		else
+		{
+			net_emit_uint8(cplayer->conn, WINNER_INDEX);
+			net_emit_uint32(cplayer->conn, winner->index);
+				
+			net_emit_uint8(cplayer->conn, EMEVENT_FOLLOW_ME);
+			net_emit_uint32(cplayer->conn, game_tick);
+			net_emit_uint32(cplayer->conn, winner->craft->index);
+		}
+		
+		net_emit_end_of_stream(cplayer->conn);
+		cplayer = cplayer->next;
+	}
+	
+	match_over = 1;
 }
 
 
@@ -1309,9 +1416,6 @@ void update_game()
 	
 	uint32_t tick = get_tick_from_wall_time();
 	
-	if((tick - match_start_tick) / 200 > match_duration * 60)
-		end_match();
-
 	while(game_tick != tick)
 	{
 		game_tick++;
@@ -1321,6 +1425,12 @@ void update_game()
 	
 	propagate_entities();
 	propagate_player_info();
+
+//	if(!match_over && (tick - match_start_tick) / 200 >= match_duration * 60)
+//		end_match();
+
+	if(match_begun && !match_over && (tick - match_start_tick) / 200 >= match_duration)
+		end_match();
 }
 
 
@@ -1390,8 +1500,12 @@ void destroy_player(struct player_t *player)
 	remove_player_info(player);
 	struct entity_t *craft = player->craft;
 	remove_player(player->conn);
-	remove_entity_from_all_players(craft);
-	remove_entity(&entity0, craft);
+	
+	if(craft)
+	{
+		remove_entity_from_all_players(craft);
+		remove_entity(&entity0, craft);
+	}
 }
 
 
@@ -1658,6 +1772,12 @@ int game_process_name_change(struct player_t *player, struct buffer_t *stream)
 
 int game_process_suicide(struct player_t *player)
 {
+	if(match_over && player != winner)
+		return 1;
+	
+	if(!player->craft)
+		return 1;
+	
 	struct entity_t *old_craft = player->craft;
 	respawn_craft(old_craft, player);
 	explode_craft(old_craft, player);
@@ -1677,6 +1797,12 @@ int game_process_thrust(struct player_t *player, struct buffer_t *stream)
 {
 	float thrust = buffer_read_float(stream);
 
+	if(match_over && player != winner)
+		return 1;
+	
+	if(!player->craft)
+		return 1;
+	
 	thrust = max(thrust, 0.0);
 	thrust = min(thrust, 1.0);
 	
@@ -1690,6 +1816,12 @@ int game_process_thrust(struct player_t *player, struct buffer_t *stream)
 
 int game_process_brake(struct player_t *player)
 {
+	if(match_over && player != winner)
+		return 1;
+	
+	if(!player->craft)
+		return 1;
+	
 	player->craft->craft_data.braking = 1;
 	propagate_entity(player->craft);
 	return 1;
@@ -1698,6 +1830,12 @@ int game_process_brake(struct player_t *player)
 
 int game_process_no_brake(struct player_t *player)
 {
+	if(match_over && player != winner)
+		return 1;
+	
+	if(!player->craft)
+		return 1;
+	
 	player->craft->craft_data.braking = 0;
 	propagate_entity(player->craft);
 	return 1;
@@ -1714,6 +1852,12 @@ int game_process_roll(struct player_t *player, struct buffer_t *stream)
 
 	player->last_control_change = index;
 */
+	
+	if(match_over && player != winner)
+		return 0;
+	
+	if(!player->craft)
+		return 0;
 	
 	if(!player->craft->teleporting)
 	{
@@ -1735,12 +1879,18 @@ int game_process_roll(struct player_t *player, struct buffer_t *stream)
 	//		propagate_entity(player->craft->craft_data.right_weapon);
 	}
 	
-	return 1;
+	return 0;
 }
 
 
 int game_process_roll_left(struct player_t *player)
 {
+	if(match_over && player != winner)
+		return 1;
+	
+	if(!player->craft)
+		return 1;
+	
 	player->craft->craft_data.rolling_left = 1;
 	propagate_entity(player->craft);
 	return 1;
@@ -1749,6 +1899,12 @@ int game_process_roll_left(struct player_t *player)
 
 int game_process_no_roll_left(struct player_t *player)
 {
+	if(match_over && player != winner)
+		return 1;
+	
+	if(!player->craft)
+		return 1;
+	
 	player->craft->craft_data.rolling_left = 0;
 	propagate_entity(player->craft);
 	return 1;
@@ -1757,6 +1913,12 @@ int game_process_no_roll_left(struct player_t *player)
 
 int game_process_roll_right(struct player_t *player)
 {
+	if(match_over && player != winner)
+		return 1;
+	
+	if(!player->craft)
+		return 1;
+	
 	player->craft->craft_data.rolling_right = 1;
 	propagate_entity(player->craft);
 	return 1;
@@ -1765,6 +1927,12 @@ int game_process_roll_right(struct player_t *player)
 
 int game_process_no_roll_right(struct player_t *player)
 {
+	if(match_over && player != winner)
+		return 1;
+	
+	if(!player->craft)
+		return 1;
+	
 	player->craft->craft_data.rolling_right = 0;
 	propagate_entity(player->craft);
 	return 1;
@@ -1876,6 +2044,12 @@ void add_rail_entity(struct entity_t *entity, float dist, float x, float y)
 
 int game_process_fire_rail(struct player_t *player)
 {
+	if(match_over && player != winner)
+		return 1;
+	
+	if(!player->craft)
+		return 1;
+	
 	if(!player->rails)
 		return 1;
 	
@@ -1994,8 +2168,11 @@ int game_process_fire_rail(struct player_t *player)
 	// calculate extra frags for multiple kills
 	// bear in mind that we have already got one frag per kill
 	
-	while(kills--)
-		player->frags += kills;
+	if(!match_over)
+	{
+		while(kills--)
+			player->frags += kills;
+	}
 
 	
 	if(crail_entity)
@@ -2092,6 +2269,12 @@ void propagate_minigun_stop_firing(struct entity_t *entity)
 
 int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 {
+	if(match_over && player != winner)
+		return 0;
+	
+	if(!player->craft)
+		return 0;
+	
 	if(!player->craft->craft_data.left_weapon)
 		return 0;
 	
@@ -2156,6 +2339,12 @@ int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 
 int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 {
+	if(match_over && player != winner)
+		return 0;
+	
+	if(!player->craft)
+		return 0;
+	
 	if(!player->craft->craft_data.right_weapon)
 		return 0;
 	
@@ -2220,6 +2409,12 @@ int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 
 int game_process_drop_mine(struct player_t *player)
 {
+	if(match_over && player != winner)
+		return 1;
+	
+	if(!player->craft)
+		return 1;
+	
 	if(!player->mines)
 		return 1;
 	

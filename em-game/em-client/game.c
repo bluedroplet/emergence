@@ -229,7 +229,9 @@ double viewx = 0.0, viewy = 0.0;
 
 uint8_t ready;
 int match_begun;
+int match_over;
 uint32_t match_start_tick;
+uint32_t match_end_tick;
 
 int moving_view;
 float moving_view_time;
@@ -260,7 +262,10 @@ struct game_state_t
 	uint32_t tick;
 	struct entity_t *entity0;
 	uint32_t follow_me;
-	int tainted;	
+	float craft_shield;
+	float left_shield, right_shield;
+	int left_ammo, right_ammo;
+	int tainted;
 	
 	struct game_state_t *next;
 		
@@ -279,7 +284,8 @@ gzFile gzdemo;
 #define RAIL_TRAIL_EXPAND_ACC ((-RAIL_TRAIL_INITIAL_EXPAND_VELOCITY) / RAIL_TRAIL_EXPAND_TIME)
 
 
-
+uint8_t winner_type;
+uint32_t winner_index;
 
 struct rail_trail_t
 {
@@ -379,6 +385,7 @@ void clear_game()
 	centity0 = NULL;
 	
 	match_begun = 0;
+	match_over = 0;
 	LL_REMOVE_ALL(struct player_t, &player0);
 }
 
@@ -939,6 +946,7 @@ int game_process_playing()
 	net_emit_end_of_stream(game_conn);
 	
 	match_begun = 0;
+	match_over = 0;
 	ready = 0;
 	
 	return 1;
@@ -995,7 +1003,36 @@ void toggle_ready(int state)
 int game_process_match_begun()
 {
 	match_begun = 1;
+	match_over = 0;
 	match_start_tick = message_reader_read_uint32();
+	
+	return 1;
+}
+
+
+int game_process_match_over()
+{
+	match_over = 1;
+	
+	match_end_tick = message_reader_read_uint32();
+	
+	winner_type = message_reader_read_uint8();
+	
+	if(winner_type == WINNER_INDEX)
+		winner_index = message_reader_read_uint32();
+	
+	console_print("match over\n");
+	
+	return 1;
+}
+
+
+int game_process_lobby()
+{
+	match_begun = 0;
+	match_over = 0;
+
+	console_print("lobby\n");
 	
 	return 1;
 }
@@ -2282,6 +2319,12 @@ int game_process_message()
 	
 	case EMNETMSG_MATCH_BEGUN:
 		return game_process_match_begun();
+	
+	case EMNETMSG_MATCH_OVER:
+		return game_process_match_over();
+	
+	case EMNETMSG_LOBBY:
+		return game_process_lobby();
 	
 	case EMNETMSG_PLAYER_INFO:
 		return game_process_player_info();
@@ -3670,6 +3713,12 @@ void duplicate_game_state(struct game_state_t *old_game_state, struct game_state
 		
 		centity = centity->next;
 	}
+
+	new_game_state->craft_shield = old_game_state->craft_shield;
+	new_game_state->left_shield = old_game_state->left_shield;
+	new_game_state->right_shield = old_game_state->right_shield;
+	new_game_state->left_ammo = old_game_state->left_ammo;
+	new_game_state->right_ammo = old_game_state->right_ammo;
 }
 
 
@@ -4290,7 +4339,12 @@ void render_match_time()
 {
 	if(match_begun)
 	{
-		int seconds = (render_tick - match_start_tick) / 200;
+		int seconds;
+		if(!match_over)
+			seconds = (render_tick - match_start_tick) / 200;
+		else
+			seconds = (match_end_tick - match_start_tick) / 200;
+			
 		int minutes = seconds / 60;
 		seconds -= minutes * 60;
 		blit_text_right_aligned(vid_width, 0, 0xef, 0x6f, 0xff, s_backbuffer, 
@@ -4366,12 +4420,50 @@ void render_game()
 			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
 				s_backbuffer, "The match has not yet started.");
 			blit_text_centered(vid_width / 2, vid_height / 6 + 14, 0xef, 0x6f, 0xff, 
-				s_backbuffer, "Press [Enter] when you are ready.");
+				s_backbuffer, "Press [Enter] when you are ready,");
+			blit_text_centered(vid_width / 2, vid_height / 6 + 28, 0xef, 0x6f, 0xff, 
+				s_backbuffer, "or wait for more people to join.");
 		}
 		else
 		{
 			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
 				s_backbuffer, "The match will start when everyone is ready.");
+		}
+	}
+	
+	
+	struct player_t *cplayer;
+	struct string_t *s;
+	
+	if(match_over)
+	{
+		switch(winner_type)
+		{
+		case WINNER_YOU:
+			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
+				s_backbuffer, "You have won the match.");
+			break;
+		
+		case WINNER_INDEX:
+			
+			cplayer = player0;
+			
+			while(cplayer)
+			{
+				if(cplayer->index == winner_index)
+					break;
+				
+				cplayer = cplayer->next;
+			}
+			
+			s = new_string_string(cplayer->name);
+			string_cat_text(s, " has one the match.");
+			
+			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
+				s_backbuffer, s->text);
+			
+			free_string(s);
+			break;
 		}
 	}
 }

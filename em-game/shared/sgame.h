@@ -46,6 +46,8 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 #define EMNETMSG_MATCH_BEGUN		(EMMSGCLASS_NETONLY | 0x07)
 #define EMNETMSG_PLAYER_INFO		(EMMSGCLASS_NETONLY | 0x08)
 #define EMNETMSG_REMOVE_PLAYER_INFO	(EMMSGCLASS_NETONLY | 0x09)
+#define EMNETMSG_MATCH_OVER			(EMMSGCLASS_NETONLY | 0x0a)
+#define EMNETMSG_LOBBY				(EMMSGCLASS_NETONLY | 0x0b)
 
 #define EMEVENT_PULSE					(EMMSGCLASS_EVENT | 0x00)
 #define EMEVENT_PRINT					(EMMSGCLASS_EVENT | 0x01)
@@ -95,6 +97,8 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 #define EMMSG_SUICIDE			0x17
 #define EMMSG_COLOURS			0x18
 
+#define WINNER_YOU		0x00
+#define WINNER_INDEX	0x01
 
 
 
