@@ -41,9 +41,9 @@ void go_daemon()
 		exit(EXIT_SUCCESS);
 
 	// Become session leader
-//	setsid();
+	setsid();
 	
-//	fclose(stdin);
+	fclose(stdin);
 	fclose(stdout);
 	fclose(stderr);
 	

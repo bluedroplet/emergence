@@ -1,4 +1,4 @@
-OBJECTS = map3.cmap
+OBJECTS = map3.cmap map4.cmap map5.cmap
 
 sharedatadir = $(pkgdatadir)/stock-maps
 

@@ -3232,7 +3232,7 @@ void s_tick_plasma(struct entity_t *plasma)
 
 	// check for collision with teleporter
 	
-/*	struct teleporter_t *teleporter = teleporter0;
+	struct teleporter_t *teleporter = teleporter0;
 	while(teleporter)
 	{
 		if(circle_in_circle(plasma->xdis, plasma->ydis, 
@@ -3251,7 +3251,6 @@ void s_tick_plasma(struct entity_t *plasma)
 		
 		teleporter = teleporter->next;
 	}
-*/
 }
 
 
@@ -3355,7 +3354,7 @@ void s_tick_bullet(struct entity_t *bullet)
 	
 	// check for collision with teleporter
 	
-	struct teleporter_t *teleporter = teleporter0;
+/*	struct teleporter_t *teleporter = teleporter0;
 	while(teleporter)
 	{
 		if(line_in_circle(bullet->xdis, bullet->ydis, xdis, ydis, 
@@ -3373,6 +3372,7 @@ void s_tick_bullet(struct entity_t *bullet)
 		
 		teleporter = teleporter->next;
 	}
+	*/
 	
 	bullet->xdis = xdis;
 	bullet->ydis = ydis;

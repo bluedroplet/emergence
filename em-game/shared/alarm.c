@@ -70,6 +70,8 @@ void destroy_alarm_listener(int read_fd)
 }
 */
 
+
+/*
 void *alarm_thread(void *a)
 {
 	struct itimerval tv;
@@ -94,6 +96,31 @@ void *alarm_thread(void *a)
 		
 		if(i == SIGUSR1)
 			pthread_exit(NULL);
+
+		
+	//	pthread_mutex_lock(&alarm_mutex);
+	
+		struct alarm_listener_t *calarm_listener = alarm_listener0;
+			
+		while(calarm_listener)
+		{
+			calarm_listener->func();
+		
+			calarm_listener = calarm_listener->next;
+		};
+		
+	//	pthread_mutex_unlock(&alarm_mutex);
+	}
+}
+*/
+
+void *alarm_thread(void *a)
+{
+	struct timespec v = {0, 0};
+	
+	while(1)
+	{
+		nanosleep(&v, NULL);
 
 		
 	//	pthread_mutex_lock(&alarm_mutex);

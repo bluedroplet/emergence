@@ -2,7 +2,8 @@ SUBDIRS = demos stock-maps stock-skins base-maps \
 	stock-object-textures stock-sounds
 
 OBJECTS = smallfont.png default-controls.config \
-	default-client.autoexec default-server.autoexec
+	default-client.autoexec default-server.autoexec \
+	rumoured.client
 
 sharedatadir = $(pkgdatadir)
 

@@ -1,8 +1,8 @@
 #!/bin/bash -v
 
-export CC="/home/jonny/Desktop/apbuild-1.5/apgcc"
+export CC="apgcc"
 export APBUILD_NO_STATIC_X=1
-ver=0.9-dev
+ver=0.9
 
 cd ../em-tools
 make distclean
@@ -145,8 +145,8 @@ tar --owner=0 --group=0 --numeric-owner -cjf emergence-$ver-$arch-linux-home.tbz
 done
 
 
-arch=pentium3
-stage3=pentium3
+arch=i686
+stage3=i686
 
 echo Building Nonauthenticating Emergence for $arch
 

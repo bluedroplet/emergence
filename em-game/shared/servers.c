@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/poll.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,6 +24,7 @@
 #include "../../common/user.h"
 #include "../../common/stringbuf.h"
 #include "../../common/llist.h"
+#include "../../common/resource.h"
 
 
 struct server_t *rumoured_servers = NULL;
@@ -33,6 +36,12 @@ void load_rumoured_servers()
 	
 	#ifdef EMCLIENT
 	string_cat_text(filename, "/rumoured.client");
+	struct stat buf;
+	if(stat(filename->text, &buf) == -1)
+	{
+		free_string(filename);
+		filename = new_string_text(find_resource("rumoured.client"));
+	}
 	#endif
 	
 	#ifdef EMSERVER

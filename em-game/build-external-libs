@@ -1,7 +1,7 @@
 #!/bin/bash -v
 
 
-export CC="/home/jonny/Desktop/apbuild-1.5/apgcc"
+export CC="apgcc"
 export APBUILD_NO_STATIC_X=1
 export CFLAGS="-march=i686 -O3 -pipe -fomit-frame-pointer"
 
@@ -21,6 +21,9 @@ aclocal-1.8
 automake-1.8
 autoconf-2.59
 
-./configure --disable-debug --enable-audio --disable-video --disable-joystick --disable-cdrom --enable-threads --enable-timers --enable-endian --disable-file --enable-cpuinfo --enable-oss --enable-alsa --enable-esd --disable-esdtest --enable-esd-shared --enable-arts --enable-arts-shared --enable-pthreads --enable-sigaction --prefix=`pwd`/image
+./configure --prefix=`pwd`/image --enable-static --disable-shared --disable-debug --enable-audio --disable-video --disable-joystick --disable-cdrom --enable-threads --enable-timers --enable-endian --disable-file --enable-cpuinfo --enable-oss --enable-alsa --enable-esd --disable-esdtest --enable-esd-shared --enable-arts --enable-arts-shared --disable-nas --enable-pthreads --enable-sigaction 
+#./configure --disable-debug --enable-audio --disable-video --disable-joystick --disable-cdrom --enable-threads --enable-timers --enable-endian --disable-file --enable-cpuinfo --enable-oss --enable-alsa --enable-esd --disable-esdtest --enable-esd-shared --enable-arts --enable-arts-shared --enable-pthreads --enable-sigaction --prefix=`pwd`/image
+#./configure --disable-video --prefix=`pwd`/image
 
+make
 make install
