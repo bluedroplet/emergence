@@ -2590,6 +2590,8 @@ void cf_demo(char *c)
 	cdemo = demo0;
 	
 //	render_frame();
+	
+	r_DrawConsole = 0;
 }
 
 
