@@ -870,7 +870,11 @@ int game_process_authenticate()
 	
 	game_state = GAMESTATE_CREATING_SESSION;
 	
-	key_create_session();
+	if(!key_create_session())
+	{
+		console_print("!\nYou don't have a key.\nTo play online you must purchase a key from emergence.uk.net");
+		game_state = GAMESTATE_DEAD;
+	}
 	
 	return 1;
 }
