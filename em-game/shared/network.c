@@ -1466,7 +1466,7 @@ void net_emit_end_of_stream(uint32_t temp_conn)
 
 
 #ifdef EMCLIENT
-uint32_t em_connect(char *addr)
+void em_connect(char *addr)
 {
 	uint16_t port = htons(EMNET_PORT);
 	uint32_t ip;
@@ -1483,7 +1483,7 @@ uint32_t em_connect(char *addr)
 		if(!hostent)
 		{
 			console_print("Couldn't get any host info; %s\n", strerror(h_errno));
-			return 0;
+			return;
 		}
 	
 		ip = *(uint32_t*)hostent->h_addr;
@@ -1517,8 +1517,6 @@ uint32_t em_connect(char *addr)
 	emit_process_connecting();
 	
 	pthread_mutex_unlock(&net_mutex);
-	
-	return (uint32_t)conn;
 }
 #endif
 

@@ -75,10 +75,11 @@ void net_emit_buf(uint32_t temp_conn, void *buf, int size);
 void net_emit_end_of_stream(uint32_t temp_conn);
 
 #ifdef EMCLIENT
-uint32_t em_connect(char *addr);
+void em_connect(char *addr);
 #endif
 
 void em_disconnect(uint32_t conn);
+
 #define NETMSG_CONNECTING			0
 #define NETMSG_COOKIE_ECHOED		1
 #define NETMSG_CONNECTION			2

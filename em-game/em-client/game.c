@@ -3185,6 +3185,18 @@ void qc_name(char *new_name)
 }
 
 
+void cf_connect(char *addr)
+{
+	em_connect(addr);
+}
+
+
+void cf_disconnect()
+{
+	em_disconnect(game_conn);
+}
+
+
 void init_game()
 {
 	init_stars();
@@ -3199,8 +3211,8 @@ void init_game()
 	create_cvar_command("stop", cf_stop);
 	create_cvar_command("demo", cf_demo);
 	
-	create_cvar_command("connect", em_connect);
-	
+	create_cvar_command("connect", cf_connect);
+	create_cvar_command("disconnect", cf_disconnect);
 	
 	set_string_cvar_qc_function("name", qc_name);
 	
