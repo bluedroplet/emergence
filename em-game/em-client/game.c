@@ -83,6 +83,12 @@ struct event_plasma_data_t
 };
 
 
+struct event_mine_data_t
+{
+	uint32_t craft_id;
+};
+
+
 struct event_t
 {
 	uint32_t tick;
@@ -112,6 +118,7 @@ struct event_t
 				struct event_weapon_data_t weapon_data;
 				struct event_rocket_data_t rocket_data;
 				struct event_plasma_data_t plasma_data;
+				struct event_mine_data_t mine_data;
 			};
 			
 		} ent_data;
@@ -134,6 +141,13 @@ struct event_t
 			float x2, y2;
 			
 		} railtrail_data;
+		
+		struct
+		{
+			float x, y;
+			float size;
+			
+		} explosion_data;
 		
 		int frags;
 	};
@@ -194,7 +208,7 @@ float offset_view_y;
 float teleporting_start_x, teleporting_start_y;
 
 
-struct surface_t *s_plasma, *s_craft_shield, *s_weapon_shield;
+struct surface_t *s_plasma, *s_craft_shield, *s_weapon_shield, *s_mine;
 
 
 uint32_t game_conn;
@@ -575,6 +589,12 @@ void read_plasma_data(struct event_plasma_data_t *plasma_data)
 }
 
 
+void read_mine_data(struct event_mine_data_t *mine_data)
+{
+	mine_data->craft_id = message_reader_read_uint32();
+}
+
+
 void read_spawn_ent_event(struct event_t *event)
 {
 	event->ent_data.index = message_reader_read_uint32();
@@ -607,6 +627,7 @@ void read_spawn_ent_event(struct event_t *event)
 		break;
 	
 	case ENT_MINE:
+		read_mine_data(&event->ent_data.mine_data);
 		break;
 	}
 }
@@ -640,6 +661,7 @@ void read_update_ent_event(struct event_t *event)
 		break;
 	
 	case ENT_MINE:
+		read_mine_data(&event->ent_data.mine_data);
 		break;
 	}
 }
@@ -678,6 +700,14 @@ void read_frags_event(struct event_t *event)
 }
 
 
+void read_explosion_event(struct event_t *event)
+{
+	event->explosion_data.x = message_reader_read_float();
+	event->explosion_data.y = message_reader_read_float();
+	event->explosion_data.size = message_reader_read_float();
+}
+
+
 void read_event(struct event_t *event)
 {
 	event->tick = message_reader.event_tick;
@@ -711,6 +741,10 @@ void read_event(struct event_t *event)
 	
 	case EMEVENT_FRAGS:
 		read_frags_event(event);
+		break;
+	
+	case EMEVENT_EXPLOSION:
+		read_explosion_event(event);
 		break;
 	}
 }
@@ -889,6 +923,7 @@ void add_spawn_ent_event(struct event_t *event)
 		break;
 	
 	case ENT_MINE:
+		read_mine_data(&event->ent_data.mine_data);
 		break;
 	}
 }
@@ -967,6 +1002,8 @@ void process_spawn_ent_event(struct event_t *event)
 		break;
 	
 	case ENT_MINE:
+		entity->mine_data.under_craft = 1;
+		entity->mine_data.craft_id = event->ent_data.mine_data.craft_id;
 		break;
 	}
 }
@@ -1003,6 +1040,7 @@ void add_update_ent_event(struct event_t *event)
 		break;
 	
 	case ENT_MINE:
+		read_mine_data(&event->ent_data.mine_data);
 		break;
 	}
 }
@@ -1090,17 +1128,11 @@ void process_kill_ent_event(struct event_t *event)
 	switch(entity->type)
 	{
 	case ENT_CRAFT:
-		explosion(entity);
 		strip_weapons_from_craft(entity);
 		break;
 	
 	case ENT_WEAPON:
-		explosion(entity);
 		strip_craft_from_weapon(entity);
-		break;
-	
-	case ENT_RAILS:
-		explosion(entity);
 		break;
 	}
 	
@@ -1204,6 +1236,21 @@ void process_detach_event(struct event_t *event)
 }
 
 
+void add_explosion_event(struct event_t *event)
+{
+	event->explosion_data.x = message_reader_read_float();
+	event->explosion_data.y = message_reader_read_float();
+	event->explosion_data.size = message_reader_read_float();
+}
+
+
+void process_explosion_event(struct event_t *event)
+{
+	explosion(event->explosion_data.x, event->explosion_data.y, 
+		event->explosion_data.size);
+}
+
+
 void process_teleport_event(struct event_t *event)
 {
 	start_sample(teleporter_sample, event->tick);
@@ -1276,6 +1323,10 @@ void process_tick_events(uint32_t tick)
 			case EMEVENT_FRAGS:
 				process_frags_event(event);
 				break;
+			
+			case EMEVENT_EXPLOSION:
+				process_explosion_event(event);
+				break;
 			}
 			
 			struct event_t *next = event->next;
@@ -1345,6 +1396,10 @@ int process_tick_events_do_not_remove(uint32_t tick)
 			
 			case EMEVENT_FRAGS:
 				process_frags_event(event);
+				break;
+			
+			case EMEVENT_EXPLOSION:
+				process_explosion_event(event);
 				break;
 			}
 		}
@@ -1481,6 +1536,10 @@ int game_demo_process_event()
 	case EMEVENT_FRAGS:
 		add_frags_event(&event);
 		break;
+	
+	case EMEVENT_EXPLOSION:
+		add_explosion_event(&event);
+		break;
 	}
 	
 	LL_ADD_TAIL(struct event_t, &event0, &event);
@@ -1539,6 +1598,10 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp)
 	case EMEVENT_FRAGS:
 		add_frags_event(&event);
 		break;
+	
+	case EMEVENT_EXPLOSION:
+		add_explosion_event(&event);
+		break;
 	}
 	
 	if(!ooon)
@@ -1596,6 +1659,10 @@ int game_process_event_untimed(uint32_t index)
 	case EMEVENT_FRAGS:
 		add_frags_event(&event);
 		break;
+	
+	case EMEVENT_EXPLOSION:
+		add_explosion_event(&event);
+		break;
 	}
 	
 	if(!ooon)
@@ -1649,6 +1716,10 @@ int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp)
 	case EMEVENT_FRAGS:
 		add_frags_event(&event);
 		break;
+	
+	case EMEVENT_EXPLOSION:
+		add_explosion_event(&event);
+		break;
 	}
 	
 	insert_event_in_order(&event);
@@ -1699,6 +1770,10 @@ int game_process_event_untimed_ooo(uint32_t index)
 	
 	case EMEVENT_FRAGS:
 		add_frags_event(&event);
+		break;
+	
+	case EMEVENT_EXPLOSION:
+		add_explosion_event(&event);
 		break;
 	}
 	
@@ -2259,52 +2334,25 @@ void roll_right(uint32_t state)
 }
 
 
-void explosion(struct entity_t *entity)
+void explosion(float x, float y, float size)
 {
-	double force = 0;
 	int np, p;
-	
-	switch(entity->type)
-	{
-	case ENT_CRAFT:
-		force = 2000;
-		break;
-	
-	case ENT_WEAPON:
-		force = 1000;
-		break;
-	
-	case ENT_ROCKET:
-		force = 500;
-		break;
-	
-	case ENT_MINE:
-		force = 200;
-		break;
-	
-	case ENT_RAILS:
-		force = 50;
-		break;
-	}
-	
-	np = lrint(force / 5);
-	
+	np = lrint(size / 5);
 	
 	
 	struct particle_t particle;
-	particle.xpos = entity->xdis;
-	particle.ypos = entity->ydis;
+	particle.xpos = x;
+	particle.ypos = y;
 	
 	for(p = 0; p < np; p++)
 	{
 		double sin_theta, cos_theta;
 		sincos(drand48() * 2 * M_PI, &sin_theta, &cos_theta);
 		
-		
 		double r = drand48();
 		
-		particle.xvel = entity->xvel - sin_theta * force * r;
-		particle.yvel = entity->xvel + cos_theta * force * r;
+		particle.xvel = -sin_theta * size * r;
+		particle.yvel = cos_theta * size * r;
 		particle.creation = particle.last = cgame_time;
 		create_upper_particle(&particle);
 	}
@@ -2527,6 +2575,53 @@ void render_entities()
 		
 		switch(entity->type)
 		{
+		case ENT_MINE:
+			
+			params.source = s_mine;
+		
+			world_to_screen(entity->xdis, entity->ydis, &x, &y);
+		
+			params.dest_x = x - s_plasma->width / 2;
+			params.dest_y = y - s_plasma->width / 2;
+			
+			if(entity->teleporting)
+			{
+				time = (double)(cgame_tick - entity->teleporting_tick) / 200.0;
+				
+				switch(entity->teleporting)
+				{
+				case TELEPORTING_DISAPPEARING:
+					params.alpha = 255 - min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
+					alpha_blit_surface(&params);
+					break;
+				
+				case TELEPORTING_TRAVELLING:
+					break;
+					
+				case TELEPORTING_APPEARING:
+					params.alpha = min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
+					alpha_blit_surface(&params);
+					break;
+				}
+			}
+			else
+				blit_surface(&params);
+		
+			break;
+		}
+
+		entity = entity->next;
+	}
+
+
+	entity = centity0;
+		
+	while(entity)
+	{
+		uint32_t x, y;
+		
+		switch(entity->type)
+		{
 		case ENT_CRAFT:
 			
 			while(entity->craft_data.theta >= M_PI)
@@ -2689,7 +2784,6 @@ void render_entities()
 		case ENT_BULLET:
 			break;
 		
-		case ENT_MINE:
 		case ENT_RAILS:
 		case ENT_ROCKET:
 		case ENT_SHIELD:
@@ -2730,10 +2824,7 @@ void render_entities()
 		
 			break;
 		
-/*		case ENT_MINE:
-			break;
-		
-		case ENT_RAILS:
+/*		case ENT_RAILS:
 			break;
 		
 		case ENT_SHIELD:
@@ -3412,6 +3503,9 @@ void init_game()
 	s_craft_shield = resize(temp, 46, 46, NULL);
 	s_weapon_shield = resize(temp, 28, 28, NULL);
 
+	temp = read_png_surface(PKGDATADIR "/stock-object-textures/mine.png");
+	
+	s_mine = resize(temp, 13, 13, NULL);
 	
 	railgun_sample = load_sample(PKGDATADIR "/stock-sounds/railgun.ogg");
 	teleporter_sample = load_sample(PKGDATADIR "/stock-sounds/teleporter.ogg");

@@ -119,6 +119,7 @@ void craft_telefragged(struct player_t *victim, struct player_t *telefragger);
 
 void emit_teleport_to_all_players();
 void emit_speedup_to_all_players();
+void emit_explosion(float x, float y, float size);
 
 extern uint32_t cgame_tick;
 

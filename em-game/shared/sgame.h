@@ -54,6 +54,7 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 #define EMEVENT_TELEPORT		(EMMSGCLASS_EVENT | 0x09)
 #define EMEVENT_SPEEDUP			(EMMSGCLASS_EVENT | 0x0a)
 #define EMEVENT_FRAGS			(EMMSGCLASS_EVENT | 0x0b)
+#define EMEVENT_EXPLOSION		(EMMSGCLASS_EVENT | 0x0c)
 
 
 
@@ -178,6 +179,9 @@ struct bullet_data_t
 
 struct mine_data_t
 {
+	int under_craft;
+	uint32_t craft_id;
+
 	#ifdef EMSERVER
 	struct player_t *owner;
 	#endif
@@ -356,7 +360,7 @@ int read_shield_energy(gzFile file);
 #endif
 
 #ifdef EMSERVER
-void splash_force(double x, double y, double force, struct player_t *responsibility);
+void splash_force(float x, float y, float force, struct player_t *responsibility);
 void explode_craft(struct entity_t *craft, struct player_t *responsibility);
 int craft_force(struct entity_t *craft, double force, struct player_t *responsibility);
 int weapon_force(struct entity_t *weapon, double force, struct player_t *responsibility);
@@ -385,13 +389,14 @@ int point_in_circle(double px, double py, double cx, double cy, double cr);
 #define WEAPON_RADIUS	35.355
 #define PLASMA_RADIUS	5.0
 #define ROCKET_RADIUS	25.0
-#define MINE_RADIUS		20.0
+#define MINE_RADIUS		60.0
 #define RAILS_RADIUS	20.0
 #define SHIELD_RADIUS	20.0
 
 #define CRAFT_MASS	100.0
 #define WEAPON_MASS	75.0
 #define RAILS_MASS	15.0
+
 
 
 #endif // _INC_SGAME

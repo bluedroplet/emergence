@@ -56,7 +56,7 @@ extern gzFile gzrecording;
 #ifdef _INC_SGAME
 void tick_craft(struct entity_t *craft, float xdis, float ydis);
 void tick_rocket(struct entity_t *rocket, float xdis, float ydis);
-void explosion(struct entity_t *entity);
+void explosion(float x, float y, float size);
 #endif	
 
 void create_teleporter_sparkles();

@@ -1,7 +1,7 @@
 SHARED_OBJECTS = rails.png  shield.png  unowned-minigun.png \
 	unowned-plasma-cannon.png  unowned-rocket-launcher.png
 
-OBJECTS =  rocket.png plasma.png
+OBJECTS =  rocket.png plasma.png mine.png
 
 sharedatadir = $(datadir)/emergence/stock-object-textures
 

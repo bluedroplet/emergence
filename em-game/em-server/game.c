@@ -199,7 +199,7 @@ void write_rocket_data_to_net(uint32_t conn, struct entity_t *rocket)
 
 void write_mine_data_to_net(uint32_t conn, struct entity_t *mine)
 {
-	;
+	net_emit_uint32(conn, mine->mine_data.craft_id);
 }
 
 
@@ -414,6 +414,23 @@ void emit_speedup_to_all_players()
 	{
 		net_emit_uint8(player->conn, EMEVENT_SPEEDUP);
 		net_emit_uint32(player->conn, game_tick);
+		net_emit_end_of_stream(player->conn);
+		player = player->next;
+	}
+}
+
+
+void emit_explosion(float x, float y, float size)
+{
+	struct player_t *player = player0;
+		
+	while(player)
+	{
+		net_emit_uint8(player->conn, EMEVENT_EXPLOSION);
+		net_emit_uint32(player->conn, game_tick);
+		net_emit_float(player->conn, x);
+		net_emit_float(player->conn, y);
+		net_emit_float(player->conn, size);
 		net_emit_end_of_stream(player->conn);
 		player = player->next;
 	}
@@ -717,7 +734,8 @@ void tick_player(struct player_t *player)
 
 void spawn_player(struct player_t *player)
 {
-	player->rails = 5;
+	player->rails = 10;
+	player->mines = 4;
 	
 	struct spawn_point_t *spawn_point = spawn_point0;
 	
@@ -1658,6 +1676,34 @@ int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 }
 
 
+int game_process_drop_mine(struct player_t *player)
+{
+	if(!player->mines)
+		return 1;
+	
+	player->mines--;
+	
+	struct entity_t *mine = new_entity(&entity0);
+	
+	mine->type = ENT_MINE;
+	
+	mine->xdis = player->craft->xdis;
+	mine->ydis = player->craft->ydis;
+	
+	mine->xvel = player->craft->xvel;
+	mine->yvel = player->craft->yvel;
+	
+	mine->mine_data.under_craft = 1;
+	mine->mine_data.craft_id = player->craft->index;
+	
+	mine->mine_data.owner = player;
+
+	spawn_entity_on_all_players(mine);
+	
+	return 1;
+}
+
+
 void game_process_stream(uint32_t conn, uint32_t index, struct buffer_t *stream)
 {
 	update_game();
@@ -1725,6 +1771,8 @@ void game_process_stream(uint32_t conn, uint32_t index, struct buffer_t *stream)
 			break;
 		
 		case EMMSG_DROPMINE:
+			if(!game_process_drop_mine(player))
+				return;
 			break;
 		
 		case EMMSG_ENTERRCON:
