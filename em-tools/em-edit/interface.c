@@ -902,12 +902,12 @@ void run_space_menu()
 		gtk_menu_append(GTK_MENU(map_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
-		menu_items = gtk_menu_item_new_with_label("Properties...");
-//		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
-//			GTK_SIGNAL_FUNC(menu_active_saveas), NULL);
+/*		menu_items = gtk_menu_item_new_with_label("Properties...");
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_active_saveas), NULL);
 		gtk_menu_append(GTK_MENU(map_menu), menu_items);
 		gtk_widget_show(menu_items);
-		
+*/		
 		menu_items = gtk_menu_item_new_with_label("Compile");
 		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
 			GTK_SIGNAL_FUNC(menu_active_compile), NULL);
