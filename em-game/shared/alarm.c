@@ -30,7 +30,6 @@
 
 #include "../../common/types.h"
 #include "../../common/llist.h"
-#include "rdtsc.h"
 
 #include "../console.h"
 

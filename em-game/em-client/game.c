@@ -21,7 +21,6 @@
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../common/resource.h"
-#include "shared/rdtsc.h"
 #include "shared/cvar.h"
 #include "shared/network.h"
 #include "particles.h"

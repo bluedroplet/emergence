@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <math.h>
 
-#include "shared/rdtsc.h"
 #include "shared/cvar.h"
 #include "ping.h"
 #include "shared/timer.h"
@@ -115,7 +114,7 @@ uint32_t get_game_tick()
 	if(!different_ticks)
 		return tick_times[0].game_tick;
 	
-	return lround(tick_a + tick_b * ((double)rdtsc() - (latency * (tracking - 1.0) - time_shift) * 
+	return lround(tick_a + tick_b * ((double)timestamp() - (latency * (tracking - 1.0) - time_shift) * 
 		(double)counts_per_second));
 }
 

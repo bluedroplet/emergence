@@ -27,7 +27,6 @@
 #include "../../common/stringbuf.h"
 #include "../../common/buffer.h"
 #include "cvar.h"
-#include "rdtsc.h"
 #include "timer.h"
 #include "alarm.h"
 #include "network.h"
@@ -552,7 +551,7 @@ void process_in_order_stream(struct conn_t *conn, struct in_packet_ll_t *end)
 	free(temp);
 
 	uint32_t msg;
-	uint64_t tsc;
+	uint64_t stamp;
 	
 	if(untimed)
 	{
@@ -563,10 +562,10 @@ void process_in_order_stream(struct conn_t *conn, struct in_packet_ll_t *end)
 	else
 	{
 		msg = NETMSG_STREAM_TIMED;
-		tsc = rdtsc();
+		stamp = timestamp();
 		write(net_out_pipe[1], &msg, 4);
 		write(net_out_pipe[1], &index, 4);
-		write(net_out_pipe[1], &tsc, 8);
+		write(net_out_pipe[1], &stamp, 8);
 	}
 	
 	write(net_out_pipe[1], &conn, 4);
@@ -601,7 +600,7 @@ void process_out_of_order_stream(struct conn_t *conn, struct in_packet_ll_t *sta
 
 	uint32_t msg;
 	uint32_t index = start->packet.header & EMNETINDEX_MASK;
-	uint64_t tsc;
+	uint64_t stamp;
 	
 	if(untimed)
 	{
@@ -612,10 +611,10 @@ void process_out_of_order_stream(struct conn_t *conn, struct in_packet_ll_t *sta
 	else
 	{
 		msg = NETMSG_STREAM_TIMED_OOO;
-		tsc = rdtsc();
+		stamp = timestamp();
 		write(net_out_pipe[1], &msg, 4);
 		write(net_out_pipe[1], &index, 4);
-		write(net_out_pipe[1], &tsc, 8);
+		write(net_out_pipe[1], &stamp, 8);
 	}
 	
 	write(net_out_pipe[1], &conn, 4);
@@ -1854,9 +1853,9 @@ void init_network()
 	
 	// seed to rng
 	
-	uint64_t time = rdtsc();
+	uint64_t stamp = timestamp();
 	
-	seed48((unsigned short int*)(void*)&time);	// always check this for endianness
+	seed48((unsigned short int*)(void*)&stamp);		// always check this for endianness
 	
 	pipe(net_kill_pipe);
 	pipe(net_out_pipe);

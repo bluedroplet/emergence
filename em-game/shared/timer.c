@@ -24,20 +24,22 @@
 uint64_t start_count, counts_per_second;
 
 
+uint64_t timestamp()
+{
+	return rdtsc() - start_count;
+}
+
+
 uint32_t get_tick_from_wall_time()
 {
-	uint64_t count = rdtsc();
-	
-	return (uint32_t)lround((((double)count - (double)start_count) * 200.0) / 
+	return (uint32_t)lround(((double)(rdtsc() - start_count) * 200.0) / 
 		(double)counts_per_second);
 }
 
 
 double get_wall_time()
 {
-	uint64_t count = rdtsc();
-	
-	return (double)count / (double)counts_per_second;
+	return (double)(rdtsc() - start_count) / (double)counts_per_second;
 }
 
 
