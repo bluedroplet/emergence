@@ -60,6 +60,8 @@ void init_input()
 	if(fcntl(input_fd, F_SETOWN, getpid()) == -1)
 		goto error;
 	
+	fcntl(input_fd, F_SETSIG, SIGRTMIN);
+	
 	if(fcntl(input_fd, F_SETFL, O_ASYNC) == -1)
 		goto error;
 	

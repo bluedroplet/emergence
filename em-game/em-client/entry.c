@@ -26,6 +26,7 @@
 #include "x.h"
 #include "entry.h"
 #include "control.h"
+#include "sound.h"
 
 volatile int sigio_process = 0;
 volatile int sigalrm_process = 0;
@@ -39,8 +40,14 @@ struct timeval timeout =
 sigset_t sigmask;
 	
 
-void handle_sigio(int i)
+void handle_sigio(int signo, siginfo_t *siginfo, void *context)
 {
+//	if(sigio_process & SIGIO_PROCESS_ALSA && alsa_fd == siginfo->si_fd)
+//	{
+//		process_alsa();
+//	}
+	
+	
 	fd_set set;
 	
 	while(1)
@@ -95,6 +102,9 @@ void handle_sigio(int i)
 
 void handle_sigalrm(int i)
 {
+	if(sigio_process & SIGIO_PROCESS_ALSA)
+		process_alsa();
+
 	if(sigalrm_process & SIGALRM_PROCESS_NETWORK)
 		process_network_alarm();
 	
@@ -102,19 +112,63 @@ void handle_sigalrm(int i)
 		process_control_alarm();
 }
 
+void
+print_trace (void)
+{
+  void *array[10];
+  size_t size;
+  char **strings;
+  size_t i;
+
+  size = backtrace (array, 10);
+  strings = backtrace_symbols (array, size);
+
+  printf ("Obtained %zd stack frames.\n", size);
+
+  for (i = 0; i < size; i++)
+     printf ("%s\n", strings[i]);
+
+  free (strings);
+}
+
+
+void handle_sigsegv(int i)
+{
+	print_trace ();
+
+  /* Now reraise the signal.  We reactivate the signal's
+     default handling, which is to terminate the process.
+     We could just call exit or abort,
+     but reraising the signal sets the return status
+     from the process correctly. */
+  signal (SIGSEGV, SIG_DFL);	// sigaction?
+  raise (SIGSEGV);	
+	
+}
+
+
 void handle_sigfpe(int i)
 {
 	printf("handle_sigfpe\n");
 }
 
 
-
 void init_signals()
 {
 	sigemptyset(&sigmask);
-	sigaddset(&sigmask, SIGIO);
+	sigaddset(&sigmask, SIGRTMIN);
 	sigaddset(&sigmask, SIGALRM);
 	struct sigaction setup_action;
+
+	
+	// sigsegv
+	
+	setup_action.sa_handler = handle_sigsegv;
+	sigemptyset(&setup_action.sa_mask);
+	setup_action.sa_flags = 0;//SA_RESTART;
+	
+	if(sigaction(SIGSEGV, &setup_action, NULL) == -1)
+		client_libc_error("Couldn't setup sigsegv handler");
 
 	
 	// sigfpe
@@ -129,12 +183,12 @@ void init_signals()
 	
 	// sigio
 	
-	setup_action.sa_handler = handle_sigio;
+	setup_action.sa_sigaction = handle_sigio;
 	sigemptyset(&setup_action.sa_mask);
 	sigaddset(&setup_action.sa_mask, SIGALRM);
-	setup_action.sa_flags = SA_RESTART;
+	setup_action.sa_flags = SA_RESTART | SA_SIGINFO;
 	
-	if(sigaction(SIGIO, &setup_action, NULL) == -1)
+	if(sigaction(SIGRTMIN, &setup_action, NULL) == -1)
 		client_libc_error("Couldn't setup sigio handler");
 
 	
@@ -142,7 +196,7 @@ void init_signals()
 	
 	setup_action.sa_handler = handle_sigalrm;
 	sigemptyset(&setup_action.sa_mask);
-	sigaddset(&setup_action.sa_mask, SIGIO);
+	sigaddset(&setup_action.sa_mask, SIGRTMIN);
 	setup_action.sa_flags = SA_RESTART;
 	
 	if(sigaction(SIGALRM, &setup_action, NULL) == -1)
@@ -212,7 +266,7 @@ int main(int argc, char *argv[])
 	sigset_t oldmask, sigmask;
 	
 	sigemptyset(&sigmask);
-	sigaddset(&sigmask, SIGIO);
+	sigaddset(&sigmask, SIGRTMIN);
 	sigaddset(&sigmask, SIGALRM);
 	
 	struct buffer_t *new_buf = new_buffer();
