@@ -1,7 +1,7 @@
 struct rotate_t
 {
 	struct surface_t *in_surface, **out_surface;
-	double red, green, blue, alpha;
+	float red, green, blue, alpha;
 	
 	struct rotate_t *next;
 };
