@@ -1276,3 +1276,69 @@ on_straight_through_node_angle_spinbutton_button_release_event
                                         (GtkWidget       *widget,
                                         GdkEventButton  *event,
                                         gpointer         user_data);
+
+void
+on_wall_texture_pixmapentry_activate   (GnomeFileEntry  *gnomefileentry,
+                                        gpointer         user_data);
+
+void
+on_wall_texture_entry_activate         (GtkEntry        *entry,
+                                        gpointer         user_data);
+
+void
+on_wall_texture_entry_changed          (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_rocket_launcher_texture_entry_changed
+                                        (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_speedup_ramp_texture_entry_changed  (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_minigun_texture_entry_changed       (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_plasma_cannon_texture_entry_changed (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_rails_texture_pixmapentry_changed   (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_shield_energy_texture_entry_changed (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_spawn_point_texture_entry_changed   (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_gravity_well_texture_entry_changed  (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_teleporter_texture_entry_changed    (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_fill_texture_entry_changed          (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_node_texture_entry_changed          (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_end_node_texture_entry_changed      (GtkEditable     *editable,
+                                        gpointer         user_data);
+
+void
+on_crossover_node_texture_entry_changed
+                                        (GtkEditable     *editable,
+                                        gpointer         user_data);

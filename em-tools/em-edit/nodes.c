@@ -1061,7 +1061,7 @@ void set_node_sats(struct node_t *node, double angle, double axis1_magnitude, do
 }
 
 
-void on_end_node_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpointer user_data)
+void on_end_node_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 {
 	;
 }
@@ -1994,15 +1994,21 @@ void on_crossover_node_blend_radiobutton_toggled(GtkToggleButton *togglebutton, 
 }
 
 
-void on_crossover_node_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpointer user_data)
+void on_crossover_node_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 {
-	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(gnomefileentry));
+	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(editable));
 	struct node_t *node = g_object_get_data(G_OBJECT(dialog), "node");
 		
 	stop_working();
 	
 	free_string(node->texture_filename);
-	node->texture_filename = arb_abs2rel(gnome_file_entry_get_full_path(gnomefileentry, 0), map_path->text);
+	
+	gchar *strval;
+	g_object_get(G_OBJECT(editable), "text", &strval, NULL);
+	
+	node->texture_filename = arb_abs2rel(strval, map_path->text);
+	
+	g_free(strval);
 	
 	free_surface(node->pre_texture_surface);
 	node->pre_texture_surface = NULL;

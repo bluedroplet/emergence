@@ -1002,15 +1002,21 @@ void on_fill_texture_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer
 }
 
 
-void on_fill_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpointer user_data)
+void on_fill_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 {
-	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(gnomefileentry));
+	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(editable));
 	struct fill_t *fill = g_object_get_data(G_OBJECT(dialog), "fill");
 		
 	stop_working();
 	
 	free_string(fill->texture_filename);
-	fill->texture_filename = arb_abs2rel(gnome_file_entry_get_full_path(gnomefileentry, 0), map_path->text);
+	
+	gchar *strval;
+	g_object_get(G_OBJECT(editable), "text", &strval, NULL);
+	
+	fill->texture_filename = arb_abs2rel(strval, map_path->text);
+	
+	g_free(strval);
 	
 	free_surface(fill->pre_texture);
 	fill->pre_texture = NULL;

@@ -147,7 +147,7 @@ void check_job_ui_bsp()
 	{
 		if(job_type != JOB_TYPE_UI_BSP)
 		{
-		//	printf("generating ui bsp tree\n");
+			printf("generating ui bsp tree\n");
 			all_work_done = 0;
 		}
 		
@@ -166,7 +166,7 @@ void check_job_bsp()
 	{
 		if(job_type != JOB_TYPE_BSP)
 		{
-		//	printf("generating bsp tree\n");
+			printf("generating bsp tree\n");
 			all_work_done = 0;
 		}
 		
@@ -185,7 +185,7 @@ void check_job_resample_object()
 	{
 		if(job_type != JOB_TYPE_RESAMPLING_OBJECT)
 		{
-		//	printf("resampling objects\n");
+			printf("resampling objects\n");
 			all_work_done = 0;
 		}
 		
@@ -203,7 +203,7 @@ void check_job_scale_object()
 	{
 		if(job_type != JOB_TYPE_SCALING_OBJECT)
 		{
-		//	printf("scaling objects\n");
+			printf("scaling objects\n");
 			all_work_done = 0;
 		}
 		
@@ -221,7 +221,7 @@ void check_job_scaling()
 	{
 		if(job_type != JOB_TYPE_SCALING)
 		{
-		//	printf("scaling tiles\n");
+			printf("scaling tiles\n");
 			all_work_done = 0;
 		}
 		
@@ -239,7 +239,7 @@ void check_job_conn_verticies()
 	{
 		if(job_type != JOB_TYPE_CONN_VERTICIES)
 		{
-		//	printf("generating conn verticies\n");
+			printf("generating conn verticies\n");
 			all_work_done = 0;
 		}
 		
@@ -258,7 +258,7 @@ void check_job_conn_squish()
 	{
 		if(job_type != JOB_TYPE_CONN_SQUISH)
 		{
-		//	printf("squishing conn textures\n");
+			printf("squishing conn textures\n");
 			all_work_done = 0;
 		}
 		
@@ -277,7 +277,7 @@ void check_job_fill_verticies()
 	{
 		if(job_type != JOB_TYPE_FILL_VERTICIES)
 		{
-		//	printf("generating fill verticies\n");
+			printf("generating fill verticies\n");
 			all_work_done = 0;
 		}
 		
@@ -296,7 +296,7 @@ void check_job_node_verticies()
 	{
 		if(job_type != JOB_TYPE_NODE_VERTICIES)
 		{
-		//	printf("generating node verticies\n");
+			printf("generating node verticies\n");
 			all_work_done = 0;
 		}
 		
@@ -315,7 +315,7 @@ void check_job_tiling()
 	{
 		if(job_type != JOB_TYPE_TILING)
 		{
-		//	printf("tiling\n");
+			printf("tiling\n");
 			all_work_done = 0;
 		}
 		
@@ -334,7 +334,7 @@ void check_job_rendering()
 	{
 		if(job_type != JOB_TYPE_RENDERING)
 		{
-		//	printf("rendering tiles\n");
+			printf("rendering tiles\n");
 			all_work_done = 0;
 		}
 		
@@ -353,7 +353,7 @@ void check_job_cameron()
 	{
 		if(job_type != JOB_TYPE_CAMERON)
 		{
-		//	printf("scaling splash screen\n");
+			printf("scaling splash screen\n");
 			all_work_done = 0;
 		}
 		
@@ -421,7 +421,7 @@ void start_working()
 	
 	if(!all_work_done)
 	{
-	//	printf("all work done\n");
+		printf("all work done\n");
 		all_work_done = 1;
 	}
 	

@@ -77,7 +77,6 @@
 		  <property name="modal">True</property>
 		  <property name="do_preview">True</property>
 		  <property name="use_filechooser">True</property>
-		  <signal name="activate" handler="on_rocket_launcher_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:29:33 GMT"/>
 
 		  <child internal-child="entry">
 		    <widget class="GtkEntry" id="texture_entry">
@@ -90,6 +89,7 @@
 		      <property name="has_frame">True</property>
 		      <property name="invisible_char" translatable="yes">*</property>
 		      <property name="activates_default">False</property>
+		      <signal name="changed" handler="on_rocket_launcher_texture_entry_changed" last_modification_time="Thu, 20 May 2004 17:39:57 GMT"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -367,7 +367,6 @@
 		  <property name="modal">True</property>
 		  <property name="do_preview">True</property>
 		  <property name="use_filechooser">True</property>
-		  <signal name="activate" handler="on_speedup_ramp_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:30:13 GMT"/>
 
 		  <child internal-child="entry">
 		    <widget class="GtkEntry" id="texture_entry">
@@ -380,6 +379,7 @@
 		      <property name="has_frame">True</property>
 		      <property name="invisible_char" translatable="yes">*</property>
 		      <property name="activates_default">False</property>
+		      <signal name="changed" handler="on_speedup_ramp_texture_entry_changed" last_modification_time="Thu, 20 May 2004 17:40:30 GMT"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -769,7 +769,6 @@
 		  <property name="modal">True</property>
 		  <property name="do_preview">True</property>
 		  <property name="use_filechooser">True</property>
-		  <signal name="activate" handler="on_minigun_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:30:38 GMT"/>
 
 		  <child internal-child="entry">
 		    <widget class="GtkEntry" id="texture_entry">
@@ -782,6 +781,7 @@
 		      <property name="has_frame">True</property>
 		      <property name="invisible_char" translatable="yes">*</property>
 		      <property name="activates_default">False</property>
+		      <signal name="changed" handler="on_minigun_texture_entry_changed" last_modification_time="Thu, 20 May 2004 17:41:00 GMT"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -1059,7 +1059,6 @@
 		  <property name="modal">True</property>
 		  <property name="do_preview">True</property>
 		  <property name="use_filechooser">True</property>
-		  <signal name="activate" handler="on_plasma_cannon_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:31:03 GMT"/>
 
 		  <child internal-child="entry">
 		    <widget class="GtkEntry" id="texture_entry">
@@ -1072,6 +1071,7 @@
 		      <property name="has_frame">True</property>
 		      <property name="invisible_char" translatable="yes">*</property>
 		      <property name="activates_default">False</property>
+		      <signal name="changed" handler="on_plasma_cannon_texture_entry_changed" last_modification_time="Thu, 20 May 2004 17:41:26 GMT"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -1349,7 +1349,7 @@
 		  <property name="modal">True</property>
 		  <property name="do_preview">True</property>
 		  <property name="use_filechooser">True</property>
-		  <signal name="activate" handler="on_rails_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:31:33 GMT"/>
+		  <signal name="changed" handler="on_rails_texture_pixmapentry_changed" last_modification_time="Thu, 20 May 2004 17:42:01 GMT"/>
 
 		  <child internal-child="entry">
 		    <widget class="GtkEntry" id="texture_entry">
@@ -1638,7 +1638,6 @@
 		  <property name="modal">True</property>
 		  <property name="do_preview">True</property>
 		  <property name="use_filechooser">True</property>
-		  <signal name="activate" handler="on_shield_energy_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:31:55 GMT"/>
 
 		  <child internal-child="entry">
 		    <widget class="GtkEntry" id="texture_entry">
@@ -1651,6 +1650,7 @@
 		      <property name="has_frame">True</property>
 		      <property name="invisible_char" translatable="yes">*</property>
 		      <property name="activates_default">False</property>
+		      <signal name="changed" handler="on_shield_energy_texture_entry_changed" last_modification_time="Thu, 20 May 2004 17:42:26 GMT"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -1933,7 +1933,6 @@
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
 		      <property name="use_filechooser">True</property>
-		      <signal name="activate" handler="on_spawn_point_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:32:14 GMT"/>
 
 		      <child internal-child="entry">
 			<widget class="GtkEntry" id="texture_entry">
@@ -1946,6 +1945,7 @@
 			  <property name="has_frame">True</property>
 			  <property name="invisible_char" translatable="yes">*</property>
 			  <property name="activates_default">False</property>
+			  <signal name="changed" handler="on_spawn_point_texture_entry_changed" last_modification_time="Thu, 20 May 2004 17:43:01 GMT"/>
 			</widget>
 		      </child>
 		    </widget>
@@ -2314,7 +2314,6 @@
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
 		      <property name="use_filechooser">True</property>
-		      <signal name="activate" handler="on_gravity_well_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:32:41 GMT"/>
 
 		      <child internal-child="entry">
 			<widget class="GtkEntry" id="texture_entry">
@@ -2327,6 +2326,7 @@
 			  <property name="has_frame">True</property>
 			  <property name="invisible_char" translatable="yes">*</property>
 			  <property name="activates_default">False</property>
+			  <signal name="changed" handler="on_gravity_well_texture_entry_changed" last_modification_time="Thu, 20 May 2004 17:43:29 GMT"/>
 			</widget>
 		      </child>
 		    </widget>
@@ -2695,7 +2695,6 @@
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
 		      <property name="use_filechooser">True</property>
-		      <signal name="activate" handler="on_teleporter_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:33:09 GMT"/>
 
 		      <child internal-child="entry">
 			<widget class="GtkEntry" id="texture_entry">
@@ -2708,6 +2707,7 @@
 			  <property name="has_frame">True</property>
 			  <property name="invisible_char" translatable="yes">*</property>
 			  <property name="activates_default">False</property>
+			  <signal name="changed" handler="on_teleporter_texture_entry_changed" last_modification_time="Thu, 20 May 2004 17:43:55 GMT"/>
 			</widget>
 		      </child>
 		    </widget>
@@ -4489,7 +4489,6 @@
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
 		      <property name="use_filechooser">True</property>
-		      <signal name="activate" handler="on_fill_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:33:29 GMT"/>
 
 		      <child internal-child="entry">
 			<widget class="GtkEntry" id="texture_entry">
@@ -4502,6 +4501,7 @@
 			  <property name="has_frame">True</property>
 			  <property name="invisible_char" translatable="yes">*</property>
 			  <property name="activates_default">False</property>
+			  <signal name="changed" handler="on_fill_texture_entry_changed" last_modification_time="Thu, 20 May 2004 17:44:26 GMT"/>
 			</widget>
 		      </child>
 		    </widget>
@@ -5127,7 +5127,6 @@
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
 		      <property name="use_filechooser">True</property>
-		      <signal name="activate" handler="on_wall_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 14:50:24 GMT"/>
 
 		      <child internal-child="entry">
 			<widget class="GtkEntry" id="texture_entry">
@@ -5140,6 +5139,7 @@
 			  <property name="has_frame">True</property>
 			  <property name="invisible_char" translatable="yes">*</property>
 			  <property name="activates_default">False</property>
+			  <signal name="changed" handler="on_wall_texture_entry_changed" last_modification_time="Thu, 20 May 2004 16:35:47 GMT"/>
 			</widget>
 		      </child>
 		    </widget>
@@ -5688,7 +5688,6 @@
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
 		      <property name="use_filechooser">True</property>
-		      <signal name="activate" handler="on_end_node_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:33:58 GMT"/>
 
 		      <child internal-child="entry">
 			<widget class="GtkEntry" id="texture_entry">
@@ -5701,6 +5700,7 @@
 			  <property name="has_frame">True</property>
 			  <property name="invisible_char" translatable="yes">*</property>
 			  <property name="activates_default">False</property>
+			  <signal name="changed" handler="on_end_node_texture_entry_changed" last_modification_time="Thu, 20 May 2004 18:09:19 GMT"/>
 			</widget>
 		      </child>
 		    </widget>
@@ -6450,7 +6450,6 @@
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
 		      <property name="use_filechooser">True</property>
-		      <signal name="activate" handler="on_crossover_node_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:34:23 GMT"/>
 
 		      <child internal-child="entry">
 			<widget class="GtkEntry" id="texture_entry">
@@ -6463,6 +6462,7 @@
 			  <property name="has_frame">True</property>
 			  <property name="invisible_char" translatable="yes">*</property>
 			  <property name="activates_default">False</property>
+			  <signal name="changed" handler="on_crossover_node_texture_entry_changed" last_modification_time="Thu, 20 May 2004 18:09:37 GMT"/>
 			</widget>
 		      </child>
 		    </widget>

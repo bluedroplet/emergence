@@ -145,8 +145,8 @@ create_rocket_launcher_properties_dialog (void)
   g_signal_connect ((gpointer) rocket_launcher_properties_dialog, "response",
                     G_CALLBACK (gtk_widget_destroy),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_rocket_launcher_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_entry, "changed",
+                    G_CALLBACK (on_rocket_launcher_texture_entry_changed),
                     NULL);
   g_signal_connect ((gpointer) texture_checkbutton, "toggled",
                     G_CALLBACK (on_rocket_launcher_texture_checkbutton_toggled),
@@ -347,8 +347,8 @@ create_speedup_ramp_properties_dialog (void)
   g_signal_connect ((gpointer) speedup_ramp_properties_dialog, "response",
                     G_CALLBACK (gtk_widget_destroy),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_speedup_ramp_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_entry, "changed",
+                    G_CALLBACK (on_speedup_ramp_texture_entry_changed),
                     NULL);
   g_signal_connect ((gpointer) texture_checkbutton, "toggled",
                     G_CALLBACK (on_speedup_ramp_texture_checkbutton_toggled),
@@ -535,8 +535,8 @@ create_minigun_properties_dialog (void)
   g_signal_connect ((gpointer) minigun_properties_dialog, "response",
                     G_CALLBACK (gtk_widget_destroy),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_minigun_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_entry, "changed",
+                    G_CALLBACK (on_minigun_texture_entry_changed),
                     NULL);
   g_signal_connect ((gpointer) texture_checkbutton, "toggled",
                     G_CALLBACK (on_minigun_texture_checkbutton_toggled),
@@ -699,8 +699,8 @@ create_plasma_cannon_properties_dialog (void)
   g_signal_connect ((gpointer) plasma_cannon_properties_dialog, "response",
                     G_CALLBACK (gtk_widget_destroy),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_plasma_cannon_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_entry, "changed",
+                    G_CALLBACK (on_plasma_cannon_texture_entry_changed),
                     NULL);
   g_signal_connect ((gpointer) texture_checkbutton, "toggled",
                     G_CALLBACK (on_plasma_cannon_texture_checkbutton_toggled),
@@ -863,8 +863,8 @@ create_rails_properties_dialog (void)
   g_signal_connect ((gpointer) rails_properties_dialog, "response",
                     G_CALLBACK (gtk_widget_destroy),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_rails_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_pixmapentry, "changed",
+                    G_CALLBACK (on_rails_texture_pixmapentry_changed),
                     NULL);
   g_signal_connect ((gpointer) texture_checkbutton, "toggled",
                     G_CALLBACK (on_rails_texture_checkbutton_toggled),
@@ -1025,8 +1025,8 @@ create_shield_energy_properties_dialog (void)
   g_signal_connect ((gpointer) shield_energy_properties_dialog, "response",
                     G_CALLBACK (gtk_widget_destroy),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_shield_energy_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_entry, "changed",
+                    G_CALLBACK (on_shield_energy_texture_entry_changed),
                     NULL);
   g_signal_connect ((gpointer) texture_checkbutton, "toggled",
                     G_CALLBACK (on_shield_energy_texture_checkbutton_toggled),
@@ -1218,8 +1218,8 @@ create_spawn_point_properties_dialog (void)
   g_signal_connect ((gpointer) spawn_point_properties_dialog, "response",
                     G_CALLBACK (gtk_widget_destroy),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_spawn_point_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_entry, "changed",
+                    G_CALLBACK (on_spawn_point_texture_entry_changed),
                     NULL);
   g_signal_connect ((gpointer) width_spinbutton, "value_changed",
                     G_CALLBACK (on_spawn_point_width_spinbutton_value_changed),
@@ -1434,8 +1434,8 @@ create_gravity_well_properties_dialog (void)
   g_signal_connect ((gpointer) gravity_well_properties_dialog, "response",
                     G_CALLBACK (gtk_widget_destroy),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_gravity_well_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_entry, "changed",
+                    G_CALLBACK (on_gravity_well_texture_entry_changed),
                     NULL);
   g_signal_connect ((gpointer) width_spinbutton, "value_changed",
                     G_CALLBACK (on_gravity_well_width_spinbutton_value_changed),
@@ -1762,8 +1762,8 @@ create_teleporter_properties_dialog (void)
   g_signal_connect ((gpointer) teleporter_properties_dialog, "response",
                     G_CALLBACK (gtk_widget_destroy),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_teleporter_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_entry, "changed",
+                    G_CALLBACK (on_teleporter_texture_entry_changed),
                     NULL);
   g_signal_connect ((gpointer) width_spinbutton, "value_changed",
                     G_CALLBACK (on_teleporter_width_spinbutton_value_changed),
@@ -2599,8 +2599,8 @@ create_fill_properties_dialog (void)
   g_signal_connect ((gpointer) solid_radiobutton, "toggled",
                     G_CALLBACK (on_fill_solid_radiobutton_toggled),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_fill_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_entry, "changed",
+                    G_CALLBACK (on_fill_texture_entry_changed),
                     NULL);
   g_signal_connect ((gpointer) flip_horiz_checkbutton, "toggled",
                     G_CALLBACK (on_fill_flip_horiz_checkbutton_toggled),
@@ -2954,8 +2954,8 @@ create_wall_properties_dialog (void)
   g_signal_connect ((gpointer) solid_radiobutton, "toggled",
                     G_CALLBACK (on_wall_solid_radiobutton_toggled),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_wall_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_entry, "changed",
+                    G_CALLBACK (on_wall_texture_entry_changed),
                     NULL);
   g_signal_connect ((gpointer) flip_horiz_checkbutton, "toggled",
                     G_CALLBACK (on_wall_flip_horiz_checkbutton_toggled),
@@ -3300,8 +3300,8 @@ create_end_node_properties_dialog (void)
   g_signal_connect ((gpointer) end_node_properties_dialog, "response",
                     G_CALLBACK (gtk_widget_destroy),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_end_node_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_entry, "changed",
+                    G_CALLBACK (on_end_node_texture_entry_changed),
                     NULL);
   g_signal_connect ((gpointer) flip_horiz_checkbutton, "toggled",
                     G_CALLBACK (on_end_node_flip_horiz_checkbutton_toggled),
@@ -3726,8 +3726,8 @@ create_crossover_node_properties_dialog (void)
   g_signal_connect ((gpointer) blend_radiobutton, "toggled",
                     G_CALLBACK (on_crossover_node_blend_radiobutton_toggled),
                     NULL);
-  g_signal_connect ((gpointer) texture_pixmapentry, "activate",
-                    G_CALLBACK (on_crossover_node_texture_pixmapentry_activate),
+  g_signal_connect ((gpointer) texture_entry, "changed",
+                    G_CALLBACK (on_crossover_node_texture_entry_changed),
                     NULL);
   g_signal_connect ((gpointer) flip_horiz_checkbutton, "toggled",
                     G_CALLBACK (on_crossover_node_flip_horiz_checkbutton_toggled),

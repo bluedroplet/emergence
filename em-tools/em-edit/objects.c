@@ -379,7 +379,7 @@ void on_plasma_cannon_texture_checkbutton_toggled(GtkToggleButton *togglebutton,
 }
 
 
-void on_plasma_cannon_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpointer user_data)
+void on_plasma_cannon_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 {
 	stop_working();
 
@@ -389,8 +389,12 @@ void on_plasma_cannon_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentr
 	free_surface(dynamic_objects[OBJECTTYPE_PLASMACANNON].texture);
 	dynamic_objects[OBJECTTYPE_PLASMACANNON].texture = NULL;
 	
-	dynamic_objects[OBJECTTYPE_PLASMACANNON].filename = 
-		arb_abs2rel(gnome_file_entry_get_full_path(gnomefileentry, 0), map_path->text);
+	gchar *strval;
+	g_object_get(G_OBJECT(editable), "text", &strval, NULL);
+	
+	dynamic_objects[OBJECTTYPE_PLASMACANNON].filename = arb_abs2rel(strval, map_path->text);
+	
+	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_PLASMACANNON].filename->text, map_path->text);
 	dynamic_objects[OBJECTTYPE_PLASMACANNON].texture = read_png_surface_as_24bitalpha8bit(string->text);
@@ -532,7 +536,7 @@ void on_minigun_texture_checkbutton_toggled(GtkToggleButton *togglebutton, gpoin
 }
 
 
-void on_minigun_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpointer user_data)
+void on_minigun_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 {
 	stop_working();
 
@@ -542,8 +546,12 @@ void on_minigun_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpo
 	free_surface(dynamic_objects[OBJECTTYPE_MINIGUN].texture);
 	dynamic_objects[OBJECTTYPE_MINIGUN].texture = NULL;
 	
-	dynamic_objects[OBJECTTYPE_MINIGUN].filename = 
-		arb_abs2rel(gnome_file_entry_get_full_path(gnomefileentry, 0), map_path->text);
+	gchar *strval;
+	g_object_get(G_OBJECT(editable), "text", &strval, NULL);
+	
+	dynamic_objects[OBJECTTYPE_MINIGUN].filename = arb_abs2rel(strval, map_path->text);
+	
+	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_MINIGUN].filename->text, map_path->text);
 	dynamic_objects[OBJECTTYPE_MINIGUN].texture = read_png_surface_as_24bitalpha8bit(string->text);
@@ -651,7 +659,7 @@ void on_rocket_launcher_texture_checkbutton_toggled(GtkToggleButton *togglebutto
 }
 
 
-void on_rocket_launcher_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpointer user_data)
+void on_rocket_launcher_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 {
 	stop_working();
 
@@ -661,8 +669,13 @@ void on_rocket_launcher_texture_pixmapentry_activate(GnomeFileEntry *gnomefileen
 	free_surface(dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture);
 	dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture = NULL;
 	
+	gchar *strval;
+	g_object_get(G_OBJECT(editable), "text", &strval, NULL);
+	
 	dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].filename = 
-		arb_abs2rel(gnome_file_entry_get_full_path(gnomefileentry, 0), map_path->text);
+		arb_abs2rel(strval, map_path->text);
+	
+	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].filename->text, map_path->text);
 	dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture = read_png_surface_as_24bitalpha8bit(string->text);
@@ -778,7 +791,7 @@ void on_rails_texture_checkbutton_toggled(GtkToggleButton *togglebutton, gpointe
 }
 
 
-void on_rails_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpointer user_data)
+void on_rails_texture_pixmapentry_changed(GtkEditable *editable, gpointer user_data)
 {
 	stop_working();
 
@@ -788,8 +801,12 @@ void on_rails_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpoin
 	free_surface(dynamic_objects[OBJECTTYPE_RAILS].texture);
 	dynamic_objects[OBJECTTYPE_RAILS].texture = NULL;
 	
-	dynamic_objects[OBJECTTYPE_RAILS].filename = 
-		arb_abs2rel(gnome_file_entry_get_full_path(gnomefileentry, 0), map_path->text);
+	gchar *strval;
+	g_object_get(G_OBJECT(editable), "text", &strval, NULL);
+	
+	dynamic_objects[OBJECTTYPE_RAILS].filename = arb_abs2rel(strval, map_path->text);
+	
+	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_RAILS].filename->text, map_path->text);
 	dynamic_objects[OBJECTTYPE_RAILS].texture = read_png_surface_as_24bitalpha8bit(string->text);
@@ -897,7 +914,7 @@ void on_shield_energy_texture_checkbutton_toggled(GtkToggleButton *togglebutton,
 }
 
 
-void on_shield_energy_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpointer user_data)
+void on_shield_energy_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 {
 	stop_working();
 
@@ -907,8 +924,12 @@ void on_shield_energy_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentr
 	free_surface(dynamic_objects[OBJECTTYPE_SHIELDENERGY].texture);
 	dynamic_objects[OBJECTTYPE_SHIELDENERGY].texture = NULL;
 	
-	dynamic_objects[OBJECTTYPE_SHIELDENERGY].filename = 
-		arb_abs2rel(gnome_file_entry_get_full_path(gnomefileentry, 0), map_path->text);
+	gchar *strval;
+	g_object_get(G_OBJECT(editable), "text", &strval, NULL);
+	
+	dynamic_objects[OBJECTTYPE_SHIELDENERGY].filename = arb_abs2rel(strval, map_path->text);
+	
+	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_SHIELDENERGY].filename->text, map_path->text);
 	dynamic_objects[OBJECTTYPE_SHIELDENERGY].texture = read_png_surface_as_24bitalpha8bit(string->text);
@@ -1018,9 +1039,9 @@ void on_spawn_point_texture_checkbutton_toggled(GtkToggleButton *togglebutton, g
 }
 
 
-void on_spawn_point_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpointer user_data)
+void on_spawn_point_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 {
-	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(gnomefileentry));
+	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(editable));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
 
 	stop_working();
@@ -1031,8 +1052,12 @@ void on_spawn_point_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry,
 	free_surface(object->spawn_point_data.texture_pre_surface);
 	object->spawn_point_data.texture_pre_surface = NULL;
 	
-	object->spawn_point_data.texture_filename = 
-		arb_abs2rel(gnome_file_entry_get_full_path(gnomefileentry, 0), map_path->text);
+	gchar *strval;
+	g_object_get(G_OBJECT(editable), "text", &strval, NULL);
+	
+	object->spawn_point_data.texture_filename = arb_abs2rel(strval, map_path->text);
+	
+	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(object->spawn_point_data.texture_filename->text, map_path->text);
 	object->spawn_point_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
@@ -1180,9 +1205,9 @@ void on_speedup_ramp_texture_checkbutton_toggled(GtkToggleButton *togglebutton, 
 }
 
 
-void on_speedup_ramp_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpointer user_data)
+void on_speedup_ramp_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 {
-	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(gnomefileentry));
+	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(editable));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
 
 	stop_working();
@@ -1193,8 +1218,12 @@ void on_speedup_ramp_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry
 	free_surface(object->speedup_ramp_data.texture_pre_surface);
 	object->speedup_ramp_data.texture_pre_surface = NULL;
 	
-	object->speedup_ramp_data.texture_filename = 
-		arb_abs2rel(gnome_file_entry_get_full_path(gnomefileentry, 0), map_path->text);
+	gchar *strval;
+	g_object_get(G_OBJECT(editable), "text", &strval, NULL);
+	
+	object->speedup_ramp_data.texture_filename = arb_abs2rel(strval, map_path->text);
+	
+	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(object->speedup_ramp_data.texture_filename->text, map_path->text);
 	object->speedup_ramp_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
@@ -1343,9 +1372,9 @@ void on_teleporter_texture_checkbutton_toggled(GtkToggleButton *togglebutton, gp
 }
 
 
-void on_teleporter_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpointer user_data)
+void on_teleporter_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 {
-	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(gnomefileentry));
+	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(editable));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
 
 	stop_working();
@@ -1356,8 +1385,12 @@ void on_teleporter_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, 
 	free_surface(object->teleporter_data.texture_pre_surface);
 	object->teleporter_data.texture_pre_surface = NULL;
 	
-	object->teleporter_data.texture_filename = 
-		arb_abs2rel(gnome_file_entry_get_full_path(gnomefileentry, 0), map_path->text);
+	gchar *strval;
+	g_object_get(G_OBJECT(editable), "text", &strval, NULL);
+	
+	object->teleporter_data.texture_filename = arb_abs2rel(strval, map_path->text);
+	
+	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(object->teleporter_data.texture_filename->text, map_path->text);
 	object->teleporter_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
@@ -1600,9 +1633,9 @@ void on_gravity_well_texture_checkbutton_toggled(GtkToggleButton *togglebutton, 
 }
 
 
-void on_gravity_well_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry, gpointer user_data)
+void on_gravity_well_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 {
-	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(gnomefileentry));
+	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(editable));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
 
 	stop_working();
@@ -1613,8 +1646,12 @@ void on_gravity_well_texture_pixmapentry_activate(GnomeFileEntry *gnomefileentry
 	free_surface(object->gravity_well_data.texture_pre_surface);
 	object->gravity_well_data.texture_pre_surface = NULL;
 	
-	object->gravity_well_data.texture_filename = 
-		arb_abs2rel(gnome_file_entry_get_full_path(gnomefileentry, 0), map_path->text);
+	gchar *strval;
+	g_object_get(G_OBJECT(editable), "text", &strval, NULL);
+	
+	object->gravity_well_data.texture_filename = arb_abs2rel(strval, map_path->text);
+	
+	g_free(strval);
 
 	struct string_t *string = arb_rel2abs(object->gravity_well_data.texture_filename->text, map_path->text);
 	object->gravity_well_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
