@@ -2343,9 +2343,16 @@ void cf_demo(char *c)
 	
 	if(!gzdemo)
 	{
-		console_print("File not found.\n");
-		game_state = GAMESTATE_DEAD;
-		return;
+		char *filename = br_strcat("/emergence/demos/", demo0->filename->text);
+		gzdemo = gzopen(BR_DATADIR(filename), "rb");
+		free(filename);
+		
+		if(!gzdemo)
+		{
+			console_print("File not found.\n");
+			game_state = GAMESTATE_DEAD;
+			return;
+		}
 	}
 	
 	game_state = GAMESTATE_DEMO;
@@ -3227,9 +3234,16 @@ void update_demo()
 			
 			if(!gzdemo)
 			{
-				console_print("File not found.\n");
-				game_state = GAMESTATE_DEAD;
-				return;
+				char *filename = br_strcat("/emergence/demos/", demo0->filename->text);
+				gzdemo = gzopen(BR_DATADIR(filename), "rb");
+				free(filename);
+				
+				if(!gzdemo)
+				{
+					console_print("File not found.\n");
+					game_state = GAMESTATE_DEAD;
+					return;
+				}
 			}
 			
 			game_state = GAMESTATE_DEMO;

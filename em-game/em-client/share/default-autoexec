@@ -1,1 +1,1 @@
-demo /usr/share/emergence/demos/demo1.demo /usr/share/emergence/demos/demo2.demo /usr/share/emergence/demos/demo3.demo /usr/share/emergence/demos/test.demo
+demo demo1.demo demo2.demo demo3.demo test.demo

@@ -4,6 +4,7 @@
 #endif
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <memory.h>
 
 #include <zlib.h>
