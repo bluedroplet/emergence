@@ -15,7 +15,7 @@
 
 struct floating_image_t
 {
-	double x, y;
+	float x, y;
 	struct surface_t *surface;
 
 	struct floating_image_t *next;
@@ -37,16 +37,16 @@ int generate_and_write_scaled_floating_images(gzFile infile, gzFile outfile)
 	{
 		struct floating_image_t floating_image;
 			
-		if(gzread(infile, &floating_image.x, 8) != 8)
+		if(gzread(infile, &floating_image.x, 4) != 4)
 			goto error;
 		
-		if(gzwrite(outfile, &floating_image.x, 8) != 8)
+		if(gzwrite(outfile, &floating_image.x, 4) != 4)
 			goto error;
 		
-		if(gzread(infile, &floating_image.y, 8) != 8)
+		if(gzread(infile, &floating_image.y, 4) != 4)
 			goto error;
 		
-		if(gzwrite(outfile, &floating_image.y, 8) != 8)
+		if(gzwrite(outfile, &floating_image.y, 4) != 4)
 			goto error;
 		
 		struct surface_t *surface = gzread_raw_surface(infile);
@@ -80,8 +80,8 @@ void gzread_floating_images(gzFile file)
 	{
 		struct floating_image_t floating_image;
 			
-		gzread(file, &floating_image.x, 8);
-		gzread(file, &floating_image.y, 8);
+		gzread(file, &floating_image.x, 4);
+		gzread(file, &floating_image.y, 4);
 		
 		floating_image.surface = gzread_raw_surface(file);
 		
