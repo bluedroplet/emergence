@@ -1267,6 +1267,663 @@ void get_spawn_point_coords(uint32_t index, float *x, float *y)
 }
 
 
+int check_weapon_placement(float xdis, float ydis, struct entity_t *weapon)
+{
+	// check for collision with wall
+	
+	if(circle_walk_bsp_tree(xdis, ydis, WEAPON_RADIUS))
+		return 0;
+	
+	
+	// check for collision with other entities
+	
+	struct entity_t *entity = *sentity0;
+	while(entity)
+	{
+		if(entity == weapon || entity->teleporting)
+		{
+			entity = entity->next;
+			continue;
+		}
+		
+		switch(entity->type)
+		{
+		case ENT_CRAFT:
+			if(circles_intersect(xdis, ydis, WEAPON_RADIUS, 
+				entity->xdis, entity->ydis, CRAFT_RADIUS))
+				return 0;
+			break;
+			
+		case ENT_WEAPON:
+			if(circles_intersect(xdis, ydis, WEAPON_RADIUS, 
+				entity->xdis, entity->ydis, WEAPON_RADIUS))
+				return 0;
+			break;
+			
+	/*	case ENT_ROCKET:
+			if(circles_intersect(xdis, ydis, WEAPON_RADIUS, 
+				entity->xdis, entity->ydis, ROCKET_RADIUS))
+				return 0;
+			break;
+	*/		
+		case ENT_MINE:
+			if(circles_intersect(xdis, ydis, WEAPON_RADIUS, 
+				entity->xdis, entity->ydis, MINE_RADIUS))
+				return 0;
+			break;
+			
+		case ENT_RAILS:
+			if(circles_intersect(xdis, ydis, WEAPON_RADIUS, 
+				entity->xdis, entity->ydis, RAILS_RADIUS))
+				return 0;
+			break;
+		}
+		
+		entity = entity->next;
+	}
+	
+	return 1;
+}
+
+
+void set_weapon_initial_try_velocity(struct entity_t *weapon)
+{
+	struct entity_t *craft = weapon->weapon_data.craft;
+		
+	#ifdef EMSERVER
+	//assert(craft);
+	if(!craft)
+		return;
+	#endif
+	
+	#ifdef EMCLIENT
+	if(!craft)
+		return;		// inconsistency
+	#endif
+	
+	
+	// rotate on spot
+	
+	double delta = weapon->weapon_data.theta - craft->craft_data.theta;
+	
+	while(delta >= M_PI)
+		delta -= M_PI * 2.0;
+	while(delta < -M_PI)
+		delta += M_PI * 2.0;
+	
+	if(fabs(delta) < MAX_WEAPON_ROTATE_SPEED)
+		weapon->weapon_data.theta = craft->craft_data.theta;
+	else
+		weapon->weapon_data.theta -= copysign(MAX_WEAPON_ROTATE_SPEED, delta);
+	
+	while(weapon->weapon_data.theta >= M_PI)
+		weapon->weapon_data.theta -= M_PI * 2.0;
+	while(weapon->weapon_data.theta < -M_PI)
+		weapon->weapon_data.theta += M_PI * 2.0;
+	
+	
+	// rotate around craft
+
+	double xdis = weapon->xdis + craft->xvel;
+	double ydis = weapon->ydis + craft->yvel;
+	
+	double theta_side = -M_PI / 4.0;	// inconsistency visualization
+	
+	if(craft->craft_data.left_weapon == weapon)
+		theta_side = M_PI / 2.0;
+	else if(craft->craft_data.right_weapon == weapon)
+		theta_side = -M_PI / 2.0;
+	
+	
+	double theta = atan2(-(xdis - craft->xdis), ydis - craft->ydis);
+	delta = (craft->craft_data.theta + theta_side) - theta;
+	
+	while(delta >= M_PI)
+		delta -= M_PI * 2.0;
+	while(delta < -M_PI)
+		delta += M_PI * 2.0;
+	
+	if(fabs(delta) < MAX_WEAPON_ROTATE_SPEED)
+		theta = craft->craft_data.theta + theta_side;
+	else
+		theta += copysign(MAX_WEAPON_ROTATE_SPEED, delta);
+	
+	double dist = hypot(xdis - craft->xdis, ydis - craft->ydis);
+	
+	double sin_theta, cos_theta;
+	sincos(theta, &sin_theta, &cos_theta);
+	
+	xdis = -dist * sin_theta;
+	ydis = dist * cos_theta;
+
+	
+	// move in/out from craft
+	
+	delta = dist - IDEAL_CRAFT_WEAPON_DIST;
+	
+	if(abs(delta) < MAX_WEAPON_MOVE_IN_OUT_SPEED)
+		dist = IDEAL_CRAFT_WEAPON_DIST;
+	else
+		dist -= copysign(MAX_WEAPON_MOVE_IN_OUT_SPEED, delta);
+	
+	xdis = craft->xdis + -dist * sin_theta;
+	ydis = craft->ydis + dist * cos_theta;
+	
+	
+	if(check_weapon_placement(xdis, ydis, weapon))
+	{
+		weapon->xvel = xdis - weapon->xdis;
+		weapon->yvel = ydis - weapon->ydis;
+	}
+	else
+	{
+		weapon->xvel = 0.0;
+		weapon->yvel = 0.0;
+	}
+}
+
+
+int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
+{
+	int restart = 0;
+	
+	// check for wall collision
+	
+	struct bspnode_t *node = circle_walk_bsp_tree(craft->xdis, craft->ydis, CRAFT_RADIUS);
+		
+	if(!node)
+		node = line_walk_bsp_tree(old_xdis, old_ydis, craft->xdis, craft->ydis);
+	
+	if(node)
+	{
+		#ifdef EMSERVER
+		craft_force(craft, hypot(craft->xvel, craft->yvel) * VELOCITY_FORCE_MULTIPLIER,
+			craft->craft_data.owner);
+		
+		if(craft->kill_me)
+			return 1;
+		#endif
+		
+		entity_wall_bounce(craft, node);
+		
+		restart = 1;
+	}
+	
+	
+	// check for collision with other entities
+	
+	struct entity_t *entity = *sentity0;
+	while(entity)
+	{
+		if(entity == craft || entity->teleporting)
+		{
+			entity = entity->next;
+			continue;
+		}
+		
+		int entity_in_tick = entity->in_tick;
+		entity->in_tick = 1;
+		
+		switch(entity->type)
+		{
+		case ENT_CRAFT:
+			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, 
+				entity->xdis, entity->ydis, CRAFT_RADIUS))
+			{
+				craft_craft_collision(craft, entity);
+				restart = 1;
+			}
+			break;
+			
+		case ENT_WEAPON:
+			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, 
+				entity->xdis, entity->ydis, WEAPON_RADIUS))
+			{
+				craft_weapon_collision(craft, entity);
+				restart = 1;
+			}
+			break;
+			
+		case ENT_PLASMA:
+			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, 
+				entity->xdis, entity->ydis, PLASMA_RADIUS))
+			{
+				craft_plasma_collision(craft, entity);
+			}
+			break;
+			
+		#ifdef EMSERVER
+		case ENT_BULLET:
+			if(point_in_circle(entity->xdis, entity->ydis, 
+				craft->xdis, craft->ydis, CRAFT_RADIUS))
+			{
+				craft_bullet_collision(craft, entity);
+			}
+			break;
+		#endif
+			
+		case ENT_ROCKET:
+			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, 
+				entity->xdis, entity->ydis, ROCKET_RADIUS))
+			{
+				destroy_rocket(entity);
+				restart = 1;
+			}
+			break;
+			
+		case ENT_MINE:
+			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, 
+				entity->xdis, entity->ydis, MINE_RADIUS))
+			{
+				if(!entity->mine_data.under_craft || 
+					entity->mine_data.craft_id != craft->index)
+				{
+					destroy_mine(entity);
+					restart = 1;
+				}
+			}
+			break;
+			
+		case ENT_RAILS:
+			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, 
+				entity->xdis, entity->ydis, RAILS_RADIUS))
+			{
+				craft_rails_collision(craft, entity);
+			}
+			break;
+			
+		case ENT_SHIELD:
+			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, 
+				entity->xdis, entity->ydis, SHIELD_RADIUS))
+			{
+				craft_shield_collision(craft, entity);
+			}
+			break;
+		}
+		
+		struct entity_t *next = entity->next;
+		
+		entity->in_tick = entity_in_tick;
+		
+		if(!entity->in_tick && entity->kill_me)
+			remove_entity(sentity0, entity);
+
+		#ifdef EMSERVER
+		if(craft->kill_me)
+			return 1;
+		#endif
+		
+		entity = next;
+	}
+	
+	
+	#ifdef EMSERVER
+	
+	// check for collision with speedup ramp
+	
+	int s = 0;
+	
+	struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
+	while(speedup_ramp)
+	{
+		double sin_theta, cos_theta;
+		sincos(speedup_ramp->theta + M_PI / 2.0, &sin_theta, &cos_theta);
+		
+		if(line_in_circle(speedup_ramp->x + cos_theta * speedup_ramp->width / 2.0, 
+			speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
+			speedup_ramp->x - cos_theta * speedup_ramp->width / 2.0, 
+			speedup_ramp->y - sin_theta * speedup_ramp->width / 2.0,
+			craft->xdis, craft->ydis, CRAFT_RADIUS))
+		{
+			s = 1;
+			
+			if(!craft->speeding_up)
+			{
+				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+				
+				craft->xvel += speedup_ramp->boost * sin_theta;
+				craft->yvel += speedup_ramp->boost * cos_theta;
+				
+				restart = 1;
+				craft->propagate_me = 1;
+				craft->speeding_up = 1;
+				
+				emit_speedup_to_all_players();
+				break;
+			}
+		}			
+		
+		speedup_ramp = speedup_ramp->next;
+	}
+	
+	craft->speeding_up = s;
+	
+	
+	
+	// check for collision with teleporter
+	
+	struct teleporter_t *teleporter = teleporter0;
+	while(teleporter)
+	{
+		if(circle_in_circle(craft->xdis, craft->ydis, CRAFT_RADIUS, 
+			teleporter->x, teleporter->y, teleporter->radius))
+		{
+			if(craft->craft_data.left_weapon)
+			{
+				craft->craft_data.left_weapon->propagate_me = 1;
+				craft->craft_data.left_weapon->weapon_data.craft = NULL;
+				craft->craft_data.left_weapon = NULL;
+			}
+			
+			if(craft->craft_data.right_weapon)
+			{
+				craft->craft_data.right_weapon->propagate_me = 1;
+				craft->craft_data.right_weapon->weapon_data.craft = NULL;
+				craft->craft_data.right_weapon = NULL;
+			}
+			
+			craft->teleport_spawn_index = teleporter->spawn_index;
+			
+			craft->teleporting = TELEPORTING_DISAPPEARING;
+			craft->teleporting_tick = cgame_tick;
+			
+			craft->propagate_me = 1;
+			
+			emit_teleport_to_all_players();
+			break;
+		}
+		
+		teleporter = teleporter->next;
+	}
+	
+	#endif
+	
+	return !restart;
+}
+
+
+int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
+{
+	int restart = 0;
+	
+	#ifdef EMSERVER
+	struct player_t *owner = get_weapon_owner(weapon);
+	#endif
+
+	
+	// check for collision against wall
+	
+	struct bspnode_t *node = circle_walk_bsp_tree(weapon->xdis, weapon->ydis, WEAPON_RADIUS);
+		
+	if(!node)
+		node = line_walk_bsp_tree(old_xdis, old_ydis, weapon->xdis, weapon->ydis);
+	
+	if(node)
+	{
+		#ifdef EMSERVER
+		
+		weapon_force(weapon, hypot(weapon->xvel, weapon->yvel) * VELOCITY_FORCE_MULTIPLIER, 
+			owner);
+		
+		if(weapon->kill_me)
+			return 1;
+		
+		#endif
+		
+		entity_wall_bounce(weapon, node);
+	}
+	
+	
+	// check for collision with other entities
+	
+	struct entity_t *entity = *sentity0;
+	while(entity)
+	{
+		if(entity == weapon || entity->teleporting)
+		{
+			entity = entity->next;
+			continue;
+		}
+	
+		int entity_in_tick = entity->in_tick;
+		entity->in_tick = 1;
+		
+		switch(entity->type)
+		{
+		case ENT_CRAFT:
+			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, 
+				entity->xdis, entity->ydis, CRAFT_RADIUS))
+			{
+				craft_weapon_collision(entity, weapon);
+			}
+			break;
+			
+		case ENT_WEAPON:
+			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, 
+				entity->xdis, entity->ydis, WEAPON_RADIUS))
+			{
+				weapon_weapon_collision(weapon, entity);
+			}
+			break;
+			
+		case ENT_PLASMA:
+			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, 
+				entity->xdis, entity->ydis, PLASMA_RADIUS))
+			{
+				if(!entity->plasma_data.in_weapon || 
+					entity->plasma_data.weapon_id != weapon->index)
+				{
+					weapon_plasma_collision(weapon, entity);
+				}
+			}
+			break;
+			
+		#ifdef EMSERVER
+		case ENT_BULLET:
+			if(point_in_circle(entity->xdis, entity->ydis, 
+				weapon->xdis, weapon->ydis, WEAPON_RADIUS))
+			{
+				if(!entity->bullet_data.in_weapon || 
+					entity->bullet_data.weapon_id != weapon->index)
+				{
+					weapon_bullet_collision(weapon, entity);
+				}
+			}
+			break;
+		#endif
+			
+		case ENT_ROCKET:
+			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, 
+				entity->xdis, entity->ydis, ROCKET_RADIUS))
+			{
+				if(!entity->rocket_data.in_weapon || 
+					entity->rocket_data.weapon_id != weapon->index)
+				{
+					destroy_rocket(entity);
+				}
+			}
+			break;
+			
+		case ENT_MINE:
+			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, 
+				entity->xdis, entity->ydis, MINE_RADIUS))
+			{
+				destroy_mine(entity);
+			}
+			break;
+			
+		case ENT_RAILS:
+			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, 
+				entity->xdis, entity->ydis, RAILS_RADIUS))
+			{
+				weapon_rails_collision(weapon, entity);
+			}
+			break;
+			
+		case ENT_SHIELD:
+			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, 
+				entity->xdis, entity->ydis, SHIELD_RADIUS))
+			{
+				weapon_shield_collision(weapon, entity);
+			}
+			break;
+		}
+		
+		struct entity_t *next = entity->next;
+		
+		entity->in_tick = entity_in_tick;
+		
+		if(!entity->in_tick && entity->kill_me)
+			remove_entity(sentity0, entity);
+		
+		#ifdef EMSERVER
+		if(weapon->kill_me)
+			return 1;
+		#endif
+		
+		entity = next;
+	}
+	
+
+	#ifdef EMSERVER
+	
+	
+	// check for collision with speedup ramp
+	
+	int s = 0;
+	
+	struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
+	while(speedup_ramp)
+	{
+		double sin_theta, cos_theta;
+		sincos(speedup_ramp->theta + M_PI / 2.0, &sin_theta, &cos_theta);
+		
+		if(line_in_circle(speedup_ramp->x + cos_theta * speedup_ramp->width / 2.0, 
+			speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
+			speedup_ramp->x - cos_theta * speedup_ramp->width / 2.0, 
+			speedup_ramp->y - sin_theta * speedup_ramp->width / 2.0,
+			weapon->xdis, weapon->ydis, CRAFT_RADIUS))
+		{
+			s = 1;
+			
+			if(!weapon->speeding_up)
+			{
+				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+				
+				weapon->xvel += speedup_ramp->boost * sin_theta;
+				weapon->yvel += speedup_ramp->boost * cos_theta;
+				
+				restart = 1;
+				weapon->propagate_me = 1;
+				weapon->speeding_up = 1;
+				emit_speedup_to_all_players();
+				break;
+			}
+		}			
+		
+		speedup_ramp = speedup_ramp->next;
+	}
+	
+	weapon->speeding_up = s;
+	
+	
+	// check for collision with teleporter
+	
+	struct teleporter_t *teleporter = teleporter0;
+	while(teleporter)
+	{
+		if(circle_in_circle(weapon->xdis, weapon->ydis, WEAPON_RADIUS, 
+			teleporter->x, teleporter->y, teleporter->radius))
+		{
+			weapon->weapon_data.craft->propagate_me = 1;
+			strip_craft_from_weapon(weapon);
+			
+			weapon->teleport_spawn_index = teleporter->spawn_index;
+			
+			weapon->teleporting = TELEPORTING_DISAPPEARING;
+			weapon->teleporting_tick = cgame_tick;
+			
+			weapon->propagate_me = 1;
+			emit_teleport_to_all_players();
+			
+//			restart = 1;
+			return 1;
+		}
+		
+		teleporter = teleporter->next;
+	}
+	
+	#endif
+
+	
+	if(weapon->weapon_data.detached)
+		return !restart;
+	
+	struct entity_t *craft = weapon->weapon_data.craft;
+		
+	#ifdef EMSERVER
+//	assert(craft);
+	if(!craft)
+		return !restart;
+	#endif
+	
+	#ifdef EMCLIENT
+	if(!craft)
+		return !restart;	// inconsistency
+	#endif
+
+	
+	if(!point_in_circle(weapon->xdis, weapon->ydis, 
+		craft->xdis, craft->ydis, MAX_CRAFT_WEAPON_DIST))
+	{
+		if(craft->craft_data.left_weapon == weapon)
+			craft->craft_data.left_weapon = NULL;
+		else
+			craft->craft_data.right_weapon = NULL;
+		
+		weapon->weapon_data.craft = NULL;
+		craft = NULL;
+	}
+	else
+	{
+		if(craft->craft_data.left_weapon == weapon)
+		{
+			double delta = atan2(-(weapon->xdis - craft->xdis), weapon->ydis - craft->ydis) 
+				- craft->craft_data.theta;
+			
+			while(delta >= M_PI)
+				delta -= M_PI * 2.0;
+			while(delta < -M_PI)
+				delta += M_PI * 2.0;
+			
+			if(delta < 0.0)
+			{
+				craft->craft_data.left_weapon = NULL;
+				weapon->weapon_data.craft = NULL;
+			}
+		}
+		else
+		{
+			double delta = atan2(-(weapon->xdis - craft->xdis), weapon->ydis - craft->ydis) 
+				- craft->craft_data.theta;
+			
+			while(delta >= M_PI)
+				delta -= M_PI * 2.0;
+			while(delta < -M_PI)
+				delta += M_PI * 2.0;
+			
+			if(delta > 0.0)
+			{
+				craft->craft_data.right_weapon = NULL;
+				weapon->weapon_data.craft = NULL;
+			}
+		}
+	}
+	
+	return !restart;
+}
+
+
 void s_tick_craft(struct entity_t *craft)
 {
 	craft->craft_data.shield_flare = max(0.0, craft->craft_data.shield_flare - 0.005);
@@ -1432,341 +2089,230 @@ void s_tick_craft(struct entity_t *craft)
 	}
 	
 	
-	if(craft->craft_data.left_weapon)
+	struct entity_t *left_weapon = craft->craft_data.left_weapon;
+	struct entity_t *right_weapon = craft->craft_data.right_weapon;
+	
+	int restarted = 0;
+	int craft_advanced = 0, left_weapon_advanced = 0, right_weapon_advanced = 0;
+
+	double old_craft_xdis = craft->xdis;
+	double old_craft_ydis = craft->ydis;
+	
+	double old_left_weapon_xdis = 0.0, old_left_weapon_ydis = 0.0, 
+		old_right_weapon_xdis = 0.0, old_right_weapon_ydis = 0.0;
+
+	
+	craft->xdis += craft->xvel;
+	craft->ydis += craft->yvel;
+	
+	if(left_weapon)
 	{
-		craft->craft_data.left_weapon->xdis += craft->xvel;
-		craft->craft_data.left_weapon->ydis += craft->yvel;
+		set_weapon_initial_try_velocity(left_weapon);
+		old_left_weapon_xdis = left_weapon->xdis;
+		old_left_weapon_ydis = left_weapon->ydis;
+		left_weapon->in_tick = 1;
 	}
 	
-
-	if(craft->craft_data.right_weapon)
+	
+	if(right_weapon)
 	{
-		craft->craft_data.right_weapon->xdis += craft->xvel;
-		craft->craft_data.right_weapon->ydis += craft->yvel;
+		set_weapon_initial_try_velocity(right_weapon);
+		old_right_weapon_xdis = right_weapon->xdis;
+		old_right_weapon_ydis = right_weapon->ydis;
+		right_weapon->in_tick = 1;
 	}
 	
-
-	int restart = 0;
-	double xdis;
-	double ydis;
-	
+	craft->xdis = old_craft_xdis;
+	craft->ydis = old_craft_ydis;
 	
 	while(1)
 	{
 		// see if our iterative collison technique has locked
 		
-		if(restart && craft->xdis == xdis && craft->ydis == ydis)
+		if(restarted)
 		{
-			#ifdef EMSERVER
-			respawn_craft(craft, craft->craft_data.owner);
-			explode_craft(craft, craft->craft_data.owner);
-		//	char *msg = "infinite iteration craft collison broken\n";
-		//	console_print(msg);
-		//	print_on_all_players(msg);
-			#endif
-			
-			#ifdef EMCLIENT
-			// try to prevent this happening again until the server 
-			// explodes the craft or history gets rewritten
-			craft->xvel = craft->yvel = 0.0;
-			craft->craft_data.acc = 0.0;
-			#endif
-
-			return;
-		}
-		
-		xdis = craft->xdis + craft->xvel;
-		ydis = craft->ydis + craft->yvel;
-		
-		restart = 0;
-		
-		
-		// check for wall collision
-		
-		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, CRAFT_RADIUS);
-			
-		if(!node)
-			node = line_walk_bsp_tree(craft->xdis, craft->ydis, xdis, ydis);
-		
-		if(node)
-		{
-			#ifdef EMSERVER
-			craft_force(craft, hypot(craft->xvel, craft->yvel) * VELOCITY_FORCE_MULTIPLIER,
-				craft->craft_data.owner);
-			
-			if(craft->kill_me)
-				return;
-			#endif
-			
-			entity_wall_bounce(craft, node);
-			
-			restart = 1;
-		}
-		
-		
-		// check for collision with other entities
-		
-		struct entity_t *entity = *sentity0;
-		while(entity)
-		{
-			if(entity == craft || entity->teleporting)
+			if(!craft_advanced && craft->xdis == old_craft_xdis && craft->ydis == old_craft_ydis)
 			{
-				entity = entity->next;
-				continue;
+				craft->xdis = old_craft_xdis;
+				craft->ydis = old_craft_ydis;
+				
+				#ifdef EMSERVER
+				respawn_craft(craft, craft->craft_data.owner);
+				explode_craft(craft, craft->craft_data.owner);
+				char *msg = "infinite iteration craft collison broken\n";
+				console_print(msg);
+				print_on_all_players(msg);
+				#endif
+				
+				#ifdef EMCLIENT
+				// try to prevent this happening again until the server 
+				// explodes the craft or history gets rewritten
+				craft->xvel = craft->yvel = 0.0;
+				craft->craft_data.acc = 0.0;
+				#endif
+	
+				craft_advanced = 1;
 			}
 			
-			entity->in_tick = 1;
-			
-			switch(entity->type)
+			if(left_weapon && !left_weapon_advanced)
 			{
-			case ENT_CRAFT:
-				if(circles_intersect(xdis, ydis, CRAFT_RADIUS, 
-					entity->xdis, entity->ydis, CRAFT_RADIUS))
+				if(left_weapon->xvel == 0.0 && left_weapon->yvel == 0.0)
 				{
-					craft_craft_collision(craft, entity);
-					restart = 1;
+					left_weapon->xdis = old_left_weapon_xdis;
+					left_weapon->ydis = old_left_weapon_ydis;
+					
+					#ifdef EMSERVER
+					explode_weapon(left_weapon, get_weapon_owner(left_weapon));
+					char *msg = "infinite iteration weapon collison broken\n";
+					console_print(msg);
+					print_on_all_players(msg);
+					#endif
+					
+					#ifdef EMCLIENT
+					// try to prevent this happening again until the server 
+					// explodes the weapon or history gets rewritten
+					left_weapon->xvel = left_weapon->yvel = 0.0;
+					#endif
+					
+					left_weapon_advanced = 1;
 				}
-				break;
-				
-			case ENT_WEAPON:
-				if(circles_intersect(xdis, ydis, CRAFT_RADIUS, 
-					entity->xdis, entity->ydis, WEAPON_RADIUS))
-				{
-					craft_weapon_collision(craft, entity);
-					restart = 1;
-				}
-				break;
-				
-			case ENT_PLASMA:
-				if(circles_intersect(xdis, ydis, CRAFT_RADIUS, 
-					entity->xdis, entity->ydis, PLASMA_RADIUS))
-				{
-					craft_plasma_collision(craft, entity);
-				}
-				break;
-				
-			#ifdef EMSERVER
-			case ENT_BULLET:
-				if(point_in_circle(entity->xdis, entity->ydis, 
-					xdis, ydis, CRAFT_RADIUS))
-				{
-					craft_bullet_collision(craft, entity);
-				}
-				break;
-			#endif
-				
-			case ENT_ROCKET:
-				if(circles_intersect(xdis, ydis, CRAFT_RADIUS, 
-					entity->xdis, entity->ydis, ROCKET_RADIUS))
-				{
-					destroy_rocket(entity);
-					restart = 1;
-				}
-				break;
-				
-			case ENT_MINE:
-				if(circles_intersect(xdis, ydis, CRAFT_RADIUS, 
-					entity->xdis, entity->ydis, MINE_RADIUS))
-				{
-					if(!entity->mine_data.under_craft || 
-						entity->mine_data.craft_id != craft->index)
-					{
-						destroy_mine(entity);
-						restart = 1;
-					}
-				}
-				break;
-				
-			case ENT_RAILS:
-				if(circles_intersect(xdis, ydis, CRAFT_RADIUS, 
-					entity->xdis, entity->ydis, RAILS_RADIUS))
-				{
-					craft_rails_collision(craft, entity);
-				}
-				break;
-				
-			case ENT_SHIELD:
-				if(circles_intersect(xdis, ydis, CRAFT_RADIUS, 
-					entity->xdis, entity->ydis, SHIELD_RADIUS))
-				{
-					craft_shield_collision(craft, entity);
-				}
-				break;
 			}
 			
-			struct entity_t *next = entity->next;
-			
-			if(entity->kill_me)
-				remove_entity(sentity0, entity);
-			else
-				entity->in_tick = 0;
-
-			#ifdef EMSERVER
-			if(craft->kill_me)
-				return;
-			#endif
-			
-			entity = next;
-		}
-		
-		
-		#ifdef EMSERVER
-		
-		// check for collision with speedup ramp
-		
-		int s = 0;
-		
-		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
-		while(speedup_ramp)
-		{
-			double sin_theta, cos_theta;
-			sincos(speedup_ramp->theta + M_PI / 2.0, &sin_theta, &cos_theta);
-			
-			if(line_in_circle(speedup_ramp->x + cos_theta * speedup_ramp->width / 2.0, 
-				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
-				speedup_ramp->x - cos_theta * speedup_ramp->width / 2.0, 
-				speedup_ramp->y - sin_theta * speedup_ramp->width / 2.0,
-				xdis, ydis, CRAFT_RADIUS))
+			if(right_weapon && !right_weapon_advanced)
 			{
-				s = 1;
-				
-				if(!craft->speeding_up)
+				if(right_weapon->xvel == 0.0 && right_weapon->yvel == 0.0)
 				{
-					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+					right_weapon->xdis = old_right_weapon_xdis;
+					right_weapon->ydis = old_right_weapon_ydis;
 					
-					craft->xvel += speedup_ramp->boost * sin_theta;
-					craft->yvel += speedup_ramp->boost * cos_theta;
+					#ifdef EMSERVER
+					explode_weapon(right_weapon, get_weapon_owner(right_weapon));
+					char *msg = "infinite iteration weapon collison broken\n";
+					console_print(msg);
+					print_on_all_players(msg);
+					#endif
 					
-					restart = 1;
-					craft->propagate_me = 1;
-					craft->speeding_up = 1;
+					#ifdef EMCLIENT
+					// try to prevent this happening again until the server 
+					// explodes the weapon or history gets rewritten
+					right_weapon->xvel = right_weapon->yvel = 0.0;
+					#endif
 					
-					emit_speedup_to_all_players();
-					break;
+					right_weapon_advanced = 1;
 				}
-			}			
-			
-			speedup_ramp = speedup_ramp->next;
-		}
-		
-		craft->speeding_up = s;
-		
-		
-		
-		// check for collision with teleporter
-		
-		struct teleporter_t *teleporter = teleporter0;
-		while(teleporter)
-		{
-			if(circle_in_circle(xdis, ydis, CRAFT_RADIUS, 
-				teleporter->x, teleporter->y, teleporter->radius))
-			{
-				if(craft->craft_data.left_weapon)
-				{
-					craft->craft_data.left_weapon->propagate_me = 1;
-					craft->craft_data.left_weapon->weapon_data.craft = NULL;
-					craft->craft_data.left_weapon = NULL;
-				}
-				
-				if(craft->craft_data.right_weapon)
-				{
-					craft->craft_data.right_weapon->propagate_me = 1;
-					craft->craft_data.right_weapon->weapon_data.craft = NULL;
-					craft->craft_data.right_weapon = NULL;
-				}
-				
-				craft->teleport_spawn_index = teleporter->spawn_index;
-				
-				craft->teleporting = TELEPORTING_DISAPPEARING;
-				craft->teleporting_tick = cgame_tick;
-				
-				craft->propagate_me = 1;
-				
-				emit_teleport_to_all_players();
-				break;
 			}
 			
-			teleporter = teleporter->next;
+			
+			if(!craft_advanced)
+			{
+				craft->xdis = old_craft_xdis;
+				craft->ydis = old_craft_ydis;
+			}
+			
+			if(left_weapon && !left_weapon_advanced)
+			{
+				left_weapon->xdis = old_left_weapon_xdis;
+				left_weapon->ydis = old_left_weapon_ydis;
+			}
+			
+			if(right_weapon && !right_weapon_advanced)
+			{
+				right_weapon->xdis = old_right_weapon_xdis;
+				right_weapon->ydis = old_right_weapon_ydis;
+			}
 		}
 		
-		#endif
+		restarted = 1;
 		
+		if(!craft_advanced)
+		{
+			craft->xdis += craft->xvel;
+			craft->ydis += craft->yvel;
+		}
 		
-		if(restart)
+		if(left_weapon && !left_weapon_advanced)
+		{
+			left_weapon->xdis += left_weapon->xvel;
+			left_weapon->ydis += left_weapon->yvel;
+		}
+		
+		if(right_weapon && !right_weapon_advanced)
+		{
+			right_weapon->xdis += right_weapon->xvel;
+			right_weapon->ydis += right_weapon->yvel;
+		}
+		
+		if(!craft_advanced)
+		{
+			craft_advanced = try_advance_craft(craft, old_craft_xdis, old_craft_ydis);
+		}
+		
+		if(left_weapon)
+			if(left_weapon->kill_me)
+				left_weapon_advanced = 1;
+		
+		if(right_weapon)
+			if(right_weapon->kill_me)
+				right_weapon_advanced = 1;
+		
+		if(left_weapon && !left_weapon_advanced)
+		{
+			left_weapon_advanced = try_advance_weapon(left_weapon, 
+				old_left_weapon_xdis, old_left_weapon_ydis);
+		}
+		
+		if(left_weapon)
+			if(left_weapon->kill_me)
+				left_weapon_advanced = 1;
+		
+		if(right_weapon)
+			if(right_weapon->kill_me)
+				right_weapon_advanced = 1;
+		
+		if(right_weapon && !right_weapon_advanced)
+		{
+			right_weapon_advanced = try_advance_weapon(right_weapon, 
+				old_right_weapon_xdis, old_right_weapon_ydis);
+		}
+	
+		if(left_weapon)
+			if(left_weapon->kill_me)
+				left_weapon_advanced = 1;
+		
+		if(right_weapon)
+			if(right_weapon->kill_me)
+				right_weapon_advanced = 1;
+		
+		if(!craft_advanced || (left_weapon && !left_weapon_advanced) || 
+			(right_weapon && !right_weapon_advanced))
+		{
 			continue;
+		}
 		
 		
 		#ifdef EMCLIENT
-		
-		tick_craft(craft, xdis, ydis);
-		
+		if(!craft->kill_me)
+			tick_craft(craft, old_craft_xdis, old_craft_ydis);
 		#endif
 		
+		if(left_weapon)
+		{
+			if(left_weapon->kill_me)
+				remove_entity(sentity0, left_weapon);
+			else
+				left_weapon->in_tick = 0;
+		}
 		
-		craft->xdis = xdis;
-		craft->ydis = ydis;
+		if(right_weapon)
+		{
+			if(right_weapon->kill_me)
+				remove_entity(sentity0, right_weapon);
+			else
+				right_weapon->in_tick = 0;
+		}
 		
 		break;
 	}
-}
-
-
-int check_weapon_placement(double xdis, double ydis, struct entity_t *weapon)
-{
-	// check for collision with wall
-	
-	if(circle_walk_bsp_tree(xdis, ydis, WEAPON_RADIUS))
-		return 0;
-	
-	
-	// check for collision with other entities
-	
-	struct entity_t *entity = *sentity0;
-	while(entity)
-	{
-		if(entity == weapon || entity->teleporting)
-		{
-			entity = entity->next;
-			continue;
-		}
-		
-		switch(entity->type)
-		{
-		case ENT_CRAFT:
-			if(circles_intersect(xdis, ydis, WEAPON_RADIUS, 
-				entity->xdis, entity->ydis, CRAFT_RADIUS))
-				return 0;
-			break;
-			
-		case ENT_WEAPON:
-			if(circles_intersect(xdis, ydis, WEAPON_RADIUS, 
-				entity->xdis, entity->ydis, WEAPON_RADIUS))
-				return 0;
-			break;
-			
-		case ENT_ROCKET:
-			if(circles_intersect(xdis, ydis, WEAPON_RADIUS, 
-				entity->xdis, entity->ydis, ROCKET_RADIUS))
-				return 0;
-			break;
-			
-		case ENT_MINE:
-			if(circles_intersect(xdis, ydis, WEAPON_RADIUS, 
-				entity->xdis, entity->ydis, MINE_RADIUS))
-				return 0;
-			break;
-			
-		case ENT_RAILS:
-			if(circles_intersect(xdis, ydis, WEAPON_RADIUS, 
-				entity->xdis, entity->ydis, RAILS_RADIUS))
-				return 0;
-			break;
-		}
-		
-		entity = entity->next;
-	}
-	
-	return 1;
 }
 
 
@@ -1807,103 +2353,67 @@ void s_tick_weapon(struct entity_t *weapon)
 		}
 	}
 
-	struct entity_t *craft = weapon->weapon_data.craft;
 		
+	if(weapon->weapon_data.craft)
+	{
+		struct entity_t *craft = weapon->weapon_data.craft;
+		
+		if(!point_in_circle(weapon->xdis, weapon->ydis, 
+			craft->xdis, craft->ydis, MAX_CRAFT_WEAPON_DIST))
+		{
+			if(craft->craft_data.left_weapon == weapon)
+				craft->craft_data.left_weapon = NULL;
+			else
+				craft->craft_data.right_weapon = NULL;
+			
+			weapon->weapon_data.craft = NULL;
+			craft = NULL;
+		}
+		else
+		{
+			if(craft->craft_data.left_weapon == weapon)
+			{
+				double delta = atan2(-(weapon->xdis - craft->xdis), weapon->ydis - craft->ydis) 
+					- craft->craft_data.theta;
+				
+				while(delta >= M_PI)
+					delta -= M_PI * 2.0;
+				while(delta < -M_PI)
+					delta += M_PI * 2.0;
+				
+				if(delta < 0.0)
+				{
+					craft->craft_data.left_weapon = NULL;
+					weapon->weapon_data.craft = NULL;
+				}
+			}
+			else
+			{
+				double delta = atan2(-(weapon->xdis - craft->xdis), weapon->ydis - craft->ydis) 
+					- craft->craft_data.theta;
+				
+				while(delta >= M_PI)
+					delta -= M_PI * 2.0;
+				while(delta < -M_PI)
+					delta += M_PI * 2.0;
+				
+				if(delta > 0.0)
+				{
+					craft->craft_data.right_weapon = NULL;
+					weapon->weapon_data.craft = NULL;
+				}
+			}
+		}
+		
+		return;
+	}
+	
 	#ifdef EMSERVER
 	struct player_t *owner = get_weapon_owner(weapon);
 	#endif
 
-	if(craft && !weapon->weapon_data.detached)
-	{
-		// rotate on spot
-		
-		double delta = weapon->weapon_data.theta - craft->craft_data.theta;
-		
-		while(delta >= M_PI)
-			delta -= M_PI * 2.0;
-		while(delta < -M_PI)
-			delta += M_PI * 2.0;
-		
-		if(fabs(delta) < MAX_WEAPON_ROTATE_SPEED)
-			weapon->weapon_data.theta = craft->craft_data.theta;
-		else
-			weapon->weapon_data.theta -= copysign(MAX_WEAPON_ROTATE_SPEED, delta);
-		
-		while(weapon->weapon_data.theta >= M_PI)
-			weapon->weapon_data.theta -= M_PI * 2.0;
-		while(weapon->weapon_data.theta < -M_PI)
-			weapon->weapon_data.theta += M_PI * 2.0;
-		
-		
-		// rotate around craft
-	
-		double xdis = weapon->xdis;// + craft->xvel;
-		double ydis = weapon->ydis;// + craft->yvel;
-		
-		double theta_side = -M_PI / 4.0;	// inconsistency visualization
-		
-		if(craft->craft_data.left_weapon == weapon)
-			theta_side = M_PI / 2.0;
-		else if(craft->craft_data.right_weapon == weapon)
-			theta_side = -M_PI / 2.0;
-		
-		
-		double theta = atan2(-(xdis - craft->xdis), ydis - craft->ydis);
-		delta = (craft->craft_data.theta + theta_side) - theta;
-		
-		while(delta >= M_PI)
-			delta -= M_PI * 2.0;
-		while(delta < -M_PI)
-			delta += M_PI * 2.0;
-		
-		if(fabs(delta) < MAX_WEAPON_ROTATE_SPEED)
-			theta = craft->craft_data.theta + theta_side;
-		else
-			theta += copysign(MAX_WEAPON_ROTATE_SPEED, delta);
-		
-		double dist = hypot(xdis - craft->xdis, ydis - craft->ydis);
-		
-		double sin_theta, cos_theta;
-		sincos(theta, &sin_theta, &cos_theta);
-		
-		xdis = -dist * sin_theta;
-		ydis = dist * cos_theta;
-	
-		
-		// move in/out from craft
-		
-		
-		delta = dist - IDEAL_CRAFT_WEAPON_DIST;
-		
-		if(abs(delta) < MAX_WEAPON_MOVE_IN_OUT_SPEED)
-			dist = IDEAL_CRAFT_WEAPON_DIST;
-		else
-			dist -= copysign(MAX_WEAPON_MOVE_IN_OUT_SPEED, delta);
-		
-		xdis = craft->xdis + -dist * sin_theta;
-		ydis = craft->ydis + dist * cos_theta;
-		
-		
-		weapon->xvel = xdis - weapon->xdis;
-		weapon->yvel = ydis - weapon->ydis;
-	
-		apply_gravity_acceleration(weapon);
-	//	slow_entity(weapon);
-		
-		if(check_weapon_placement(xdis, ydis, weapon))
-		{
-			weapon->xdis = xdis;
-			weapon->ydis = ydis;
-		}
-		
-		weapon->xvel = craft->xvel;
-		weapon->yvel = craft->yvel;
-	}
-	else
-	{
-		apply_gravity_acceleration(weapon);
-		slow_entity(weapon);
-	}
+	apply_gravity_acceleration(weapon);
+	slow_entity(weapon);
 	
 
 	int restart = 0;
@@ -1932,16 +2442,8 @@ void s_tick_weapon(struct entity_t *weapon)
 			return;
 		}
 		
-		if(craft)
-		{
-			xdis = weapon->xdis;
-			ydis = weapon->ydis;
-		}
-		else
-		{
-			xdis = weapon->xdis + weapon->xvel;
-			ydis = weapon->ydis + weapon->yvel;
-		}
+		xdis = weapon->xdis + weapon->xvel;
+		ydis = weapon->ydis + weapon->yvel;
 		
 		restart = 0;
 		
@@ -1957,27 +2459,16 @@ void s_tick_weapon(struct entity_t *weapon)
 		{
 			#ifdef EMSERVER
 			
-		//	if(craft)
-		//		weapon_force(weapon, hypot(craft->xvel, craft->yvel) * VELOCITY_FORCE_MULTIPLIER, 
-		//			owner);
-		//	else
-				weapon_force(weapon, hypot(weapon->xvel, weapon->yvel) * VELOCITY_FORCE_MULTIPLIER, 
-					owner);
+			weapon_force(weapon, hypot(weapon->xvel, weapon->yvel) * VELOCITY_FORCE_MULTIPLIER, 
+				owner);
 			
 			if(weapon->kill_me)
 				return;
 			
 			#endif
 			
-			if(craft)
-			{
-				entity_wall_bounce(craft, node);
-			}
-			else
-			{
-				entity_wall_bounce(weapon, node);
-				restart = 1;
-			}
+			entity_wall_bounce(weapon, node);
+			restart = 1;
 		}
 		
 		
@@ -2001,8 +2492,7 @@ void s_tick_weapon(struct entity_t *weapon)
 					entity->xdis, entity->ydis, CRAFT_RADIUS))
 				{
 					craft_weapon_collision(entity, weapon);
-					if(!craft) 
-						restart = 1;
+					restart = 1;
 				}
 				break;
 				
@@ -2011,7 +2501,7 @@ void s_tick_weapon(struct entity_t *weapon)
 					entity->xdis, entity->ydis, WEAPON_RADIUS))
 				{
 					weapon_weapon_collision(weapon, entity);
-					if(!craft) restart = 1;
+					restart = 1;
 				}
 				break;
 				
@@ -2023,7 +2513,7 @@ void s_tick_weapon(struct entity_t *weapon)
 						entity->plasma_data.weapon_id != weapon->index)
 					{
 						weapon_plasma_collision(weapon, entity);
-						if(!craft) restart = 1;
+						restart = 1;
 					}
 				}
 				break;
@@ -2037,7 +2527,7 @@ void s_tick_weapon(struct entity_t *weapon)
 						entity->bullet_data.weapon_id != weapon->index)
 					{
 						weapon_bullet_collision(weapon, entity);
-						if(!craft) restart = 1;
+						restart = 1;
 					}
 				}
 				break;
@@ -2051,7 +2541,7 @@ void s_tick_weapon(struct entity_t *weapon)
 						entity->rocket_data.weapon_id != weapon->index)
 					{
 						destroy_rocket(entity);
-						if(!craft) restart = 1;
+						restart = 1;
 					}
 				}
 				break;
@@ -2061,7 +2551,7 @@ void s_tick_weapon(struct entity_t *weapon)
 					entity->xdis, entity->ydis, MINE_RADIUS))
 				{
 					destroy_mine(entity);
-					if(!craft) restart = 1;
+					restart = 1;
 				}
 				break;
 				
@@ -2070,7 +2560,7 @@ void s_tick_weapon(struct entity_t *weapon)
 					entity->xdis, entity->ydis, RAILS_RADIUS))
 				{
 					weapon_rails_collision(weapon, entity);
-					if(!craft) restart = 1;
+					restart = 1;
 				}
 				break;
 				
@@ -2149,12 +2639,6 @@ void s_tick_weapon(struct entity_t *weapon)
 			if(circle_in_circle(xdis, ydis, WEAPON_RADIUS, 
 				teleporter->x, teleporter->y, teleporter->radius))
 			{
-				if(craft)
-				{
-					weapon->weapon_data.craft->propagate_me = 1;
-					strip_craft_from_weapon(weapon);
-				}
-				
 				weapon->teleport_spawn_index = teleporter->spawn_index;
 				
 				weapon->teleporting = TELEPORTING_DISAPPEARING;
@@ -2186,181 +2670,131 @@ void s_tick_weapon(struct entity_t *weapon)
 	if(weapon->weapon_data.detached)
 		return;
 	
-	if(!craft)
+	struct entity_t *craft = weapon->weapon_data.craft;
+	
+	struct entity_t *entity = *sentity0;
+	while(entity)
 	{
-		struct entity_t *entity = *sentity0;
-		while(entity)
+		if(entity->type == ENT_CRAFT && !entity->craft_data.carcass && 
+			!entity->teleporting && entity->craft_data.left_weapon != weapon && 
+			entity->craft_data.right_weapon != weapon)
 		{
-			if(entity->type == ENT_CRAFT && !entity->craft_data.carcass && 
-				!entity->teleporting && entity->craft_data.left_weapon != weapon && 
-				entity->craft_data.right_weapon != weapon)
+			if(point_in_circle(weapon->xdis, weapon->ydis, 
+				entity->xdis, entity->ydis, MAX_CRAFT_WEAPON_DIST))
 			{
-				if(point_in_circle(weapon->xdis, weapon->ydis, 
-					entity->xdis, entity->ydis, MAX_CRAFT_WEAPON_DIST))
-				{
-					double delta = atan2(-(weapon->xdis - entity->xdis), 
-						weapon->ydis - entity->ydis) - entity->craft_data.theta;
-					
-					while(delta >= M_PI)
-						delta -= M_PI * 2.0;
-					while(delta < -M_PI)
-						delta += M_PI * 2.0;
-					
-					if(delta > 0.0 && !entity->craft_data.left_weapon)
-					{
-						entity->craft_data.left_weapon = weapon;
-						weapon->weapon_data.craft = entity;
-						craft = entity;
-						
-						#ifdef EMSERVER
-						respawn_weapon(weapon);
-						if(!weapon->weapon_data.original_ownership_defined)
-						{
-							weapon->weapon_data.shield_red = 
-								craft->craft_data.shield_red;
-							weapon->weapon_data.shield_green = 
-								craft->craft_data.shield_green;
-							weapon->weapon_data.shield_blue = 
-								craft->craft_data.shield_blue;
-							
-							if(weapon->weapon_data.type == WEAPON_PLASMA_CANNON)
-							{
-								weapon->weapon_data.plasma_red = 
-									craft->craft_data.owner->plasma_red;
-								weapon->weapon_data.plasma_green = 
-									craft->craft_data.owner->plasma_green;
-								weapon->weapon_data.plasma_blue = 
-									craft->craft_data.owner->plasma_blue;
-							}
-
-							weapon->weapon_data.magic_smoke = 
-								craft->craft_data.magic_smoke;
-							
-							weapon->weapon_data.smoke_start_red = 
-								craft->craft_data.smoke_start_red;
-							weapon->weapon_data.smoke_start_green = 
-								craft->craft_data.smoke_start_green;
-							weapon->weapon_data.smoke_start_blue = 
-								craft->craft_data.smoke_start_blue;
-							
-							weapon->weapon_data.smoke_end_red = 
-								craft->craft_data.smoke_end_red;
-							weapon->weapon_data.smoke_end_green = 
-								craft->craft_data.smoke_end_green;
-							weapon->weapon_data.smoke_end_blue = 
-								craft->craft_data.smoke_end_blue;
-						
-							propagate_colours(weapon);
-							weapon->weapon_data.original_ownership_defined = 1;
-						}
-						#endif
-						break;
-					}
-					
-					if(delta < 0.0 && !entity->craft_data.right_weapon)
-					{
-						entity->craft_data.right_weapon = weapon;
-						weapon->weapon_data.craft = entity;
-						craft = entity;
-						
-						#ifdef EMSERVER
-						respawn_weapon(weapon);
-						if(!weapon->weapon_data.original_ownership_defined)
-						{
-							weapon->weapon_data.shield_red = 
-								craft->craft_data.shield_red;
-							weapon->weapon_data.shield_green = 
-								craft->craft_data.shield_green;
-							weapon->weapon_data.shield_blue = 
-								craft->craft_data.shield_blue;
-							
-							if(weapon->weapon_data.type == WEAPON_PLASMA_CANNON)
-							{
-								weapon->weapon_data.plasma_red = 
-									craft->craft_data.owner->plasma_red;
-								weapon->weapon_data.plasma_green = 
-									craft->craft_data.owner->plasma_green;
-								weapon->weapon_data.plasma_blue = 
-									craft->craft_data.owner->plasma_blue;
-							}
-
-							weapon->weapon_data.magic_smoke = 
-								craft->craft_data.magic_smoke;
-							
-							weapon->weapon_data.smoke_start_red = 
-								craft->craft_data.smoke_start_red;
-							weapon->weapon_data.smoke_start_green = 
-								craft->craft_data.smoke_start_green;
-							weapon->weapon_data.smoke_start_blue = 
-								craft->craft_data.smoke_start_blue;
-							
-							weapon->weapon_data.smoke_end_red = 
-								craft->craft_data.smoke_end_red;
-							weapon->weapon_data.smoke_end_green = 
-								craft->craft_data.smoke_end_green;
-							weapon->weapon_data.smoke_end_blue = 
-								craft->craft_data.smoke_end_blue;
-							
-							propagate_colours(weapon);
-							weapon->weapon_data.original_ownership_defined = 1;
-						}
-						#endif
-						break;
-					}
-				}
-			}
-			
-			entity = entity->next;
-		}
-	}
-	else
-	{
-		if(!point_in_circle(weapon->xdis, weapon->ydis, 
-			craft->xdis, craft->ydis, MAX_CRAFT_WEAPON_DIST))
-		{
-			if(craft->craft_data.left_weapon == weapon)
-				craft->craft_data.left_weapon = NULL;
-			else
-				craft->craft_data.right_weapon = NULL;
-			
-			weapon->weapon_data.craft = NULL;
-			craft = NULL;
-		}
-		else
-		{
-			if(craft->craft_data.left_weapon == weapon)
-			{
-				double delta = atan2(-(weapon->xdis - craft->xdis), weapon->ydis - craft->ydis) 
-					- craft->craft_data.theta;
+				double delta = atan2(-(weapon->xdis - entity->xdis), 
+					weapon->ydis - entity->ydis) - entity->craft_data.theta;
 				
 				while(delta >= M_PI)
 					delta -= M_PI * 2.0;
 				while(delta < -M_PI)
 					delta += M_PI * 2.0;
 				
-				if(delta < 0.0)
+				if(delta > 0.0 && !entity->craft_data.left_weapon)
 				{
-					craft->craft_data.left_weapon = NULL;
-					weapon->weapon_data.craft = NULL;
+					entity->craft_data.left_weapon = weapon;
+					weapon->weapon_data.craft = entity;
+					craft = entity;
+					
+					#ifdef EMSERVER
+					respawn_weapon(weapon);
+					if(!weapon->weapon_data.original_ownership_defined)
+					{
+						weapon->weapon_data.shield_red = 
+							craft->craft_data.shield_red;
+						weapon->weapon_data.shield_green = 
+							craft->craft_data.shield_green;
+						weapon->weapon_data.shield_blue = 
+							craft->craft_data.shield_blue;
+						
+						if(weapon->weapon_data.type == WEAPON_PLASMA_CANNON)
+						{
+							weapon->weapon_data.plasma_red = 
+								craft->craft_data.owner->plasma_red;
+							weapon->weapon_data.plasma_green = 
+								craft->craft_data.owner->plasma_green;
+							weapon->weapon_data.plasma_blue = 
+								craft->craft_data.owner->plasma_blue;
+						}
+
+						weapon->weapon_data.magic_smoke = 
+							craft->craft_data.magic_smoke;
+						
+						weapon->weapon_data.smoke_start_red = 
+							craft->craft_data.smoke_start_red;
+						weapon->weapon_data.smoke_start_green = 
+							craft->craft_data.smoke_start_green;
+						weapon->weapon_data.smoke_start_blue = 
+							craft->craft_data.smoke_start_blue;
+						
+						weapon->weapon_data.smoke_end_red = 
+							craft->craft_data.smoke_end_red;
+						weapon->weapon_data.smoke_end_green = 
+							craft->craft_data.smoke_end_green;
+						weapon->weapon_data.smoke_end_blue = 
+							craft->craft_data.smoke_end_blue;
+					
+						propagate_colours(weapon);
+						weapon->weapon_data.original_ownership_defined = 1;
+					}
+					#endif
+					break;
 				}
-			}
-			else
-			{
-				double delta = atan2(-(weapon->xdis - craft->xdis), weapon->ydis - craft->ydis) 
-					- craft->craft_data.theta;
 				
-				while(delta >= M_PI)
-					delta -= M_PI * 2.0;
-				while(delta < -M_PI)
-					delta += M_PI * 2.0;
-				
-				if(delta > 0.0)
+				if(delta < 0.0 && !entity->craft_data.right_weapon)
 				{
-					craft->craft_data.right_weapon = NULL;
-					weapon->weapon_data.craft = NULL;
+					entity->craft_data.right_weapon = weapon;
+					weapon->weapon_data.craft = entity;
+					craft = entity;
+					
+					#ifdef EMSERVER
+					respawn_weapon(weapon);
+					if(!weapon->weapon_data.original_ownership_defined)
+					{
+						weapon->weapon_data.shield_red = 
+							craft->craft_data.shield_red;
+						weapon->weapon_data.shield_green = 
+							craft->craft_data.shield_green;
+						weapon->weapon_data.shield_blue = 
+							craft->craft_data.shield_blue;
+						
+						if(weapon->weapon_data.type == WEAPON_PLASMA_CANNON)
+						{
+							weapon->weapon_data.plasma_red = 
+								craft->craft_data.owner->plasma_red;
+							weapon->weapon_data.plasma_green = 
+								craft->craft_data.owner->plasma_green;
+							weapon->weapon_data.plasma_blue = 
+								craft->craft_data.owner->plasma_blue;
+						}
+
+						weapon->weapon_data.magic_smoke = 
+							craft->craft_data.magic_smoke;
+						
+						weapon->weapon_data.smoke_start_red = 
+							craft->craft_data.smoke_start_red;
+						weapon->weapon_data.smoke_start_green = 
+							craft->craft_data.smoke_start_green;
+						weapon->weapon_data.smoke_start_blue = 
+							craft->craft_data.smoke_start_blue;
+						
+						weapon->weapon_data.smoke_end_red = 
+							craft->craft_data.smoke_end_red;
+						weapon->weapon_data.smoke_end_green = 
+							craft->craft_data.smoke_end_green;
+						weapon->weapon_data.smoke_end_blue = 
+							craft->craft_data.smoke_end_blue;
+						
+						propagate_colours(weapon);
+						weapon->weapon_data.original_ownership_defined = 1;
+					}
+					#endif
+					break;
 				}
 			}
 		}
+		
+		entity = entity->next;
 	}
 }
 
@@ -3673,7 +4107,11 @@ void s_tick_entities(struct entity_t **entity0)
 		case ENT_CRAFT:
 			s_tick_craft(centity);
 			break;
-			
+
+		case ENT_WEAPON:
+			s_tick_weapon(centity);
+			break;
+		
 		case ENT_PLASMA:
 			s_tick_plasma(centity);
 			break;
@@ -3698,32 +4136,6 @@ void s_tick_entities(struct entity_t **entity0)
 		
 		case ENT_SHIELD:
 			s_tick_shield(centity);
-			break;
-		}
-		
-		if(centity->kill_me)
-		{
-			struct entity_t *next = centity->next;
-			remove_entity(sentity0, centity);
-			centity = next;
-		}
-		else
-		{
-			centity->in_tick = 0;
-			centity = centity->next;
-		}
-	}
-	
-	centity = *sentity0;
-	
-	while(centity)
-	{
-		centity->in_tick = 1;
-		
-		switch(centity->type)
-		{
-		case ENT_WEAPON:
-			s_tick_weapon(centity);
 			break;
 		}
 		

@@ -1244,6 +1244,9 @@ void process_detach_event(struct event_t *event)
 
 	weapon->weapon_data.detached = 1;
 	
+	if(!weapon->weapon_data.craft)
+		return;
+	
 	if(weapon->weapon_data.craft->craft_data.left_weapon == weapon)
 		weapon->weapon_data.craft->craft_data.left_weapon = NULL;
 	else
@@ -2614,7 +2617,7 @@ void explosion(float x, float y, float size, uint8_t magic,
 }
 
 
-void tick_craft(struct entity_t *craft, float xdis, float ydis)
+void tick_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 {
 	if(cgame_tick <= craft->craft_data.last_tick)
 		return;
@@ -2657,8 +2660,8 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis)
 			
 			double r = drand48();
 			
-			double nxdis = craft->xdis + (xdis - craft->xdis) * (double)(p + 1) / (double)np;
-			double nydis = craft->ydis + (ydis - craft->ydis) * (double)(p + 1) / (double)np;
+			double nxdis = old_xdis + (craft->xdis - old_xdis) * (double)(p + 1) / (double)np;
+			double nydis = old_ydis + (craft->ydis - old_ydis) * (double)(p + 1) / (double)np;
 			
 
 			switch(game_state)
@@ -2702,8 +2705,8 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis)
 			
 			double r = drand48();
 			
-			double nxdis = craft->xdis + (xdis - craft->xdis) * (double)(p + 1) / (double)np;
-			double nydis = craft->ydis + (ydis - craft->ydis) * (double)(p + 1) / (double)np;
+			double nxdis = old_xdis + (craft->xdis - old_xdis) * (double)(p + 1) / (double)np;
+			double nydis = old_ydis + (craft->ydis - old_ydis) * (double)(p + 1) / (double)np;
 			
 			
 	
