@@ -1,6 +1,6 @@
 #!/bin/bash -v
 
-ver=0.5.6-dev
+ver=0.6-dev
 
 cd ../em-tools
 make distclean
@@ -18,15 +18,15 @@ cd ../em-tools
 
 ./configure || exit
 
-make distcheck || exit
+#make distcheck || exit
 
-cp em-tools-$ver.tar.bz2 ../dist/em-tools-$ver.tbz2
+#cp em-tools-$ver.tar.bz2 ../dist/em-tools-$ver.tbz2
 
 cd ../dist
 
 
-#for arch in i386 i686 pentiumpro pentium2 pentium3 pentium4 athlon athlon-tbird athlon-xp athlon-mp
-for arch in pentium3
+for arch in i386 i686 pentium3 pentium4 athlon-xp
+#for arch in pentium3
 do
 
 stage3=i686
@@ -70,12 +70,12 @@ cd ..
 cd ../em-tools
 make clean
 
-./configure --prefix=/usr || exit
-make || exit
-make prefix=${D}/usr \
-		    bindir=${D}/usr/bin \
-		    datadir=${D}/usr/share \
-		    install || exit
+#./configure --prefix=/usr || exit
+#make || exit
+#make prefix=${D}/usr \
+#		    bindir=${D}/usr/bin \
+#		    datadir=${D}/usr/share \
+#		    install || exit
 
 
 cd ../dist/emergence
@@ -117,11 +117,11 @@ make prefix=${D} \
 
 cd ../em-tools
 
-make prefix=${D} \
-		    bindir=${D} \
-		    datadir=${D}/share \
-			pkgdatadir=${D}/share \
-		    install || exit
+#make prefix=${D} \
+#		    bindir=${D} \
+#		    datadir=${D}/share \
+#			pkgdatadir=${D}/share \
+#		    install || exit
 
 
 cd ../dist
@@ -136,7 +136,6 @@ tar --owner=0 --group=0 --numeric-owner -cjf emergence-$ver.bin.$arch.home.tbz2 
 
 done
 
-exit
 
 arch=pentium3
 stage3=pentium3
@@ -148,7 +147,7 @@ ln -sfn stage3-$stage3-2004.1 ../../stage3s/current-stage3 || exit
 
 
 rm -rf emergence
-mkdir -p emergence/usr
+mkdir emergence
 
 cd ../em-game
 make clean
@@ -157,14 +156,16 @@ D=`pwd`/../dist/emergence/
 
 ./configure --prefix=/usr --enable-nonauthenticating || exit
 make || exit
-make prefix=${D}/usr \
-		    bindir=${D}/usr/bin \
-		    datadir=${D}/usr/share \
+make prefix=${D} \
+		    bindir=${D} \
+		    datadir=${D}/share \
+			pkgdatadir=${D}/share \
 		    install || exit
 
-cd ../dist/emergence
+cd ../dist/
 
-strip usr/bin/* || exit
-tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-$ver.nonauth.bin.$arch.tbz2 * || exit
-cd ..
+strip emergence/em-client || exit
+strip emergence/em-server || exit
+
+tar --owner=0 --group=0 --numeric-owner -cjf emergence-$ver.nonauth.bin.$arch.home.tbz2 emergence || exit
 
