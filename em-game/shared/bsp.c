@@ -68,12 +68,12 @@ void read_bsp_node(gzFile file, struct bspnode_t *node)
 		node->back = NULL;
 	}
 	
+	return;
+	
 error:
 	
 	node->front = NULL;
 	node->back = NULL;
-	
-	return;
 }
 
 
