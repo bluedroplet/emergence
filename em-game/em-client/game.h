@@ -36,7 +36,6 @@ void world_to_screen(double worldx, double worldy, int *screenx, int *screeny);
 void screen_to_world(int screenx, int screeny, double *worldx, double *worldy);
 
 void rev_thrust(int state);
-void fire_bogie();
 void fire_rail();
 void fire_left();
 void fire_right();

@@ -458,7 +458,7 @@ int game_process_status(struct player_t *player, struct buffer_t *buffer)
 }
 
 
-void spawn_bogie(struct entity_t *weapon)
+void spawn_plasma(struct entity_t *weapon)
 {
 	struct entity_t *plasma = new_entity(&entity0);
 	
@@ -585,7 +585,7 @@ void tick_player(struct player_t *player)
 				
 				if(fire > 0)
 				{
-					spawn_bogie(player->craft->craft_data.left_weapon);
+					spawn_plasma(player->craft->craft_data.left_weapon);
 					player->left_fired += fire;
 					player->craft->craft_data.left_weapon->weapon_data.ammo--;
 				}
@@ -607,7 +607,7 @@ void tick_player(struct player_t *player)
 				
 				if(fire > 0)
 				{
-					spawn_bogie(player->craft->craft_data.right_weapon);
+					spawn_plasma(player->craft->craft_data.right_weapon);
 					player->right_fired += fire;
 					player->craft->craft_data.right_weapon->weapon_data.ammo--;
 				}
@@ -1279,7 +1279,7 @@ int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 	
 		if(state && player->craft->craft_data.left_weapon->weapon_data.ammo)
 		{
-			spawn_bogie(player->craft->craft_data.left_weapon);
+			spawn_plasma(player->craft->craft_data.left_weapon);
 			player->firing_left_start = game_tick + 1;
 			player->left_fired = 0;
 			player->craft->craft_data.left_weapon->weapon_data.ammo--;
@@ -1325,7 +1325,7 @@ int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 	
 		if(state && player->craft->craft_data.right_weapon->weapon_data.ammo)
 		{
-			spawn_bogie(player->craft->craft_data.right_weapon);
+			spawn_plasma(player->craft->craft_data.right_weapon);
 			player->firing_right_start = game_tick + 1;
 			player->right_fired = 0;
 			player->craft->craft_data.right_weapon->weapon_data.ammo--;
