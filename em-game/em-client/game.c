@@ -3211,11 +3211,16 @@ void duplicate_game_state(struct game_state_t *old_game_state, struct game_state
 	new_game_state->next = NULL;
 	
 	
-	struct entity_t *centity = old_game_state->entity0;
+	// duplicate entities, maintaining order
+	
+	struct entity_t *centity = old_game_state->entity0, 
+		**tail_entity = &new_game_state->entity0;
 		
 	while(centity)
 	{
-		LL_ADD(struct entity_t, &new_game_state->entity0, centity);
+		LL_ADD(struct entity_t, tail_entity, centity);
+		tail_entity = &(*tail_entity)->next;
+		
 		centity = centity->next;
 	}
 	
