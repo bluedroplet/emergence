@@ -231,15 +231,19 @@ struct rail_trail_t
 /*
 void world_to_screen(double worldx, double worldy, int *screenx, int *screeny)
 {
-	*screenx = (int)floor(worldx * (double)(vid_width) / 1600.0) - (int)floor(viewx * (double)(vid_width) / 1600.0) + vid_width / 2;
-	*screeny = vid_height / 2 - 1 - (int)floor(worldy * (double)(vid_width) / 1600.0) + (int)floor(viewy * (double)(vid_width) / 1600.0);
+	*screenx = (int)floor(worldx * (double)(vid_width) / 1600.0) - 
+		(int)floor(viewx * (double)(vid_width) / 1600.0) + vid_width / 2;
+	*screeny = vid_height / 2 - 1 - (int)floor(worldy * (double)(vid_width) / 1600.0) + 
+		(int)floor(viewy * (double)(vid_width) / 1600.0);
 }
 
 
 void screen_to_world(int screenx, int screeny, double *worldx, double *worldy)
 {
-	*worldx = ((double)screenx - vid_width / 2 + 0.5f) / ((double)(vid_width) / 1600.0) + viewx;
-	*worldy = (((double)(vid_height / 2 - 1 - screeny)) + 0.5f) / ((double)(vid_width) / 1600.0) + viewx;
+	*worldx = ((double)screenx - vid_width / 2 + 0.5f) / 
+		((double)(vid_width) / 1600.0) + viewx;
+	*worldy = (((double)(vid_height / 2 - 1 - screeny)) + 0.5f) / 
+		((double)(vid_width) / 1600.0) + viewx;
 }
 */
 
@@ -253,8 +257,10 @@ void world_to_screen(double worldx, double worldy, int *screenx, int *screeny)
 
 void screen_to_world(int screenx, int screeny, double *worldx, double *worldy)
 {
-	*worldx = ((double)screenx - vid_width / 2 + 0.5f) / ((double)(vid_width) / 1600.0) + viewx;
-	*worldy = (((double)(vid_height / 2 - 1 - screeny)) + 0.5f) / ((double)(vid_width) / 1600.0) + viewx;
+	*worldx = ((double)screenx - vid_width / 2 + 0.5f) / 
+		((double)(vid_width) / 1600.0) + viewx;
+	*worldy = (((double)(vid_height / 2 - 1 - screeny)) + 0.5f) / 
+		((double)(vid_width) / 1600.0) + viewx;
 }
 
 /*
@@ -282,8 +288,10 @@ void start_moving_view(float x1, float y1, float x2, float y2)
 	moving_view_x = x2 - x1;
 	moving_view_y = y2 - y1;
 	
-	moving_view_xa = ((moving_view_x) / 2) / (0.5 * (MOVING_VIEW_TRAVEL_TIME * 0.5) * (MOVING_VIEW_TRAVEL_TIME * 0.5));
-	moving_view_ya = ((moving_view_y) / 2) / (0.5 * (MOVING_VIEW_TRAVEL_TIME * 0.5) * (MOVING_VIEW_TRAVEL_TIME * 0.5));
+	moving_view_xa = ((moving_view_x) / 2) / (0.5 * (MOVING_VIEW_TRAVEL_TIME * 0.5) * 
+		(MOVING_VIEW_TRAVEL_TIME * 0.5));
+	moving_view_ya = ((moving_view_y) / 2) / (0.5 * (MOVING_VIEW_TRAVEL_TIME * 0.5) * 
+		(MOVING_VIEW_TRAVEL_TIME * 0.5));
 	
 	moving_view_time = get_double_time();
 }
@@ -308,14 +316,20 @@ void add_moving_view()
 	}
 	else
 	{
-		viewx += 0.5 * moving_view_xa * MOVING_VIEW_TRAVEL_TIME * 0.5 * MOVING_VIEW_TRAVEL_TIME * 0.5;
-		viewy += 0.5 * moving_view_ya * MOVING_VIEW_TRAVEL_TIME * 0.5 * MOVING_VIEW_TRAVEL_TIME * 0.5;
+		viewx += 0.5 * moving_view_xa * MOVING_VIEW_TRAVEL_TIME * 0.5 * 
+			MOVING_VIEW_TRAVEL_TIME * 0.5;
+		viewy += 0.5 * moving_view_ya * MOVING_VIEW_TRAVEL_TIME * 0.5 * 
+			MOVING_VIEW_TRAVEL_TIME * 0.5;
 		
-		viewx += moving_view_xa * MOVING_VIEW_TRAVEL_TIME * 0.5 * (time - MOVING_VIEW_TRAVEL_TIME * 0.5);
-		viewy += moving_view_ya * MOVING_VIEW_TRAVEL_TIME * 0.5 * (time - MOVING_VIEW_TRAVEL_TIME * 0.5);
+		viewx += moving_view_xa * MOVING_VIEW_TRAVEL_TIME * 0.5 * 
+			(time - MOVING_VIEW_TRAVEL_TIME * 0.5);
+		viewy += moving_view_ya * MOVING_VIEW_TRAVEL_TIME * 0.5 * 
+			(time - MOVING_VIEW_TRAVEL_TIME * 0.5);
 		
-		viewx += 0.5 * -moving_view_xa * (time - MOVING_VIEW_TRAVEL_TIME * 0.5) * (time - MOVING_VIEW_TRAVEL_TIME * 0.5);
-		viewy += 0.5 * -moving_view_ya * (time - MOVING_VIEW_TRAVEL_TIME * 0.5) * (time - MOVING_VIEW_TRAVEL_TIME * 0.5);
+		viewx += 0.5 * -moving_view_xa * (time - MOVING_VIEW_TRAVEL_TIME * 0.5) * 
+			(time - MOVING_VIEW_TRAVEL_TIME * 0.5);
+		viewy += 0.5 * -moving_view_ya * (time - MOVING_VIEW_TRAVEL_TIME * 0.5) * 
+			(time - MOVING_VIEW_TRAVEL_TIME * 0.5);
 	}
 }
 
@@ -1493,15 +1507,18 @@ void game_resolution_change()
 				switch(entity->weapon_data.type)
 				{
 				case WEAPON_PLASMA_CANNON:
-					entity->weapon_data.surface = skin_get_plasma_cannon_surface(entity->weapon_data.skin);
+					entity->weapon_data.surface = 
+						skin_get_plasma_cannon_surface(entity->weapon_data.skin);
 					break;
 				
 				case WEAPON_MINIGUN:
-					entity->weapon_data.surface = skin_get_minigun_surface(entity->weapon_data.skin);
+					entity->weapon_data.surface = 
+						skin_get_minigun_surface(entity->weapon_data.skin);
 					break;
 				
 				case WEAPON_ROCKET_LAUNCHER:
-					entity->weapon_data.surface = skin_get_rocket_launcher_surface(entity->weapon_data.skin);
+					entity->weapon_data.surface = 
+						skin_get_rocket_launcher_surface(entity->weapon_data.skin);
 					break;
 				}
 	
@@ -1944,7 +1961,8 @@ void render_entities()
 			params.source = entity->craft_data.surface;
 		
 			params.source_x = 0;
-			params.source_y = (lrint((entity->craft_data.theta / (2 * M_PI) + 0.5) * ROTATIONS) % ROTATIONS) * entity->craft_data.surface->width;
+			params.source_y = (lrint((entity->craft_data.theta / (2 * M_PI) + 0.5) * ROTATIONS) % 
+				ROTATIONS) * entity->craft_data.surface->width;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
@@ -1976,7 +1994,8 @@ void render_entities()
 			params.source = entity->weapon_data.surface;
 		
 			params.source_x = 0;
-			params.source_y = (lrint((entity->weapon_data.theta / (2 * M_PI) + 0.5) * ROTATIONS) % ROTATIONS) * entity->weapon_data.surface->width;
+			params.source_y = (lrint((entity->weapon_data.theta / (2 * M_PI) + 0.5) * ROTATIONS) % 
+				ROTATIONS) * entity->weapon_data.surface->width;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
@@ -2081,15 +2100,18 @@ void duplicate_game_state(struct game_state_t *old_game_state, struct game_state
 		case ENT_CRAFT:
 			
 			if(centity->craft_data.left_weapon)
-				centity->craft_data.left_weapon = get_entity(new_game_state->entity0, centity->craft_data.left_weapon->index);
+				centity->craft_data.left_weapon = get_entity(new_game_state->entity0, 
+					centity->craft_data.left_weapon->index);
 			
 			if(centity->craft_data.right_weapon)
-				centity->craft_data.right_weapon = get_entity(new_game_state->entity0, centity->craft_data.right_weapon->index);
+				centity->craft_data.right_weapon = get_entity(new_game_state->entity0, 
+					centity->craft_data.right_weapon->index);
 			break;
 		
 		case ENT_WEAPON:
 			if(centity->weapon_data.craft)
-				centity->weapon_data.craft = get_entity(new_game_state->entity0, centity->weapon_data.craft->index);
+				centity->weapon_data.craft = get_entity(new_game_state->entity0, 
+					centity->weapon_data.craft->index);
 			break;
 		}
 		
@@ -2492,8 +2514,8 @@ void render_recording()
 {
 	if(recording)
 	{
-		blit_text_centered(((vid_width / 3) - (vid_width / 200)) / 2, 
-			vid_height / 6, 0xff, 0xff, 0xff, s_backbuffer, "recording %s", recording_filename->text);
+		blit_text_centered(((vid_width / 3) - (vid_width / 200)) / 2, vid_height / 6, 
+			0xff, 0xff, 0xff, s_backbuffer, "recording %s", recording_filename->text);
 	}
 }
 
