@@ -79,9 +79,9 @@ void rect_alpha_draw_888P8_c(struct blit_params_t *params)
 	{
 		for(x = 0; x != params->width; x++)
 		{
-			dst[x * 4] = bluealpha + vid_alphalookup[dst[x * 4 + 2] << 8 | negalpha];
+			dst[x * 4] = bluealpha + vid_alphalookup[dst[x * 4] << 8 | negalpha];
 			dst[x * 4 + 1] = greenalpha + vid_alphalookup[dst[x * 4 + 1] << 8 | negalpha];
-			dst[x * 4 + 2] = redalpha + vid_alphalookup[dst[x * 4] << 8 | negalpha];
+			dst[x * 4 + 2] = redalpha + vid_alphalookup[dst[x * 4 + 2] << 8 | negalpha];
 		}
 
 		dst += params->dest->pitch;
