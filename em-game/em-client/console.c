@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include "../common/types.h"
 #include "shared/cvar.h"
@@ -33,7 +35,7 @@ int newline = 1;
 int tabbed = 0;
 
 char *old_console_input = NULL;
-
+int console_pipe[2];
 
 
 int r_ConsoleHeight = 8;
@@ -457,7 +459,7 @@ void console_enter(int state)
 		if(rconing == RCCON_IN)
 			rcon_command(s->text);
 		else
-			parse_command(s->text);
+			write(console_pipe[1], s->text, strlen(s->text) + 1);
 
 		free_string(s);
 
@@ -683,6 +685,9 @@ void init_console()
 	set_int_cvar_qc_function("r_ConsoleActiveTextRed", qc_r_ConsoleActiveTextRed);
 	set_int_cvar_qc_function("r_ConsoleActiveTextGreen", qc_r_ConsoleActiveTextGreen);
 	set_int_cvar_qc_function("r_ConsoleActiveTextBlue", qc_r_ConsoleActiveTextBlue);
+	
+	pipe(console_pipe);
+	fcntl(console_pipe[0], F_SETFL, O_NONBLOCK);
 }
 
 
@@ -693,5 +698,4 @@ void kill_console()
 
 	console_input = NULL;
 	old_console_input = NULL;
-
 }

@@ -203,6 +203,8 @@ int load_map(char *map_name)
 		return 1;
 	}
 	
+	clear_floating_images();
+	
 	if(vid_width == 1600)
 	{
 		console_print("Loading BSP tree\n");

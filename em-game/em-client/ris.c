@@ -21,7 +21,7 @@ struct ris_t
 		
 } *ris0 = NULL;
 
-float ris_multiplier = 0.64;
+float ris_multiplier = 1.0;
 	
 
 void set_ri_surface_multiplier(float m)

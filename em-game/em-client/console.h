@@ -38,4 +38,4 @@ extern int r_ConsoleActiveTextBlue;
 extern int r_ConsoleActiveTextColour;
 extern int r_DrawConsole;
 
-
+extern int console_pipe[2];

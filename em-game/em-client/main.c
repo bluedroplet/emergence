@@ -255,9 +255,32 @@ void process_x_render_pipe()
 }
 
 
+void process_console_pipe()
+{
+	struct string_t *s = new_string();
+	char c;
+	while(read(console_pipe[0], &c, 1) != -1)
+	{
+	//	fcntl(console_pipe[0], F_SETFL, 0);
+		
+		if(c == 0)
+		{
+			parse_command(s->text);
+			string_clear(c);
+		}
+		else
+			string_cat_char(s, c);
+		
+	//	fcntl(console_pipe[0], F_SETFL, O_NONBLOCK);
+	}
+	
+	free_string(s);
+}
+
+
 void main_thread()
 {
-	int epoll_fd = epoll_create(2);
+	int epoll_fd = epoll_create(3);
 	
 	struct epoll_event ev;
 	
@@ -268,6 +291,10 @@ void main_thread()
 	ev.events = EPOLLIN | EPOLLET;
 	ev.data.u32 = 1;
 	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, net_out_pipe[0], &ev);
+
+	ev.events = EPOLLIN | EPOLLET;
+	ev.data.u32 = 2;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, console_pipe[0], &ev);
 
 	while(1)
 	{
@@ -281,6 +308,10 @@ void main_thread()
 		
 		case 1:
 			process_network();
+			break;
+		
+		case 2:
+			process_console_pipe();
 			break;
 		}
 	}

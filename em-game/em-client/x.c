@@ -29,6 +29,7 @@
 #include "../common/buffer.h"
 #include "../gsub/gsub.h"
 #include "shared/timer.h"
+#include "shared/cvar.h"
 #include "console.h"
 #include "main.h"
 #include "entry.h"
@@ -36,7 +37,7 @@
 #include "render.h"
 #include "map.h"
 #include "game.h"
-#include "shared/cvar.h"
+
 
 Display *xdisplay;
 int xscreen;
@@ -280,8 +281,11 @@ void query_vid_modes()
 }
 
 
-void set_vid_mode(int mode)
+void set_vid_mode(int mode)	// use goto error crap
 {
+	pthread_mutex_lock(&x_mutex);	
+	
+	
 	struct vid_mode_t *cvid_mode = vid_mode0;
 		
 	while(mode)
@@ -366,6 +370,8 @@ void set_vid_mode(int mode)
 	
 	XShmAttach(xdisplay, shmseginfo);
 
+	
+	pthread_mutex_unlock(&x_mutex);
 }
 
 
@@ -373,6 +379,7 @@ void vid_mode_qc(int mode)
 {
 	vid_mode = mode;
 	set_vid_mode(mode);
+	
 	game_resolution_change();
 }
 
@@ -409,7 +416,7 @@ void *x_thread(void *a)
 			pthread_mutex_unlock(&x_mutex);
 			break;
 		
-		case 2:
+		case 1:
 			pthread_exit(NULL);
 			break;
 		}
