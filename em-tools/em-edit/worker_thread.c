@@ -41,6 +41,7 @@ int mypipe[2];
 int exit_worker_thread = 0;
 int worker_pid = 0;
 
+
 void *worker_thread(void *a)
 {
 	int worker_pid = getpid();
@@ -62,18 +63,6 @@ void *worker_thread(void *a)
 }
 
 
-void worker_thread_stop()
-{
-//	kill(worker_pid, SIGSTOP);
-}
-
-
-void worker_thread_cont()
-{
-//	kill(worker_pid, SIGCONT);
-}
-
-
 void signal_thread()
 {
 	pthread_mutex_lock(&lock);
@@ -84,9 +73,7 @@ void signal_thread()
 
 void call_start()
 {
-	worker_thread_cont();	// keep mr pthread happy
 	signal_thread();
-	worker_thread_stop();
 }
 
 
@@ -111,7 +98,6 @@ void start_worker_thread()
 void kill_worker_thread()
 {
 	exit_worker_thread = 1;
-	worker_thread_cont();	// worker thread could get time
 	signal_thread();
 	pthread_join(thread, NULL);
 	pthread_cond_destroy(&cond);
@@ -119,4 +105,3 @@ void kill_worker_thread()
 	close(mypipe[0]);
 	close(mypipe[1]);
 }
-

@@ -82,7 +82,6 @@ void update_client_area()
 
 gint on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer callback_data)
 {
-	worker_thread_stop();
 
 	switch(event->type)
 	{
@@ -98,15 +97,12 @@ gint on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer callback_data)
 		break;
 	}
 	
-	worker_thread_cont();
 	return TRUE;
 }
 
 
 gint on_button_press(GtkWidget *widget, GdkEventButton *event, gpointer callback_data)
 {
-	worker_thread_stop();
-
 	switch(event->button)
 	{
 	case 1:
@@ -118,15 +114,12 @@ gint on_button_press(GtkWidget *widget, GdkEventButton *event, gpointer callback
 		break;
 	}
 
-	worker_thread_cont();
 	return TRUE;
 }
 
 
 gint on_button_release(GtkWidget *widget, GdkEventButton *event, gpointer callback_data)
 {
-	worker_thread_stop();
-
 	switch(event->button)
 	{
 	case 1:
@@ -138,15 +131,12 @@ gint on_button_release(GtkWidget *widget, GdkEventButton *event, gpointer callba
 		break;
 	}
 	
-	worker_thread_cont();
 	return TRUE;
 }
 
 
 gint on_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer callback_data)
 {
-	worker_thread_stop();
-
 	switch(event->direction)
 	{
 	case GDK_SCROLL_UP:
@@ -164,15 +154,12 @@ gint on_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer callback_data)
 		break;
 	}
 	
-	worker_thread_cont();
 	return TRUE;
 }
 
 
 gint on_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer callback_data)
 {
-	worker_thread_stop();
-
 	int x, y;
 	
 	if(event->is_hint)
@@ -185,37 +172,28 @@ gint on_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer callbac
 	
 	mouse_move(x, y);
 	
-	worker_thread_cont();
 	return TRUE;
 }
 
 
 gint on_expose(GtkWidget *widget, GdkEventExpose *event, gpointer callback_data)
 {
-	worker_thread_stop();
-
 	if(image)
 	{
 		gdk_draw_image(drawing_area->window, gc, image, 0, 0, 0, 0, vid_width, vid_height);
 	}
 	
-	worker_thread_cont();
 	return TRUE;
 }
 
 
 gint on_configure(GtkWidget *widget, GdkEventConfigure *event, gpointer callback_data)
 {
-	worker_thread_stop();
-
 	if(!gc)
 		gc = gdk_gc_new(drawing_area->window);
 
 	if(vid_width == event->width && vid_height == event->height)
-	{
-		worker_thread_cont();
 		return TRUE;
-	}
 
 	if(event->width == 0 || event->height == 0)
 	{
@@ -231,7 +209,6 @@ gint on_configure(GtkWidget *widget, GdkEventConfigure *event, gpointer callback
 			s_backbuffer = NULL;
 		}
 		
-		worker_thread_cont();
 		return FALSE;
 	}
 	
@@ -259,16 +236,13 @@ gint on_configure(GtkWidget *widget, GdkEventConfigure *event, gpointer callback
 	
 	draw();
 
-	worker_thread_cont();
 	return TRUE;
 }
 
 
 gint on_delete(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-	worker_thread_stop();
 	quit();
-	worker_thread_cont();
 	return TRUE;
 }
 
@@ -291,9 +265,7 @@ void on_worker_callback(gpointer data, gint source, GdkInputCondition condition)
 	char c;
 	
 	read(mypipe[0], &c, 1);
-	worker_thread_stop();
 	job_complete_callback();
-	worker_thread_cont();
 }
 
 

@@ -37,9 +37,7 @@ pthread_mutex_t mutex;
 
 void enter_main_lock()
 {
-	worker_thread_cont();	// bad: worker might get time before
 	pthread_mutex_lock(&mutex);
-	worker_thread_stop();
 }
 
 
@@ -60,9 +58,7 @@ int worker_try_enter_main_lock()
 
 void leave_main_lock()
 {
-	worker_thread_cont();
 	pthread_mutex_unlock(&mutex);
-	worker_thread_stop();
 }
 
 

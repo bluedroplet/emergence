@@ -30,7 +30,4 @@ void kill_worker_thread();
 void post_job_finished();
 extern int mypipe[2];
 
-void worker_thread_stop();
-void worker_thread_cont();
-
 #endif	// _INC_WORKER_THREAD
