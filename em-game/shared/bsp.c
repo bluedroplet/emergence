@@ -74,8 +74,23 @@ error:
 }
 
 
+void delete_bsp_node(struct bspnode_t *node)
+{
+	if(node->front)
+		delete_bsp_node(node->front);
+
+	if(node->back)
+		delete_bsp_node(node->back);
+	
+	free(node);
+}
+
+
 int load_bsp_tree(gzFile file)
 {
+	if(bspnode0)
+		delete_bsp_node(bspnode0);
+	
 	bspnode0 = malloc(sizeof(struct bspnode_t));
 	read_bsp_node(file, bspnode0);
 	return 1;
