@@ -38,12 +38,30 @@ struct download_t
 
 int download_kill_pipe[2];
 pthread_t download_thread_id;
+int fdcount;
+
+
+int check_filename(char *cc)
+{
+	while(*cc)
+	{
+		if(*cc == '/')
+			return 0;
+		
+		cc++;
+	}
+	
+	return 1;
+}
 
 
 int start_download(struct download_t *download)
 {
 	struct stat buf;
-			
+		
+	if(!check_filename(download->filename->text))
+		return 0;
+	
 	struct string_t *filename = new_string_string(emergence_home_dir);
 	string_cat_text(filename, "/maps/");
 	string_cat_string(filename, download->filename);
@@ -52,14 +70,16 @@ int start_download(struct download_t *download)
 	if(stat(filename->text, &buf) == -1)
 	{
 		free_string(filename);
-		filename = new_string_text("stock-maps/");
-		string_cat_string(filename, download->filename);
-		string_cat_text(filename, ".cmap");
+		struct string_t *search = new_string_text("stock-maps/");
+		string_cat_string(search, download->filename);
+		string_cat_text(search, ".cmap");
+		
+		filename = new_string(find_resource(search->text));
+		free_string(search);
 	
-		if(stat(find_resource(filename->text), &buf) == -1)
+		if(stat(filename->text, &buf) == -1)
 		{
-			int i = 0;
-			write(download->net_fd, &i, 4);
+			free_string(filename);
 			return 0;
 		}
 	}
@@ -68,19 +88,13 @@ int start_download(struct download_t *download)
 	free_string(filename);
 	
 	if(download->file_fd == -1)
-	{
-		int i = 0;
-		write(download->net_fd, &i, 4);
 		return 0;
-	}
 	
 	download->size = buf.st_size;
 	download->offset = 0;
 	
-	send(download->net_fd, &download->size, 4, 0);
-	
-	sendfile(download->net_fd, download->file_fd, 
-		&download->offset, download->size - download->offset);
+	if(send(download->net_fd, &download->size, 4, 0) < 0)
+		return 0;
 	
 	return 1;
 }
@@ -92,6 +106,7 @@ void remove_download(struct download_t *download)
 	close(download->net_fd);
 	close(download->file_fd);
 	LL_REMOVE(struct download_t, &download0, download);
+	fdcount--;
 }
 
 
@@ -99,7 +114,7 @@ void *download_thread(void *a)
 {
 	int listen_fd = socket(PF_INET, SOCK_STREAM, 0);
 	if(listen_fd < 0)
-		server_libc_error("socket failure");
+		pthread_exit(NULL);
 
 	struct sockaddr_in name;
 	name.sin_family = AF_INET;
@@ -107,21 +122,32 @@ void *download_thread(void *a)
 	name.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if(bind(listen_fd, (struct sockaddr *) &name, sizeof (name)) < 0)
-		server_libc_error("bind failure");
+	{
+		close(listen_fd);
+		pthread_exit(NULL);
+	}
 
 	if(listen(listen_fd, 1) < 0)
-		server_libc_error("listen failure");
+	{
+		close(listen_fd);
+		pthread_exit(NULL);
+	}
 	
-	fcntl(listen_fd, F_SETFL, O_NONBLOCK);
+	if(fcntl(listen_fd, F_SETFL, O_NONBLOCK) < 0)
+	{
+		close(listen_fd);
+		pthread_exit(NULL);
+	}
 	
-	int fdcount = 2;
-	
+	fdcount = 2;
+	struct pollfd *fds = NULL;
+		
 	while(1)
 	{
-		struct pollfd *fds;
 		int cfd;
 		struct download_t *cdownload, *temp;
 			
+		free(fds);
 		fds = calloc(sizeof(struct pollfd), fdcount);
 			
 		fds[0].fd = download_kill_pipe[0];
@@ -146,25 +172,25 @@ void *download_thread(void *a)
 			cfd++;
 		}
 		
-		if(poll(fds, fdcount, -1) == -1)
+		retry:
+		
+		if(poll(fds, fdcount, -1) < 0)
 		{
 			if(errno == EINTR)	// why is this necessary?
-				continue;
+				goto retry;
 			
-			return NULL;
+			while(download0)
+				remove_download(download0);
+			
+			free(fds);
+			pthread_exit(NULL);
 		}
 		
 		if(fds[0].revents & POLLIN)
 		{
-			cdownload = download0;
-			while(cdownload)
-			{
-				close(cdownload->net_fd);
-				close(cdownload->file_fd);
-				LL_NEXT(cdownload);
-			}
+			while(download0)
+				remove_download(download0);
 			
-			LL_REMOVE_ALL(struct download_t, &download0);
 			free(fds);
 			pthread_exit(NULL);
 		}
@@ -177,9 +203,19 @@ void *download_thread(void *a)
 			
 			if(download.net_fd != -1)
 			{
-				fcntl(download.net_fd, F_SETFL, O_NONBLOCK);
+				if(fcntl(download.net_fd, F_SETFL, O_NONBLOCK) < 0)
+				{
+					close(download.net_fd);
+					continue;
+				}
+				
 				int i = 1;
-				setsockopt(download.net_fd, SOL_TCP, TCP_CORK, &i, 4);
+				if(setsockopt(download.net_fd, SOL_TCP, TCP_CORK, &i, 4) < 0)
+				{
+					close(download.net_fd);
+					continue;
+				}
+				
 				download.file_fd = -1;
 				download.filename = new_string();
 				
@@ -207,7 +243,8 @@ void *download_thread(void *a)
 				if(fds[cfd].revents & POLLIN)
 				{
 					char c;
-					if(recv(cdownload->net_fd, &c, 1, 0) != -1)
+					int r = 0;
+					while(recv(cdownload->net_fd, &c, 1, 0) > 0)	// TODO : handle errors
 					{
 						if(c != 0)
 						{
@@ -221,10 +258,15 @@ void *download_thread(void *a)
 								remove_download(cdownload);
 								cdownload = temp;
 								cfd++;
-								continue;
+								r = 1;
 							}
+							
+							break;
 						}
 					}
+					
+					if(r)
+						continue;
 				}
 			}
 			else
@@ -236,7 +278,6 @@ void *download_thread(void *a)
 					
 					if(cdownload->offset == cdownload->size)
 					{
-						printf("%i\n", cdownload->size);
 						temp = cdownload->next;
 						remove_download(cdownload);
 						cdownload = temp;

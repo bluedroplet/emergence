@@ -19,9 +19,11 @@
 
 #include "../common/stringbuf.h"
 #include "../common/user.h"
+#include "../gsub/gsub.h"
 #include "shared/network.h"
 #include "game.h"
 #include "map.h"
+#include "render.h"
 
 int download_in_pipe[2];
 int download_out_pipe[2];
@@ -31,67 +33,18 @@ pthread_t download_thread_id;
 #define DOWNLOAD_THREAD_IN_DOWNLOAD_FILE		1
 #define DOWNLOAD_THREAD_IN_STOP_DOWNLOADING		2
 
-#define DOWNLOAD_THREAD_OUT_DOWNLOAD_COMPLETED	0
-#define DOWNLOAD_THREAD_OUT_DOWNLOAD_FAILED		1
+#define DOWNLOAD_THREAD_OUT_DOWNLOAD_PROGRESS	0
+#define DOWNLOAD_THREAD_OUT_DOWNLOAD_COMPLETED	1
+#define DOWNLOAD_THREAD_OUT_DOWNLOAD_FAILED		2
 
 int download_net_fd = -1, download_file_fd = -1;
 off_t download_size, download_offset;
 
-int start_downloading_map(char *map_name)
-{
-	download_net_fd = socket(PF_INET, SOCK_STREAM, 0);
-	if(download_net_fd < 0)
-		return 0;
-	//	client_libc_error("socket failure");
-printf("1\n");
-	
-	
-	struct sockaddr_in sockaddr;
-	get_sockaddr_in_from_conn(game_conn, &sockaddr);
-	
-	if(connect(download_net_fd, &sockaddr, sizeof(struct sockaddr_in)) < 0)
-	{
-		close(download_net_fd);
-		download_net_fd = -1;
-		return 0;
-	}
-	
-printf("2\n");
-	send(download_net_fd, map_name, strlen(map_name) + 1, 0);
-	
-	struct string_t *filename = new_string_string(emergence_home_dir);
-	string_cat_text(filename, "/maps/");
-	string_cat_text(filename, map_name);
-	string_cat_text(filename, ".cmap");
-	
-	download_file_fd = open(filename->text, O_CREAT | O_WRONLY | O_TRUNC | /*O_NONBLOCK |*/ O_NOFOLLOW, 
-		S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-	printf(filename->text);
-	free_string(filename);
-	
-printf("3\n");
-	if(download_file_fd < 0)
-	{
-		close(download_file_fd);
-		download_file_fd = -1;
-		close(download_net_fd);
-		download_net_fd = -1;
-		return 0;
-	}
-	
-printf("4\n");
-	recv(download_net_fd, &download_size, 4, 0);
+uint8_t *download_buf;
 
-	fcntl(download_net_fd, F_SETFL, O_NONBLOCK);
+#define DOWNLOAD_BUF_SIZE 65536
 
-	download_offset = 0;
-
-//	sendfile(download_file_fd, download_net_fd, 
-//		&download_offset, download_size);
-	
-printf("5\n");
-	return 1;
-}
+int map_download_progress;
 
 
 void _stop_downloading_map()
@@ -104,24 +57,72 @@ void _stop_downloading_map()
 }
 
 
+int start_downloading_map(char *map_name)
+{
+	download_net_fd = socket(PF_INET, SOCK_STREAM, 0);
+	if(download_net_fd < 0)
+		return 0;
+	//	client_libc_error("socket failure");
+	
+	struct sockaddr_in sockaddr;
+	get_sockaddr_in_from_conn(game_conn, &sockaddr);
+	
+	if(connect(download_net_fd, &sockaddr, sizeof(struct sockaddr_in)) < 0)
+	{
+		_stop_downloading_map();
+		return 0;
+	}
+	
+	send(download_net_fd, map_name, strlen(map_name) + 1, 0);
+	
+	struct string_t *filename = new_string_string(emergence_home_dir);
+	string_cat_text(filename, "/maps/");
+	string_cat_text(filename, map_name);
+	string_cat_text(filename, ".cmap");
+	
+	download_file_fd = open(filename->text, O_CREAT | O_WRONLY | O_TRUNC | O_NOFOLLOW, 
+		S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	free_string(filename);
+	
+	if(download_file_fd < 0)
+	{
+		_stop_downloading_map();
+		return 0;
+	}
+	
+	if(recv(download_net_fd, &download_size, 4, 0) <= 0)
+	{
+		_stop_downloading_map();
+		return 0;
+	}
+
+	fcntl(download_net_fd, F_SETFL, O_NONBLOCK);
+
+	download_offset = 0;
+
+	return 1;
+}
+
+
 void *download_thread(void *a)
 {
+	struct pollfd *fds;
 	uint8_t msg;
 	char c;
 	struct string_t *map_name = new_string();
+	download_buf = malloc(DOWNLOAD_BUF_SIZE);
+	
+	fds = calloc(sizeof(struct pollfd), 2);
 	
 	while(1)
 	{
-		struct pollfd *fds;
 		int fdcount;
-			
+		
 		if(download_net_fd != -1)
 			fdcount = 2;
 		else
 			fdcount = 1;
-			
-		fds = calloc(sizeof(struct pollfd), fdcount);
-			
+		
 		fds[0].fd = download_in_pipe[0];
 		fds[0].events = POLLIN;
 		
@@ -130,13 +131,19 @@ void *download_thread(void *a)
 			fds[1].fd = download_net_fd;
 			fds[1].events = POLLIN;
 		}
-			
+		
+		retry:
+		
 		if(poll(fds, fdcount, -1) == -1)
 		{
 			if(errno == EINTR)	// why is this necessary?
-				continue;
+				goto retry;
 			
-			return NULL;
+			_stop_downloading_map();
+			free_string(map_name);
+			free(download_buf);
+			free(fds);
+			pthread_exit(NULL);
 		}
 		
 		if(fds[0].revents & POLLIN)
@@ -146,10 +153,15 @@ void *download_thread(void *a)
 			switch(msg)
 			{
 			case DOWNLOAD_THREAD_IN_SHUTDOWN:
+				_stop_downloading_map();
+				free_string(map_name);
+				free(download_buf);
+				free(fds);
 				pthread_exit(NULL);
 			
 			case DOWNLOAD_THREAD_IN_DOWNLOAD_FILE:
 				
+				string_clear(map_name);
 				read(download_in_pipe[0], &c, 1);
 			
 				while(c)
@@ -158,16 +170,16 @@ void *download_thread(void *a)
 					read(download_in_pipe[0], &c, 1);
 				}
 				
-				printf("%s\n", map_name->text);
-				
 				if(download_net_fd != -1)
 					_stop_downloading_map();
 				
-				if(start_downloading_map(map_name->text))
-					;
+				if(!start_downloading_map(map_name->text))
+				{
+					msg = DOWNLOAD_THREAD_OUT_DOWNLOAD_FAILED;
+					write(download_out_pipe[1], &msg, 1);
+				}
 				
 				break;
-				
 				
 			case DOWNLOAD_THREAD_IN_STOP_DOWNLOADING:
 				_stop_downloading_map();
@@ -185,30 +197,34 @@ void *download_thread(void *a)
 			
 			if(fds[1].revents & POLLIN)
 			{
-			//	if(sendfile(download_file_fd, download_net_fd, 
-			//		&download_offset, download_size - download_offset) < 0)
-			//	perror(NULL);
+				int r = recv(download_net_fd, download_buf, DOWNLOAD_BUF_SIZE, 0);
 				
-			/*	printf("download_file_fd: %i\ndownload_net_fd: %i\ndownload_offset: %i\ndownload_size: %i\n",
-					download_file_fd, download_net_fd, download_offset, download_size);
-			*/	
-				
-				char buf[64];
-				
-				int r = recv(download_net_fd, buf, 64, 0);
+				if(r < 0)
+					continue;
 				
 				if(r == 0)
 				{
 					_stop_downloading_map();
-					break;
+					msg = DOWNLOAD_THREAD_OUT_DOWNLOAD_FAILED;
+					write(download_out_pipe[1], &msg, 1);
+					continue;
 				}
 				
-				write(download_file_fd, buf, r);
-				
+				write(download_file_fd, download_buf, r);
+				download_offset += r;
 				
 				if(download_offset == download_size)
 				{
-					;
+					_stop_downloading_map();
+					msg = DOWNLOAD_THREAD_OUT_DOWNLOAD_COMPLETED;
+					write(download_out_pipe[1], &msg, 1);
+				}
+				else
+				{
+					msg = DOWNLOAD_THREAD_OUT_DOWNLOAD_PROGRESS;
+					write(download_out_pipe[1], &msg, 1);
+					msg = (download_offset * 100) / download_size;
+					write(download_out_pipe[1], &msg, 1);
 				}
 			}
 		}
@@ -218,12 +234,12 @@ void *download_thread(void *a)
 
 void download_map(char *map_name)
 {
+	map_download_progress = 0;
+	
 	uint8_t m = DOWNLOAD_THREAD_IN_DOWNLOAD_FILE;
 	write(download_in_pipe[1], &m, 1);
 	
 	char *cc = map_name;
-	
-	printf("---%s\n", map_name);
 	
 	while(*cc)
 	{
@@ -270,6 +286,11 @@ void process_download_out_pipe()
 
 	switch(msg)
 	{
+	case DOWNLOAD_THREAD_OUT_DOWNLOAD_PROGRESS:
+		read(download_out_pipe[0], &msg, 1);
+		map_download_progress = msg;
+		break;
+	
 	case DOWNLOAD_THREAD_OUT_DOWNLOAD_COMPLETED:
 		game_process_map_downloaded();
 		break;
@@ -278,4 +299,14 @@ void process_download_out_pipe()
 		game_process_map_download_failed();
 		break;
 	}
+}
+
+
+void render_map_downloading()
+{
+	blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "Downloading map...");
+
+	blit_text_centered(vid_width / 2, vid_height / 6 + 14, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "[%i%%]", map_download_progress);
 }

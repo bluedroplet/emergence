@@ -133,6 +133,9 @@ void process_network()
 
 	while(1)
 	{
+		if(downloading_map)
+			break;
+		
 		uint32_t m;
 		if(read(net_out_pipe[0], &m, 4) == -1)
 			break;

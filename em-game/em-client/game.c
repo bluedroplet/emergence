@@ -43,6 +43,7 @@
 #include "floats.h"
 #include "ris.h"
 #include "key.h"
+#include "download.h"
 
 #ifdef LINUX
 #include "shared/timer.h"
@@ -972,6 +973,13 @@ int game_process_playing()
 	
 	if(game_state == GAMESTATE_AWAITING_APPROVAL)
 		console_print("\xab\n");
+	
+	if(!map_loaded)
+	{
+		game_state = GAMESTATE_DEAD;
+		em_disconnect(game_conn);
+		return 0;
+	}
 	
 	game_state0 = calloc(1, sizeof(struct game_state_t));
 	game_state0->tick = message_reader_read_uint32();		// oh dear
@@ -4681,6 +4689,9 @@ void render_health_and_ammo()
 
 void render_game()
 {
+	if(downloading_map)
+		render_map_downloading();
+	
 	if(!game_rendering)
 		return;
 	

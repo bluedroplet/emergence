@@ -47,7 +47,7 @@ int r_DrawBSPTree = 0;
 
 struct string_t *map_name;
 int downloading_map = 0;
-
+int map_loaded = 0;
 
 int load_map_tiles(gzFile gzfile)
 {
@@ -294,6 +294,7 @@ int load_map(char *map_name)
 	
 	create_teleporter_sparkles();
 
+	map_loaded = 1;
 	console_print("Map loaded ok.\n");
 	render_frame();
 	
@@ -304,6 +305,7 @@ int load_map(char *map_name)
 
 int game_process_load_map()
 {
+	map_loaded = 0;
 	map_name = message_reader_read_string();
 	
 	load_map(map_name->text);
@@ -314,14 +316,15 @@ int game_process_load_map()
 
 void game_process_map_downloaded()
 {
-	load_map(map_name->text);
 	downloading_map = 0;
+	load_map(map_name->text);
 }
 
 
 void game_process_map_download_failed()
 {
-	;
+	downloading_map = 0;
+	console_print("Map downloading failed.\n");
 }
 
 

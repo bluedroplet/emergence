@@ -8,3 +8,4 @@ void reload_map();
 
 extern struct string_t *map_name;
 extern int downloading_map;
+extern int map_loaded;
