@@ -1,6 +1,6 @@
 #!/bin/bash -v
 
-ver=0.7
+ver=0.8-dev
 
 cd ../em-tools
 make distclean
@@ -16,11 +16,11 @@ autoconf-2.59 || exit
 
 cd ../em-tools
 
-#./configure || exit
+./configure || exit
 
-#make distcheck || exit
+make distcheck || exit
 
-#cp em-tools-$ver.tar.bz2 ../dist/em-tools-$ver-src.tbz2
+cp em-tools-$ver.tar.bz2 ../dist/em-tools-$ver-src.tbz2
 
 cd ../dist
 
@@ -68,14 +68,14 @@ cd ..
 
 
 cd ../em-tools
-#make clean
+make clean
 
-#./configure --prefix=/usr || exit
-#make || exit
-#make prefix=${D}/usr \
-#		    bindir=${D}/usr/bin \
-#		    datadir=${D}/usr/share \
-#		    install || exit
+./configure --prefix=/usr || exit
+make || exit
+make prefix=${D}/usr \
+		    bindir=${D}/usr/bin \
+		    datadir=${D}/usr/share \
+		    install || exit
 
 
 cd ../dist/emergence
@@ -123,11 +123,11 @@ make prefix=${D} \
 
 cd ../em-tools
 
-#make prefix=${D} \
-#		bindir=${D} \
-#		datadir=${D} \
-#		pkgdatadir=${D} \
-#		install || exit
+make prefix=${D} \
+		bindir=${D} \
+		datadir=${D} \
+		pkgdatadir=${D} \
+		install || exit
 
 
 cd ../dist
@@ -173,5 +173,5 @@ cd ../dist/
 strip emergence/em-client || exit
 strip emergence/em-server || exit
 
-tar --owner=0 --group=0 --numeric-owner -cjf emergence-$ver-nonauth-$arch-linux-home.tbz2 emergence || exit
+tar --owner=0 --group=0 --numeric-owner -cjf em-game-$ver-nonauth-$arch-linux-home.tbz2 emergence || exit
 
