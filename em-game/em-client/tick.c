@@ -122,7 +122,7 @@ uint32_t get_game_tick()
 
 double get_time_from_game_tick(double tick)
 {
-	return (tick - tick_a) / (tick_b * (double)counts_per_second) + 
+	return ((tick - tick_a) / tick_b - start_count) / (double)counts_per_second + 
 		(latency * (tracking - 1.0) - time_shift);
 }
 
