@@ -468,7 +468,7 @@ void run_open_dialog()
 	
 	/* Filters */
 	filter = gtk_file_filter_new ();
-	gtk_file_filter_set_name (filter, "All Map Files");
+	gtk_file_filter_set_name (filter, "All Emergence Maps");
 	gtk_file_filter_add_pattern (filter, "*.map");
 	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (file_chooser), filter);
 
@@ -554,7 +554,7 @@ gboolean cancel(GtkFileSelection *file_selection)
 
 int run_save_dialog()	// returns 0 if user canceled
 {
-	GtkWidget *file_chooser = gtk_file_chooser_dialog_new("Open Map", GTK_WINDOW(window), 
+	GtkWidget *file_chooser = gtk_file_chooser_dialog_new("Save Map", GTK_WINDOW(window), 
 		GTK_FILE_CHOOSER_ACTION_SAVE,
 		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
 		GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
@@ -565,7 +565,7 @@ int run_save_dialog()	// returns 0 if user canceled
 	
 	/* Filters */
 	filter = gtk_file_filter_new ();
-	gtk_file_filter_set_name (filter, "All Map Files");
+	gtk_file_filter_set_name (filter, "All Emergence Maps");
 	gtk_file_filter_add_pattern (filter, "*.map");
 	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (file_chooser), filter);
 
