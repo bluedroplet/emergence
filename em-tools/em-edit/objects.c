@@ -685,8 +685,16 @@ void on_rocket_launcher_angle_spinbutton_value_changed(GtkSpinButton *spinbutton
 	
 	stop_working();
 	
-	object->rocket_launcher_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI);
-
+	int value = gtk_spin_button_get_value(spinbutton);
+	
+/*	if(value == 180)
+	{
+		value = -180;
+		gtk_spin_button_set_value(spinbutton, value);
+	}
+*/	
+	object->rocket_launcher_data.angle = value / (180.0 / M_PI);
+	
 	invalidate_object_type(OBJECTTYPE_ROCKETLAUNCHER);
 	
 	update_client_area();

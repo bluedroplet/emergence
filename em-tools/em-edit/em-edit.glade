@@ -205,13 +205,13 @@
 		<widget class="GtkSpinButton" id="angle_spinbutton">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="climb_rate">0.01</property>
-		  <property name="digits">2</property>
+		  <property name="climb_rate">1</property>
+		  <property name="digits">0</property>
 		  <property name="numeric">True</property>
 		  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 		  <property name="snap_to_ticks">False</property>
 		  <property name="wrap">True</property>
-		  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+		  <property name="adjustment">0 -180 180 1 45 0</property>
 		  <signal name="value_changed" handler="on_rocket_launcher_angle_spinbutton_value_changed" last_modification_time="Sun, 05 Jan 2003 05:18:34 GMT"/>
 		  <signal name="button_press_event" handler="on_rocket_launcher_angle_spinbutton_button_press_event" last_modification_time="Wed, 29 Jan 2003 22:07:18 GMT"/>
 		  <signal name="button_release_event" handler="on_rocket_launcher_angle_spinbutton_button_release_event" last_modification_time="Wed, 29 Jan 2003 22:08:02 GMT"/>
@@ -553,13 +553,13 @@
 		<widget class="GtkSpinButton" id="angle_spinbutton">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="climb_rate">0.01</property>
-		  <property name="digits">2</property>
+		  <property name="climb_rate">1</property>
+		  <property name="digits">0</property>
 		  <property name="numeric">True</property>
 		  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 		  <property name="snap_to_ticks">False</property>
 		  <property name="wrap">True</property>
-		  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+		  <property name="adjustment">0 -180 180 1 45 0</property>
 		  <signal name="value_changed" handler="on_speedup_ramp_angle_spinbutton_value_changed" last_modification_time="Thu, 02 Jan 2003 15:24:43 GMT"/>
 		  <signal name="button_press_event" handler="on_speedup_ramp_angle_spinbutton_button_press_event" last_modification_time="Wed, 29 Jan 2003 22:11:20 GMT"/>
 		  <signal name="button_release_event" handler="on_speedup_ramp_angle_spinbutton_button_release_event" last_modification_time="Wed, 29 Jan 2003 22:11:27 GMT"/>
@@ -897,13 +897,13 @@
 		<widget class="GtkSpinButton" id="angle_spinbutton">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="climb_rate">0.01</property>
-		  <property name="digits">2</property>
+		  <property name="climb_rate">1</property>
+		  <property name="digits">0</property>
 		  <property name="numeric">True</property>
 		  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 		  <property name="snap_to_ticks">False</property>
 		  <property name="wrap">True</property>
-		  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+		  <property name="adjustment">0 -180 180 1 45 0</property>
 		  <signal name="value_changed" handler="on_minigun_angle_spinbutton_value_changed" last_modification_time="Thu, 02 Jan 2003 15:25:26 GMT"/>
 		  <signal name="button_press_event" handler="on_minigun_angle_spinbutton_button_press_event" last_modification_time="Wed, 29 Jan 2003 22:12:53 GMT"/>
 		  <signal name="button_release_event" handler="on_minigun_angle_spinbutton_button_release_event" last_modification_time="Wed, 29 Jan 2003 22:13:08 GMT"/>
@@ -1187,13 +1187,13 @@
 		<widget class="GtkSpinButton" id="angle_spinbutton">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="climb_rate">0.01</property>
-		  <property name="digits">2</property>
+		  <property name="climb_rate">1</property>
+		  <property name="digits">0</property>
 		  <property name="numeric">True</property>
 		  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 		  <property name="snap_to_ticks">False</property>
 		  <property name="wrap">True</property>
-		  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+		  <property name="adjustment">0 -180 180 1 45 0</property>
 		  <signal name="value_changed" handler="on_plasma_cannon_angle_spinbutton_value_changed" last_modification_time="Wed, 29 Jan 2003 20:04:53 GMT"/>
 		  <signal name="button_press_event" handler="on_plasma_cannon_angle_spinbutton_button_press_event" last_modification_time="Wed, 29 Jan 2003 21:06:18 GMT"/>
 		  <signal name="button_release_event" handler="on_plasma_cannon_angle_spinbutton_button_release_event" last_modification_time="Wed, 29 Jan 2003 21:06:32 GMT"/>
@@ -1477,13 +1477,13 @@
 		<widget class="GtkSpinButton" id="angle_spinbutton">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="climb_rate">0.01</property>
-		  <property name="digits">2</property>
+		  <property name="climb_rate">1</property>
+		  <property name="digits">0</property>
 		  <property name="numeric">True</property>
 		  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 		  <property name="snap_to_ticks">False</property>
 		  <property name="wrap">True</property>
-		  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+		  <property name="adjustment">0 -180 180 1 45 0</property>
 		  <signal name="value_changed" handler="on_rails_angle_spinbutton_value_changed" last_modification_time="Thu, 02 Jan 2003 15:26:27 GMT"/>
 		  <signal name="button_press_event" handler="on_rails_angle_spinbutton_button_press_event" last_modification_time="Wed, 29 Jan 2003 22:14:42 GMT"/>
 		  <signal name="button_release_event" handler="on_rails_angle_spinbutton_button_release_event" last_modification_time="Wed, 29 Jan 2003 22:14:52 GMT"/>
@@ -1765,13 +1765,13 @@
 		<widget class="GtkSpinButton" id="angle_spinbutton">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="climb_rate">0.01</property>
-		  <property name="digits">2</property>
+		  <property name="climb_rate">1</property>
+		  <property name="digits">0</property>
 		  <property name="numeric">True</property>
 		  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 		  <property name="snap_to_ticks">False</property>
 		  <property name="wrap">True</property>
-		  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+		  <property name="adjustment">0 -180 180 1 45 0</property>
 		  <signal name="value_changed" handler="on_shield_energy_angle_spinbutton_value_changed" last_modification_time="Thu, 02 Jan 2003 15:26:54 GMT"/>
 		  <signal name="button_press_event" handler="on_shield_energy_angle_spinbutton_button_press_event" last_modification_time="Wed, 29 Jan 2003 22:15:54 GMT"/>
 		  <signal name="button_release_event" handler="on_shield_energy_angle_spinbutton_button_release_event" last_modification_time="Wed, 29 Jan 2003 22:16:01 GMT"/>
@@ -2099,13 +2099,13 @@
 			<widget class="GtkSpinButton" id="angle_spinbutton">
 			  <property name="visible">True</property>
 			  <property name="can_focus">True</property>
-			  <property name="climb_rate">0.01</property>
-			  <property name="digits">2</property>
+			  <property name="climb_rate">1</property>
+			  <property name="digits">0</property>
 			  <property name="numeric">True</property>
 			  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 			  <property name="snap_to_ticks">False</property>
 			  <property name="wrap">True</property>
-			  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+			  <property name="adjustment">0 -180 180 1 45 0</property>
 			  <signal name="value_changed" handler="on_spawn_point_angle_spinbutton_value_changed" last_modification_time="Thu, 02 Jan 2003 15:27:32 GMT"/>
 			  <signal name="button_press_event" handler="on_spawn_point_angle_spinbutton_button_press_event" last_modification_time="Wed, 29 Jan 2003 22:17:33 GMT"/>
 			  <signal name="button_release_event" handler="on_spawn_point_angle_spinbutton_button_release_event" last_modification_time="Wed, 29 Jan 2003 22:17:43 GMT"/>
@@ -2480,13 +2480,13 @@
 			<widget class="GtkSpinButton" id="angle_spinbutton">
 			  <property name="visible">True</property>
 			  <property name="can_focus">True</property>
-			  <property name="climb_rate">0.01</property>
-			  <property name="digits">2</property>
+			  <property name="climb_rate">1</property>
+			  <property name="digits">0</property>
 			  <property name="numeric">True</property>
 			  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 			  <property name="snap_to_ticks">False</property>
 			  <property name="wrap">True</property>
-			  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+			  <property name="adjustment">0 -180 180 1 45 0</property>
 			  <signal name="value_changed" handler="on_gravity_well_angle_spinbutton_value_changed" last_modification_time="Thu, 02 Jan 2003 15:28:10 GMT"/>
 			  <signal name="button_press_event" handler="on_gravity_well_angle_spinbutton_button_press_event" last_modification_time="Wed, 29 Jan 2003 22:20:40 GMT"/>
 			  <signal name="button_release_event" handler="on_gravity_well_angle_spinbutton_button_release_event" last_modification_time="Wed, 29 Jan 2003 22:20:51 GMT"/>
@@ -2861,13 +2861,13 @@
 			<widget class="GtkSpinButton" id="angle_spinbutton">
 			  <property name="visible">True</property>
 			  <property name="can_focus">True</property>
-			  <property name="climb_rate">0.01</property>
-			  <property name="digits">2</property>
+			  <property name="climb_rate">1</property>
+			  <property name="digits">0</property>
 			  <property name="numeric">True</property>
 			  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 			  <property name="snap_to_ticks">False</property>
 			  <property name="wrap">True</property>
-			  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+			  <property name="adjustment">0 -180 180 1 45 0</property>
 			  <signal name="value_changed" handler="on_teleporter_angle_spinbutton_value_changed" last_modification_time="Thu, 02 Jan 2003 15:28:53 GMT"/>
 			  <signal name="button_press_event" handler="on_teleporter_angle_spinbutton_button_press_event" last_modification_time="Wed, 29 Jan 2003 22:23:02 GMT"/>
 			  <signal name="button_release_event" handler="on_teleporter_angle_spinbutton_button_release_event" last_modification_time="Thu, 30 Jan 2003 14:46:02 GMT"/>
@@ -3106,13 +3106,13 @@
 		<widget class="GtkSpinButton" id="rotate_entity_spinbutton">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="climb_rate">0.01</property>
-		  <property name="digits">2</property>
+		  <property name="climb_rate">1</property>
+		  <property name="digits">0</property>
 		  <property name="numeric">True</property>
 		  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 		  <property name="snap_to_ticks">False</property>
 		  <property name="wrap">True</property>
-		  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+		  <property name="adjustment">0 -180 180 1 45 0</property>
 		  <signal name="value_changed" handler="on_teleporter_rotate_entity_spinbutton_value_changed" last_modification_time="Thu, 02 Jan 2003 15:29:33 GMT"/>
 		</widget>
 		<packing>
@@ -6034,13 +6034,13 @@
 		<widget class="GtkSpinButton" id="angle_spinbutton">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="climb_rate">0.01</property>
-		  <property name="digits">2</property>
+		  <property name="climb_rate">1</property>
+		  <property name="digits">0</property>
 		  <property name="numeric">True</property>
 		  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 		  <property name="snap_to_ticks">False</property>
 		  <property name="wrap">True</property>
-		  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+		  <property name="adjustment">0 -180 180 1 45 0</property>
 		  <signal name="value_changed" handler="on_end_node_angle_spinbutton_value_changed" last_modification_time="Thu, 30 Jan 2003 14:52:10 GMT"/>
 		  <signal name="button_press_event" handler="on_end_node_angle_spinbutton_button_press_event" last_modification_time="Thu, 30 Jan 2003 14:59:03 GMT"/>
 		  <signal name="button_release_event" handler="on_end_node_angle_spinbutton_button_release_event" last_modification_time="Thu, 30 Jan 2003 14:59:10 GMT"/>
@@ -6853,13 +6853,13 @@
 		<widget class="GtkSpinButton" id="angle_spinbutton">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="climb_rate">0.01</property>
-		  <property name="digits">2</property>
+		  <property name="climb_rate">1</property>
+		  <property name="digits">0</property>
 		  <property name="numeric">True</property>
 		  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 		  <property name="snap_to_ticks">False</property>
 		  <property name="wrap">True</property>
-		  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+		  <property name="adjustment">0 -180 180 1 45 0</property>
 		  <signal name="value_changed" handler="on_crossover_node_angle_spinbutton_value_changed" last_modification_time="Thu, 30 Jan 2003 12:37:23 GMT"/>
 		  <signal name="button_press_event" handler="on_crossover_node_angle_spinbutton_button_press_event" last_modification_time="Thu, 30 Jan 2003 15:06:25 GMT"/>
 		  <signal name="button_release_event" handler="on_crossover_node_angle_spinbutton_button_release_event" last_modification_time="Thu, 30 Jan 2003 15:06:32 GMT"/>
@@ -7143,13 +7143,13 @@
 		<widget class="GtkSpinButton" id="angle_spinbutton">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="climb_rate">0.01</property>
-		  <property name="digits">2</property>
+		  <property name="climb_rate">1</property>
+		  <property name="digits">0</property>
 		  <property name="numeric">True</property>
 		  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 		  <property name="snap_to_ticks">False</property>
 		  <property name="wrap">True</property>
-		  <property name="adjustment">0 -180 179.99 0.01 1 1</property>
+		  <property name="adjustment">0 -180 180 1 45 0</property>
 		  <signal name="value_changed" handler="on_straight_through_node_angle_spinbutton_value_changed" last_modification_time="Thu, 06 Feb 2003 12:23:56 GMT"/>
 		  <signal name="button_press_event" handler="on_straight_through_node_angle_spinbutton_button_press_event" last_modification_time="Thu, 06 Feb 2003 12:24:01 GMT"/>
 		  <signal name="button_release_event" handler="on_straight_through_node_angle_spinbutton_button_release_event" last_modification_time="Thu, 06 Feb 2003 12:24:07 GMT"/>

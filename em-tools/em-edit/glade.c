@@ -108,8 +108,8 @@ create_rocket_launcher_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (hbox36), label77, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label77), 0, 0.5);
 
-  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 0.01, 2);
+  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 1, 0);
   gtk_widget_show (angle_spinbutton);
   gtk_box_pack_start (GTK_BOX (hbox36), angle_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (angle_spinbutton), TRUE);
@@ -295,8 +295,8 @@ create_speedup_ramp_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (hbox24), label79, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label79), 0, 0.5);
 
-  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 0.01, 2);
+  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 1, 0);
   gtk_widget_show (angle_spinbutton);
   gtk_box_pack_start (GTK_BOX (hbox24), angle_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (angle_spinbutton), TRUE);
@@ -498,8 +498,8 @@ create_minigun_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (hbox34), label52, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label52), 0, 0.5);
 
-  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 0.01, 2);
+  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 1, 0);
   gtk_widget_show (angle_spinbutton);
   gtk_box_pack_start (GTK_BOX (hbox34), angle_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (angle_spinbutton), TRUE);
@@ -662,8 +662,8 @@ create_plasma_cannon_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (hbox27), label35, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label35), 0, 0.5);
 
-  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 0.01, 2);
+  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 1, 0);
   gtk_widget_show (angle_spinbutton);
   gtk_box_pack_start (GTK_BOX (hbox27), angle_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (angle_spinbutton), TRUE);
@@ -826,8 +826,8 @@ create_rails_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (hbox30), label47, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label47), 0, 0.5);
 
-  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 0.01, 2);
+  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 1, 0);
   gtk_widget_show (angle_spinbutton);
   gtk_box_pack_start (GTK_BOX (hbox30), angle_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (angle_spinbutton), TRUE);
@@ -988,8 +988,8 @@ create_shield_energy_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (hbox53), label72, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label72), 0, 0.5);
 
-  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 0.01, 2);
+  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 1, 0);
   gtk_widget_show (angle_spinbutton);
   gtk_box_pack_start (GTK_BOX (hbox53), angle_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (angle_spinbutton), TRUE);
@@ -1173,8 +1173,8 @@ create_spawn_point_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (hbox56), label75, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label75), 0, 0.5);
 
-  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 0.01, 2);
+  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 1, 0);
   gtk_widget_show (angle_spinbutton);
   gtk_box_pack_start (GTK_BOX (hbox56), angle_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (angle_spinbutton), TRUE);
@@ -1389,8 +1389,8 @@ create_gravity_well_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (hbox43), label60, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label60), 0, 0.5);
 
-  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 0.01, 2);
+  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 1, 0);
   gtk_widget_show (angle_spinbutton);
   gtk_box_pack_start (GTK_BOX (hbox43), angle_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (angle_spinbutton), TRUE);
@@ -1616,8 +1616,8 @@ create_teleporter_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (hbox48), label67, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label67), 0, 0.5);
 
-  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 0.01, 2);
+  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 1, 0);
   gtk_widget_show (angle_spinbutton);
   gtk_box_pack_start (GTK_BOX (hbox48), angle_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (angle_spinbutton), TRUE);
@@ -1682,8 +1682,8 @@ create_teleporter_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (hbox52), label71, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label71), 0, 0.5);
 
-  rotate_entity_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  rotate_entity_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (rotate_entity_spinbutton_adj), 0.01, 2);
+  rotate_entity_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  rotate_entity_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (rotate_entity_spinbutton_adj), 1, 0);
   gtk_widget_show (rotate_entity_spinbutton);
   gtk_box_pack_start (GTK_BOX (hbox52), rotate_entity_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (rotate_entity_spinbutton), TRUE);
@@ -3199,8 +3199,8 @@ create_end_node_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (angle_hbox), label199, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label199), 0, 0.5);
 
-  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 0.01, 2);
+  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 1, 0);
   gtk_widget_show (angle_spinbutton);
   gtk_box_pack_start (GTK_BOX (angle_hbox), angle_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (angle_spinbutton), TRUE);
@@ -3622,8 +3622,8 @@ create_crossover_node_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (angle_hbox), label192, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label192), 0, 0.5);
 
-  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 0.01, 2);
+  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 1, 0);
   gtk_widget_show (angle_spinbutton);
   gtk_box_pack_start (GTK_BOX (angle_hbox), angle_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (angle_spinbutton), TRUE);
@@ -3878,8 +3878,8 @@ create_straight_through_node_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (angle_hbox), label207, TRUE, TRUE, 0);
   gtk_misc_set_alignment (GTK_MISC (label207), 0, 0.5);
 
-  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
-  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 0.01, 2);
+  angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (angle_spinbutton_adj), 1, 0);
   gtk_widget_show (angle_spinbutton);
   gtk_box_pack_start (GTK_BOX (angle_hbox), angle_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (angle_spinbutton), TRUE);
