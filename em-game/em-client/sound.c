@@ -41,7 +41,7 @@ struct queued_sample_t
 
 
 int sound_kill_pipe[2];
-
+int sound_active = 0;
 pthread_mutex_t sound_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 pthread_t sound_thread_id;
 
@@ -237,6 +237,9 @@ void process_alsa()	// check for off-by-ones
 
 void start_sample(struct sample_t *sample, uint32_t start_tick)
 {
+	if(!sound_active)
+		return;
+	
 	struct queued_sample_t queued_sample = {
 		sample, start_tick, 0};
 		
@@ -320,57 +323,61 @@ void init_sound()
 	int err;
 	snd_pcm_hw_params_t *hw_params;
 	
-	if ((err = snd_pcm_open (&playback_handle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+	if ((err = snd_pcm_open (&playback_handle, "default", SND_PCM_STREAM_PLAYBACK, 
+		SND_PCM_NONBLOCK)) < 0) {
 		console_print("cannot open audio device default (%s)\n", 
 			 snd_strerror (err));
+		return;
 	}
 	
 	
 	if ((err = snd_pcm_hw_params_malloc (&hw_params)) < 0) {
 		console_print ("cannot allocate hardware parameter structure (%s)\n",
 			 snd_strerror (err));
-		exit (1);
+		return;
 	}
 			 
 	if ((err = snd_pcm_hw_params_any (playback_handle, hw_params)) < 0) {
 		console_print ("cannot initialize hardware parameter structure (%s)\n",
 			 snd_strerror (err));
-		exit (1);
+		return;
 	}
 
 	if ((err = snd_pcm_hw_params_set_access (playback_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
 		console_print ("cannot set access type (%s)\n",
 			 snd_strerror (err));
-		exit (1);
+		return;
 	}
 
 	if ((err = snd_pcm_hw_params_set_format (playback_handle, hw_params, SND_PCM_FORMAT_S16_LE)) < 0) {
 		console_print ("cannot set sample format (%s)\n",
 			 snd_strerror (err));
-		exit (1);
+		return;
 	}
 
 	if ((err = snd_pcm_hw_params_set_rate (playback_handle, hw_params, 44100, 0)) < 0) {
 		console_print ("cannot set sample rate (%s)\n",
 			 snd_strerror (err));
-		exit (1);
+		return;
 	}
 
 	if ((err = snd_pcm_hw_params_set_channels (playback_handle, hw_params, 1)) < 0) {
 		console_print ("cannot set channel count (%s)\n",
 			 snd_strerror (err));
-		exit (1);
+		return;
 	}
 
     if (snd_pcm_hw_params_set_periods(playback_handle, hw_params, 2, 0) < 0) {
       fprintf(stderr, "Error setting periods.\n");
+		return;
     }
 	
   /* Set buffer size (in frames). The resulting latency is given by */
     /* latency = periodsize * periods / (rate * bytes_per_frame)     */
     if (snd_pcm_hw_params_set_buffer_size(playback_handle, hw_params, 2048) < 0) {
       fprintf(stderr, "Error setting buffer size.\n");
-    }
+ 		return;
+   }
 	
 	
 /*	int l;
@@ -381,7 +388,7 @@ void init_sound()
 	if ((err = snd_pcm_hw_params (playback_handle, hw_params)) < 0) {
 		console_print ("cannot set parameters (%s)\n",
 			 snd_strerror (err));
-		exit (1);
+		return;
 	}
 
 	snd_pcm_hw_params_free (hw_params);
@@ -432,8 +439,10 @@ void init_sound()
 	if ((err = snd_pcm_prepare (playback_handle)) < 0) {
 		console_print ("cannot prepare audio interface for use (%s)\n",
 			 snd_strerror (err));
-		exit (1);
+		return;
 	}
+	
+	sound_active = 1;
 	
 	pthread_mutex_init(&sound_mutex, NULL);
 	pipe(sound_kill_pipe);
@@ -444,6 +453,9 @@ void init_sound()
 
 void kill_sound()
 {
+	if(!sound_active)
+		return;
+	
 	char c;
 	write(sound_kill_pipe[1], &c, 1);
 	pthread_join(sound_thread_id, NULL);
