@@ -360,13 +360,13 @@ void draw_line_888(struct blit_params_t *params)
 }
 
 
-void draw_horiz_run_565(struct blit_params_t *params, uint16_t **dest, int xadvance, int runlength)
+void draw_horiz_run_565(struct blit_params_t *params, uint16_t **dest, int xadvance, int runlength, uint16_t colour)
 {
 	uint16_t *cdest = *dest;
 
 	while(runlength)
 	{
-//		*cdest = params->colour16;
+		*cdest = colour;
 		cdest += xadvance;
 		runlength--;
 	}
@@ -375,13 +375,13 @@ void draw_horiz_run_565(struct blit_params_t *params, uint16_t **dest, int xadva
 }
 
 
-void draw_vert_run_565(struct blit_params_t *params, uint16_t **dest, int xadvance, int runlength)
+void draw_vert_run_565(struct blit_params_t *params, uint16_t **dest, int xadvance, int runlength, uint16_t colour)
 {
 	uint16_t *cdest = *dest;
 
 	while(runlength)
 	{
-//		*cdest = params->colour16;
+		*cdest = colour;
 		(uint8_t*)cdest += params->dest->pitch;
 		runlength--;
 	}
@@ -395,6 +395,7 @@ void draw_line_565(struct blit_params_t *params)
 	int i, adjup, adjdown, errorterm, xadvance, xdelta, ydelta, 
 		wholestep, initialpixelcount, finalpixelcount, runlength;
 
+	uint16_t colour = convert_24bit_to_16bit(params->red, params->green, params->blue);
 	uint16_t *dest = get_pixel_addr(params->dest, params->x1, params->y1);
 
 	if((xdelta = params->x2 - params->x1) < 0)
@@ -413,7 +414,7 @@ void draw_line_565(struct blit_params_t *params)
 	{
 		for(i = 0; i <= ydelta; i++)
 		{
-	//		*dest = params->colour16;
+			*dest = colour;
 			(uint8_t*)dest += params->dest->pitch;
 		}
 
@@ -424,7 +425,7 @@ void draw_line_565(struct blit_params_t *params)
 	{
 		for(i = 0; i <= xdelta; i++)
 		{
-	//		*dest = params->colour16;
+			*dest = colour;
 			dest += xadvance;
 		}
 
@@ -435,7 +436,7 @@ void draw_line_565(struct blit_params_t *params)
 	{
 		for(i = 0; i <= xdelta; i++)
 		{
-	//		*dest = params->colour16;
+			*dest = colour;
 			(uint8_t*)dest += xadvance * 2 + params->dest->pitch;
 		}
 
@@ -457,7 +458,7 @@ void draw_line_565(struct blit_params_t *params)
 		if((wholestep & 0x01) != 0)
 			errorterm += ydelta;
 
-		draw_horiz_run_565(params, &dest, xadvance, initialpixelcount);
+		draw_horiz_run_565(params, &dest, xadvance, initialpixelcount, colour);
 
 		for(i = 0; i < (ydelta - 1); i++)
 		{
@@ -469,10 +470,10 @@ void draw_line_565(struct blit_params_t *params)
 				errorterm -= adjdown;
 			}
 
-			draw_horiz_run_565(params, &dest, xadvance, runlength);
+			draw_horiz_run_565(params, &dest, xadvance, runlength, colour);
 		}
 
-		draw_horiz_run_565(params, &dest, xadvance, finalpixelcount);
+		draw_horiz_run_565(params, &dest, xadvance, finalpixelcount, colour);
 
 		return;
 	}
@@ -491,7 +492,7 @@ void draw_line_565(struct blit_params_t *params)
 		if((wholestep & 0x01) != 0)
 			errorterm += xdelta;
 
-		draw_vert_run_565(params, &dest, xadvance, initialpixelcount);
+		draw_vert_run_565(params, &dest, xadvance, initialpixelcount, colour);
 
 		for(i = 0; i < (xdelta - 1); i++)
 		{
@@ -503,10 +504,10 @@ void draw_line_565(struct blit_params_t *params)
 				errorterm -= adjdown;
 			}
 
-			draw_vert_run_565(params, &dest, xadvance, runlength);
+			draw_vert_run_565(params, &dest, xadvance, runlength, colour);
 		}
 
-		draw_vert_run_565(params, &dest, xadvance, finalpixelcount);			
+		draw_vert_run_565(params, &dest, xadvance, finalpixelcount, colour);			
 
 		return;
 	}
