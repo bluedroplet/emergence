@@ -67,3 +67,12 @@ extern uint32_t game_conn;
 
 
 #define ROTATIONS 80
+
+
+#define GAMESTATE_DEAD			0
+#define GAMESTATE_DEMO			1
+#define GAMESTATE_CONNECTING	2
+#define GAMESTATE_SPECTATING	3
+#define GAMESTATE_PLAYING		4
+
+extern int game_state;

@@ -372,6 +372,9 @@ int rolling_right;
 
 void action_thrust(uint32_t state)
 {
+	if(game_state != GAMESTATE_PLAYING)
+		return;
+
 	net_emit_uint8(game_conn, EMMSG_THRUST);
 
 	if(state)
@@ -385,8 +388,8 @@ void action_thrust(uint32_t state)
 
 void action_brake(uint32_t state)
 {
-//	if(game_state != GAMESTATE_ALIVE)
-//		return;
+	if(game_state != GAMESTATE_PLAYING)
+		return;
 
 	if(state)
 		net_emit_uint8(game_conn, EMMSG_BRAKE);
@@ -419,8 +422,8 @@ void action_roll_right(uint32_t state)
 
 void action_fire_left(uint32_t state)
 {
-//	if(game_state != GAMESTATE_ALIVE)
-//		return;
+	if(game_state != GAMESTATE_PLAYING)
+		return;
 
 	net_emit_uint8(game_conn, EMMSG_FIRELEFT);
 	net_emit_uint8(game_conn, (uint8_t)state);
@@ -430,8 +433,8 @@ void action_fire_left(uint32_t state)
 
 void action_fire_right(uint32_t state)
 {
-//	if(game_state != GAMESTATE_ALIVE)
-//		return;
+	if(game_state != GAMESTATE_PLAYING)
+		return;
 
 	net_emit_uint8(game_conn, EMMSG_FIRERIGHT);
 	net_emit_uint8(game_conn, (uint8_t)state);
@@ -441,9 +444,9 @@ void action_fire_right(uint32_t state)
 
 void action_fire_rail(uint32_t state)
 {
-//	if(game_state != GAMESTATE_ALIVE)
-//		return;
-	
+	if(game_state != GAMESTATE_PLAYING)
+		return;
+
 	if(!state)
 		return;
 
@@ -454,9 +457,9 @@ void action_fire_rail(uint32_t state)
 
 void action_drop_mine(uint32_t state)
 {
-//	if(game_state != GAMESTATE_ALIVE)
-//		return;
-	
+	if(game_state != GAMESTATE_PLAYING)
+		return;
+
 	if(!state)
 		return;
 
@@ -502,32 +505,35 @@ void process_control_alarm()
 		
 	if(time > next_control_tick)
 	{
-		pthread_mutex_lock(&control_mutex);
-		
-		if(roll_changed)
+		if(game_state == GAMESTATE_PLAYING)
 		{
-			net_emit_uint8(game_conn, EMMSG_ROLL);
-			net_emit_float(game_conn, roll);
-			net_emit_end_of_stream(game_conn);
-			roll_changed = 0;
-			roll = 0.0;
-		}
-	
-		if(rolling_left)
-		{
-			net_emit_uint8(game_conn, EMMSG_ROLL);
-			net_emit_float(game_conn, -0.2);
-			net_emit_end_of_stream(game_conn);
-		}
+			pthread_mutex_lock(&control_mutex);
+			
+			if(roll_changed)
+			{
+				net_emit_uint8(game_conn, EMMSG_ROLL);
+				net_emit_float(game_conn, roll);
+				net_emit_end_of_stream(game_conn);
+				roll_changed = 0;
+				roll = 0.0;
+			}
 		
-		if(rolling_right)
-		{
-			net_emit_uint8(game_conn, EMMSG_ROLL);
-			net_emit_float(game_conn, 0.2);
-			net_emit_end_of_stream(game_conn);
+			if(rolling_left)
+			{
+				net_emit_uint8(game_conn, EMMSG_ROLL);
+				net_emit_float(game_conn, -0.2);
+				net_emit_end_of_stream(game_conn);
+			}
+			
+			if(rolling_right)
+			{
+				net_emit_uint8(game_conn, EMMSG_ROLL);
+				net_emit_float(game_conn, 0.2);
+				net_emit_end_of_stream(game_conn);
+			}
+			
+			pthread_mutex_unlock(&control_mutex);
 		}
-		
-		pthread_mutex_unlock(&control_mutex);
 		
 		next_control_tick = ((int)(time / CONTROL_TICK_INTERVAL) + 1) * 
 			(double)CONTROL_TICK_INTERVAL;

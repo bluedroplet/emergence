@@ -159,11 +159,6 @@ struct message_reader_t
 #define MESSAGE_READER_STREAM_WRITE_GZDEMO_NO	3	// we are reading a net only message
 
 
-#define GAMESTATE_DEAD			0
-#define GAMESTATE_DEMO			1
-#define GAMESTATE_CONNECTING	2
-#define GAMESTATE_SPECTATING	3
-#define GAMESTATE_PLAYING		4
 
 int game_state = GAMESTATE_DEAD;
 int recording = 0;
