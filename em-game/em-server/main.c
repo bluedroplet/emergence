@@ -118,10 +118,6 @@ void process_connection(uint32_t conn, int type)
 	net_emit_uint8(conn, EM_PROTO_VER);
 	net_emit_end_of_stream(conn);
 
-	struct conn_state_t conn_state = 
-		{conn, get_wall_time(), CONN_STATE_VIRGIN, type};
-	LL_ADD(struct conn_state_t, &conn_state0, &conn_state);
-
 	switch(type)
 	{
 	case CONN_TYPE_LOCAL:
@@ -133,16 +129,27 @@ void process_connection(uint32_t conn, int type)
 		break;
 	
 	case CONN_TYPE_PUBLIC:
-		printf("New internet connection.\n");
-		break;
+	//	printf("New internet connection.\n");
+	
+		net_emit_uint8(conn, EMNETMSG_PRINT);
+		net_emit_string(conn, "This server is not enabled for Internet play.\n");
+		net_emit_end_of_stream(conn);
+		em_disconnect(conn);
+		return;
 	}
+
+	struct conn_state_t conn_state = 
+		{conn, get_wall_time(), CONN_STATE_VIRGIN, type};
+	LL_ADD(struct conn_state_t, &conn_state0, &conn_state);
 }
 
 
 void process_disconnection(uint32_t conn)
 {
 	struct conn_state_t *cstate = find_conn_state(conn);
-	assert(cstate);
+		
+	if(!cstate)
+		return;
 	
 	if(cstate->state == CONN_STATE_ACTIVE)
 		game_process_disconnection(conn);		
