@@ -1315,11 +1315,11 @@ int game_process_roll(struct player_t *player, struct buffer_t *stream)
 		
 		// dirty hack to fix inconsistencies
 		
-		if(player->craft->craft_data.left_weapon)
-			propagate_entity(player->craft->craft_data.left_weapon);
+	//	if(player->craft->craft_data.left_weapon)
+	//		propagate_entity(player->craft->craft_data.left_weapon);
 		
-		if(player->craft->craft_data.right_weapon)
-			propagate_entity(player->craft->craft_data.right_weapon);
+	//	if(player->craft->craft_data.right_weapon)
+	//		propagate_entity(player->craft->craft_data.right_weapon);
 	}
 	
 	return 1;
