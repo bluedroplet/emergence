@@ -1068,7 +1068,7 @@ void net_emit_end_of_stream()
 void em_connect(char *addr)
 {
 	mask_sigs();
-	uint16_t port = htons(NETWORK_PORT);
+	uint16_t port = htons(EMNET_PORT);
 	uint32_t ip;
 	
 	if(!addr)

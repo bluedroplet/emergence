@@ -17,6 +17,7 @@
 #include "../common/llist.h"
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
+#include "../shared/rdtsc.h"
 #include "../shared/cvar.h"
 #include "../shared/network.h"
 #include "../shared/sgame.h"
@@ -45,6 +46,39 @@
 #include "../common/win32/math.h"
 #endif
 
+
+struct event_craft_data_t
+{
+	float acc;
+	float theta;
+	int braking;
+	float shield_flare;
+	
+	int carcass;	// handled sepatately
+};
+
+
+struct event_weapon_data_t
+{
+	int type;
+	float theta;
+	float shield_flare;
+};
+
+
+struct event_rocket_data_t
+{
+	float theta;
+	uint32_t weapon_id;
+};
+
+
+struct event_plasma_data_t
+{
+	uint32_t weapon_id;
+};
+
+
 struct event_t
 {
 	uint32_t tick;
@@ -66,36 +100,10 @@ struct event_t
 			
 			union
 			{
-				struct
-				{
-					float acc;
-					float theta;
-					int braking;
-					float shield_flare;
-					int carcass;
-					
-				} craft_data;
-				
-				struct
-				{
-					int type;
-					float theta;
-					float shield_flare;
-					
-				} weapon_data;
-				
-				struct
-				{
-					float theta;
-					uint32_t weapon_id;
-					
-				} rocket_data;
-				
-				struct
-				{
-					uint32_t weapon_id;
-					
-				} plasma_data;
+				struct event_craft_data_t craft_data;
+				struct event_weapon_data_t weapon_data;
+				struct event_rocket_data_t rocket_data;
+				struct event_plasma_data_t plasma_data;
 			};
 			
 		} ent_data;
@@ -125,6 +133,24 @@ struct event_t
 } *event0 = NULL;
 
 
+struct message_reader_t
+{
+	uint8_t type;
+	struct buffer_t *stream;
+	gzFile *gzdemo;
+
+	uint8_t message_type;
+	uint32_t event_tick;
+
+} message_reader;
+
+
+#define MESSAGE_READER_STREAM					0
+#define MESSAGE_READER_GZDEMO					1
+#define MESSAGE_READER_STREAM_WRITE_GZDEMO		2
+#define MESSAGE_READER_STREAM_WRITE_GZDEMO_NO	3	// we are reading a net only message
+
+
 #define GAMESTATE_DEAD			0
 #define GAMESTATE_DEMO			1
 #define GAMESTATE_CONNECTING	2
@@ -132,7 +158,9 @@ struct event_t
 #define GAMESTATE_PLAYING		4
 
 int game_state = GAMESTATE_DEAD;
-
+int recording = 0;
+struct string_t *recording_filename;
+gzFile gzrecording;
 
 uint32_t cgame_tick;
 struct entity_t *centity0;
@@ -167,13 +195,20 @@ struct game_state_t
 {
 	uint32_t tick;
 	struct entity_t *entity0;
-	uint32_t follow_me;
+	uint32_t follow_me;			// what is this for?
 	int tainted;	
 	
 	struct game_state_t *next;
 		
 } *game_state0, last_known_game_state, *cgame_state;
 
+
+uint32_t demo_first_tick;
+uint64_t demo_first_tsc;
+uint32_t demo_last_tick;
+uint32_t demo_follow_me;
+
+gzFile gzdemo;
 
 #define RAIL_TRAIL_EXPAND_TIME 0.5
 #define RAIL_TRAIL_EXPAND_DISTANCE 10.0
@@ -223,25 +258,25 @@ void screen_to_world(int screenx, int screeny, double *worldx, double *worldy)
 	*worldy = (((double)(vid_height / 2 - 1 - screeny)) + 0.5f) / ((double)(vid_width) / 1600.0) + viewx;
 }
 
-
+/*
 void add_offset_view(struct entity_t *entity)
 {
 	double sin_theta, cos_theta;
 	sincos(entity->craft_data.theta, &sin_theta, &cos_theta);
 	
-	double target_x = - sin_theta * 400;// + entity->xvel * 24.0;
-	double target_y = + cos_theta * 400;// + entity->yvel * 24.0;
+	double target_x = - sin_theta * 500;// + entity->xvel * 24.0;
+	double target_y = + cos_theta * 500;// + entity->yvel * 24.0;
 	
 	double deltax = target_x - offset_view_x;
 	double deltay = target_y - offset_view_y;
 	
-	offset_view_x += deltax / 250.0;
-	offset_view_y += deltay / 250.0;
+	offset_view_x += deltax / 500.0;
+	offset_view_y += deltay / 500.0;
 	
 	viewx += offset_view_x;
 	viewy += offset_view_y;
 }
-	
+*/
 
 void start_moving_view(float x1, float y1, float x2, float y2)
 {
@@ -286,11 +321,324 @@ void add_moving_view()
 }
 
 
+int message_reader_more()
+{
+	switch(message_reader.type)
+	{
+	case MESSAGE_READER_STREAM:
+	case MESSAGE_READER_STREAM_WRITE_GZDEMO:
+	case MESSAGE_READER_STREAM_WRITE_GZDEMO_NO:
+		return buffer_more(message_reader.stream);
+	
+	case MESSAGE_READER_GZDEMO:
+		return !gzeof(message_reader.gzdemo);
+	}
+	
+	return 0;
+}
+
+
+uint8_t message_reader_read_uint8()
+{
+	uint8_t d;
+	
+	switch(message_reader.type)
+	{
+	case MESSAGE_READER_STREAM:
+	case MESSAGE_READER_STREAM_WRITE_GZDEMO_NO:
+		return buffer_read_uint8(message_reader.stream);
+	
+	case MESSAGE_READER_GZDEMO:
+		gzread(message_reader.gzdemo, &d, 1);
+		return d;
+
+	case MESSAGE_READER_STREAM_WRITE_GZDEMO:
+		d = buffer_read_uint8(message_reader.stream);
+		gzwrite(message_reader.gzdemo, &d, 1);
+		return d;
+	}
+	
+	return 0;
+}
+
+
+uint32_t message_reader_read_uint32()
+{
+	uint32_t d;
+	
+	switch(message_reader.type)
+	{
+	case MESSAGE_READER_STREAM:
+	case MESSAGE_READER_STREAM_WRITE_GZDEMO_NO:
+		return buffer_read_uint32(message_reader.stream);
+	
+	case MESSAGE_READER_GZDEMO:
+		gzread(message_reader.gzdemo, &d, 4);
+		return d;
+
+	case MESSAGE_READER_STREAM_WRITE_GZDEMO:
+		d = buffer_read_uint32(message_reader.stream);
+		gzwrite(message_reader.gzdemo, &d, 4);
+		return d;
+	}
+	
+	return 0;
+}
+
+
+int message_reader_read_int()
+{
+	uint32_t d = message_reader_read_uint32();
+	return *(int*)(&d);
+}
+
+
+float message_reader_read_float()
+{
+	uint32_t d = message_reader_read_uint32();
+	return *(float*)(void*)(&d);
+}
+
+
+struct string_t *message_reader_read_string()
+{
+	struct string_t *s;
+	
+	switch(message_reader.type)
+	{
+	case MESSAGE_READER_STREAM:
+	case MESSAGE_READER_STREAM_WRITE_GZDEMO_NO:
+		return buffer_read_string(message_reader.stream);
+	
+	case MESSAGE_READER_GZDEMO:
+		s = gzread_string(message_reader.gzdemo);
+		return s;
+
+	case MESSAGE_READER_STREAM_WRITE_GZDEMO:
+		s = buffer_read_string(message_reader.stream);
+		gzwrite_string(message_reader.gzdemo, s);
+		return s;
+	}
+	
+	return NULL;
+}
+
+
+int message_reader_new_message()
+{
+	if(!message_reader_more())
+		return 0;
+	
+	int old_reader_type = message_reader.type;
+	
+	if(old_reader_type == MESSAGE_READER_STREAM_WRITE_GZDEMO_NO)
+		old_reader_type = MESSAGE_READER_STREAM_WRITE_GZDEMO;
+		
+	if(message_reader.type == MESSAGE_READER_STREAM_WRITE_GZDEMO)
+		message_reader.type = MESSAGE_READER_STREAM_WRITE_GZDEMO_NO;
+	
+	message_reader.message_type = message_reader_read_uint8();
+	
+	switch((message_reader.message_type & EMMSGCLASS_MASK))
+	{
+	case EMMSGCLASS_STND:
+		if(old_reader_type == MESSAGE_READER_STREAM_WRITE_GZDEMO)
+			gzwrite(message_reader.gzdemo, &message_reader.message_type, 1);
+		message_reader.type = old_reader_type;
+		break;
+	
+	case EMMSGCLASS_NETONLY:
+		if(old_reader_type == MESSAGE_READER_GZDEMO)
+			;	// do something: the demo file is corrupt
+		break;
+	
+	case EMMSGCLASS_EVENT:
+		if(message_reader.message_type != EMEVENT_DUMMY)
+		{
+			if(old_reader_type == MESSAGE_READER_STREAM_WRITE_GZDEMO)
+				gzwrite(message_reader.gzdemo, &message_reader.message_type, 1);
+			message_reader.type = old_reader_type;
+		}
+		
+		message_reader.event_tick = message_reader_read_uint32();
+		break;
+	
+	default:
+		// do something: the demo file is corrupt
+		break;
+	}
+	
+	return 1;
+}
+
+
+void read_craft_data(struct event_craft_data_t *craft_data)
+{
+	craft_data->acc = message_reader_read_float();
+	craft_data->theta = message_reader_read_float();
+	craft_data->braking = message_reader_read_float();
+	craft_data->shield_flare = message_reader_read_float();
+}
+
+
+void read_weapon_data(struct event_weapon_data_t *weapon_data)
+{
+	weapon_data->type = message_reader_read_int();
+	weapon_data->theta = message_reader_read_float();
+	weapon_data->shield_flare = message_reader_read_float();
+}
+
+
+void read_rocket_data(struct event_rocket_data_t *rocket_data)
+{
+	rocket_data->theta = message_reader_read_float();
+	rocket_data->weapon_id = message_reader_read_uint32();
+}
+
+
+void read_plasma_data(struct event_plasma_data_t *plasma_data)
+{
+	plasma_data->weapon_id = message_reader_read_uint32();
+}
+
+
+void read_spawn_ent_event(struct event_t *event)
+{
+	event->ent_data.index = message_reader_read_uint32();
+	event->ent_data.type = message_reader_read_uint8();
+	event->ent_data.skin = message_reader_read_uint32();
+	event->ent_data.xdis = message_reader_read_float();
+	event->ent_data.ydis = message_reader_read_float();
+	event->ent_data.xvel = message_reader_read_float();
+	event->ent_data.yvel = message_reader_read_float();
+	
+	switch(event->ent_data.type)
+	{
+	case ENT_CRAFT:
+		read_craft_data(&event->ent_data.craft_data);
+	
+		// separate because carcass data is not sent in update
+		event->ent_data.craft_data.carcass = message_reader_read_uint8();
+		break;
+	
+	case ENT_WEAPON:
+		read_weapon_data(&event->ent_data.weapon_data);
+		break;
+	
+	case ENT_BOGIE:
+		read_plasma_data(&event->ent_data.plasma_data);
+		break;
+	
+	case ENT_ROCKET:
+		read_rocket_data(&event->ent_data.rocket_data);
+		break;
+	
+	case ENT_MINE:
+		break;
+	}
+}
+
+
+void read_update_ent_event(struct event_t *event)
+{
+	event->ent_data.index = message_reader_read_uint32();
+	event->ent_data.type = message_reader_read_uint8();
+	event->ent_data.xdis = message_reader_read_float();
+	event->ent_data.ydis = message_reader_read_float();
+	event->ent_data.xvel = message_reader_read_float();
+	event->ent_data.yvel = message_reader_read_float();
+	
+	switch(event->ent_data.type)
+	{
+	case ENT_CRAFT:	
+		read_craft_data(&event->ent_data.craft_data);
+		break;
+	
+	case ENT_WEAPON:
+		read_weapon_data(&event->ent_data.weapon_data);
+		break;
+	
+	case ENT_BOGIE:
+		read_plasma_data(&event->ent_data.plasma_data);
+		break;
+	
+	case ENT_ROCKET:
+		read_rocket_data(&event->ent_data.rocket_data);
+		break;
+	
+	case ENT_MINE:
+		break;
+	}
+}
+
+
+void read_kill_ent_event(struct event_t *event)
+{
+	event->ent_data.index = message_reader_read_uint32();
+}
+
+
+void read_follow_me_event(struct event_t *event)
+{
+	event->follow_me_data.index = message_reader_read_uint32();
+}
+
+
+void read_carcass_event(struct event_t *event)
+{
+	event->carcass_data.index = message_reader_read_uint32();
+}
+
+
+void read_railtrail_event(struct event_t *event)
+{
+	event->railtrail_data.x1 = message_reader_read_float();
+	event->railtrail_data.y1 = message_reader_read_float();
+	event->railtrail_data.x2 = message_reader_read_float();
+	event->railtrail_data.y2 = message_reader_read_float();
+}
+
+
+void read_event(struct event_t *event)
+{
+	event->tick = message_reader.event_tick;
+	event->type = message_reader.message_type;
+	
+	switch(event->type)
+	{
+	case EMEVENT_SPAWN_ENT:
+		read_spawn_ent_event(event);
+		break;
+	
+	case EMEVENT_UPDATE_ENT:
+		read_update_ent_event(event);
+		break;
+	
+	case EMEVENT_KILL_ENT:
+		read_kill_ent_event(event);
+		break;
+	
+	case EMEVENT_FOLLOW_ME:
+		read_follow_me_event(event);
+		break;
+	
+	case EMEVENT_CARCASS:
+		read_carcass_event(event);
+		break;
+	
+	case EMEVENT_RAILTRAIL:
+		read_railtrail_event(event);
+		break;
+	}
+}
 
 
 void game_process_connection()
 {
 	game_state = GAMESTATE_CONNECTING;
+	
+	if(!recording)
+		message_reader.type = MESSAGE_READER_STREAM;
 	
 	console_print("Connected!\n");
 }
@@ -313,26 +661,26 @@ void game_process_conn_lost()
 }
 
 
-int game_process_print(struct buffer_t *stream)
+int game_process_print()
 {
-	struct string_t *s = buffer_read_string(stream);
+	struct string_t *s = message_reader_read_string();
 	console_print(s->text);
 	free_string(s);
 	return 1;
 }
 
 
-int game_process_proto_ver(struct buffer_t *stream)
+int game_process_proto_ver()
 {
-	if(game_state != GAMESTATE_CONNECTING)
+	if(game_state != GAMESTATE_CONNECTING && game_state != GAMESTATE_DEMO)
 		return 0;
 	
-	uint8_t proto_ver = buffer_read_uint8(stream);
+	uint8_t proto_ver = message_reader_read_uint8();
 	
-	if(proto_ver == EMNET_PROTO_VER)
+	if(proto_ver == EM_PROTO_VER)
 	{
 		console_print("Correct protocol version\n");
-		net_emit_uint8(EMNETMSG_JOIN);
+		net_emit_uint8(EMMSG_JOIN);
 		net_emit_string(get_cvar_string("name"));
 		net_emit_end_of_stream();
 	}
@@ -347,14 +695,14 @@ int game_process_proto_ver(struct buffer_t *stream)
 }
 
 
-int game_process_playing(struct buffer_t *stream)
+int game_process_playing()
 {
 	if(game_state == GAMESTATE_DEAD)
 		return 0;
 	
 	
 	game_state0 = calloc(1, sizeof(struct game_state_t));
-	game_state0->tick = buffer_read_uint32(stream);
+	game_state0->tick = message_reader_read_uint32();		// oh dear
 	
 	last_known_game_state.tick = game_state0->tick;
 	
@@ -368,7 +716,7 @@ int game_process_playing(struct buffer_t *stream)
 }
 
 
-int game_process_spectating(struct buffer_t *stream)
+int game_process_spectating()
 {
 	if(game_state == GAMESTATE_DEAD)
 		return 0;
@@ -379,64 +727,35 @@ int game_process_spectating(struct buffer_t *stream)
 }
 
 
-void read_craft_data_from_stream(struct event_t *event, struct buffer_t *stream)
+void add_spawn_ent_event(struct event_t *event)
 {
-	event->ent_data.craft_data.acc = buffer_read_float(stream);
-	event->ent_data.craft_data.theta = buffer_read_float(stream);
-	event->ent_data.craft_data.braking = buffer_read_float(stream);
-	event->ent_data.craft_data.shield_flare = buffer_read_float(stream);
-}
-
-
-void read_weapon_data_from_stream(struct event_t *event, struct buffer_t *stream)
-{
-	event->ent_data.weapon_data.type = buffer_read_int(stream);
-	event->ent_data.weapon_data.theta = buffer_read_float(stream);
-	event->ent_data.weapon_data.shield_flare = buffer_read_float(stream);
-}
-
-
-void read_rocket_data_from_stream(struct event_t *event, struct buffer_t *stream)
-{
-	event->ent_data.rocket_data.theta = buffer_read_float(stream);
-	event->ent_data.rocket_data.weapon_id = buffer_read_uint32(stream);
-}
-
-void read_plasma_data_from_stream(struct event_t *event, struct buffer_t *stream)
-{
-	event->ent_data.plasma_data.weapon_id = buffer_read_uint32(stream);
-}
-
-
-
-
-void add_spawn_ent_event(struct event_t *event, struct buffer_t *stream)
-{
-	event->ent_data.index = buffer_read_uint32(stream);
-	event->ent_data.type = buffer_read_uint8(stream);
-	event->ent_data.skin = buffer_read_uint32(stream);
-	event->ent_data.xdis = buffer_read_float(stream);
-	event->ent_data.ydis = buffer_read_float(stream);
-	event->ent_data.xvel = buffer_read_float(stream);
-	event->ent_data.yvel = buffer_read_float(stream);
+	event->ent_data.index = message_reader_read_uint32();
+	event->ent_data.type = message_reader_read_uint8();
+	event->ent_data.skin = message_reader_read_uint32();
+	event->ent_data.xdis = message_reader_read_float();
+	event->ent_data.ydis = message_reader_read_float();
+	event->ent_data.xvel = message_reader_read_float();
+	event->ent_data.yvel = message_reader_read_float();
 	
 	switch(event->ent_data.type)
 	{
 	case ENT_CRAFT:
-		read_craft_data_from_stream(event, stream);
-		event->ent_data.craft_data.carcass = buffer_read_int(stream);
+		read_craft_data(&event->ent_data.craft_data);
+	
+		// separate because carcass data is not sent in update_event
+		event->ent_data.craft_data.carcass = message_reader_read_uint8();
 		break;
 	
 	case ENT_WEAPON:
-		read_weapon_data_from_stream(event, stream);
+		read_weapon_data(&event->ent_data.weapon_data);
 		break;
 	
 	case ENT_BOGIE:
-		read_plasma_data_from_stream(event, stream);
+		read_plasma_data(&event->ent_data.plasma_data);
 		break;
 	
 	case ENT_ROCKET:
-		read_rocket_data_from_stream(event, stream);
+		read_rocket_data(&event->ent_data.rocket_data);
 		break;
 	
 	case ENT_MINE:
@@ -465,6 +784,7 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->craft_data.theta = event->ent_data.craft_data.theta;
 		entity->craft_data.braking = event->ent_data.craft_data.braking;
 		entity->craft_data.shield_flare = event->ent_data.craft_data.shield_flare;
+		entity->craft_data.carcass = event->ent_data.craft_data.carcass;
 		entity->craft_data.skin = event->ent_data.skin;
 		entity->craft_data.surface = skin_get_craft_surface(event->ent_data.skin);
 		entity->craft_data.particle = 0.0;
@@ -511,30 +831,31 @@ void process_spawn_ent_event(struct event_t *event)
 }
 
 
-void add_update_ent_event(struct event_t *event, struct buffer_t *stream)
+void add_update_ent_event(struct event_t *event)
 {
-	event->ent_data.index = buffer_read_uint32(stream);
-	event->ent_data.type = buffer_read_uint8(stream);
-	event->ent_data.xdis = buffer_read_float(stream);
-	event->ent_data.ydis = buffer_read_float(stream);
-	event->ent_data.xvel = buffer_read_float(stream);
-	event->ent_data.yvel = buffer_read_float(stream);
+	event->ent_data.index = message_reader_read_uint32();
+	event->ent_data.type = message_reader_read_uint8();
+	event->ent_data.xdis = message_reader_read_float();
+	event->ent_data.ydis = message_reader_read_float();
+	event->ent_data.xvel = message_reader_read_float();
+	event->ent_data.yvel = message_reader_read_float();
 	
 	switch(event->ent_data.type)
 	{
 	case ENT_CRAFT:	
-		read_craft_data_from_stream(event, stream);
+		read_craft_data(&event->ent_data.craft_data);
 		break;
 	
 	case ENT_WEAPON:
-		read_weapon_data_from_stream(event, stream);
+		read_weapon_data(&event->ent_data.weapon_data);
 		break;
 	
 	case ENT_BOGIE:
-		read_plasma_data_from_stream(event, stream);
+		read_plasma_data(&event->ent_data.plasma_data);
 		break;
 	
 	case ENT_ROCKET:
+		read_rocket_data(&event->ent_data.rocket_data);
 		break;
 	
 	case ENT_MINE:
@@ -548,7 +869,10 @@ void process_update_ent_event(struct event_t *event)
 	struct entity_t *entity = get_entity(centity0, event->ent_data.index);
 
 	if(!entity)
+	{
+		printf("consistency error in process_update_ent_event\n");
 		return;		// due to ooo
+	}
 	
 	entity->xdis = event->ent_data.xdis;
 	entity->ydis = event->ent_data.ydis;
@@ -580,9 +904,9 @@ void process_update_ent_event(struct event_t *event)
 }
 
 
-void add_kill_ent_event(struct event_t *event, struct buffer_t *stream)
+void add_kill_ent_event(struct event_t *event)
 {
-	event->ent_data.index = buffer_read_uint32(stream);
+	event->ent_data.index = message_reader_read_uint32();
 }
 
 
@@ -610,9 +934,9 @@ void process_kill_ent_event(struct event_t *event)
 }
 
 
-void add_follow_me_event(struct event_t *event, struct buffer_t *stream)
+void add_follow_me_event(struct event_t *event)
 {
-	event->follow_me_data.index = buffer_read_uint32(stream);
+	event->follow_me_data.index = message_reader_read_uint32();
 }
 
 
@@ -622,16 +946,19 @@ void process_follow_me_event(struct event_t *event)
 	
 	if(!entity)
 		return;		// due to ooo
-	
-	cgame_state->follow_me = event->follow_me_data.index;
+
+	if(game_state == GAMESTATE_DEMO)
+		demo_follow_me = event->follow_me_data.index;	
+	else
+		cgame_state->follow_me = event->follow_me_data.index;
 	start_moving_view(viewx, viewy, entity->xdis, entity->ydis);	// violates gamestate scheme
 		// should possibly not call this second time around after ooo
 }
 
 
-void add_carcass_event(struct event_t *event, struct buffer_t *stream)
+void add_carcass_event(struct event_t *event)
 {
-	event->carcass_data.index = buffer_read_uint32(stream);
+	event->carcass_data.index = message_reader_read_uint32();
 }
 
 
@@ -649,12 +976,12 @@ void process_carcass_event(struct event_t *event)
 }
 
 
-void add_railtrail_event(struct event_t *event, struct buffer_t *stream)
+void add_railtrail_event(struct event_t *event)
 {
-	event->railtrail_data.x1 = buffer_read_float(stream);
-	event->railtrail_data.y1 = buffer_read_float(stream);
-	event->railtrail_data.x2 = buffer_read_float(stream);
-	event->railtrail_data.y2 = buffer_read_float(stream);
+	event->railtrail_data.x1 = message_reader_read_float();
+	event->railtrail_data.y1 = message_reader_read_float();
+	event->railtrail_data.x2 = message_reader_read_float();
+	event->railtrail_data.y2 = message_reader_read_float();
 }
 
 
@@ -686,27 +1013,27 @@ void process_tick_events(uint32_t tick)
 		{
 			switch(event->type)
 			{
-			case EMNETEVENT_SPAWN_ENT:
+			case EMEVENT_SPAWN_ENT:
 				process_spawn_ent_event(event);
 				break;
 			
-			case EMNETEVENT_UPDATE_ENT:
+			case EMEVENT_UPDATE_ENT:
 				process_update_ent_event(event);
 				break;
 			
-			case EMNETEVENT_KILL_ENT:
+			case EMEVENT_KILL_ENT:
 				process_kill_ent_event(event);
 				break;
 			
-			case EMNETEVENT_FOLLOW_ME:
+			case EMEVENT_FOLLOW_ME:
 				process_follow_me_event(event);
 				break;
 			
-			case EMNETEVENT_CARCASS:
+			case EMEVENT_CARCASS:
 				process_carcass_event(event);
 				break;
 			
-			case EMNETEVENT_RAILTRAIL:
+			case EMEVENT_RAILTRAIL:
 				process_railtrail_event(event);
 				break;
 			}
@@ -736,31 +1063,31 @@ int process_tick_events_do_not_remove(uint32_t tick)
 		{
 			switch(event->type)
 			{
-			case EMNETEVENT_SPAWN_ENT:
+			case EMEVENT_SPAWN_ENT:
 				process_spawn_ent_event(event);
 				any = 1;
 				break;
 			
-			case EMNETEVENT_UPDATE_ENT:
+			case EMEVENT_UPDATE_ENT:
 				process_update_ent_event(event);
 				any = 1;
 				break;
 			
-			case EMNETEVENT_KILL_ENT:
+			case EMEVENT_KILL_ENT:
 				process_kill_ent_event(event);
 				any = 1;
 				break;
 
-			case EMNETEVENT_FOLLOW_ME:
+			case EMEVENT_FOLLOW_ME:
 				process_follow_me_event(event);
 				any = 1;
 				break;
 			
-			case EMNETEVENT_CARCASS:
+			case EMEVENT_CARCASS:
 				process_carcass_event(event);
 				break;
 
-			case EMNETEVENT_RAILTRAIL:
+			case EMEVENT_RAILTRAIL:
 				process_railtrail_event(event);
 				break;
 			}
@@ -790,47 +1117,88 @@ void remove_event(uint32_t index)
 }
 
 
-int game_process_event_timed(uint32_t index, uint64_t *stamp, struct buffer_t *stream)
+int game_demo_process_event()
 {
-//	printf("game_process_event_timed: %u\n", index);
+	if(message_reader.message_type == EMEVENT_DUMMY)
+		return 1;
 	
 	struct event_t event;
 	
-	event.tick = buffer_read_uint32(stream);
+	event.tick = message_reader.event_tick;
 	
-//	printf("event tick: %u\n", event.tick);
+	event.type = message_reader.message_type;
+	event.ooo = 0;
+	
+	switch(event.type)
+	{
+	case EMEVENT_SPAWN_ENT:
+		add_spawn_ent_event(&event);
+		break;
+	
+	case EMEVENT_UPDATE_ENT:
+		add_update_ent_event(&event);
+		break;
+	
+	case EMEVENT_KILL_ENT:
+		add_kill_ent_event(&event);
+		break;
+	
+	case EMEVENT_FOLLOW_ME:
+		add_follow_me_event(&event);
+		break;
+	
+	case EMEVENT_CARCASS:
+		add_carcass_event(&event);
+		break;
+	
+	case EMEVENT_RAILTRAIL:
+		add_railtrail_event(&event);
+		break;
+	}
+	
+	LL_ADD_TAIL(struct event_t, &event0, &event);	// keep in order for tick processing
+	
+	return 1;
+}
+
+
+int game_process_event_timed(uint32_t index, uint64_t *stamp)
+{
+	struct event_t event;
+	
+	event.tick = message_reader.event_tick;
 	
 	add_game_tick(event.tick, stamp);
 	
 	remove_event(index);	// in case it has already arrived ooo
 	
-	event.type = buffer_read_uint8(stream);
+	event.type = message_reader.message_type;
 	event.ooo = 0;
 	
 	switch(event.type)
 	{
-	case EMNETEVENT_SPAWN_ENT:
-		add_spawn_ent_event(&event, stream);
+	case EMEVENT_SPAWN_ENT:
+		add_spawn_ent_event(&event);
 		break;
 	
-	case EMNETEVENT_UPDATE_ENT:
-		add_update_ent_event(&event, stream);
+	case EMEVENT_UPDATE_ENT:
+		add_update_ent_event(&event);
 		break;
 	
-	case EMNETEVENT_KILL_ENT:
-		add_kill_ent_event(&event, stream);
+	case EMEVENT_KILL_ENT:
+		add_kill_ent_event(&event);
 		break;
 	
-	case EMNETEVENT_FOLLOW_ME:
-		add_follow_me_event(&event, stream);
+	case EMEVENT_FOLLOW_ME:
+		add_follow_me_event(&event);
 		break;
 	
-	case EMNETEVENT_CARCASS:
-		add_carcass_event(&event, stream);
+	case EMEVENT_CARCASS:
+		add_carcass_event(&event);
 		break;
 	
-	case EMNETEVENT_RAILTRAIL:
-		add_railtrail_event(&event, stream);
+	case EMEVENT_RAILTRAIL:
+		add_railtrail_event(&event);
 		break;
 	}
 	
@@ -841,43 +1209,41 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp, struct buffer_t *s
 }
 
 
-int game_process_event_untimed(uint32_t index, struct buffer_t *stream)
+int game_process_event_untimed(uint32_t index)
 {
-//	printf("game_process_event_untimed: %u\n", index);
-	
 	struct event_t event;
 	
-	event.tick = buffer_read_uint32(stream);
-	event.type = buffer_read_uint8(stream);
+	event.tick = message_reader.event_tick;
+	event.type = message_reader.message_type;
 	
-	remove_event(index);	// in case it has already arrived ooo
+	remove_event(index);	// in case it has already arrived ooo (this is broken)
 	
 	event.ooo = 0;
 	
 	switch(event.type)
 	{
-	case EMNETEVENT_SPAWN_ENT:
-		add_spawn_ent_event(&event, stream);
+	case EMEVENT_SPAWN_ENT:
+		add_spawn_ent_event(&event);
 		break;
 	
-	case EMNETEVENT_UPDATE_ENT:
-		add_update_ent_event(&event, stream);
+	case EMEVENT_UPDATE_ENT:
+		add_update_ent_event(&event);
 		break;
 	
-	case EMNETEVENT_KILL_ENT:
-		add_kill_ent_event(&event, stream);
+	case EMEVENT_KILL_ENT:
+		add_kill_ent_event(&event);
 		break;
 	
-	case EMNETEVENT_FOLLOW_ME:
-		add_follow_me_event(&event, stream);
+	case EMEVENT_FOLLOW_ME:
+		add_follow_me_event(&event);
 		break;
 	
-	case EMNETEVENT_CARCASS:
-		add_carcass_event(&event, stream);
+	case EMEVENT_CARCASS:
+		add_carcass_event(&event);
 		break;
 	
-	case EMNETEVENT_RAILTRAIL:
-		add_railtrail_event(&event, stream);
+	case EMEVENT_RAILTRAIL:
+		add_railtrail_event(&event);
 		break;
 	}
 	
@@ -888,42 +1254,40 @@ int game_process_event_untimed(uint32_t index, struct buffer_t *stream)
 }
 
 
-int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp, struct buffer_t *stream)
+int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp)
 {
-//	printf("game_process_event_timed_ooo: %u\n", index);
-	
 	struct event_t event;
 	
-	event.tick = buffer_read_uint32(stream);
+	event.tick = message_reader.event_tick;
 	add_game_tick(event.tick, stamp);
-	event.type = buffer_read_uint8(stream);
+	event.type = message_reader.message_type;
 	event.ooo = 1;
 	event.index = index;
 	
 	switch(event.type)
 	{
-	case EMNETEVENT_SPAWN_ENT:
-		add_spawn_ent_event(&event, stream);
+	case EMEVENT_SPAWN_ENT:
+		add_spawn_ent_event(&event);
 		break;
 	
-	case EMNETEVENT_UPDATE_ENT:
-		add_update_ent_event(&event, stream);
+	case EMEVENT_UPDATE_ENT:
+		add_update_ent_event(&event);
 		break;
 	
-	case EMNETEVENT_KILL_ENT:
-		add_kill_ent_event(&event, stream);
+	case EMEVENT_KILL_ENT:
+		add_kill_ent_event(&event);
 		break;
 	
-	case EMNETEVENT_FOLLOW_ME:
-		add_follow_me_event(&event, stream);
+	case EMEVENT_FOLLOW_ME:
+		add_follow_me_event(&event);
 		break;
 	
-	case EMNETEVENT_CARCASS:
-		add_carcass_event(&event, stream);
+	case EMEVENT_CARCASS:
+		add_carcass_event(&event);
 		break;
 	
-	case EMNETEVENT_RAILTRAIL:
-		add_railtrail_event(&event, stream);
+	case EMEVENT_RAILTRAIL:
+		add_railtrail_event(&event);
 		break;
 	}
 	
@@ -934,41 +1298,39 @@ int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp, struct buffer_
 }
 
 
-int game_process_event_untimed_ooo(uint32_t index, struct buffer_t *stream)
+int game_process_event_untimed_ooo(uint32_t index)
 {
-//	printf("game_process_event_untimed_ooo: %u\n", index);
-	
 	struct event_t event;
 	
-	event.tick = buffer_read_uint32(stream);
-	event.type = buffer_read_uint8(stream);
+	event.tick = message_reader.event_tick;
+	event.type = message_reader.message_type;
 	event.ooo = 1;
 	event.index = index;
 	
 	switch(event.type)
 	{
-	case EMNETEVENT_SPAWN_ENT:
-		add_spawn_ent_event(&event, stream);
+	case EMEVENT_SPAWN_ENT:
+		add_spawn_ent_event(&event);
 		break;
 	
-	case EMNETEVENT_UPDATE_ENT:
-		add_update_ent_event(&event, stream);
+	case EMEVENT_UPDATE_ENT:
+		add_update_ent_event(&event);
 		break;
 	
-	case EMNETEVENT_KILL_ENT:
-		add_kill_ent_event(&event, stream);
+	case EMEVENT_KILL_ENT:
+		add_kill_ent_event(&event);
 		break;
 	
-	case EMNETEVENT_FOLLOW_ME:
-		add_follow_me_event(&event, stream);
+	case EMEVENT_FOLLOW_ME:
+		add_follow_me_event(&event);
 		break;
 	
-	case EMNETEVENT_CARCASS:
-		add_carcass_event(&event, stream);
+	case EMEVENT_CARCASS:
+		add_carcass_event(&event);
 		break;
 	
-	case EMNETEVENT_RAILTRAIL:
-		add_railtrail_event(&event, stream);
+	case EMEVENT_RAILTRAIL:
+		add_railtrail_event(&event);
 		break;
 	}
 	
@@ -976,50 +1338,64 @@ int game_process_event_untimed_ooo(uint32_t index, struct buffer_t *stream)
 	
 	
 	return 1;
+}
+
+
+int game_process_message()
+{
+	switch(message_reader.message_type)
+	{
+	case EMMSG_PROTO_VER:
+		return game_process_proto_ver();
+	
+	case EMMSG_LOADMAP:
+		return game_process_load_map();
+	
+	case EMMSG_LOADSKIN:
+		return game_process_load_skin();
+		
+	case EMNETMSG_PRINT:
+		return game_process_print();
+	
+	case EMNETMSG_PLAYING:
+		return game_process_playing();
+	
+	case EMNETMSG_SPECTATING:
+		return game_process_spectating();
+	
+	case EMNETMSG_INRCON:
+		break;
+	
+	case EMNETMSG_NOTINRCON:
+		break;
+	
+	case EMNETMSG_JOINED:
+		break;
+	}
+	
+	return 0;
 }
 
 
 void game_process_stream_timed(uint32_t index, uint64_t *stamp, struct buffer_t *stream)
 {
-	while(buffer_more(stream))
+	message_reader.stream = stream;
+	
+	while(message_reader_new_message())
 	{
-		switch(buffer_read_uint8(stream))
+		switch(message_reader.message_type & EMMSGCLASS_MASK)
 		{
-		case EMNETMSG_PROTO_VER:
-			if(!game_process_proto_ver(stream))
-				return;
-			break;
-		
-		case EMNETMSG_PLAYING:
-			if(!game_process_playing(stream))
-				return;
-			break;
-		
-		case EMNETMSG_SPECTATING:
-			if(!game_process_spectating(stream))
-				return;
-			break;
-		
-		case EMNETMSG_PRINT:
-			if(!game_process_print(stream))
+		case EMMSGCLASS_STND:
+		case EMMSGCLASS_NETONLY:
+			if(!game_process_message())
 				return;
 			break;
 			
-		case EMNETMSG_LOADMAP:
-			if(!game_process_load_map(stream))
+		case EMMSGCLASS_EVENT:
+			if(!game_process_event_timed(index, stamp))
 				return;
 			break;
 			
-		case EMNETMSG_LOADSKIN:
-			if(!game_process_load_skin(stream))
-				return;
-			break;
-			
-		case EMNETMSG_EVENT:
-			if(!game_process_event_timed(index, stamp, stream))
-				return;
-			break;
-		
 		default:
 			return;
 		}
@@ -1029,40 +1405,23 @@ void game_process_stream_timed(uint32_t index, uint64_t *stamp, struct buffer_t 
 
 void game_process_stream_untimed(uint32_t index, struct buffer_t *stream)
 {
-	while(buffer_more(stream))
+	message_reader.stream = stream;
+	
+	while(message_reader_new_message())
 	{
-		switch(buffer_read_uint8(stream))
+		switch(message_reader.message_type & EMMSGCLASS_MASK)
 		{
-		case EMNETMSG_PROTO_VER:
-			if(!game_process_proto_ver(stream))
-				return;
-			break;
-		
-		case EMNETMSG_PLAYING:
-			if(!game_process_playing(stream))
-				return;
-			break;
-		
-		case EMNETMSG_SPECTATING:
-			if(!game_process_spectating(stream))
-				return;
-			break;
-		
-		case EMNETMSG_PRINT:
-			if(!game_process_print(stream))
+		case EMMSGCLASS_STND:
+		case EMMSGCLASS_NETONLY:
+			if(!game_process_message())
 				return;
 			break;
 			
-		case EMNETMSG_LOADSKIN:
-			if(!game_process_load_skin(stream))
+		case EMMSGCLASS_EVENT:
+			if(!game_process_event_untimed(index))
 				return;
 			break;
 			
-		case EMNETMSG_EVENT:
-			if(!game_process_event_untimed(index, stream))
-				return;
-			break;
-		
 		default:
 			return;
 		}
@@ -1072,15 +1431,17 @@ void game_process_stream_untimed(uint32_t index, struct buffer_t *stream)
 
 void game_process_stream_timed_ooo(uint32_t index, uint64_t *stamp, struct buffer_t *stream)
 {
-	while(buffer_more(stream))
+	message_reader.stream = stream;
+	
+	while(message_reader_new_message())
 	{
-		switch(buffer_read_uint8(stream))
+		switch(message_reader.message_type & EMMSGCLASS_MASK)
 		{
-		case EMNETMSG_EVENT:
-			if(!game_process_event_timed_ooo(index, stamp, stream))
+		case EMMSGCLASS_EVENT:
+			if(!game_process_event_timed_ooo(index, stamp))
 				return;
 			break;
-		
+			
 		default:
 			return;
 		}
@@ -1090,15 +1451,17 @@ void game_process_stream_timed_ooo(uint32_t index, uint64_t *stamp, struct buffe
 
 void game_process_stream_untimed_ooo(uint32_t index, struct buffer_t *stream)
 {
-	while(buffer_more(stream))
+	message_reader.stream = stream;
+	
+	while(message_reader_new_message())
 	{
-		switch(buffer_read_uint8(stream))
+		switch(message_reader.message_type & EMMSGCLASS_MASK)
 		{
-		case EMNETMSG_EVENT:
-			if(!game_process_event_untimed_ooo(index, stream))
+		case EMMSGCLASS_EVENT:
+			if(!game_process_event_untimed_ooo(index))
 				return;
 			break;
-		
+			
 		default:
 			return;
 		}
@@ -1160,7 +1523,7 @@ void cf_status(char *c)
 		console_print("You are not connected.\n");
 	else
 	{
-		net_emit_uint8(EMNETMSG_STATUS);
+		net_emit_uint8(EMMSG_STATUS);
 		net_emit_end_of_stream();
 	}
 }
@@ -1172,7 +1535,7 @@ void cf_say(char *c)
 		console_print("You are not connected.\n");
 	else
 	{
-		net_emit_uint8(EMNETMSG_SAY);
+		net_emit_uint8(EMMSG_SAY);
 		net_emit_string(c);
 		net_emit_end_of_stream();
 	}
@@ -1194,7 +1557,7 @@ void cf_spectate(char *c)
 		break;
 	
 	case GAMESTATE_PLAYING:
-		net_emit_uint8(EMNETMSG_SPECTATE);
+		net_emit_uint8(EMMSG_SPECTATE);
 		net_emit_end_of_stream();
 		break;
 	}	
@@ -1212,7 +1575,7 @@ void cf_play(char *c)
 		break;
 	
 	case GAMESTATE_SPECTATING:
-		net_emit_uint8(EMNETMSG_PLAY);
+		net_emit_uint8(EMMSG_PLAY);
 		net_emit_end_of_stream();
 		break;
 	
@@ -1222,6 +1585,61 @@ void cf_play(char *c)
 	}	
 }
 
+
+void cf_record(char *c)
+{
+	if(recording)
+		;
+	
+	switch(game_state)
+	{
+	case GAMESTATE_DEAD:
+	case GAMESTATE_DEMO:
+	case GAMESTATE_CONNECTING:
+		console_print("Recording will begin when you start playing or spectating.\n");
+		break;
+	
+	case GAMESTATE_SPECTATING:
+	case GAMESTATE_PLAYING:
+		console_print("Recording...\n");
+		break;
+	}
+	
+	message_reader.type = MESSAGE_READER_STREAM_WRITE_GZDEMO;
+	recording_filename = new_string_text(c);
+	gzrecording = gzopen(c, "wb9");
+	message_reader.gzdemo = gzrecording;
+	
+	recording = 1;
+}
+
+
+void cf_stop(char *c)
+{
+	recording = 0;
+	gzclose(gzrecording);
+	message_reader.type = MESSAGE_READER_STREAM;
+}
+
+
+void cf_demo(char *c)
+{
+	switch(game_state)
+	{
+	case GAMESTATE_DEAD:
+		gzdemo = gzopen(c, "rb");
+		game_state = GAMESTATE_DEMO;
+		message_reader.gzdemo = gzdemo;
+		message_reader.type = MESSAGE_READER_GZDEMO;
+		break;
+		
+	case GAMESTATE_DEMO:
+	case GAMESTATE_CONNECTING:
+	case GAMESTATE_SPECTATING:
+	case GAMESTATE_PLAYING:
+		break;
+	}
+}
 
 void roll_left(uint32_t state)
 {
@@ -1346,8 +1764,18 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis)
 			float nxdis = craft->xdis + (xdis - craft->xdis) * (float)p / (float)np;
 			float nydis = craft->ydis + (ydis - craft->ydis) * (float)p / (float)np;
 			
-	
-			particle.creation = particle.last = get_tsc_from_game_tick(cgame_tick + (float)p / (float)np - 1.0);
+
+			switch(game_state)
+			{
+			case GAMESTATE_PLAYING:
+				particle.creation = particle.last = get_tsc_from_game_tick(cgame_tick + 
+					(float)p / (float)np - 1.0);
+				break;
+			
+			case GAMESTATE_DEMO:
+				particle.creation = particle.last = get_double_time();
+				break;
+			}
 			
 			particle.xpos = nxdis;
 			particle.ypos = nydis;
@@ -1382,9 +1810,19 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis)
 			
 			
 	
-			particle.creation = particle.last = get_tsc_from_game_tick(cgame_tick + (float)p / (float)np - 1.0);
+			switch(game_state)
+			{
+			case GAMESTATE_PLAYING:
+				particle.creation = particle.last = get_tsc_from_game_tick(cgame_tick + 
+					(float)p / (float)np - 1.0);
+				break;
 			
+			case GAMESTATE_DEMO:
+				particle.creation = particle.last = get_double_time();
+				break;
+			}
 			
+		
 			particle.xpos = nxdis + sin_theta * 25;
 			particle.ypos = nydis - cos_theta * 25;
 	
@@ -1435,7 +1873,6 @@ void tick_rocket(struct entity_t *rocket, float xdis, float ydis)
 		np++;
 	}
 	
-	
 
 	for(p = 0; p < np; p++)	
 	{
@@ -1451,7 +1888,17 @@ void tick_rocket(struct entity_t *rocket, float xdis, float ydis)
 		
 		struct particle_t particle;
 
-		particle.creation = particle.last = get_tsc_from_game_tick(cgame_tick + (float)p / (float)np - 1.0);
+		switch(game_state)
+		{
+		case GAMESTATE_PLAYING:
+			particle.creation = particle.last = get_tsc_from_game_tick(cgame_tick + 
+				(float)p / (float)np - 1.0);
+			break;
+		
+		case GAMESTATE_DEMO:
+				particle.creation = particle.last = get_double_time();
+			break;
+		}
 		
 		
 		particle.xpos = nxdis;
@@ -1464,8 +1911,6 @@ void tick_rocket(struct entity_t *rocket, float xdis, float ydis)
 		create_lower_particle(&particle);
 	}
 }
-
-
 
 
 void render_entities()
@@ -1801,6 +2246,73 @@ void update_game()
 }
 
 
+void update_demo()
+{
+	uint32_t tick;
+	
+	if(demo_first_tick)
+	{
+		uint64_t stamp = rdtsc();
+		
+		tick = (uint32_t)(((double)(stamp - demo_first_tsc) / (double)counts_per_second) * 200.0) + 
+			demo_first_tick;
+	}
+	else
+	{
+		message_reader_new_message();
+	}
+		
+	
+	do
+	{
+		int stop = 0;
+		switch(message_reader.message_type & EMMSGCLASS_MASK)
+		{
+		case EMMSGCLASS_STND:
+			if(!game_process_message())
+				return;
+			break;
+			
+		case EMMSGCLASS_EVENT:
+			if(!demo_first_tick)
+			{
+				demo_last_tick = demo_first_tick = 
+					tick = message_reader.event_tick;
+				
+				demo_first_tsc = rdtsc();
+			}
+			
+			if(message_reader.event_tick > tick)
+			{
+				stop = 1;
+				break;
+			}
+				
+			if(!game_demo_process_event())
+			{
+				return;
+			}
+			break;
+			
+		default:
+			return;
+		}
+		
+		if(stop)
+			break;
+	}
+	while(message_reader_new_message());
+	
+	
+	while(demo_last_tick <= tick)
+	{
+		s_tick_entities(&centity0);
+		process_tick_events(demo_last_tick);
+		cgame_tick = ++demo_last_tick;
+	}
+}
+
+
 /*
 
 void update_game()
@@ -1967,16 +2479,36 @@ void render_rail_trails()
 }
 
 
+void render_recording()
+{
+	if(recording)
+	{
+		blit_text_centered(((vid_width / 3) - (vid_width / 200)) / 2, 
+			vid_height / 6, 0xff, 0xff, 0xff, s_backbuffer, "recording %s", recording_filename->text);
+	}
+}
+
+
 void render_game()
 {
-	if(game_state != GAMESTATE_PLAYING)
+	struct entity_t *entity;
+	switch(game_state)
+	{
+	case GAMESTATE_PLAYING:
+		update_game();
+		entity = get_entity(centity0, cgame_state->follow_me);
+		break;
+	
+	case GAMESTATE_DEMO:
+		update_demo();
+		entity = get_entity(centity0, demo_follow_me);
+		break;
+	
+	default:
 		return;
+	}
 	
-	update_game();
 	
-	
-	struct entity_t *entity = get_entity(centity0, cgame_state->follow_me);
-		
 	if(entity)
 	{
 		viewx = entity->xdis;
@@ -1997,6 +2529,10 @@ void render_game()
 	render_entities();
 	render_upper_particles();
 	render_map();
+	render_recording();
+	
+	blit_text(((vid_width * 2) / 3) + (vid_width / 200), 
+		vid_height / 6, 0xef, 0x6f, 0xff, s_backbuffer, "[virus] where are you?");
 }
 
 
@@ -2005,7 +2541,7 @@ void qc_name(char *new_name)
 	if(game_state == GAMESTATE_PLAYING || 
 		game_state == GAMESTATE_SPECTATING)
 	{
-		net_emit_uint8(EMNETMSG_NAMECNGE);
+		net_emit_uint8(EMMSG_NAMECNGE);
 		net_emit_string(new_name);
 		net_emit_end_of_stream();
 	}		
@@ -2021,6 +2557,10 @@ void init_game()
 	create_cvar_command("say", cf_say);
 	create_cvar_command("play", cf_play);
 	create_cvar_command("spectate", cf_spectate);
+	
+	create_cvar_command("record", cf_record);
+	create_cvar_command("stop", cf_stop);
+	create_cvar_command("demo", cf_demo);
 	
 	set_string_cvar_qc_function("name", qc_name);
 	

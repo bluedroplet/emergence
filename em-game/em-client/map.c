@@ -16,6 +16,7 @@
 #include "shared/objects.h"
 #include "shared/sgame.h"
 #include "shared/user.h"
+#include "shared/network.h"
 #include "../common/llist.h"
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
@@ -256,11 +257,18 @@ int load_map(char *map_name)
 }
 
 
-int game_process_load_map(struct buffer_t *stream)
+int game_process_load_map()
 {
-	map_name = buffer_read_string(stream);
+	map_name = message_reader_read_string();
 	
 	return load_map(map_name->text);
+}
+
+
+int game_process_demo_load_map()
+{
+//	map_name = gzread_string(gzdemo);
+//	return load_map(map_name->text);
 }
 
 

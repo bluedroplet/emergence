@@ -73,6 +73,8 @@ void saturate_frames(int32_t *dst, int c)
 
 void process_alsa()	// check for off-by-ones
 {
+	return;
+	
 	 int avail = snd_pcm_avail_update(playback_handle);
 //	printf("%u\n", avail);
 	

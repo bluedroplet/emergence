@@ -996,11 +996,11 @@ void net_emit_uint32(uint32_t temp_conn, uint32_t val)
 
 	case EMNETPAYLOAD_SIZE - 2:
 
-		*(uint16_t*)&conn->cpacket.payload[conn->cpacket_payload_size] = ((uint16_t*)&val)[0];
+		*(uint16_t*)&conn->cpacket.payload[conn->cpacket_payload_size] = ((uint16_t*)(void*)&val)[0];
 		conn->cpacket_payload_size = EMNETPAYLOAD_SIZE;
 		send_cpacket(conn);
 
-		*(uint16_t*)&conn->cpacket.payload[0] = ((uint16_t*)&val)[1];
+		*(uint16_t*)&conn->cpacket.payload[0] = ((uint16_t*)(void*)&val)[1];
 		conn->cpacket_payload_size = 2;
 
 		break;
@@ -1008,7 +1008,7 @@ void net_emit_uint32(uint32_t temp_conn, uint32_t val)
 
 	case EMNETPAYLOAD_SIZE - 3:
 
-		*(uint16_t*)&conn->cpacket.payload[conn->cpacket_payload_size] = ((uint16_t*)&val)[0];
+		*(uint16_t*)&conn->cpacket.payload[conn->cpacket_payload_size] = ((uint16_t*)(void*)&val)[0];
 		conn->cpacket.payload[conn->cpacket_payload_size + 2] = ((uint8_t*)&val)[2];
 		conn->cpacket_payload_size = EMNETPAYLOAD_SIZE;
 		send_cpacket(conn);
@@ -1040,7 +1040,7 @@ void net_emit_int(uint32_t temp_conn, int val)
 
 void net_emit_float(uint32_t temp_conn, float val)
 {
-	net_emit_uint32(temp_conn, *(uint32_t*)&val);
+	net_emit_uint32(temp_conn, *(uint32_t*)(void*)&val);
 }
 
 
@@ -1296,7 +1296,7 @@ void init_network()
 
 	struct sockaddr_in name;
 	name.sin_family = AF_INET;
-	name.sin_port = htons(NETWORK_PORT);
+	name.sin_port = htons(EMNET_PORT);
 	name.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if(bind(udp_socket, (struct sockaddr *) &name, sizeof (name)) < 0)
@@ -1307,7 +1307,7 @@ void init_network()
 	
 	uint64_t time = rdtsc();
 	
-	seed48((unsigned short int*)&time);
+	seed48((unsigned short int*)(void*)&time);
 }
 
 

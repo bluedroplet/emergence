@@ -107,8 +107,8 @@ struct conn_state_t *find_conn_state(uint32_t conn)
 
 void process_connection(uint32_t conn)
 {
-	net_emit_uint8(conn, EMNETMSG_PROTO_VER);
-	net_emit_uint8(conn, EMNET_PROTO_VER);
+	net_emit_uint8(conn, EMMSG_PROTO_VER);
+	net_emit_uint8(conn, EM_PROTO_VER);
 	net_emit_end_of_stream(conn);
 
 	struct conn_state_t conn_state = 
@@ -148,7 +148,7 @@ void process_virgin_stream(uint32_t conn, uint32_t index, struct buffer_t *strea
 	
 	switch(buffer_read_uint8(stream))
 	{
-	case EMNETMSG_JOIN:
+	case EMMSG_JOIN:
 		game_process_join(conn, index, stream);
 		cstate->state = CONN_STATE_ACTIVE;
 		break;

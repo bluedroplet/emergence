@@ -253,9 +253,8 @@ void propagate_entity(struct entity_t *entity)
 
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMNETMSG_EVENT);
+		net_emit_uint8(player->conn, EMEVENT_UPDATE_ENT);
 		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint8(player->conn, EMNETEVENT_UPDATE_ENT);
 		net_emit_uint32(player->conn, entity->index);
 		net_emit_uint8(player->conn, entity->type);
 		net_emit_float(player->conn, entity->xdis);
@@ -302,14 +301,14 @@ void propagate_entity(struct entity_t *entity)
 
 void load_map_on_player(struct player_t *player)
 {
-	net_emit_uint8(player->conn, EMNETMSG_LOADMAP);
+	net_emit_uint8(player->conn, EMMSG_LOADMAP);
 	net_emit_string(player->conn, "default");
 }
 
 
 void load_all_skins_on_player(struct player_t *player)
 {
-	net_emit_uint8(player->conn, EMNETMSG_LOADSKIN);
+	net_emit_uint8(player->conn, EMMSG_LOADSKIN);
 	net_emit_string(player->conn, "default");
 	net_emit_uint32(player->conn, 0);			// index
 }
@@ -321,9 +320,8 @@ void spawn_all_entities_on_player(struct player_t *player)
 
 	while(centity)
 	{
-		net_emit_uint8(player->conn, EMNETMSG_EVENT);
+		net_emit_uint8(player->conn, EMEVENT_SPAWN_ENT);
 		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint8(player->conn, EMNETEVENT_SPAWN_ENT);
 		net_emit_uint32(player->conn, centity->index);
 		net_emit_uint8(player->conn, centity->type);
 		net_emit_uint32(player->conn, 0);		// skin
@@ -336,7 +334,7 @@ void spawn_all_entities_on_player(struct player_t *player)
 		{
 		case ENT_CRAFT:
 			write_craft_data_to_net(player->conn, centity);
-			net_emit_int(player->conn, centity->craft_data.carcass);
+			net_emit_uint8(player->conn, centity->craft_data.carcass);
 			break;
 		
 		case ENT_WEAPON:
@@ -378,9 +376,8 @@ void spawn_entity_on_all_players(struct entity_t *entity)
 		
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMNETMSG_EVENT);
+		net_emit_uint8(player->conn, EMEVENT_SPAWN_ENT);
 		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint8(player->conn, EMNETEVENT_SPAWN_ENT);
 		net_emit_uint32(player->conn, entity->index);
 		net_emit_uint8(player->conn, entity->type);
 		net_emit_uint32(player->conn, 0);		// skin
@@ -393,7 +390,7 @@ void spawn_entity_on_all_players(struct entity_t *entity)
 		{
 		case ENT_CRAFT:
 			write_craft_data_to_net(player->conn, entity);
-			net_emit_int(player->conn, entity->craft_data.carcass);
+			net_emit_uint8(player->conn, entity->craft_data.carcass);
 			break;
 		
 		case ENT_WEAPON:
@@ -433,9 +430,8 @@ void remove_entity_from_all_players(struct entity_t *entity)
 		
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMNETMSG_EVENT);
+		net_emit_uint8(player->conn, EMEVENT_KILL_ENT);
 		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint8(player->conn, EMNETEVENT_KILL_ENT);
 		net_emit_uint32(player->conn, entity->index);
 		net_emit_end_of_stream(player->conn);
 		player = player->next;
@@ -449,9 +445,8 @@ void make_carcass_on_all_players(struct entity_t *craft)
 		
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMNETMSG_EVENT);
+		net_emit_uint8(player->conn, EMEVENT_CARCASS);
 		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint8(player->conn, EMNETEVENT_CARCASS);
 		net_emit_uint32(player->conn, craft->index);
 		net_emit_end_of_stream(player->conn);
 		player = player->next;
@@ -461,9 +456,8 @@ void make_carcass_on_all_players(struct entity_t *craft)
 
 void follow_me_on_player(struct player_t *player)
 {
-	net_emit_uint8(player->conn, EMNETMSG_EVENT);
+	net_emit_uint8(player->conn, EMEVENT_FOLLOW_ME);
 	net_emit_uint32(player->conn, game_tick);
-	net_emit_uint8(player->conn, EMNETEVENT_FOLLOW_ME);
 	net_emit_uint32(player->conn, player->craft->index);
 	net_emit_end_of_stream(player->conn);
 }
@@ -616,9 +610,8 @@ void tick_player(struct player_t *player)
 	
 	if(player->next_dummy_event == game_tick)
 	{
-		net_emit_uint8(player->conn, EMNETMSG_EVENT);
+		net_emit_uint8(player->conn, EMEVENT_DUMMY);
 		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint8(player->conn, EMNETEVENT_DUMMY);
 		net_emit_end_of_stream(player->conn);
 
 		player->next_dummy_event += 200;
@@ -1192,9 +1185,8 @@ void propagate_rail_trail(float x1, float y1, float x2, float y2)
 
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMNETMSG_EVENT);
+		net_emit_uint8(player->conn, EMEVENT_RAILTRAIL);
 		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint8(player->conn, EMNETEVENT_RAILTRAIL);
 		net_emit_float(player->conn, x1);
 		net_emit_float(player->conn, y1);
 		net_emit_float(player->conn, x2);
@@ -1324,47 +1316,47 @@ void game_process_stream(uint32_t conn, uint32_t index, struct buffer_t *stream)
 	{		
 		switch(buffer_read_uint8(stream))
 		{
-		case EMNETMSG_PLAY:
+		case EMMSG_PLAY:
 			if(!game_process_play(player, stream))
 				return;
 			break;
 		
-		case EMNETMSG_SPECTATE:
+		case EMMSG_SPECTATE:
 			if(!game_process_spectate(player, stream))
 				return;
 			break;
 		
-		case EMNETMSG_STATUS:
+		case EMMSG_STATUS:
 			if(!game_process_status(player, stream))
 				return;
 			break;
 		
-		case EMNETMSG_SAY:
+		case EMMSG_SAY:
 			if(!game_process_say(player, stream))
 				return;
 			break;
 		
-		case EMNETMSG_NAMECNGE:
+		case EMMSG_NAMECNGE:
 			if(!game_process_name_change(player, stream))
 				return;
 			break;
 			
-		case EMNETMSG_CTRLCNGE:
+		case EMMSG_CTRLCNGE:
 			if(!game_process_control_change(player, index, stream))
 				return;
 			break;
 			
-		case EMNETMSG_FIRERAIL:
+		case EMMSG_FIRERAIL:
 			if(!game_process_fire_rail(player))
 				return;
 			break;
 			
-		case EMNETMSG_FIRELEFT:
+		case EMMSG_FIRELEFT:
 			if(!game_process_fire_left(player, stream))
 				return;
 			break;
 			
-		case EMNETMSG_FIRERIGHT:
+		case EMMSG_FIRERIGHT:
 			if(!game_process_fire_right(player, stream))
 				return;
 			break;
@@ -1387,7 +1379,7 @@ void game_process_stream_ooo(uint32_t conn, uint32_t index, struct buffer_t *str
 	{		
 		switch(buffer_read_uint8(stream))
 		{
-		case EMNETMSG_CTRLCNGE:
+		case EMMSG_CTRLCNGE:
 			if(!game_process_control_change(player, index, stream))
 				return;
 			break;

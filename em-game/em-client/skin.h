@@ -17,7 +17,7 @@ struct skin_t
 };
 
 
-int game_process_load_skin(struct buffer_t *stream);
+int game_process_load_skin();
 
 struct skin_t *get_skin(uint32_t index);
 void reload_skins();

@@ -15,6 +15,7 @@
 #include "../shared/cvar.h"
 #include "../shared/network.h"
 #include "../shared/timer.h"
+#include "../shared/sgame.h"
 #include "main.h"
 #include "console.h"
 #include "network.h"
@@ -392,7 +393,7 @@ void fire_rail(uint32_t state)
 	if(!state)
 		return;
 
-	net_emit_uint8(EMNETMSG_FIRERAIL);
+	net_emit_uint8(EMMSG_FIRERAIL);
 	net_emit_end_of_stream();
 }
 
@@ -402,7 +403,7 @@ void fire_left(uint32_t state)
 //	if(game_state != GAMESTATE_ALIVE)
 //		return;
 
-	net_emit_uint8(EMNETMSG_FIRELEFT);
+	net_emit_uint8(EMMSG_FIRELEFT);
 	net_emit_uint32(state);
 	net_emit_end_of_stream();
 }
@@ -413,7 +414,7 @@ void fire_right(uint32_t state)
 //	if(game_state != GAMESTATE_ALIVE)
 //		return;
 
-	net_emit_uint8(EMNETMSG_FIRERIGHT);
+	net_emit_uint8(EMMSG_FIRERIGHT);
 	net_emit_uint32(state);
 	net_emit_end_of_stream();
 }
@@ -484,7 +485,7 @@ void process_control_alarm()
 				return;
 			}
 			
-			net_emit_uint8(EMNETMSG_CTRLCNGE);
+			net_emit_uint8(EMMSG_CTRLCNGE);
 			net_emit_float(thrust);
 			net_emit_float(roll);
 			net_emit_end_of_stream();

@@ -16,6 +16,16 @@ void init_game();
 void kill_game();
 
 
+int message_reader_more();
+uint8_t message_reader_read_uint8();
+uint32_t message_reader_read_uint32();
+int message_reader_read_int();
+float message_reader_read_float();
+struct string_t *message_reader_read_string();
+
+
+
+
 
 
 void world_to_screen(double worldx, double worldy, int *screenx, int *screeny);
@@ -29,6 +39,13 @@ void fire_right();
 void drop_mine();
 
 extern uint32_t cgame_tick;
+
+extern int recording;
+extern struct string_t *recording_filename;
+#ifdef _ZLIB_H
+extern gzFile gzrecording;
+#endif
+
 
 #ifdef _INC_SGAME
 void tick_craft(struct entity_t *craft, float xdis, float ydis);

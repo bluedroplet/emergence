@@ -120,7 +120,8 @@ uint32_t get_game_tick()
 
 double get_tsc_from_game_tick(double tick)
 {
-	return (tick - tick_a) / (tick_b * (double)counts_per_second) + (latency * (tracking - 1.0) - time_shift);
+	return (tick - tick_a) / (tick_b * (double)counts_per_second) + 
+		(latency * (tracking - 1.0) - time_shift);
 }
 
 

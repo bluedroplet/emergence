@@ -2,6 +2,76 @@
 #define _INC_SGAME
 
 
+// server -> client
+
+#define EMMSGCLASS_MASK		(0x3 << 6)
+
+#define EMMSGCLASS_STND			(0x0 << 6)
+#define EMMSGCLASS_NETONLY		(0x1 << 6)		// not written to demo files
+#define EMMSGCLASS_EVENT		(0x2 << 6)
+
+#define EMMSG_PROTO_VER			(EMMSGCLASS_STND | 0x00)
+
+
+/*
+
+changes above this line and in the network code must not break backward
+compatibility of the protocol version detection mechanism
+
+-------------------------------------------------------------------------------
+
+if changes below this line or in the game code (either server or client side)
+break backward compatibility EM_PROTO_VER must be incremented accordingly
+
+*/
+
+
+#define EM_PROTO_VER									0x01
+
+
+
+#define EMMSG_LOADMAP			(EMMSGCLASS_STND | 0x01)
+#define EMMSG_LOADSKIN			(EMMSGCLASS_STND | 0x02)
+
+#define EMNETMSG_PRINT			(EMMSGCLASS_NETONLY | 0x00)
+#define EMNETMSG_PLAYING		(EMMSGCLASS_NETONLY | 0x01)
+#define EMNETMSG_SPECTATING		(EMMSGCLASS_NETONLY | 0x02)
+#define EMNETMSG_INRCON			(EMMSGCLASS_NETONLY | 0x03)
+#define EMNETMSG_NOTINRCON		(EMMSGCLASS_NETONLY | 0x04)
+#define EMNETMSG_JOINED			(EMMSGCLASS_NETONLY | 0x05)
+
+#define EMEVENT_DUMMY			(EMMSGCLASS_EVENT | 0x00)
+#define EMEVENT_PRINT			(EMMSGCLASS_EVENT | 0x01)
+#define EMEVENT_SPAWN_ENT		(EMMSGCLASS_EVENT | 0x02)
+#define EMEVENT_UPDATE_ENT		(EMMSGCLASS_EVENT | 0x03)
+#define EMEVENT_KILL_ENT		(EMMSGCLASS_EVENT | 0x04)
+#define EMEVENT_FOLLOW_ME		(EMMSGCLASS_EVENT | 0x05)
+#define EMEVENT_CARCASS			(EMMSGCLASS_EVENT | 0x06)
+#define EMEVENT_RAILTRAIL		(EMMSGCLASS_EVENT | 0x07)
+
+
+
+// client -> server
+
+#define EMMSG_JOIN				0x00
+#define EMMSG_PLAY				0x01
+#define EMMSG_SPECTATE			0x02
+#define EMMSG_SAY				0x03
+
+#define EMMSG_NAMECNGE			0x04
+#define EMMSG_CTRLCNGE			0x05
+#define EMMSG_STATUS			0x06
+#define EMMSG_ENTERRCON			0x07
+#define EMMSG_LEAVERCON			0x08
+#define EMMSG_RCONMSG			0x09	
+#define EMMSG_FIRERAIL			0x0a
+#define EMMSG_FIRELEFT			0x0b
+#define EMMSG_FIRERIGHT			0x0c
+#define EMMSG_DROPMINE			0x0d
+
+
+
+
 struct craft_data_t
 {
 	float acc;

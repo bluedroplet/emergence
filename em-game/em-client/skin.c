@@ -13,6 +13,8 @@
 #include "../common/buffer.h"
 #include "../common/llist.h"
 #include "shared/user.h"
+#include "shared/network.h"
+#include "shared/sgame.h"
 #include "../gsub/gsub.h"
 #include "entry.h"
 #include "skin.h"
@@ -114,12 +116,12 @@ int load_skin(struct skin_t *skin)
 }
 
 
-int game_process_load_skin(struct buffer_t *stream)
+int game_process_load_skin()
 {
 	struct skin_t skin;
 		
-	skin.name = buffer_read_string(stream);
-	skin.index = buffer_read_uint32(stream);
+	skin.name = message_reader_read_string();
+	skin.index = message_reader_read_uint32();
 	
 	if(load_skin(&skin))
 	{
@@ -130,6 +132,23 @@ int game_process_load_skin(struct buffer_t *stream)
 	return 0;
 }
 
+/*
+int game_process_demo_load_skin()
+{
+	struct skin_t skin;
+		
+	skin.name = gzread_string(gzdemo);
+	gzread(gzdemo, &skin.index, 4);
+	
+	if(load_skin(&skin))
+	{
+		LL_ADD(struct skin_t, &skin0, &skin);
+		return 1;
+	}
+	
+	return 0;
+}
+*/
 
 void reload_skins()
 {

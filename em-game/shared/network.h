@@ -1,4 +1,8 @@
 
+/*
+changes to this file must not break backward compatibility
+*/
+
 
 #define EMNETINDEX_MAX					0x07ffffff
 #define EMNETINDEX_MASK					EMNETINDEX_MAX
@@ -45,9 +49,6 @@
 
 
 
-
-
-
 struct packet_t
 {
 	uint32_t header;
@@ -55,61 +56,4 @@ struct packet_t
 };
 
 
-
-
-#define NETWORK_PORT			45420
-
-
-#define EMNETMSG_PRINT			1
-
-#define EMNETMSG_PROTO_VER		0
-#define EMNET_PROTO_VER			1
-
-
-
-// server -> client
-
-#define EMNETMSG_PLAYING		2
-#define EMNETMSG_SPECTATING		3
-
-
-#define EMNETMSG_INRCON			4
-#define EMNETMSG_NOTINRCON		5
-#define EMNETMSG_JOINED			6
-#define EMNETMSG_EVENT			7
-#define EMNETMSG_LOADMAP		8
-#define EMNETMSG_LOADSKIN		9
-
-#define EMNETMSG_PING			40
-#define EMNETMSG_PONG			41
-
-#define EMNETEVENT_SPAWN_ENT	0
-#define EMNETEVENT_UPDATE_ENT	1
-#define EMNETEVENT_KILL_ENT		2
-#define EMNETEVENT_FOLLOW_ME	3
-#define EMNETEVENT_CARCASS		4
-#define EMNETEVENT_RAILTRAIL	5
-#define EMNETEVENT_DUMMY		20
-
-
-
-// client -> server
-
-#define EMNETMSG_JOIN			0
-#define EMNETMSG_PLAY			1
-#define EMNETMSG_SPECTATE		2
-#define EMNETMSG_SAY			3
-
-#define EMNETMSG_NAMECNGE		4
-#define EMNETMSG_CTRLCNGE		5
-#define EMNETMSG_STATUS			6
-#define EMNETMSG_ENTERRCON		7
-#define EMNETMSG_LEAVERCON		8
-#define EMNETMSG_RCONMSG		9	
-#define EMNETMSG_FIRERAIL		11
-#define EMNETMSG_FIRELEFT		12
-#define EMNETMSG_FIRERIGHT		13
-#define EMNETMSG_DROPMINE		14
-
-//#define EMNETMSG_PING			40
-//#define EMNETMSG_PONG			41
+#define EMNET_PORT				45420
