@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 1998-2002 Jonathan Brown
+	Copyright (C) 1998-2004 Jonathan Brown
 	
     This file is part of the gsub graphics library.
 	

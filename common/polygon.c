@@ -1,7 +1,7 @@
 /*
 	Copyright (C) 1998-2002 Jonathan Brown
 	
-    This file is part of emergence.
+    This file is part of em-tools.
 	
 	This software is provided 'as-is', without any express or implied
 	warranty.  In no event will the authors be held liable for any damages
@@ -525,4 +525,3 @@ double poly_arb_clip_area(struct vertex_ll_t **pin, struct vertex_ll_t *pclip) /
 	
 	return area / 2.0f;
 }
-
