@@ -68,8 +68,8 @@ int nextentity = 0;
 #define MINE_EXPLOSION_SIZE		600.0
 #define RAILS_EXPLOSION_SIZE	50.0
 
-#define VELOCITY_FORCE_MULTIPLIER	0.05
-#define FORCE_VELOCITY_MULTIPLIER	(1.0 / VELOCITY_FORCE_MULTIPLIER)
+#define VELOCITY_FORCE_MULTIPLIER	0.005
+#define FORCE_VELOCITY_MULTIPLIER	40.0
 
 #define IDEAL_CRAFT_WEAPON_DIST			100.0
 #define MAX_CRAFT_WEAPON_DIST			150.0
@@ -687,7 +687,7 @@ int craft_force(struct entity_t *craft, double force, struct player_t *responsib
 	}
 	else
 	{
-		craft->craft_data.shield_flare += force * 8.0;
+		craft->craft_data.shield_flare += force * 40.0;
 		craft->craft_data.shield_flare = min(craft->craft_data.shield_flare, 1.0);
 		craft->propagate_me = 1;
 	}
@@ -707,7 +707,7 @@ int weapon_force(struct entity_t *weapon, double force, struct player_t *respons
 	}
 	else
 	{
-		weapon->weapon_data.shield_flare += force * 8.0;
+		weapon->weapon_data.shield_flare += force * 40.0;
 		weapon->weapon_data.shield_flare = min(weapon->weapon_data.shield_flare, 1.0);
 		weapon->propagate_me = 1;
 	}
@@ -802,8 +802,6 @@ void splash_force(float x, float y, float force, struct player_t *responsibility
 			continue;
 		}
 		
-		struct entity_t *next;
-		
 		double xdist = entity->xdis - x;
 		double ydist = entity->ydis - y;
 		double dist_squared = xdist * xdist + ydist * ydist;
@@ -846,7 +844,7 @@ void splash_force(float x, float y, float force, struct player_t *responsibility
 			break;
 		}
 		
-		next = entity->next;
+		struct entity_t *next = entity->next;
 		
 		if(!in_tick && entity->kill_me)
 			remove_entity(sentity0, entity);
@@ -1875,8 +1873,11 @@ void s_tick_weapon(struct entity_t *weapon)
 		apply_gravity_acceleration(weapon);
 	//	slow_entity(weapon);
 		
-		weapon->xdis = xdis;
-		weapon->ydis = ydis;
+		if(check_weapon_placement(xdis, ydis, weapon))
+		{
+			weapon->xdis = xdis;
+			weapon->ydis = ydis;
+		}
 		
 		weapon->xvel = weapon->yvel = 0.0;
 	}
@@ -1929,16 +1930,28 @@ void s_tick_weapon(struct entity_t *weapon)
 		if(node)
 		{
 			#ifdef EMSERVER
-			weapon_force(weapon, hypot(weapon->xvel, weapon->yvel) * VELOCITY_FORCE_MULTIPLIER, 
-				owner);
+			
+			if(craft)
+				weapon_force(weapon, hypot(craft->xvel, craft->yvel) * VELOCITY_FORCE_MULTIPLIER, 
+					owner);
+			else
+				weapon_force(weapon, hypot(weapon->xvel, weapon->yvel) * VELOCITY_FORCE_MULTIPLIER, 
+					owner);
 			
 			if(weapon->kill_me)
 				return;
+			
 			#endif
 			
-			entity_wall_bounce(weapon, node);
-			
-			restart = 1;
+			if(craft)
+			{
+				entity_wall_bounce(craft, node);
+			}
+			else
+			{
+				entity_wall_bounce(weapon, node);
+				restart = 1;
+			}
 		}
 		
 		
