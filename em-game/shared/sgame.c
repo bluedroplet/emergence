@@ -24,6 +24,7 @@
 
 #ifdef EMSERVER
 #include "../game.h"
+#include "../console.h"
 #endif
 
 #ifdef EMCLIENT
@@ -1397,12 +1398,38 @@ void s_tick_craft(struct entity_t *craft)
 	slow_entity(craft);
 
 
+	int restart = 0;
+	double xdis;
+	double ydis;
+	
 	while(1)
 	{
-		double xdis = craft->xdis + craft->xvel;
-		double ydis = craft->ydis + craft->yvel;
+		// see if our iterative collison technique has locked
 		
-		int restart = 0;
+		if(restart && craft->xdis == xdis && craft->ydis == ydis)
+		{
+			#ifdef EMSERVER
+			respawn_craft(craft);
+			explode_craft(craft);
+			char *msg = "infinite iteration craft collison broken\n";
+			console_print(msg);
+			print_on_all_players(msg);
+			#endif
+			
+			#ifdef EMCLIENT
+			// try to prevent this happening again until the server 
+			// explodes the craft or history gets rewritten
+			craft->xvel = craft->yvel = 0.0;
+			craft->craft_data.acc = 0.0;
+			#endif
+
+			return;
+		}
+		
+		xdis = craft->xdis + craft->xvel;
+		ydis = craft->ydis + craft->yvel;
+		
+		restart = 0;
 		
 		
 		// check for wall collision
@@ -1798,12 +1825,36 @@ void s_tick_weapon(struct entity_t *weapon)
 	}
 	
 
+	int restart = 0;
+	double xdis;
+	double ydis;
+	
 	while(1)
 	{
-		double xdis = weapon->xdis + weapon->xvel;
-		double ydis = weapon->ydis + weapon->yvel;
+		// see if our iterative collison technique has broken
 		
-		int restart = 0;
+		if(restart && weapon->xdis == xdis && weapon->ydis == ydis)
+		{
+			#ifdef EMSERVER
+			explode_weapon(weapon);
+			char *msg = "infinite iteration weapon collison broken\n";
+			console_print(msg);
+			print_on_all_players(msg);
+			#endif
+			
+			#ifdef EMCLIENT
+			// try to prevent this happening again until the server 
+			// explodes the weapon or history gets rewritten
+			weapon->xvel = weapon->yvel = 0.0;
+			#endif
+			
+			return;
+		}
+		
+		xdis = weapon->xdis + weapon->xvel;
+		ydis = weapon->ydis + weapon->yvel;
+		
+		restart = 0;
 		
 		
 		// check for collision against wall
