@@ -17,6 +17,7 @@ struct craft_data_t
 	#endif
 	
 	#ifdef EMCLIENT
+	int skin;
 	struct surface_t *surface;
 	float particle;
 	uint32_t last_tick;
@@ -38,6 +39,7 @@ struct weapon_data_t
 	#endif
 	
 	#ifdef EMCLIENT
+	int skin;
 	struct surface_t *surface;
 	#endif
 };
@@ -53,6 +55,7 @@ struct plasma_data_t
 	#endif
 	
 	#ifdef EMCLIENT
+	int skin;
 	struct surface_t *surface;
 	#endif
 };
@@ -70,6 +73,7 @@ struct rocket_data_t
 	#endif
 	
 	#ifdef EMCLIENT
+	int skin;
 	struct surface_t *surface;
 	float particle;
 	uint32_t last_tick;
@@ -92,6 +96,7 @@ struct mine_data_t
 	#endif
 	
 	#ifdef EMCLIENT
+	int skin;
 	struct surface_t *surface;
 	#endif
 };
@@ -112,6 +117,7 @@ struct shield_data_t
 	#endif
 	
 	#ifdef EMCLIENT
+	int skin;
 	struct surface_t *surface;
 	#endif
 };
