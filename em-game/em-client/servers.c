@@ -77,6 +77,7 @@ struct found_server_t
 int num_servers_unqueried;
 int num_servers_queried;
 int num_servers_found;
+int num_servers_new_proto;
 
 
 int server_discovery_started = 0;
@@ -310,14 +311,21 @@ void process_server_info(struct sockaddr_in *sockaddr, struct buffer_t *buffer)
 	uint16_t servers;
 	struct sockaddr_in s;
 	time_t t;
+	int proto_ver;
 		
 	while(cserver)
 	{
 		if(cserver->ip == sockaddr->sin_addr.s_addr && 
 			cserver->port == sockaddr->sin_port)
 		{
-			if(buffer_read_uint8(buffer) != EM_PROTO_VER)
+			proto_ver = buffer_read_uint8(buffer);
+			if(proto_ver != EM_PROTO_VER)
+			{
+				if(proto_ver > EM_PROTO_VER)
+					num_servers_new_proto++;
+				
 				break;
+			}
 			
 			new_server_info.ip = sockaddr->sin_addr.s_addr;
 			new_server_info.port = sockaddr->sin_port;
@@ -435,6 +443,7 @@ void start_server_discovery()
 	num_servers_unqueried = 0;
 	num_servers_queried = 0;
 	num_servers_found = 0;
+	num_servers_new_proto = 0;
 	
 	struct server_t *cserver = rumoured_servers;
 	
@@ -499,20 +508,29 @@ void render_servers()
 		blit_text(0, vid_height * 5 / 6, 0xff, 0xff, 0xff, 
 			s_backbuffer, "Servers unqueried:");
 	
+		blit_text(150, vid_height * 5 / 6, 0xff, 0xff, 0xff, 
+			s_backbuffer, "%u", num_servers_unqueried);
+
 		blit_text(0, vid_height * 5 / 6 + 14, 0xff, 0xff, 0xff, 
 			s_backbuffer, "Servers queried:");
+		
+		blit_text(150, vid_height * 5 / 6 + 14, 0xff, 0xff, 0xff, 
+			s_backbuffer, "%u", num_servers_queried);
 		
 		blit_text(0, vid_height * 5 / 6 + 28, 0xff, 0xff, 0xff, 
 			s_backbuffer, "Servers found:");
 		
-		blit_text(150, vid_height * 5 / 6, 0xff, 0xff, 0xff, 
-			s_backbuffer, "%u", num_servers_unqueried);
-	
-		blit_text(150, vid_height * 5 / 6 + 14, 0xff, 0xff, 0xff, 
-			s_backbuffer, "%u", num_servers_queried);
-		
 		blit_text(150, vid_height * 5 / 6 + 28, 0xff, 0xff, 0xff, 
 			s_backbuffer, "%u", num_servers_found);
+
+		if(num_servers_new_proto)
+		{
+			blit_text(0, vid_height * 5 / 6 + 42, 0xff, 0xff, 0xff, 
+				s_backbuffer, "Servers found requiring new version:");
+		
+			blit_text(275, vid_height * 5 / 6 + 42, 0xff, 0xff, 0xff, 
+				s_backbuffer, "%u", num_servers_new_proto);
+		}
 
 		
 		blit_text(50, vid_height / 6, 0xff, 0xff, 0xff, 
@@ -524,12 +542,9 @@ void render_servers()
 		blit_text(50 + 264 + 64, vid_height / 6, 0xff, 0xff, 0xff, 
 			s_backbuffer, "Ping");
 
-	/*	if(cserver->authenticating)
-		{
-			blit_text(50 + 264 + 48 + 48, vid_height / 6 + i * 32, 0xff, 0xff, 0xff, 
-				s_backbuffer, "Auth");
-		}
-	*/		
+		blit_text(50 + 264 + 64 + 64, vid_height / 6 + 6, 0xff, 0xff, 0xff, 
+			s_backbuffer, "Auth");
+			
 
 		blit_text(50 + 32, vid_height / 6 + 14, 0xff, 0xff, 0xff, 
 			s_backbuffer, "Map");
@@ -556,8 +571,8 @@ void render_servers()
 	
 				if(cserver->authenticating)
 				{
-					blit_text(50 + 264 + 64 + 64, vid_height / 6 + i * 32, 0xef, 0x6f, 0xff, 
-						s_backbuffer, "Auth");
+					blit_text_centered(50 + 264 + 64 + 64 + 12, vid_height / 6 + i * 32 + 6, 
+						0xef, 0x6f, 0xff, s_backbuffer, "Y");
 				}
 	
 				blit_text(50 + 32, vid_height / 6 + i * 32 + 14, 0xef, 0x6f, 0xff, 
@@ -578,7 +593,7 @@ void render_servers()
 					params.dest = s_backbuffer;
 					params.dest_x = 48;
 					params.dest_y = vid_height / 6 + i * 32 - 2;
-					params.width = 394;
+					params.width = 450;
 					params.height = 32;
 				
 					alpha_draw_rect(&params);

@@ -860,6 +860,8 @@ int game_process_proto_ver()
 		old_proto = 1;
 		proto_ver = EM_PROTO_VER;
 	}
+	else
+		old_proto = 0;
 	
 	if(proto_ver == EM_PROTO_VER)
 	{
