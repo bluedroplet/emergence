@@ -68,7 +68,7 @@ void update_game();
 extern uint32_t game_conn;
 
 
-#define ROTATIONS 80
+#define ROTATIONS 120
 
 
 #define GAMESTATE_DEAD			0

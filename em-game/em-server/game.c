@@ -733,49 +733,57 @@ void spawn_player(struct player_t *player)
 			
 			while(entity)
 			{
-/*				switch(entity->type)
+				switch(entity->type)
 				{
 				case ENT_CRAFT:
-					if(circles_intersect(spawn_point->x, spawn_point->y, CRAFT_RADIUS, entity->xdis, entity->ydis, CRAFT_RADIUS))
+					if(circles_intersect(spawn_point->x, spawn_point->y, CRAFT_RADIUS, 
+						entity->xdis, entity->ydis, CRAFT_RADIUS))
 						occluded = 1;
 					break;
 					
 				case ENT_WEAPON:
-					if(circles_intersect(spawn_point->x, spawn_point->y, CRAFT_RADIUS, entity->xdis, entity->ydis, WEAPON_RADIUS))
+					if(circles_intersect(spawn_point->x, spawn_point->y, CRAFT_RADIUS, 
+						entity->xdis, entity->ydis, WEAPON_RADIUS))
 						occluded = 1;
 					break;
 					
 				case ENT_PLASMA:
-					if(circles_intersect(spawn_point->x, spawn_point->y, CRAFT_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
+					if(circles_intersect(spawn_point->x, spawn_point->y, CRAFT_RADIUS, 
+						entity->xdis, entity->ydis, PLASMA_RADIUS))
 						occluded = 1;
 					break;
 					
 				case ENT_BULLET:
-					if(point_in_circle(entity->xdis, entity->ydis, spawn_point->x, spawn_point->y, CRAFT_RADIUS))
+					if(point_in_circle(entity->xdis, entity->ydis, 
+						spawn_point->x, spawn_point->y, CRAFT_RADIUS))
 						occluded = 1;
 					break;
 					
 				case ENT_ROCKET:
-					if(circles_intersect(spawn_point->x, spawn_point->y, CRAFT_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
+					if(circles_intersect(spawn_point->x, spawn_point->y, 
+						CRAFT_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
 						occluded = 1;
 					break;
 					
 				case ENT_MINE:
-					if(circles_intersect(spawn_point->x, spawn_point->y, CRAFT_RADIUS, entity->xdis, entity->ydis, MINE_RADIUS))
+					if(circles_intersect(spawn_point->x, spawn_point->y, 
+						CRAFT_RADIUS, entity->xdis, entity->ydis, MINE_RADIUS))
 						occluded = 1;
 					break;
 					
 				case ENT_RAILS:
-					if(circles_intersect(spawn_point->x, spawn_point->y, CRAFT_RADIUS, entity->xdis, entity->ydis, RAILS_RADIUS))
+					if(circles_intersect(spawn_point->x, spawn_point->y, 
+						CRAFT_RADIUS, entity->xdis, entity->ydis, RAILS_RADIUS))
 						occluded = 1;
 					break;
 					
 				case ENT_SHIELD:
-					if(circles_intersect(spawn_point->x, spawn_point->y, CRAFT_RADIUS, entity->xdis, entity->ydis, SHIELD_RADIUS))
+					if(circles_intersect(spawn_point->x, spawn_point->y, 
+						CRAFT_RADIUS, entity->xdis, entity->ydis, SHIELD_RADIUS))
 						occluded = 1;
 					break;
 				}
-*/				
+
 				if(occluded)
 					break;
 				
@@ -810,7 +818,7 @@ void spawn_player(struct player_t *player)
 	
 	if(respawn_index)
 	{
-		int i = (int)(drand48() * respawn_index);
+		int i = (int)(drand48() * (respawn_index - 1));
 		
 		spawn_point = spawn_point0;
 		
@@ -835,18 +843,8 @@ void spawn_player(struct player_t *player)
 		player->craft->xdis = spawn_point->x;
 		player->craft->ydis = spawn_point->y;
 		
-	//	check_craft_teleportation(player->craft);
-		
-		if(player->craft->kill_me)
-		{
-//			remove_entity(player->craft);
-			player->craft = NULL;
-		}
-		else
-		{
-			spawn_entity_on_all_players(player->craft);
-			follow_me_on_player(player);
-		}
+		spawn_entity_on_all_players(player->craft);
+		follow_me_on_player(player);
 	}
 }
 

@@ -100,7 +100,7 @@ struct
 	{"rshift",		NULL,	NULL},
 	{"pad*",		NULL,	NULL},
 	{"lalt",		NULL,	NULL},
-	{"space",		NULL,	NULL},
+	{"space",		NULL,	screenshot},
 	{"capslock",	NULL,	NULL},
 	{"f1",			NULL,	NULL},
 	{"f2",			NULL,	NULL},

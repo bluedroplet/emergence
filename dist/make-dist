@@ -26,9 +26,17 @@ aclocal-1.8 || exit
 automake-1.8 || exit
 autoconf-2.58 || exit
 
-./configure CFLAGS="-march=pentium3 -O2 -pipe -fomit-frame-pointer -fprefetch-loop-arrays" --prefix=`pwd`/../dist/root/usr || exit
+D=`pwd`/../dist/root/
+
+./configure CFLAGS="-march=pentium3 -O2 -pipe -fomit-frame-pointer -fprefetch-loop-arrays" --prefix=/usr || exit
 make || exit
-make install || exit
+make prefix=${D}/usr \
+		    datadir=${D}/usr/share \
+		    infodir=${D}/usr/share/info \
+		    localstatedir=${D}/var/lib \
+		    mandir=${D}/usr/share/man \
+		    sysconfdir=${D}/etc \
+		    install || exit
 
 cd ../dist/root
 
@@ -39,9 +47,16 @@ cd ..
 
 cd ../em-tools
 
-./configure CFLAGS="-march=pentium3 -O2 -pipe -fomit-frame-pointer -fprefetch-loop-arrays" --prefix=`pwd`/../dist/root/usr || exit
+./configure CFLAGS="-march=pentium3 -O2 -pipe -fomit-frame-pointer -fprefetch-loop-arrays" --prefix=/usr || exit
 make || exit
-make install || exit
+make prefix=${D}/usr \
+		    datadir=${D}/usr/share \
+		    infodir=${D}/usr/share/info \
+		    localstatedir=${D}/var/lib \
+		    mandir=${D}/usr/share/man \
+		    sysconfdir=${D}/etc \
+		    install || exit
+
 
 cd ../dist/root
 

@@ -47,43 +47,40 @@
 
 void convert_alphafloats_to_alpha8bit_array(float *src, uint8_t *dst, int num)
 {
-	while(num)
+	while(num--)
 	{
 		*dst++ = (uint8_t)(lround(*src++ * 255.0));
-		num--;
 	}
 }
 
 
 void convert_floats_to_16bit_array(float *src, uint16_t *dst, int num)
 {
-	while(num)
+	while(num--)
 	{
 		*dst++ = (((uint16_t)(lround(src[0] * 31.0))) << 11) | 
 			((((uint16_t)(lround(src[1] * 63.0))) & 0x3f) << 5) | 
 			(((uint16_t)(lround(src[2] * 31.0))) & 0x1f);
 
 		src += 3;
-		num--;
 	}
 }
 
 
 void convert_floats_to_24bit_array(float *src, uint8_t *dst, int num)
 {
-	while(num)
+	while(num--)
 	{
 		*dst++ = (uint8_t)(lround(*src++ * 255.0));
 		*dst++ = (uint8_t)(lround(*src++ * 255.0));
 		*dst++ = (uint8_t)(lround(*src++ * 255.0));
-		num--;
 	}
 }
 
 
 void convert_24bit_to_16bit_array(uint8_t *src, uint16_t *dst, int num)
 {
-	while(num)
+	while(num--)
 	{
 		int r = *src++ * 31;
 		int d = r / 255;
@@ -115,14 +112,64 @@ void convert_24bit_to_16bit_array(uint8_t *src, uint16_t *dst, int num)
 			o |= d + 1;
 
 		*dst++ = o;
-		num--;
+	}
+}
+
+
+void convert_24bitpad8bit_to_16bit_array(uint8_t *src, uint16_t *dst, int num)
+{
+	while(num--)
+	{
+		int r = *src++ * 31;
+		int d = r / 255;
+		int q = r % 255;
+
+		uint16_t o;
+
+		if(q < 128)
+			o = d << 11;
+		else
+			o = (d + 1) << 11;
+
+		r = *src++ * 63;
+		d = r / 255;
+		q = r % 255;
+
+		if(q < 128)
+			o |= d << 5;
+		else
+			o |= (d + 1) << 5;
+
+		r = *src++ * 31;
+		d = r / 255;
+		q = r % 255;
+
+		if(q < 128)
+			o |= d;
+		else
+			o |= d + 1;
+
+		*dst++ = o;
+		src++;
+	}
+}
+
+
+void convert_24bitpad8bit_to_24bit_array(uint8_t *src, uint8_t *dst, int num)
+{
+	while(num--)
+	{
+		*dst++ = src[2];
+		*dst++ = src[1];
+		*dst++ = src[0];
+		src += 4;
 	}
 }
 
 
 void convert_16bit_to_24bit_array(uint16_t *src, uint8_t *dst, int num)
 {
-	while(num)
+	while(num--)
 	{
 		int r = ((*src) >> 11) * 255;
 		int d = r / 31;
@@ -150,41 +197,35 @@ void convert_16bit_to_24bit_array(uint16_t *src, uint8_t *dst, int num)
 			*dst++ = d;
 		else
 			*dst++ = d + 1;
-
-		num--;
 	}
 }
 
 
 void convert_24bit_to_floats_array(uint8_t *src, float *dst, int num)
 {
-	while(num)
+	while(num--)
 	{
 		*dst++ = (float)*src++ / 255.0;	// red
 		*dst++ = (float)*src++ / 255.0;	// green
 		*dst++ = (float)*src++ / 255.0;	// blue
-
-		num--;
 	}
 }
 
 
 void convert_8bit_to_floats_array(uint8_t *src, float *dst, int num)
 {
-	while(num)
+	while(num--)
 	{
 		*dst++ = (float)*src++ / 255.0;
-		num--;
 	}
 }
 
 
 void make_8bit_solid_array(uint8_t *dst, int num)
 {
-	while(num)
+	while(num--)
 	{
 		*dst++ = 255;
-		num--;
 	}
 }
 
@@ -650,6 +691,11 @@ struct surface_t *duplicate_surface_to_24bit(struct surface_t *in)
 	
 	switch(in->flags)
 	{
+	case SURFACE_24BITPADDING8BIT:
+		convert_24bitpad8bit_to_24bit_array((uint8_t*)in->buf, out->buf, 
+			in->width * in->height);
+		break;
+		
 	case SURFACE_16BIT:
 		convert_16bit_to_24bit_array((uint16_t*)in->buf, out->buf, 
 			in->width * in->height);

@@ -14,14 +14,7 @@
 
 void take_screenshot()
 {
-	struct surface_t temp;
-		
-	temp.flags = SURFACE_16BIT;
-	temp.width = 800;
-	temp.height = 600;
-	temp.buf = s_backbuffer;
-	
-	struct surface_t *shot = duplicate_surface_to_24bit(&temp);
+	struct surface_t *shot = duplicate_surface_to_24bit(s_backbuffer);
 	
 	int n;
 	for(n = 0; n < 1000; n++)
@@ -38,4 +31,3 @@ void take_screenshot()
 	
 	free_surface(shot);
 }
-

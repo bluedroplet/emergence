@@ -2094,7 +2094,7 @@ void s_tick_plasma(struct entity_t *plasma)
 			
 			
 
-	apply_gravity_acceleration(plasma);
+//	apply_gravity_acceleration(plasma);
 	
 	
 	plasma->xdis += plasma->xvel;

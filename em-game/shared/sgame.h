@@ -368,6 +368,8 @@ int line_in_circle(double lx1, double ly1, double lx2, double ly2,
 	double cx, double cy, double cr);
 int line_in_circle_with_coords(double lx1, double ly1, double lx2, double ly2, 
 	double cx, double cy, double cr, float *out_x, float *out_y);
+int circles_intersect(double x1, double y1, double r1, double x2, double y2, double r2);
+int point_in_circle(double px, double py, double cx, double cy, double cr);
 
 
 
