@@ -52,6 +52,7 @@
 
 void create_cvars()
 {
+	create_cvar_string("version", "", 0);
 	create_cvar_string("name", "noname", 0);
 	create_cvar_command("exec", (void*)exec_config_file);
 }
@@ -208,7 +209,6 @@ void init()
 	init_network();
 
 	init_user();
-	init_skin();
 
 	create_cvars();
 	init_console_cvars();
@@ -225,10 +225,34 @@ void init()
 	string_cat_text(string, "/client.config");
 	
 	if(!exec_config_file(string->text))
+	{
 		exec_config_file(find_resource("em-client/default-controls.config"));
+	}
+	else
+	{
+		char *ver = get_cvar_string("version");
+		
+		if(*ver == '\0')
+		{
+			struct string_t *command = new_string_text("rm ");
+			string_cat_string(command, emergence_home_dir);
+			string_cat_text(command, "/skins/default.skin*");
+			
+			console_print("%s\n", command->text);
+			system(command->text);
+			
+			vid_mode = -1;	// find a nice mode
+		}
+		
+		free(ver);
+	}
 	
 	free_string(string);
 	
+	
+	set_cvar_string("version", VERSION);
+	
+	init_skin();
 	init_input();
 	init_control();
 	
