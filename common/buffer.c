@@ -441,6 +441,16 @@ struct string_t *buffer_read_string(struct buffer_t *buffer)
 }
 
 
+void buffer_read_buf(struct buffer_t *buffer, void *buf, int size)
+{
+	if(!buffer)
+		return;
+
+	size = min(size, buffer_more(buffer));
+	memcpy(buf, &buffer->buf[buffer->readpos], size);
+	buffer->readpos += size;
+}
+
 
 void buffer_clear(struct buffer_t *buffer)
 {

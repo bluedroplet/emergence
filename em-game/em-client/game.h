@@ -63,6 +63,11 @@ void explosion(float xdis, float ydis, float xvel, float yvel,
 	uint8_t end_red, uint8_t end_green, uint8_t end_blue);
 #endif	
 
+void game_process_key_accepted(char temp_key[16]);
+void game_process_key_declined();
+void game_process_key_error();
+
+
 void create_teleporter_sparkles();
 
 extern double viewx, viewy;
@@ -75,11 +80,19 @@ extern uint32_t game_conn;
 #define ROTATIONS 120
 
 
-#define GAMESTATE_DEAD			0
-#define GAMESTATE_DEMO			1
-#define GAMESTATE_CONNECTING	2
-#define GAMESTATE_SPECTATING	3
-#define GAMESTATE_PLAYING		4
+#define GAMESTATE_DEAD				0
+#define GAMESTATE_DEMO				1
+#define GAMESTATE_CONNECTING		2
+
+#define GAMESTATE_JOINING			3
+#define GAMESTATE_CREATING_SESSION	4
+#define GAMESTATE_AWAITING_APPROVAL	5
+
+#define GAMESTATE_JOINED			6
+
+#define GAMESTATE_SPECTATING		7
+#define GAMESTATE_PLAYING			8
+
 
 extern int game_state;
 extern int game_rendering;

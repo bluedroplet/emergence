@@ -1224,7 +1224,7 @@ int game_process_colours(struct player_t *player, struct buffer_t *stream)
 }
 
 
-void game_process_join(uint32_t conn, uint32_t index, struct buffer_t *stream)
+void game_process_joined(uint32_t conn)
 {
 	if(game_state != GS_ALIVE)
 	{
@@ -1244,68 +1244,20 @@ void game_process_join(uint32_t conn, uint32_t index, struct buffer_t *stream)
 		return;
 	}
 	
+	net_emit_uint8(conn, EMNETMSG_JOINED);
+	net_emit_end_of_stream(conn);
+	
 	num_players++;
 		
 	int spec = 0;
 	
 	if(num_players_active >= max_players_active)
 		spec = 1;
-/*	else
-	{
-		if(num_players_active > 1)
-			spec = 1;
-	}
-*/	
-	struct string_t *name = buffer_read_string(stream);
-	
-	struct string_t *s = new_string_string(name);
-		
-	if(spec)
-	{
-		string_cat_text(s, " joined the spectators\n");
-	}
-	else
-	{
-		string_cat_text(s, " joined the game\n");
-		num_players_active++;
-	}
-	
-	console_print(s->text);
-	print_on_all_players(s->text);
-	free_string(s);
-	
+
 	struct player_t *player = new_player();
 	player->conn = conn;
-	player->name = name;
-	player->last_control_change = index;
+//	player->last_control_change = index;
 	player->next_pulse_event = game_tick + 200;
-	
-	game_process_colours(player, stream);
-	
-	print_on_player(player, "Welcome to this server.\n");
-	
-	load_map_on_player(player);
-	
-	if(spec)
-	{
-		player->state = PLAYER_STATE_SPECTATING;
-		print_on_player(player, "You are spectating.\n");
-		net_emit_uint8(player->conn, EMMSG_SPECTATING);
-		net_emit_end_of_stream(player->conn);
-	}
-	else
-	{
-		load_all_skins_on_player(player);
-		
-		player->state = PLAYER_STATE_ACTIVE;
-		net_emit_uint8(player->conn, EMMSG_PLAYING);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_end_of_stream(player->conn);
-
-		spawn_all_entities_on_player(player);
-		
-		spawn_player(player);
-	}
 }
 
 
@@ -1320,7 +1272,51 @@ void destroy_player(struct player_t *player)
 
 int game_process_play(struct player_t *player, struct buffer_t *stream)
 {
-	if(player->state != PLAYER_STATE_SPECTATING)
+	struct string_t *s = new_string_string(player->name);
+		
+/*	if(spec)
+	{
+		string_cat_text(s, " joined the spectators\n");
+	}
+	else
+*/	{
+		string_cat_text(s, " joined the game\n");
+		num_players_active++;
+	}
+	
+	console_print(s->text);
+	print_on_all_players(s->text);
+	free_string(s);
+	
+	player->state = PLAYER_STATE_PLAYING;
+	
+	print_on_player(player, "Welcome to this server.\n");
+	
+	load_map_on_player(player);
+	
+/*	if(spec)
+	{
+		player->state = PLAYER_STATE_SPECTATING;
+		print_on_player(player, "You are spectating.\n");
+		net_emit_uint8(player->conn, EMMSG_SPECTATING);
+		net_emit_end_of_stream(player->conn);
+	}
+	else
+*/	{
+		load_all_skins_on_player(player);
+		
+		player->state = PLAYER_STATE_PLAYING;
+		net_emit_uint8(player->conn, EMMSG_PLAYING);
+		net_emit_uint32(player->conn, game_tick);
+		net_emit_end_of_stream(player->conn);
+
+		spawn_all_entities_on_player(player);
+		
+		spawn_player(player);
+	}
+	
+	
+	/*	if(player->state != PLAYER_STATE_SPECTATING)
 		return 0;
 	
 	if(num_players_active >= max_players_active)
@@ -1343,13 +1339,13 @@ int game_process_play(struct player_t *player, struct buffer_t *stream)
 	
 	player->state = PLAYER_STATE_ACTIVE;
 	
-	return 1;
+*/	return 1;
 }
 
 
 int game_process_spectate(struct player_t *player, struct buffer_t *stream)
 {
-	if(player->state != PLAYER_STATE_ACTIVE)
+	if(player->state != PLAYER_STATE_PLAYING)
 		return 0;
 	
 	num_players_active--;
@@ -1377,7 +1373,7 @@ void game_process_disconnection(uint32_t conn)
 	
 	num_players--;
 	
-	if(player->state == PLAYER_STATE_ACTIVE)
+	if(player->state == PLAYER_STATE_PLAYING)
 		num_players_active--;
 	
 	struct string_t *s = new_string_string(player->name);
@@ -1397,7 +1393,7 @@ void game_process_conn_lost(uint32_t conn)
 	
 	num_players--;
 	
-	if(player->state == PLAYER_STATE_ACTIVE)
+	if(player->state == PLAYER_STATE_PLAYING)
 		num_players_active--;
 	
 	struct string_t *s = new_string_string(player->name);
@@ -2087,7 +2083,8 @@ void game_process_stream(uint32_t conn, uint32_t index, struct buffer_t *stream)
 
 		case EMMSG_COLOURS:
 			game_process_colours(player, stream);
-			propagate_colours(player->craft);
+			if(player->craft)
+				propagate_colours(player->craft);
 			break;
 
 		default:

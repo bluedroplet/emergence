@@ -40,6 +40,7 @@
 #include "main.h"
 #include "x.h"
 #include "skin.h"
+#include "key.h"
 
 #ifdef LINUX
 #include "entry.h"
@@ -62,6 +63,7 @@ void client_shutdown()
 {
 	console_print("Shutting down...\n");
 	
+	kill_key();
 	kill_sound();
 	kill_game();
 	kill_network();
@@ -205,10 +207,12 @@ void init()
 {
 	console_print("Emergence Client " VERSION "\n");
 	
+	
 	init_timer();
 	init_network();
 
 	init_user();
+	init_key();
 
 	create_cvars();
 	init_console_cvars();
@@ -316,13 +320,14 @@ void main_thread()
 	struct pollfd *fds;
 	int fdcount;
 	
-	fdcount = 3;
+	fdcount = 4;
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
 	
 	fds[0].fd = x_render_pipe[0]; fds[0].events |= POLLIN;
 	fds[1].fd = net_out_pipe[0]; fds[1].events |= POLLIN;
 	fds[2].fd = console_pipe[0]; fds[2].events |= POLLIN;
+	fds[3].fd = key_out_pipe[0]; fds[3].events |= POLLIN;
 	
 
 	while(1)
@@ -338,6 +343,9 @@ void main_thread()
 		
 		if(fds[2].revents & POLLIN)
 			process_console_pipe();
+		
+		if(fds[3].revents & POLLIN)
+			process_key_out_pipe();
 	}
 }
 

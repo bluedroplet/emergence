@@ -18,7 +18,7 @@
 changes above this line and in the network code must not break backward
 compatibility of the protocol version detection mechanism
 
--------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 
 if changes below this line or in the game code (either server or client side)
 break backward compatibility, EM_PROTO_VER must be incremented accordingly
@@ -26,7 +26,7 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 */
 
 
-#define EM_PROTO_VER									0x02
+#define EM_PROTO_VER									0x03
 
 
 
@@ -38,9 +38,11 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 #define EMMSG_SPECTATING		(EMMSGCLASS_STND | 0x04)
 
 #define EMNETMSG_PRINT			(EMMSGCLASS_NETONLY | 0x00)
-#define EMNETMSG_INRCON			(EMMSGCLASS_NETONLY | 0x01)
-#define EMNETMSG_NOTINRCON		(EMMSGCLASS_NETONLY | 0x02)
-#define EMNETMSG_JOINED			(EMMSGCLASS_NETONLY | 0x03)
+#define EMNETMSG_AUTHENTICATE	(EMMSGCLASS_NETONLY | 0x01)
+#define EMNETMSG_JOINED			(EMMSGCLASS_NETONLY | 0x02)
+#define EMNETMSG_FAILED			(EMMSGCLASS_NETONLY | 0x03)
+#define EMNETMSG_INRCON			(EMMSGCLASS_NETONLY | 0x04)
+#define EMNETMSG_NOTINRCON		(EMMSGCLASS_NETONLY | 0x05)
 
 #define EMEVENT_PULSE			(EMMSGCLASS_EVENT | 0x00)
 #define EMEVENT_PRINT			(EMMSGCLASS_EVENT | 0x01)
@@ -62,29 +64,30 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 // client -> server
 
 #define EMMSG_JOIN				0x00
-#define EMMSG_PLAY				0x01
-#define EMMSG_SPECTATE			0x02
-#define EMMSG_SAY				0x03
+#define EMMSG_SESSION_KEY		0x01
+#define EMMSG_PLAY				0x03
+#define EMMSG_SPECTATE			0x04
+#define EMMSG_SAY				0x05
 
-#define EMMSG_THRUST			0x04
-#define EMMSG_BRAKE				0x05
-#define EMMSG_NOBRAKE			0x06
-#define EMMSG_ROLL				0x07
-#define EMMSG_ROLL_LEFT			0x08
-#define EMMSG_NOROLL_LEFT		0x09
-#define EMMSG_ROLL_RIGHT		0x0a
-#define EMMSG_NOROLL_RIGHT		0x0b
-#define EMMSG_FIRERAIL			0x0c
-#define EMMSG_FIRELEFT			0x0d
-#define EMMSG_FIRERIGHT			0x0e
-#define EMMSG_DROPMINE			0x0f
-#define EMMSG_ENTERRCON			0x10
-#define EMMSG_LEAVERCON			0x11
-#define EMMSG_RCONMSG			0x12
-#define EMMSG_STATUS			0x13
-#define EMMSG_NAMECNGE			0x14
-#define EMMSG_SUICIDE			0x15
-#define EMMSG_COLOURS			0x16
+#define EMMSG_THRUST			0x06
+#define EMMSG_BRAKE				0x07
+#define EMMSG_NOBRAKE			0x08
+#define EMMSG_ROLL				0x09
+#define EMMSG_ROLL_LEFT			0x0a
+#define EMMSG_NOROLL_LEFT		0x0b
+#define EMMSG_ROLL_RIGHT		0x0c
+#define EMMSG_NOROLL_RIGHT		0x0d
+#define EMMSG_FIRERAIL			0x0e
+#define EMMSG_FIRELEFT			0x0f
+#define EMMSG_FIRERIGHT			0x10
+#define EMMSG_DROPMINE			0x11
+#define EMMSG_ENTERRCON			0x12
+#define EMMSG_LEAVERCON			0x13
+#define EMMSG_RCONMSG			0x14
+#define EMMSG_STATUS			0x15
+#define EMMSG_NAMECNGE			0x16
+#define EMMSG_SUICIDE			0x17
+#define EMMSG_COLOURS			0x18
 
 
 

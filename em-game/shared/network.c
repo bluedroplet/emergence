@@ -1545,7 +1545,16 @@ void net_emit_string(uint32_t temp_conn, char *cc)		// optimize me
 
 void net_emit_buf(uint32_t temp_conn, void *buf, int size)
 {
-	;
+	int p = 0;
+	
+	if(!buf)
+		return;
+	
+	if(!size)
+		return;
+	
+	while(size--)
+		net_emit_uint8(temp_conn, ((uint8_t*)buf)[p++]);
 }
 
 

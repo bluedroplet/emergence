@@ -69,6 +69,7 @@ uint8_t buffer_read_uint8(struct buffer_t *buffer);
 int buffer_read_int(struct buffer_t *buffer);
 float buffer_read_float(struct buffer_t *buffer);
 char buffer_read_char(struct buffer_t *buffer);
+void buffer_read_buf(struct buffer_t *buffer, void *buf, int size);
 struct string_t *buffer_read_string(struct buffer_t *buffer);
 
 void buffer_clear(struct buffer_t *buffer);

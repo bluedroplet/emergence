@@ -105,13 +105,14 @@ struct pickup_spawn_point_t
 #define GS_DEAD		0
 #define GS_ALIVE	1
 
-#define PLAYER_STATE_ACTIVE		0
-#define PLAYER_STATE_SPECTATING	1
+#define PLAYER_STATE_ASLEEP		0
+#define PLAYER_STATE_PLAYING	1
+#define PLAYER_STATE_SPECTATING	2
 
 #define CRAFT_MAX_RAILS	20
 
 void update_game();
-void game_process_join(uint32_t conn, uint32_t index, struct buffer_t *stream);
+void game_process_joined(uint32_t conn);
 void game_process_disconnection(uint32_t conn);
 void game_process_conn_lost(uint32_t conn);
 void game_process_stream_timed(uint32_t conn, uint32_t index, uint64_t *stamp, struct buffer_t *stream);

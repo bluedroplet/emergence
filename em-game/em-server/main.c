@@ -29,6 +29,7 @@
 #include "console.h"
 #include "main.h"
 #include "entry.h"
+#include "key.h"
 
 
 struct conn_state_t
@@ -43,8 +44,10 @@ struct conn_state_t
 } *conn_state0 = NULL;
 
 
-#define CONN_STATE_VIRGIN	0
-#define CONN_STATE_ACTIVE	1
+#define CONN_STATE_VIRGIN			0
+#define CONN_STATE_AUTHENTICATING	1
+#define CONN_STATE_VERIFYING		2
+#define CONN_STATE_JOINED			3
 
 int game_timer_fd;
 
@@ -53,6 +56,7 @@ void server_shutdown()
 {
 	console_print("Shutting down...\n");
 
+	kill_key();
 	kill_network();
 	kill_game();
 	kill_timer();
@@ -122,24 +126,16 @@ void process_connection(uint32_t conn, int type)
 	switch(type)
 	{
 	case CONN_TYPE_LOCAL:
-		printf("New local connection.\n");
+		console_print("New local connection.\n");
 		break;
 	
 	case CONN_TYPE_PRIVATE:
-		printf("New private network connection.\n");
+		console_print("New private network connection.\n");
 		break;
 	
 	case CONN_TYPE_PUBLIC:
-	#ifdef NONAUTHENTICATING
-		printf("New internet connection.\n");
+		console_print("New internet connection.\n");
 		break;
-	#else
-		net_emit_uint8(conn, EMNETMSG_PRINT);
-		net_emit_string(conn, "This server is not enabled for Internet play.\n");
-		net_emit_end_of_stream(conn);
-		em_disconnect(conn);
-		return;
-	#endif
 	}
 
 	struct conn_state_t conn_state = 
@@ -155,7 +151,7 @@ void process_disconnection(uint32_t conn)
 	if(!cstate)
 		return;
 	
-	if(cstate->state == CONN_STATE_ACTIVE)
+	if(cstate->state == CONN_STATE_JOINED)
 		game_process_disconnection(conn);		
 	
 	LL_REMOVE(struct conn_state_t, &conn_state0, cstate);
@@ -167,7 +163,7 @@ void process_conn_lost(uint32_t conn)
 	struct conn_state_t *cstate = find_conn_state(conn);
 	assert(cstate);
 	
-	if(cstate->state == CONN_STATE_ACTIVE)
+	if(cstate->state == CONN_STATE_JOINED)
 		game_process_conn_lost(conn);		
 	
 	LL_REMOVE(struct conn_state_t, &conn_state0, cstate);
@@ -179,13 +175,99 @@ void process_virgin_stream(uint32_t conn, uint32_t index, struct buffer_t *strea
 	struct conn_state_t *cstate = find_conn_state(conn);
 	assert(cstate);
 	
+	char session_key[16];
+	
 	switch(buffer_read_uint8(stream))
 	{
 	case EMMSG_JOIN:
-		game_process_join(conn, index, stream);
-		cstate->state = CONN_STATE_ACTIVE;
+
+		if(cstate->state != CONN_STATE_VIRGIN)
+			break;
+		
+		#ifndef NONAUTHENTICATING
+	
+	//	if(cstate->type == CONN_TYPE_PUBLIC)
+		{
+			console_print("Requiring authentication\n");
+			
+			net_emit_uint8(conn, EMNETMSG_AUTHENTICATE);
+			net_emit_end_of_stream(conn);
+			cstate->state = CONN_STATE_AUTHENTICATING;
+		}
+	//	else
+			
+		#endif
+		
+	/*	{
+			cstate->state = CONN_STATE_JOINED;
+			game_process_joined(conn);
+		}
+	*/	
+		break;
+		
+		
+	case EMMSG_SESSION_KEY:
+		
+		if(cstate->state != CONN_STATE_AUTHENTICATING)
+			break;
+		
+		buffer_read_buf(stream, session_key, 16);
+		
+		console_print("Authentication received\n");
+		
+		key_verify_session(conn, session_key);
+		
+		cstate->state = CONN_STATE_VERIFYING;
+		
 		break;
 	}
+}
+
+
+void process_session_accepted(uint32_t conn)
+{
+	struct conn_state_t *cstate = find_conn_state(conn);
+	assert(cstate);
+	
+	if(cstate->state != CONN_STATE_VERIFYING)
+		return;
+	
+	console_print("Authentication succeeded\n");
+	
+	cstate->state = CONN_STATE_JOINED;
+	game_process_joined(conn);
+}
+
+
+void process_session_declined(uint32_t conn)
+{
+	struct conn_state_t *cstate = find_conn_state(conn);
+	assert(cstate);
+	
+	if(cstate->state != CONN_STATE_VERIFYING)
+		return;
+
+	console_print("Authentication failed\n");
+
+	net_emit_uint8(conn, EMNETMSG_FAILED);
+	net_emit_end_of_stream(conn);
+	em_disconnect(conn);
+}
+
+
+void process_session_error(uint32_t conn)
+{
+	struct conn_state_t *cstate = find_conn_state(conn);
+	assert(cstate);
+	
+	if(cstate->state != CONN_STATE_VERIFYING)
+		return;
+
+	console_print("Authentication error\n");
+
+	net_emit_uint8(conn, EMNETMSG_FAILED);
+	net_emit_end_of_stream(conn);
+	em_disconnect(conn);
 }
 
 
@@ -197,10 +279,11 @@ void process_stream_timed(uint32_t conn, uint32_t index, uint64_t *stamp, struct
 	switch(cstate->state)
 	{
 	case CONN_STATE_VIRGIN:
-		process_virgin_stream(conn, index, stream);
+	case CONN_STATE_AUTHENTICATING:
+	process_virgin_stream(conn, index, stream);
 		break;
 	
-	case CONN_STATE_ACTIVE:
+	case CONN_STATE_JOINED:
 		game_process_stream_timed(conn, index, stamp, stream);
 		break;
 	}
@@ -215,10 +298,11 @@ void process_stream_untimed(uint32_t conn, uint32_t index, struct buffer_t *stre
 	switch(cstate->state)
 	{
 	case CONN_STATE_VIRGIN:
+	case CONN_STATE_AUTHENTICATING:
 		process_virgin_stream(conn, index, stream);
 		break;
 	
-	case CONN_STATE_ACTIVE:
+	case CONN_STATE_JOINED:
 		game_process_stream_untimed(conn, index, stream);
 		break;
 	}
@@ -233,10 +317,11 @@ void process_stream_timed_ooo(uint32_t conn, uint32_t index, uint64_t *stamp, st
 	switch(cstate->state)
 	{
 	case CONN_STATE_VIRGIN:
+	case CONN_STATE_AUTHENTICATING:
 		process_virgin_stream(conn, index, stream);
 		break;
 	
-	case CONN_STATE_ACTIVE:
+	case CONN_STATE_JOINED:
 		game_process_stream_timed_ooo(conn, index, stamp, stream);
 		break;
 	}
@@ -251,10 +336,11 @@ void process_stream_untimed_ooo(uint32_t conn, uint32_t index, struct buffer_t *
 	switch(cstate->state)
 	{
 	case CONN_STATE_VIRGIN:
+	case CONN_STATE_AUTHENTICATING:
 		process_virgin_stream(conn, index, stream);
 		break;
 	
-	case CONN_STATE_ACTIVE:
+	case CONN_STATE_JOINED:
 		game_process_stream_untimed_ooo(conn, index, stream);
 		break;
 	}
@@ -400,13 +486,14 @@ void main_thread()
 	struct pollfd *fds;
 	int fdcount;
 	
-	fdcount = 3;
+	fdcount = 4;
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
 	
 	fds[0].fd = STDIN_FILENO; fds[0].events |= POLLIN;
 	fds[1].fd = net_out_pipe[0]; fds[1].events |= POLLIN;
 	fds[2].fd = game_timer_fd; fds[2].events |= POLLIN;
+	fds[3].fd = key_out_pipe[0]; fds[3].events |= POLLIN;
 	
 
 	while(1)
@@ -422,6 +509,9 @@ void main_thread()
 		
 		if(fds[2].revents & POLLIN)
 			process_game_timer();
+		
+		if(fds[3].revents & POLLIN)
+			process_key_out_pipe();
 	}
 }
 
@@ -476,6 +566,7 @@ void init()
 	init_network();
 	init_game();
 	init_timer();
+	init_key();
 	
 	game_timer_fd = create_timer_listener();
 

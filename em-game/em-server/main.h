@@ -15,4 +15,9 @@ void process_msg_buf(struct buffer_t *msg_buf);
 extern struct buffer_t *msg_buf;
 void main_thread();
 
+void process_session_accepted(uint32_t conn);
+void process_session_declined(uint32_t conn);
+void process_session_error(uint32_t conn);
+
+
 #endif // _INC_MAIN

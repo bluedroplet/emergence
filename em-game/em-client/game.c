@@ -42,6 +42,7 @@
 #include "sound.h"
 #include "floats.h"
 #include "ris.h"
+#include "key.h"
 
 #ifdef LINUX
 #include "shared/timer.h"
@@ -686,24 +687,28 @@ void game_process_connection(uint32_t conn)
 	
 	case GAMESTATE_CONNECTING:
 	case GAMESTATE_SPECTATING:
+	case GAMESTATE_JOINING:
+	case GAMESTATE_CREATING_SESSION:
+	case GAMESTATE_AWAITING_APPROVAL:
 	case GAMESTATE_PLAYING:
 		em_disconnect(game_conn);
 		break;
 	}
 	
 	clear_game();
-		
+	
 	
 	game_state = GAMESTATE_CONNECTING;
 	game_conn = conn;
-	
-	if(!recording)
-		message_reader.type = MESSAGE_READER_STREAM;
 	
 	if(recording)
 	{
 		message_reader.type = MESSAGE_READER_STREAM_WRITE_GZDEMO;
 		message_reader.gzdemo = gzrecording;
+	}
+	else
+	{
+		message_reader.type = MESSAGE_READER_STREAM;
 	}
 	
 	console_print("\xab\nConnected!\n");
@@ -787,9 +792,8 @@ int game_process_proto_ver()
 		if(game_state != GAMESTATE_DEMO)
 		{
 			net_emit_uint8(game_conn, EMMSG_JOIN);
-			net_emit_string(game_conn, get_cvar_string("name"));
-			emit_colours();
 			net_emit_end_of_stream(game_conn);
+			game_state = GAMESTATE_JOINING;
 		}
 	}
 	else
@@ -798,6 +802,96 @@ int game_process_proto_ver()
 		game_state = GAMESTATE_DEAD;
 		em_disconnect(game_conn);
 	}
+	
+	return 1;
+}
+
+
+int game_process_authenticate()
+{
+	if(game_state != GAMESTATE_JOINING)
+		return 1;
+	
+	console_print("Authenticating\n>");
+	
+	game_state = GAMESTATE_CREATING_SESSION;
+	
+	key_create_session();
+	
+	return 1;
+}
+
+
+void game_process_key_accepted(char temp_key[16])
+{
+	if(game_state != GAMESTATE_CREATING_SESSION)
+		return;
+	
+	console_print("<\xbb");
+	
+	net_emit_uint8(game_conn, EMMSG_SESSION_KEY);
+	net_emit_buf(game_conn, temp_key, 16);
+	net_emit_end_of_stream(game_conn);
+	
+	game_state = GAMESTATE_AWAITING_APPROVAL;
+}
+
+
+void game_process_key_declined()
+{
+	if(game_state != GAMESTATE_CREATING_SESSION)
+		return;
+	
+	console_print("!\nYour key does not seem to be valid.\n");
+	
+	game_state = GAMESTATE_DEAD;
+}
+
+
+void game_process_key_error()
+{
+	if(game_state != GAMESTATE_CREATING_SESSION)
+		return;
+	
+	console_print("!\nError authenticating user.\n");
+	
+	game_state = GAMESTATE_DEAD;
+}
+
+
+int game_process_joined()
+{
+//	if(game_state != GAMESTATE_AWAITING_APPROVAL)
+//		return 1;
+	
+	console_print("\xab\n");
+
+	game_state = GAMESTATE_JOINED;
+	
+	char *name = get_cvar_string("name");
+	
+	net_emit_uint8(game_conn, EMMSG_NAMECNGE);
+	net_emit_string(game_conn, name);
+	net_emit_uint8(game_conn, EMMSG_COLOURS);
+	emit_colours();
+	net_emit_uint8(game_conn, EMMSG_PLAY);
+	net_emit_end_of_stream(game_conn);
+	
+	free(name);
+	
+	return 1;
+}
+
+
+int game_process_failed()
+{
+	if(game_state != GAMESTATE_AWAITING_APPROVAL)
+		return 1;
+	
+	console_print("!\nAuthentication failed.\n");
+
+	game_state = GAMESTATE_DEAD;
+	em_disconnect(game_conn);
 	
 	return 1;
 }
@@ -816,6 +910,8 @@ int game_process_playing()
 	if(game_state == GAMESTATE_DEAD)
 		return 0;
 	
+	if(game_state == GAMESTATE_AWAITING_APPROVAL)
+		console_print("\xab\n");
 	
 	game_state0 = calloc(1, sizeof(struct game_state_t));
 	game_state0->tick = message_reader_read_uint32();		// oh dear
@@ -1972,6 +2068,15 @@ int game_process_message()
 	case EMNETMSG_PRINT:
 		return game_process_print();
 	
+	case EMNETMSG_AUTHENTICATE:
+		return game_process_authenticate();
+	
+	case EMNETMSG_JOINED:
+		return game_process_joined();
+	
+	case EMNETMSG_FAILED:
+		return game_process_failed();
+	
 	case EMMSG_PLAYING:
 		return game_process_playing();
 	
@@ -1982,9 +2087,6 @@ int game_process_message()
 		break;
 	
 	case EMNETMSG_NOTINRCON:
-		break;
-	
-	case EMNETMSG_JOINED:
 		break;
 	}
 	
