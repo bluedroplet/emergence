@@ -879,45 +879,53 @@ struct entity_t *spawn_pickup(struct pickup_spawn_point_t *spawn_point)
 {
 	struct entity_t *entity;
 	
+	entity = new_entity(&entity0);
+	entity->xdis = spawn_point->x;
+	entity->ydis = spawn_point->y;
+	entity->teleporting = TELEPORTING_APPEARING;
+	entity->teleporting_tick = game_tick;
+
 	switch(spawn_point->type)
 	{
 	case OBJECTTYPE_PLASMACANNON:
-		entity = new_entity(&entity0);
 		entity->type = ENT_WEAPON;
-		entity->xdis = spawn_point->x;
-		entity->ydis = spawn_point->y;
-		entity->teleporting = TELEPORTING_APPEARING;
-		entity->teleporting_tick = game_tick;
+		entity->weapon_data.theta = spawn_point->angle;
 		entity->weapon_data.type = WEAPON_PLASMA_CANNON;
-		entity->weapon_data.ammo = 400;
+		entity->weapon_data.ammo = spawn_point->plasma_cannon_data.plasmas;
 		entity->weapon_data.shield_strength = 1.0;
 		entity->weapon_data.spawn_point = spawn_point;
 		break;
 	
 	case OBJECTTYPE_MINIGUN:
-		entity = new_entity(&entity0);
 		entity->type = ENT_WEAPON;
-		entity->xdis = spawn_point->x;
-		entity->ydis = spawn_point->y;
-		entity->teleporting = TELEPORTING_APPEARING;
-		entity->teleporting_tick = game_tick;
+		entity->weapon_data.theta = spawn_point->angle;
 		entity->weapon_data.type = WEAPON_MINIGUN;
-		entity->weapon_data.ammo = 400;
+		entity->weapon_data.ammo = spawn_point->minigun_data.bullets;
 		entity->weapon_data.shield_strength = 1.0;
 		entity->weapon_data.spawn_point = spawn_point;
 		break;
 	
 	case OBJECTTYPE_ROCKETLAUNCHER:
-		entity = new_entity(&entity0);
 		entity->type = ENT_WEAPON;
-		entity->xdis = spawn_point->x;
-		entity->ydis = spawn_point->y;
-		entity->teleporting = TELEPORTING_APPEARING;
-		entity->teleporting_tick = game_tick;
+		entity->weapon_data.theta = spawn_point->angle;
 		entity->weapon_data.type = WEAPON_ROCKET_LAUNCHER;
-		entity->weapon_data.ammo = 10;
+		entity->weapon_data.ammo = spawn_point->rocket_launcher_data.rockets;
 		entity->weapon_data.shield_strength = 1.0;
 		entity->weapon_data.spawn_point = spawn_point;
+		break;
+	
+	case OBJECTTYPE_RAILS:
+		entity->type = ENT_RAILS;
+		entity->rails_data.theta = spawn_point->angle;
+		entity->rails_data.quantity = spawn_point->rails_data.quantity;
+		entity->rails_data.spawn_point = spawn_point;
+		break;
+	
+	case OBJECTTYPE_SHIELDENERGY:
+		entity->type = ENT_SHIELD;
+		entity->shield_data.theta = spawn_point->angle;
+		entity->shield_data.strength = spawn_point->shield_energy_data.shield_energy;
+		entity->shield_data.spawn_point = spawn_point;
 		break;
 	}
 	
@@ -1802,7 +1810,7 @@ int read_plasma_cannon(gzFile file)
 	if(gzread(file, &pickup_spawn_point.plasma_cannon_data.plasmas, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.plasma_cannon_data.angle, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.angle, 8) != 8)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.respawn_delay, 4) != 4)
@@ -1833,7 +1841,7 @@ int read_minigun(gzFile file)
 	if(gzread(file, &pickup_spawn_point.minigun_data.bullets, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.minigun_data.angle, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.angle, 8) != 8)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.respawn_delay, 4) != 4)
@@ -1864,7 +1872,7 @@ int read_rocket_launcher(gzFile file)
 	if(gzread(file, &pickup_spawn_point.rocket_launcher_data.rockets, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.rocket_launcher_data.angle, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.angle, 8) != 8)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.respawn_delay, 4) != 4)
@@ -1895,7 +1903,7 @@ int read_rails(gzFile file)
 	if(gzread(file, &pickup_spawn_point.rails_data.quantity, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.rails_data.angle, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.angle, 8) != 8)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.respawn_delay, 4) != 4)
@@ -1926,7 +1934,7 @@ int read_shield_energy(gzFile file)
 	if(gzread(file, &pickup_spawn_point.shield_energy_data.shield_energy, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.shield_energy_data.angle, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.angle, 8) != 8)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.respawn_delay, 4) != 4)

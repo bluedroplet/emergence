@@ -49,40 +49,37 @@ struct pickup_spawn_point_t
 	int respawn;
 	uint32_t respawn_tick;
 	
+	double angle;
+	
 	union
 	{
 		struct
 		{
 			int plasmas;
-			double angle;
 			
 		} plasma_cannon_data;
 		
 		struct
 		{
 			int bullets;
-			double angle;
 			
 		} minigun_data;
 		
 		struct
 		{
 			int rockets;
-			double angle;
 			
 		} rocket_launcher_data;
 		
 		struct
 		{
 			int quantity;
-			double angle;
 			
 		} rails_data;
 		
 		struct
 		{
 			int shield_energy;
-			double angle;
 			
 		} shield_energy_data;
 	};

@@ -191,16 +191,22 @@ struct mine_data_t
 
 struct rails_data_t
 {
+	float theta;
+
 	#ifdef EMSERVER
 	int quantity;
+	struct pickup_spawn_point_t *spawn_point;
 	#endif
 };
 
 
 struct shield_data_t
 {
+	float theta;
+
 	#ifdef EMSERVER
 	float strength;
+	struct pickup_spawn_point_t *spawn_point;
 	#endif
 	
 	#ifdef EMCLIENT

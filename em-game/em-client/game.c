@@ -2689,7 +2689,10 @@ void render_entities()
 		case ENT_BULLET:
 			break;
 		
+		case ENT_MINE:
+		case ENT_RAILS:
 		case ENT_ROCKET:
+		case ENT_SHIELD:
 			
 			params.source = s_plasma;
 		
@@ -2727,7 +2730,7 @@ void render_entities()
 		
 			break;
 		
-		case ENT_MINE:
+/*		case ENT_MINE:
 			break;
 		
 		case ENT_RAILS:
@@ -2735,8 +2738,8 @@ void render_entities()
 		
 		case ENT_SHIELD:
 			break;
-		}
-		
+*/		}
+
 		entity = entity->next;
 	}
 }

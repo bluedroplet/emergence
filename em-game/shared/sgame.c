@@ -53,8 +53,8 @@ int nextentity = 0;
 
 #define ROCKET_FORCE_THRESHOLD	50.0
 #define MINE_FORCE_THRESHOLD	60.0
-#define RAILS_FORCE_THRESHOLD	20.0
-#define SHIELD_FORCE_THRESHOLD	20.0
+#define RAILS_FORCE_THRESHOLD	0.2
+#define SHIELD_FORCE_THRESHOLD	0.2
 
 #define CRAFT_SPLASH_FORCE	200.0
 #define WEAPON_SPLASH_FORCE	200.0
@@ -565,15 +565,6 @@ void slow_entity(struct entity_t *entity)
 }
 
 
-void kill_entity(struct entity_t *entity)
-{
-	if(!entity->in_tick)
-		remove_entity(sentity0, entity);
-	else
-		entity->kill_me = 1;
-}
-
-
 void strip_weapons_from_craft(struct entity_t *craft)
 {
 	assert(craft);
@@ -606,6 +597,16 @@ void strip_craft_from_weapon(struct entity_t *weapon)
 		
 		weapon->weapon_data.craft = NULL;
 	}
+}
+
+
+void destroy_shield(struct entity_t *shield)
+{
+	#ifdef EMSERVER
+	calculate_respawn_tick(shield->shield_data.spawn_point);
+	#endif
+	
+	shield->kill_me = 1;
 }
 
 
@@ -727,7 +728,8 @@ int shield_force(struct entity_t *shield, double force)
 {
 	if(force > SHIELD_FORCE_THRESHOLD)
 	{
-		shield->kill_me = 1;
+		remove_entity_from_all_players(shield);
+		destroy_shield(shield);
 		return 1;
 	}
 	
@@ -842,7 +844,6 @@ void explode_weapon(struct entity_t *weapon, struct player_t *responsibility)
 		remove_entity(sentity0, weapon);
 }
 
-
 #endif
 
 
@@ -880,10 +881,20 @@ void explode_mine(struct entity_t *mine)
 }
 
 
+void destroy_rails(struct entity_t *rails)
+{
+	#ifdef EMSERVER
+	calculate_respawn_tick(rails->rails_data.spawn_point);
+	#endif
+	
+	rails->kill_me = 1;
+}
+
+
 #ifdef EMSERVER
 void explode_rails(struct entity_t *rails, struct player_t *responsibility)
 {
-	rails->kill_me = 1;
+	destroy_rails(rails);
 
 	remove_entity_from_all_players(rails);
 	splash_force(rails->xdis, rails->ydis, RAILS_SPLASH_FORCE, responsibility);
@@ -953,7 +964,7 @@ void craft_rails_collision(struct entity_t *craft, struct entity_t *rails)
 		craft->craft_data.owner->rails + rails->rails_data.quantity);
 	#endif
 	
-	rails->kill_me = 1;
+	destroy_rails(rails);
 }
 
 
@@ -964,7 +975,7 @@ void craft_shield_collision(struct entity_t *craft, struct entity_t *shield)
 		craft->craft_data.shield_strength + shield->shield_data.strength);
 	#endif
 	
-	shield->kill_me = 1;
+	destroy_shield(shield);
 }
 
 
@@ -1027,7 +1038,7 @@ void weapon_shield_collision(struct entity_t *weapon, struct entity_t *shield)
 		weapon->weapon_data.shield_strength + shield->shield_data.strength);
 	#endif
 	
-	shield->kill_me = 1;
+	destroy_shield(shield);
 }
 
 
@@ -1058,7 +1069,7 @@ void plasma_rails_collision(struct entity_t *plasma, struct entity_t *rails)
 void plasma_shield_collision(struct entity_t *plasma, struct entity_t *shield)
 {
 	plasma->kill_me = 1;
-	shield->kill_me = 1;
+	destroy_shield(shield);
 }
 
 
@@ -1144,7 +1155,7 @@ void shield_shield_collision(struct entity_t *shield1, struct entity_t *shield2)
 	shield1->shield_data.strength += shield2->shield_data.strength;
 	#endif
 	
-	shield2->kill_me = 1;
+	destroy_shield(shield2);
 }
 
 
@@ -1296,7 +1307,7 @@ void s_tick_craft(struct entity_t *craft)
 				case ENT_SHIELD:
 					if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, 
 						entity->xdis, entity->ydis, SHIELD_RADIUS))
-						entity->kill_me = 1;
+						destroy_shield(entity);
 					break;
 				}
 				
@@ -2398,7 +2409,7 @@ void s_tick_bullet(struct entity_t *bullet)
 			if(line_in_circle(bullet->xdis, bullet->ydis, xdis, ydis, 
 				entity->xdis, entity->ydis, SHIELD_RADIUS))
 			{
-				entity->kill_me = 1;
+				destroy_shield(entity);
 			}
 			break;
 		}
@@ -2606,7 +2617,7 @@ void s_tick_rocket(struct entity_t *rocket)
 				if(circles_intersect(xdis, ydis, ROCKET_RADIUS, 
 					entity->xdis, entity->ydis, SHIELD_RADIUS))
 				{
-					entity->kill_me = 1;
+					destroy_shield(entity);
 				}
 				break;
 			}
@@ -2827,7 +2838,7 @@ void s_tick_mine(struct entity_t *mine)
 				if(circles_intersect(xdis, ydis, MINE_RADIUS, 
 					entity->xdis, entity->ydis, SHIELD_RADIUS))
 				{
-					entity->kill_me = 1;
+					destroy_shield(entity);
 				}
 				break;
 			}
@@ -3040,7 +3051,7 @@ void s_tick_rails(struct entity_t *rails)
 				if(circles_intersect(xdis, ydis, RAILS_RADIUS, 
 					entity->xdis, entity->ydis, SHIELD_RADIUS))
 				{
-					entity->kill_me = 1;
+					destroy_shield(entity);
 				}
 				break;
 			}
@@ -3180,7 +3191,7 @@ void s_tick_shield(struct entity_t *shield)
 		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, SHIELD_RADIUS);
 		if(node)
 		{
-			shield->kill_me = 1;
+			destroy_shield(shield);
 			return;
 		}
 		
@@ -3228,7 +3239,7 @@ void s_tick_shield(struct entity_t *shield)
 				if(circles_intersect(xdis, ydis, SHIELD_RADIUS, 
 					entity->xdis, entity->ydis, ROCKET_RADIUS))
 				{
-					shield->kill_me = 1;
+					destroy_shield(shield);
 				}
 				break;
 			
@@ -3236,7 +3247,7 @@ void s_tick_shield(struct entity_t *shield)
 				if(circles_intersect(xdis, ydis, SHIELD_RADIUS, 
 					entity->xdis, entity->ydis, RAILS_RADIUS))
 				{
-					shield->kill_me = 1;
+					destroy_shield(shield);
 				}
 				break;
 			
