@@ -12,6 +12,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_rocket_launcher_properties_dialog_destroy" last_modification_time="Fri, 11 Oct 2002 17:23:08 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Fri, 11 Oct 2002 19:12:52 GMT"/>
@@ -35,6 +40,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -70,6 +76,7 @@
 		  <property name="browse_dialog_title" translatable="yes">Select Rocket Launcher Texture</property>
 		  <property name="modal">True</property>
 		  <property name="do_preview">True</property>
+		  <property name="use_filechooser">True</property>
 		  <signal name="activate" handler="on_rocket_launcher_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:29:33 GMT"/>
 
 		  <child internal-child="entry">
@@ -95,6 +102,7 @@
 		  <property name="label" translatable="yes">Texture (global)</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -294,6 +302,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_speedup_ramp_properties_dialog_destroy" last_modification_time="Fri, 11 Oct 2002 19:21:58 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Fri, 11 Oct 2002 19:14:19 GMT"/>
@@ -317,6 +330,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -352,6 +366,7 @@
 		  <property name="browse_dialog_title" translatable="yes">Select Texture</property>
 		  <property name="modal">True</property>
 		  <property name="do_preview">True</property>
+		  <property name="use_filechooser">True</property>
 		  <signal name="activate" handler="on_speedup_ramp_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:30:13 GMT"/>
 
 		  <child internal-child="entry">
@@ -377,6 +392,7 @@
 		  <property name="label" translatable="yes">Texture</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -688,6 +704,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_minigun_properties_dialog_destroy" last_modification_time="Fri, 11 Oct 2002 19:21:27 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Fri, 11 Oct 2002 19:13:46 GMT"/>
@@ -711,6 +732,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -746,6 +768,7 @@
 		  <property name="browse_dialog_title" translatable="yes">Select Minigun Texture</property>
 		  <property name="modal">True</property>
 		  <property name="do_preview">True</property>
+		  <property name="use_filechooser">True</property>
 		  <signal name="activate" handler="on_minigun_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:30:38 GMT"/>
 
 		  <child internal-child="entry">
@@ -771,6 +794,7 @@
 		  <property name="label" translatable="yes">Texture (global)</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -970,6 +994,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_plasma_cannon_properties_dialog_destroy" last_modification_time="Fri, 11 Oct 2002 17:28:31 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Fri, 11 Oct 2002 18:32:13 GMT"/>
@@ -993,6 +1022,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -1028,6 +1058,7 @@
 		  <property name="browse_dialog_title" translatable="yes">Select Plasma Cannon Texture</property>
 		  <property name="modal">True</property>
 		  <property name="do_preview">True</property>
+		  <property name="use_filechooser">True</property>
 		  <signal name="activate" handler="on_plasma_cannon_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:31:03 GMT"/>
 
 		  <child internal-child="entry">
@@ -1053,6 +1084,7 @@
 		  <property name="label" translatable="yes">Texture (global)</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -1252,6 +1284,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_rails_properties_dialog_destroy" last_modification_time="Fri, 11 Oct 2002 19:21:00 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Fri, 11 Oct 2002 19:13:22 GMT"/>
@@ -1275,6 +1312,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -1310,6 +1348,7 @@
 		  <property name="browse_dialog_title" translatable="yes">Select Rails Texture</property>
 		  <property name="modal">True</property>
 		  <property name="do_preview">True</property>
+		  <property name="use_filechooser">True</property>
 		  <signal name="activate" handler="on_rails_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:31:33 GMT"/>
 
 		  <child internal-child="entry">
@@ -1335,6 +1374,7 @@
 		  <property name="label" translatable="yes">Texture (global)</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -1534,6 +1574,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_shield_energy_properties_dialog_destroy" last_modification_time="Fri, 11 Oct 2002 19:21:38 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Fri, 11 Oct 2002 19:14:01 GMT"/>
@@ -1557,6 +1602,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -1591,6 +1637,7 @@
 		  <property name="browse_dialog_title" translatable="yes">Select Shield Energy Texture</property>
 		  <property name="modal">True</property>
 		  <property name="do_preview">True</property>
+		  <property name="use_filechooser">True</property>
 		  <signal name="activate" handler="on_shield_energy_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:31:55 GMT"/>
 
 		  <child internal-child="entry">
@@ -1616,6 +1663,7 @@
 		  <property name="label" translatable="yes">Texture (global)</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -1814,6 +1862,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_spawn_point_properties_dialog_destroy" last_modification_time="Fri, 11 Oct 2002 19:21:48 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Fri, 11 Oct 2002 19:14:10 GMT"/>
@@ -1837,6 +1890,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -1878,6 +1932,7 @@
 		      <property name="browse_dialog_title" translatable="yes">Select Texture</property>
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
+		      <property name="use_filechooser">True</property>
 		      <signal name="activate" handler="on_spawn_point_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:32:14 GMT"/>
 
 		      <child internal-child="entry">
@@ -2078,6 +2133,7 @@
 		  <property name="label" translatable="yes">Texture</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -2102,6 +2158,7 @@
 	      <property name="label" translatable="yes">Teleportation Only</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="active">False</property>
 	      <property name="inconsistent">False</property>
 	      <property name="draw_indicator">True</property>
@@ -2186,6 +2243,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_gravity_well_properties_dialog_destroy" last_modification_time="Fri, 11 Oct 2002 19:20:38 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Fri, 11 Oct 2002 19:13:09 GMT"/>
@@ -2209,6 +2271,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -2250,6 +2313,7 @@
 		      <property name="browse_dialog_title" translatable="yes">Select Texture</property>
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
+		      <property name="use_filechooser">True</property>
 		      <signal name="activate" handler="on_gravity_well_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:32:41 GMT"/>
 
 		      <child internal-child="entry">
@@ -2450,6 +2514,7 @@
 		  <property name="label" translatable="yes">Texture</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -2528,6 +2593,7 @@
 	      <property name="label" translatable="yes">Enclosed</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="active">False</property>
 	      <property name="inconsistent">False</property>
 	      <property name="draw_indicator">True</property>
@@ -2558,6 +2624,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_teleporter_properties_dialog_destroy" last_modification_time="Sat, 12 Oct 2002 00:22:26 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Fri, 11 Oct 2002 19:14:37 GMT"/>
@@ -2581,6 +2652,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -2622,6 +2694,7 @@
 		      <property name="browse_dialog_title" translatable="yes">Select Texture</property>
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
+		      <property name="use_filechooser">True</property>
 		      <signal name="activate" handler="on_teleporter_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:33:09 GMT"/>
 
 		      <child internal-child="entry">
@@ -2822,6 +2895,7 @@
 		  <property name="label" translatable="yes">Texture</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -3073,6 +3147,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_door_switch_properties_dialog_destroy" last_modification_time="Sat, 30 Nov 2002 15:08:21 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Sat, 30 Nov 2002 15:08:50 GMT"/>
@@ -3096,6 +3175,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -3164,6 +3244,7 @@
 			  <property name="dither">True</property>
 			  <property name="use_alpha">True</property>
 			  <property name="title" translatable="yes">Choose Colour/Opacity</property>
+			  <property name="focus_on_click">True</property>
 			  <signal name="color_set" handler="on_door_colorpicker_color_set" last_modification_time="Sat, 30 Nov 2002 15:09:35 GMT"/>
 			</widget>
 			<packing>
@@ -3328,6 +3409,7 @@
 			      <property name="label" translatable="yes">Open</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
@@ -3347,6 +3429,7 @@
 			      <property name="label" translatable="yes">Closed</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
@@ -3545,6 +3628,7 @@
 		  <property name="label" translatable="yes">Door</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -3611,6 +3695,7 @@
 			  <property name="dither">True</property>
 			  <property name="use_alpha">True</property>
 			  <property name="title" translatable="yes">Choose Colour/Opacity</property>
+			  <property name="focus_on_click">True</property>
 			  <signal name="color_set" handler="on_switch_colorpicker_color_set" last_modification_time="Tue, 03 Dec 2002 15:51:23 GMT"/>
 			</widget>
 			<packing>
@@ -4062,6 +4147,7 @@
 		  <property name="label" translatable="yes">Switch</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -4097,6 +4183,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_fill_properties_dialog_destroy" last_modification_time="Tue, 03 Dec 2002 15:44:46 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Tue, 03 Dec 2002 15:44:58 GMT"/>
@@ -4120,6 +4211,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -4181,6 +4273,7 @@
 		      <property name="dither">True</property>
 		      <property name="use_alpha">True</property>
 		      <property name="title" translatable="yes">Choose Colour/Opacity</property>
+		      <property name="focus_on_click">True</property>
 		      <signal name="color_set" handler="on_fill_solid_colorpicker_color_set" last_modification_time="Sat, 08 Feb 2003 13:40:20 GMT"/>
 		    </widget>
 		    <packing>
@@ -4199,6 +4292,7 @@
 		  <property name="label" translatable="yes">Solid</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -4238,6 +4332,7 @@
 		      <property name="browse_dialog_title" translatable="yes">Select Texture</property>
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
+		      <property name="use_filechooser">True</property>
 		      <signal name="activate" handler="on_fill_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:33:29 GMT"/>
 
 		      <child internal-child="entry">
@@ -4274,6 +4369,7 @@
 			  <property name="label" translatable="yes">Flip Horizontally</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -4293,6 +4389,7 @@
 			  <property name="label" translatable="yes">Flip Vertically</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -4325,6 +4422,7 @@
 			  <property name="label" translatable="yes">Rotate</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -4351,6 +4449,7 @@
 			      <property name="label" translatable="yes">Left</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
@@ -4370,6 +4469,7 @@
 			      <property name="label" translatable="yes">Right</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
@@ -4630,6 +4730,7 @@
 		  <property name="label" translatable="yes">Texture</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -4720,6 +4821,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_wall_properties_dialog_destroy" last_modification_time="Mon, 30 Dec 2002 15:45:20 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Mon, 30 Dec 2002 15:45:40 GMT"/>
@@ -4743,6 +4849,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -4804,6 +4911,7 @@
 		      <property name="dither">True</property>
 		      <property name="use_alpha">True</property>
 		      <property name="title" translatable="yes">Choose Colour/Opacity</property>
+		      <property name="focus_on_click">True</property>
 		      <signal name="color_set" handler="on_wall_solid_colorpicker_color_set" last_modification_time="Mon, 30 Dec 2002 15:48:13 GMT"/>
 		    </widget>
 		    <packing>
@@ -4822,6 +4930,7 @@
 		  <property name="label" translatable="yes">Solid</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -4861,6 +4970,7 @@
 		      <property name="browse_dialog_title" translatable="yes">Select Texture</property>
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
+		      <property name="use_filechooser">True</property>
 		      <signal name="activate" handler="on_wall_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 14:50:24 GMT"/>
 
 		      <child internal-child="entry">
@@ -4897,6 +5007,7 @@
 			  <property name="label" translatable="yes">Flip Horizontally</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -4916,6 +5027,7 @@
 			  <property name="label" translatable="yes">Flip Vertically</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -4948,6 +5060,7 @@
 			  <property name="label" translatable="yes">Rotate</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -4974,6 +5087,7 @@
 			      <property name="label" translatable="yes">Left</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
@@ -4993,6 +5107,7 @@
 			      <property name="label" translatable="yes">Right</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
@@ -5145,6 +5260,7 @@
 			  <property name="label" translatable="yes">Fixed Reps</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -5199,6 +5315,7 @@
 			  <property name="label" translatable="yes">Fixed Width</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -5251,6 +5368,7 @@
 		  <property name="label" translatable="yes">Texture</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -5282,6 +5400,7 @@
 		  <property name="label" translatable="yes">Width Lock</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -5342,6 +5461,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_end_node_properties_dialog_destroy" last_modification_time="Thu, 30 Jan 2003 15:00:05 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Mon, 30 Dec 2002 15:46:01 GMT"/>
@@ -5365,6 +5489,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -5406,6 +5531,7 @@
 		      <property name="browse_dialog_title" translatable="yes">Select Texture</property>
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
+		      <property name="use_filechooser">True</property>
 		      <signal name="activate" handler="on_end_node_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:33:58 GMT"/>
 
 		      <child internal-child="entry">
@@ -5442,6 +5568,7 @@
 			  <property name="label" translatable="yes">Flip Horizontally</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -5461,6 +5588,7 @@
 			  <property name="label" translatable="yes">Flip Vertically</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -5493,6 +5621,7 @@
 			  <property name="label" translatable="yes">Rotate</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -5519,6 +5648,7 @@
 			      <property name="label" translatable="yes">Left</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
@@ -5538,6 +5668,7 @@
 			      <property name="label" translatable="yes">Right</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
@@ -5686,6 +5817,7 @@
 		  <property name="label" translatable="yes">Texture</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -5945,6 +6077,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_crossover_node_properties_dialog_destroy" last_modification_time="Tue, 04 Feb 2003 12:43:41 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Thu, 30 Jan 2003 15:00:38 GMT"/>
@@ -5968,6 +6105,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -6014,6 +6152,7 @@
 			  <property name="label" translatable="yes">Average</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -6032,6 +6171,7 @@
 			  <property name="label" translatable="yes">Fade</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -6064,6 +6204,7 @@
 			  <property name="label" translatable="yes">Blah</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -6083,6 +6224,7 @@
 			  <property name="label" translatable="yes">Blah</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -6111,6 +6253,7 @@
 		  <property name="label" translatable="yes">Blend (Unimplemented)</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -6150,6 +6293,7 @@
 		      <property name="browse_dialog_title" translatable="yes">Select Texture</property>
 		      <property name="modal">True</property>
 		      <property name="do_preview">True</property>
+		      <property name="use_filechooser">True</property>
 		      <signal name="activate" handler="on_crossover_node_texture_pixmapentry_activate" last_modification_time="Fri, 14 Feb 2003 15:34:23 GMT"/>
 
 		      <child internal-child="entry">
@@ -6186,6 +6330,7 @@
 			  <property name="label" translatable="yes">Flip Horizontally</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -6205,6 +6350,7 @@
 			  <property name="label" translatable="yes">Flip Vertically</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -6237,6 +6383,7 @@
 			  <property name="label" translatable="yes">Rotate</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
+			  <property name="focus_on_click">True</property>
 			  <property name="active">False</property>
 			  <property name="inconsistent">False</property>
 			  <property name="draw_indicator">True</property>
@@ -6263,6 +6410,7 @@
 			      <property name="label" translatable="yes">Left</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
@@ -6282,6 +6430,7 @@
 			      <property name="label" translatable="yes">Right</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
@@ -6318,6 +6467,7 @@
 		  <property name="label" translatable="yes">Texture</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -6746,6 +6896,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="destroy" handler="on_straight_through_node_properties_dialog_destroy" last_modification_time="Thu, 30 Jan 2003 15:01:29 GMT"/>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Mon, 30 Dec 2002 15:46:01 GMT"/>
@@ -6769,6 +6924,7 @@
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
 	    </widget>
 	  </child>
@@ -7030,6 +7186,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Tue, 11 Feb 2003 16:30:00 GMT"/>
   <signal name="destroy" handler="gtk_main_quit" last_modification_time="Tue, 11 Feb 2003 17:07:52 GMT"/>
@@ -7053,6 +7214,7 @@
 	      <property name="label">gtk-ok</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-5</property>
 	    </widget>
 	  </child>
@@ -7141,6 +7303,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Tue, 11 Feb 2003 16:30:09 GMT"/>
 
@@ -7163,6 +7330,7 @@
 	      <property name="label">gtk-cancel</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-6</property>
 	    </widget>
 	  </child>
@@ -7251,6 +7419,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="response" handler="gtk_widget_destroy" last_modification_time="Tue, 11 Feb 2003 16:30:23 GMT"/>
   <signal name="destroy" handler="gtk_main_quit" last_modification_time="Tue, 11 Feb 2003 17:08:16 GMT"/>
@@ -7274,6 +7447,7 @@
 	      <property name="label">gtk-ok</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-5</property>
 	    </widget>
 	  </child>
@@ -7362,6 +7536,11 @@
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
 
   <child internal-child="vbox">
@@ -7383,6 +7562,7 @@
 	      <property name="label">gtk-save</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-8</property>
 	    </widget>
 	  </child>
@@ -7395,6 +7575,7 @@
 	      <property name="label">gtk-cancel</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-6</property>
 	    </widget>
 	  </child>
@@ -7485,6 +7666,11 @@ Do you wish to save it now?</property>
   <property name="modal">True</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
 
   <child internal-child="vbox">
@@ -7506,6 +7692,7 @@ Do you wish to save it now?</property>
 	      <property name="label">gtk-save</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-8</property>
 	    </widget>
 	  </child>
@@ -7516,6 +7703,7 @@ Do you wish to save it now?</property>
 	      <property name="can_default">True</property>
 	      <property name="can_focus">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-9</property>
 
 	      <child>
@@ -7525,6 +7713,10 @@ Do you wish to save it now?</property>
 		  <property name="yalign">0.5</property>
 		  <property name="xscale">0</property>
 		  <property name="yscale">0</property>
+		  <property name="top_padding">0</property>
+		  <property name="bottom_padding">0</property>
+		  <property name="left_padding">0</property>
+		  <property name="right_padding">0</property>
 
 		  <child>
 		    <widget class="GtkHBox" id="hbox183">
@@ -7584,6 +7776,7 @@ Do you wish to save it now?</property>
 	      <property name="label">gtk-cancel</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-6</property>
 	    </widget>
 	  </child>

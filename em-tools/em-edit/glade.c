@@ -55,6 +55,7 @@ create_rocket_launcher_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (rocket_launcher_properties_dialog), "Rocket Launcher Properties");
   gtk_window_set_modal (GTK_WINDOW (rocket_launcher_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (rocket_launcher_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (rocket_launcher_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   dialog_vbox2 = GTK_DIALOG (rocket_launcher_properties_dialog)->vbox;
   gtk_widget_show (dialog_vbox2);
@@ -74,6 +75,7 @@ create_rocket_launcher_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (texture_pixmapentry), 5);
   gtk_widget_set_sensitive (texture_pixmapentry, FALSE);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -89,7 +91,6 @@ create_rocket_launcher_properties_dialog (void)
   label76 = gtk_label_new ("Rockets");
   gtk_widget_show (label76);
   gtk_box_pack_start (GTK_BOX (hbox35), label76, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label76), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label76), 0, 0.5);
 
   rockets_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -102,10 +103,9 @@ create_rocket_launcher_properties_dialog (void)
   gtk_widget_show (hbox36);
   gtk_box_pack_start (GTK_BOX (vbox2), hbox36, TRUE, TRUE, 0);
 
-  label77 = gtk_label_new ("Angle (º)");
+  label77 = gtk_label_new ("Angle (\302\272)");
   gtk_widget_show (label77);
   gtk_box_pack_start (GTK_BOX (hbox36), label77, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label77), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label77), 0, 0.5);
 
   angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -122,7 +122,6 @@ create_rocket_launcher_properties_dialog (void)
   label78 = gtk_label_new ("Respawn Delay (ms)");
   gtk_widget_show (label78);
   gtk_box_pack_start (GTK_BOX (hbox37), label78, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label78), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label78), 0, 0.5);
 
   respawn_delay_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 250, 1000, 1000);
@@ -228,6 +227,7 @@ create_speedup_ramp_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (speedup_ramp_properties_dialog), "Speedup Ramp Properties");
   gtk_window_set_modal (GTK_WINDOW (speedup_ramp_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (speedup_ramp_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (speedup_ramp_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox3 = GTK_DIALOG (speedup_ramp_properties_dialog)->vbox;
   gtk_widget_show (vbox3);
@@ -247,6 +247,7 @@ create_speedup_ramp_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (texture_pixmapentry), 5);
   gtk_widget_set_sensitive (texture_pixmapentry, FALSE);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -262,7 +263,6 @@ create_speedup_ramp_properties_dialog (void)
   label33 = gtk_label_new ("Width");
   gtk_widget_show (label33);
   gtk_box_pack_start (GTK_BOX (hbox22), label33, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label33), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label33), 0, 0.5);
 
   width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -278,7 +278,6 @@ create_speedup_ramp_properties_dialog (void)
   label32 = gtk_label_new ("Height");
   gtk_widget_show (label32);
   gtk_box_pack_start (GTK_BOX (hbox23), label32, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label32), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label32), 0, 0.5);
 
   height_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -291,10 +290,9 @@ create_speedup_ramp_properties_dialog (void)
   gtk_widget_show (hbox24);
   gtk_box_pack_start (GTK_BOX (vbox4), hbox24, TRUE, TRUE, 0);
 
-  label79 = gtk_label_new ("Angle (º)");
+  label79 = gtk_label_new ("Angle (\302\272)");
   gtk_widget_show (label79);
   gtk_box_pack_start (GTK_BOX (hbox24), label79, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label79), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label79), 0, 0.5);
 
   angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -311,7 +309,6 @@ create_speedup_ramp_properties_dialog (void)
   label63 = gtk_label_new ("Activation Width");
   gtk_widget_show (label63);
   gtk_box_pack_start (GTK_BOX (hbox45), label63, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label63), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label63), 0, 0.5);
 
   activation_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -327,7 +324,6 @@ create_speedup_ramp_properties_dialog (void)
   label30 = gtk_label_new ("Boost");
   gtk_widget_show (label30);
   gtk_box_pack_start (GTK_BOX (hbox25), label30, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label30), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label30), 0, 0.5);
 
   boost_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -449,6 +445,7 @@ create_minigun_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (minigun_properties_dialog), "Minigun Properties");
   gtk_window_set_modal (GTK_WINDOW (minigun_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (minigun_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (minigun_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox5 = GTK_DIALOG (minigun_properties_dialog)->vbox;
   gtk_widget_show (vbox5);
@@ -468,6 +465,7 @@ create_minigun_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (texture_pixmapentry), 5);
   gtk_widget_set_sensitive (texture_pixmapentry, FALSE);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -483,7 +481,6 @@ create_minigun_properties_dialog (void)
   label49 = gtk_label_new ("Bullets");
   gtk_widget_show (label49);
   gtk_box_pack_start (GTK_BOX (hbox32), label49, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label49), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label49), 0, 0.5);
 
   bullets_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 20, 20, 20);
@@ -496,10 +493,9 @@ create_minigun_properties_dialog (void)
   gtk_widget_show (hbox34);
   gtk_box_pack_start (GTK_BOX (vbox6), hbox34, FALSE, FALSE, 0);
 
-  label52 = gtk_label_new ("Angle (º)");
+  label52 = gtk_label_new ("Angle (\302\272)");
   gtk_widget_show (label52);
   gtk_box_pack_start (GTK_BOX (hbox34), label52, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label52), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label52), 0, 0.5);
 
   angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -516,7 +512,6 @@ create_minigun_properties_dialog (void)
   label51 = gtk_label_new ("Respawn Delay (ms)");
   gtk_widget_show (label51);
   gtk_box_pack_start (GTK_BOX (hbox33), label51, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label51), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label51), 0, 0.5);
 
   respawn_delay_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 250, 1000, 1000);
@@ -614,6 +609,7 @@ create_plasma_cannon_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (plasma_cannon_properties_dialog), "Plasma Cannon Properties");
   gtk_window_set_modal (GTK_WINDOW (plasma_cannon_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (plasma_cannon_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (plasma_cannon_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox7 = GTK_DIALOG (plasma_cannon_properties_dialog)->vbox;
   gtk_widget_show (vbox7);
@@ -633,6 +629,7 @@ create_plasma_cannon_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (texture_pixmapentry), 5);
   gtk_widget_set_sensitive (texture_pixmapentry, FALSE);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -648,7 +645,6 @@ create_plasma_cannon_properties_dialog (void)
   label34 = gtk_label_new ("Plasmas");
   gtk_widget_show (label34);
   gtk_box_pack_start (GTK_BOX (hbox26), label34, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label34), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label34), 0, 0.5);
 
   plasmas_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 5, 5, 5);
@@ -661,10 +657,9 @@ create_plasma_cannon_properties_dialog (void)
   gtk_widget_show (hbox27);
   gtk_box_pack_start (GTK_BOX (vbox8), hbox27, TRUE, TRUE, 0);
 
-  label35 = gtk_label_new ("Angle (º)");
+  label35 = gtk_label_new ("Angle (\302\272)");
   gtk_widget_show (label35);
   gtk_box_pack_start (GTK_BOX (hbox27), label35, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label35), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label35), 0, 0.5);
 
   angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -681,7 +676,6 @@ create_plasma_cannon_properties_dialog (void)
   label36 = gtk_label_new ("Respawn Delay (ms)");
   gtk_widget_show (label36);
   gtk_box_pack_start (GTK_BOX (hbox28), label36, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label36), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label36), 0, 0.5);
 
   respawn_delay_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 250, 1000, 1000);
@@ -779,6 +773,7 @@ create_rails_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (rails_properties_dialog), "Rails Properties");
   gtk_window_set_modal (GTK_WINDOW (rails_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (rails_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (rails_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox9 = GTK_DIALOG (rails_properties_dialog)->vbox;
   gtk_widget_show (vbox9);
@@ -798,6 +793,7 @@ create_rails_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (texture_pixmapentry), 5);
   gtk_widget_set_sensitive (texture_pixmapentry, FALSE);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -813,7 +809,6 @@ create_rails_properties_dialog (void)
   label46 = gtk_label_new ("Quantity");
   gtk_widget_show (label46);
   gtk_box_pack_start (GTK_BOX (hbox29), label46, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label46), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label46), 0, 0.5);
 
   quantity_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -826,10 +821,9 @@ create_rails_properties_dialog (void)
   gtk_widget_show (hbox30);
   gtk_box_pack_start (GTK_BOX (vbox10), hbox30, TRUE, TRUE, 0);
 
-  label47 = gtk_label_new ("Angle (º)");
+  label47 = gtk_label_new ("Angle (\302\272)");
   gtk_widget_show (label47);
   gtk_box_pack_start (GTK_BOX (hbox30), label47, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label47), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label47), 0, 0.5);
 
   angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -846,7 +840,6 @@ create_rails_properties_dialog (void)
   label48 = gtk_label_new ("Respawn Delay (ms)");
   gtk_widget_show (label48);
   gtk_box_pack_start (GTK_BOX (hbox31), label48, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label48), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label48), 0, 0.5);
 
   respawn_delay_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 250, 1000, 1000);
@@ -944,6 +937,7 @@ create_shield_energy_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (shield_energy_properties_dialog), "Shield Energy Properties");
   gtk_window_set_modal (GTK_WINDOW (shield_energy_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (shield_energy_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (shield_energy_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox12 = GTK_DIALOG (shield_energy_properties_dialog)->vbox;
   gtk_widget_show (vbox12);
@@ -962,6 +956,7 @@ create_shield_energy_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (texture_pixmapentry), 5);
   gtk_widget_set_sensitive (texture_pixmapentry, FALSE);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -977,7 +972,6 @@ create_shield_energy_properties_dialog (void)
   label28 = gtk_label_new ("Energy");
   gtk_widget_show (label28);
   gtk_box_pack_start (GTK_BOX (hbox38), label28, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label28), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label28), 0, 0.5);
 
   energy_spinbutton_adj = gtk_adjustment_new (0, 0, 100, 1, 10, 10);
@@ -989,10 +983,9 @@ create_shield_energy_properties_dialog (void)
   hbox53 = gtk_hbox_new (TRUE, 5);
   gtk_box_pack_start (GTK_BOX (vbox13), hbox53, TRUE, TRUE, 0);
 
-  label72 = gtk_label_new ("Angle (º)");
+  label72 = gtk_label_new ("Angle (\302\272)");
   gtk_widget_show (label72);
   gtk_box_pack_start (GTK_BOX (hbox53), label72, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label72), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label72), 0, 0.5);
 
   angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -1009,7 +1002,6 @@ create_shield_energy_properties_dialog (void)
   label29 = gtk_label_new ("Respawn Delay (ms)");
   gtk_widget_show (label29);
   gtk_box_pack_start (GTK_BOX (hbox39), label29, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label29), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label29), 0, 0.5);
 
   respawn_delay_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 250, 1000, 1000);
@@ -1113,6 +1105,7 @@ create_spawn_point_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (spawn_point_properties_dialog), "Spawn Point Properties");
   gtk_window_set_modal (GTK_WINDOW (spawn_point_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (spawn_point_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (spawn_point_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox15 = GTK_DIALOG (spawn_point_properties_dialog)->vbox;
   gtk_widget_show (vbox15);
@@ -1136,6 +1129,7 @@ create_spawn_point_properties_dialog (void)
   gtk_widget_show (texture_pixmapentry);
   gtk_box_pack_start (GTK_BOX (texture_vbox), texture_pixmapentry, FALSE, FALSE, 0);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -1147,7 +1141,6 @@ create_spawn_point_properties_dialog (void)
   label73 = gtk_label_new ("Width");
   gtk_widget_show (label73);
   gtk_box_pack_start (GTK_BOX (hbox54), label73, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label73), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label73), 0, 0.5);
 
   width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -1163,7 +1156,6 @@ create_spawn_point_properties_dialog (void)
   label74 = gtk_label_new ("Height");
   gtk_widget_show (label74);
   gtk_box_pack_start (GTK_BOX (hbox55), label74, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label74), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label74), 0, 0.5);
 
   height_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -1176,10 +1168,9 @@ create_spawn_point_properties_dialog (void)
   gtk_widget_show (hbox56);
   gtk_box_pack_start (GTK_BOX (texture_vbox), hbox56, FALSE, FALSE, 0);
 
-  label75 = gtk_label_new ("Angle (º)");
+  label75 = gtk_label_new ("Angle (\302\272)");
   gtk_widget_show (label75);
   gtk_box_pack_start (GTK_BOX (hbox56), label75, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label75), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label75), 0, 0.5);
 
   angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -1204,7 +1195,6 @@ create_spawn_point_properties_dialog (void)
   label57 = gtk_label_new ("Index");
   gtk_widget_show (label57);
   gtk_box_pack_start (GTK_BOX (hbox40), label57, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label57), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label57), 0, 0.5);
 
   index_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -1331,6 +1321,7 @@ create_gravity_well_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (gravity_well_properties_dialog), "Gravity Well Properties");
   gtk_window_set_modal (GTK_WINDOW (gravity_well_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (gravity_well_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (gravity_well_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox17 = GTK_DIALOG (gravity_well_properties_dialog)->vbox;
   gtk_widget_show (vbox17);
@@ -1354,6 +1345,7 @@ create_gravity_well_properties_dialog (void)
   gtk_widget_show (texture_pixmapentry);
   gtk_box_pack_start (GTK_BOX (texture_vbox), texture_pixmapentry, FALSE, FALSE, 0);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -1365,7 +1357,6 @@ create_gravity_well_properties_dialog (void)
   label58 = gtk_label_new ("Width");
   gtk_widget_show (label58);
   gtk_box_pack_start (GTK_BOX (hbox41), label58, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label58), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label58), 0, 0.5);
 
   width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -1381,7 +1372,6 @@ create_gravity_well_properties_dialog (void)
   label59 = gtk_label_new ("Height");
   gtk_widget_show (label59);
   gtk_box_pack_start (GTK_BOX (hbox42), label59, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label59), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label59), 0, 0.5);
 
   height_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -1394,10 +1384,9 @@ create_gravity_well_properties_dialog (void)
   gtk_widget_show (hbox43);
   gtk_box_pack_start (GTK_BOX (texture_vbox), hbox43, TRUE, TRUE, 0);
 
-  label60 = gtk_label_new ("Angle (º)");
+  label60 = gtk_label_new ("Angle (\302\272)");
   gtk_widget_show (label60);
   gtk_box_pack_start (GTK_BOX (hbox43), label60, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label60), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label60), 0, 0.5);
 
   angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -1418,7 +1407,6 @@ create_gravity_well_properties_dialog (void)
   label62 = gtk_label_new ("Strength");
   gtk_widget_show (label62);
   gtk_box_pack_start (GTK_BOX (hbox44), label62, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label62), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label62), 0, 0.5);
 
   strength_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -1560,6 +1548,7 @@ create_teleporter_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (teleporter_properties_dialog), "Teleporter Properties");
   gtk_window_set_modal (GTK_WINDOW (teleporter_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (teleporter_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (teleporter_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox20 = GTK_DIALOG (teleporter_properties_dialog)->vbox;
   gtk_widget_show (vbox20);
@@ -1583,6 +1572,7 @@ create_teleporter_properties_dialog (void)
   gtk_widget_show (texture_pixmapentry);
   gtk_box_pack_start (GTK_BOX (texture_vbox), texture_pixmapentry, FALSE, FALSE, 0);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -1594,7 +1584,6 @@ create_teleporter_properties_dialog (void)
   label64 = gtk_label_new ("Width");
   gtk_widget_show (label64);
   gtk_box_pack_start (GTK_BOX (hbox46), label64, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label64), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label64), 0, 0.5);
 
   width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -1610,7 +1599,6 @@ create_teleporter_properties_dialog (void)
   label65 = gtk_label_new ("Height");
   gtk_widget_show (label65);
   gtk_box_pack_start (GTK_BOX (hbox47), label65, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label65), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label65), 0, 0.5);
 
   height_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -1623,10 +1611,9 @@ create_teleporter_properties_dialog (void)
   gtk_widget_show (hbox48);
   gtk_box_pack_start (GTK_BOX (texture_vbox), hbox48, TRUE, TRUE, 0);
 
-  label67 = gtk_label_new ("Angle (º)");
+  label67 = gtk_label_new ("Angle (\302\272)");
   gtk_widget_show (label67);
   gtk_box_pack_start (GTK_BOX (hbox48), label67, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label67), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label67), 0, 0.5);
 
   angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -1647,7 +1634,6 @@ create_teleporter_properties_dialog (void)
   label68 = gtk_label_new ("Radius");
   gtk_widget_show (label68);
   gtk_box_pack_start (GTK_BOX (hbox49), label68, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label68), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label68), 0, 0.5);
 
   radius_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -1664,7 +1650,6 @@ create_teleporter_properties_dialog (void)
   gtk_widget_show (label69);
   gtk_box_pack_start (GTK_BOX (hbox50), label69, TRUE, TRUE, 0);
   gtk_label_set_use_markup (GTK_LABEL (label69), TRUE);
-  gtk_label_set_justify (GTK_LABEL (label69), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label69), 0, 0.5);
 
   sparkles_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -1680,7 +1665,6 @@ create_teleporter_properties_dialog (void)
   label70 = gtk_label_new ("Spawn Point Index");
   gtk_widget_show (label70);
   gtk_box_pack_start (GTK_BOX (hbox51), label70, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label70), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label70), 0, 0.5);
 
   spawn_point_index_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -1693,10 +1677,9 @@ create_teleporter_properties_dialog (void)
   gtk_widget_show (hbox52);
   gtk_box_pack_start (GTK_BOX (vbox21), hbox52, TRUE, TRUE, 0);
 
-  label71 = gtk_label_new ("Rotate (º)");
+  label71 = gtk_label_new ("Rotate (\302\272)");
   gtk_widget_show (label71);
   gtk_box_pack_start (GTK_BOX (hbox52), label71, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label71), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label71), 0, 0.5);
 
   rotate_entity_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -1878,6 +1861,7 @@ create_door_switch_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (door_switch_properties_dialog), "Door/Switch Properties");
   gtk_window_set_modal (GTK_WINDOW (door_switch_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (door_switch_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (door_switch_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   dialog_vbox4 = GTK_DIALOG (door_switch_properties_dialog)->vbox;
   gtk_widget_show (dialog_vbox4);
@@ -1904,7 +1888,6 @@ create_door_switch_properties_dialog (void)
   label82 = gtk_label_new ("Colour/Opacity");
   gtk_widget_show (label82);
   gtk_box_pack_start (GTK_BOX (hbox57), label82, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label82), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label82), 0, 0.5);
 
   door_colorpicker = gnome_color_picker_new ();
@@ -1920,7 +1903,6 @@ create_door_switch_properties_dialog (void)
   label105 = gtk_label_new ("Width");
   gtk_widget_show (label105);
   gtk_box_pack_start (GTK_BOX (hbox78), label105, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label105), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label105), 0, 0.5);
 
   door_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -1936,7 +1918,6 @@ create_door_switch_properties_dialog (void)
   label208 = gtk_label_new ("Energy");
   gtk_widget_show (label208);
   gtk_box_pack_start (GTK_BOX (hbox176), label208, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label208), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label208), 0, 0.5);
 
   door_energy_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -1952,7 +1933,6 @@ create_door_switch_properties_dialog (void)
   label83 = gtk_label_new ("Initial State");
   gtk_widget_show (label83);
   gtk_box_pack_start (GTK_BOX (hbox58), label83, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label83), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label83), 0, 0.5);
 
   hbox61 = gtk_hbox_new (FALSE, 5);
@@ -1978,7 +1958,6 @@ create_door_switch_properties_dialog (void)
   label85 = gtk_label_new ("Open Timeout (ms)");
   gtk_widget_show (label85);
   gtk_box_pack_start (GTK_BOX (hbox60), label85, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label85), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label85), 0, 0.5);
 
   door_open_timeout_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 250, 1000, 1000);
@@ -1994,7 +1973,6 @@ create_door_switch_properties_dialog (void)
   label84 = gtk_label_new ("Close Timeout (ms)");
   gtk_widget_show (label84);
   gtk_box_pack_start (GTK_BOX (hbox59), label84, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label84), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label84), 0, 0.5);
 
   door_close_timeout_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 250, 1000, 1000);
@@ -2010,7 +1988,6 @@ create_door_switch_properties_dialog (void)
   label94 = gtk_label_new ("Index");
   gtk_widget_show (label94);
   gtk_box_pack_start (GTK_BOX (hbox68), label94, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label94), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label94), 0, 0.5);
 
   door_index_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -2040,7 +2017,6 @@ create_door_switch_properties_dialog (void)
   label95 = gtk_label_new ("Colour/Opacity");
   gtk_widget_show (label95);
   gtk_box_pack_start (GTK_BOX (hbox69), label95, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label95), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label95), 0, 0.5);
 
   switch_colorpicker = gnome_color_picker_new ();
@@ -2056,7 +2032,6 @@ create_door_switch_properties_dialog (void)
   label106 = gtk_label_new ("Width");
   gtk_widget_show (label106);
   gtk_box_pack_start (GTK_BOX (hbox79), label106, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label106), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label106), 0, 0.5);
 
   switch_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -2069,7 +2044,6 @@ create_door_switch_properties_dialog (void)
   gtk_widget_show (label86);
   gtk_box_pack_start (GTK_BOX (switch_vbox), label86, FALSE, FALSE, 0);
   gtk_label_set_use_markup (GTK_LABEL (label86), TRUE);
-  gtk_label_set_justify (GTK_LABEL (label86), GTK_JUSTIFY_LEFT);
 
   hbox62 = gtk_hbox_new (TRUE, 5);
   gtk_widget_show (hbox62);
@@ -2078,7 +2052,6 @@ create_door_switch_properties_dialog (void)
   label88 = gtk_label_new ("Door Close List");
   gtk_widget_show (label88);
   gtk_box_pack_start (GTK_BOX (hbox62), label88, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label88), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label88), 0, 0.5);
 
   switch_on_enter_close_list_entry = gtk_entry_new ();
@@ -2093,7 +2066,6 @@ create_door_switch_properties_dialog (void)
   label89 = gtk_label_new ("Door Open List");
   gtk_widget_show (label89);
   gtk_box_pack_start (GTK_BOX (hbox63), label89, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label89), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label89), 0, 0.5);
 
   switch_on_enter_open_list_entry = gtk_entry_new ();
@@ -2108,7 +2080,6 @@ create_door_switch_properties_dialog (void)
   label90 = gtk_label_new ("Door Invert List");
   gtk_widget_show (label90);
   gtk_box_pack_start (GTK_BOX (hbox64), label90, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label90), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label90), 0, 0.5);
 
   switch_on_enter_invert_list_entry = gtk_entry_new ();
@@ -2120,7 +2091,6 @@ create_door_switch_properties_dialog (void)
   gtk_widget_show (label87);
   gtk_box_pack_start (GTK_BOX (switch_vbox), label87, FALSE, FALSE, 0);
   gtk_label_set_use_markup (GTK_LABEL (label87), TRUE);
-  gtk_label_set_justify (GTK_LABEL (label87), GTK_JUSTIFY_LEFT);
 
   hbox65 = gtk_hbox_new (TRUE, 5);
   gtk_widget_show (hbox65);
@@ -2129,7 +2099,6 @@ create_door_switch_properties_dialog (void)
   label91 = gtk_label_new ("Door Close List");
   gtk_widget_show (label91);
   gtk_box_pack_start (GTK_BOX (hbox65), label91, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label91), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label91), 0, 0.5);
 
   switch_on_leave_close_list_entry = gtk_entry_new ();
@@ -2144,7 +2113,6 @@ create_door_switch_properties_dialog (void)
   label92 = gtk_label_new ("Door Open List");
   gtk_widget_show (label92);
   gtk_box_pack_start (GTK_BOX (hbox66), label92, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label92), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label92), 0, 0.5);
 
   switch_on_leave_open_list_entry = gtk_entry_new ();
@@ -2159,7 +2127,6 @@ create_door_switch_properties_dialog (void)
   label93 = gtk_label_new ("Door Invert List");
   gtk_widget_show (label93);
   gtk_box_pack_start (GTK_BOX (hbox67), label93, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label93), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label93), 0, 0.5);
 
   switch_on_leave_invert_list_entry = gtk_entry_new ();
@@ -2359,6 +2326,7 @@ create_fill_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (fill_properties_dialog), "Fill Properties");
   gtk_window_set_modal (GTK_WINDOW (fill_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (fill_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (fill_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   dialog_vbox5 = GTK_DIALOG (fill_properties_dialog)->vbox;
   gtk_widget_show (dialog_vbox5);
@@ -2380,7 +2348,6 @@ create_fill_properties_dialog (void)
   label97 = gtk_label_new ("Colour/Opacity");
   gtk_widget_show (label97);
   gtk_box_pack_start (GTK_BOX (solid_hbox), label97, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label97), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label97), 0, 0.5);
 
   solid_colorpicker = gnome_color_picker_new ();
@@ -2409,6 +2376,7 @@ create_fill_properties_dialog (void)
   gtk_widget_show (texture_pixmapentry);
   gtk_box_pack_start (GTK_BOX (texture_vbox), texture_pixmapentry, FALSE, FALSE, 0);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -2457,7 +2425,6 @@ create_fill_properties_dialog (void)
   label101 = gtk_label_new ("Horizontal Stretch");
   gtk_widget_show (label101);
   gtk_box_pack_start (GTK_BOX (hbox75), label101, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label101), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label101), 0, 0.5);
 
   stretch_horiz_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -2473,7 +2440,6 @@ create_fill_properties_dialog (void)
   label102 = gtk_label_new ("Vertical Stretch");
   gtk_widget_show (label102);
   gtk_box_pack_start (GTK_BOX (hbox76), label102, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label102), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label102), 0, 0.5);
 
   stretch_vert_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -2489,7 +2455,6 @@ create_fill_properties_dialog (void)
   label99 = gtk_label_new ("Horizontal Offset");
   gtk_widget_show (label99);
   gtk_box_pack_start (GTK_BOX (hbox73), label99, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label99), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label99), 0, 0.5);
 
   offset_horiz_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -2505,7 +2470,6 @@ create_fill_properties_dialog (void)
   label100 = gtk_label_new ("Vertical Offset");
   gtk_widget_show (label100);
   gtk_box_pack_start (GTK_BOX (hbox74), label100, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label100), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label100), 0, 0.5);
 
   offset_vert_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 0.01, 1, 1);
@@ -2527,7 +2491,6 @@ create_fill_properties_dialog (void)
   label98 = gtk_label_new ("Friction");
   gtk_widget_show (label98);
   gtk_box_pack_start (GTK_BOX (hbox71), label98, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label98), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label98), 0, 0.5);
 
   friction_spinbutton_adj = gtk_adjustment_new (0, 0, 1, 0.0001, 0.01, 0.01);
@@ -2715,6 +2678,7 @@ create_wall_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (wall_properties_dialog), "Wall Properties");
   gtk_window_set_modal (GTK_WINDOW (wall_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (wall_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (wall_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   dialog_vbox6 = GTK_DIALOG (wall_properties_dialog)->vbox;
   gtk_widget_show (dialog_vbox6);
@@ -2736,7 +2700,6 @@ create_wall_properties_dialog (void)
   label117 = gtk_label_new ("Colour/Opacity");
   gtk_widget_show (label117);
   gtk_box_pack_start (GTK_BOX (solid_hbox), label117, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label117), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label117), 0, 0.5);
 
   solid_colorpicker = gnome_color_picker_new ();
@@ -2765,6 +2728,7 @@ create_wall_properties_dialog (void)
   gtk_widget_show (texture_pixmapentry);
   gtk_box_pack_start (GTK_BOX (texture_vbox), texture_pixmapentry, FALSE, FALSE, 0);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -2813,7 +2777,6 @@ create_wall_properties_dialog (void)
   label113 = gtk_label_new ("Horizontal Offset");
   gtk_widget_show (label113);
   gtk_box_pack_start (GTK_BOX (hbox91), label113, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label113), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label113), 0, 0.5);
 
   offset_horiz_spinbutton_adj = gtk_adjustment_new (0, -999999, 999999, 1, 10, 10);
@@ -2829,7 +2792,6 @@ create_wall_properties_dialog (void)
   label114 = gtk_label_new ("Vertical Offset");
   gtk_widget_show (label114);
   gtk_box_pack_start (GTK_BOX (hbox92), label114, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label114), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label114), 0, 0.5);
 
   offset_vert_spinbutton_adj = gtk_adjustment_new (0, -999999, 999999, 1, 10, 10);
@@ -3083,6 +3045,7 @@ create_end_node_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (end_node_properties_dialog), "Node Properties");
   gtk_window_set_modal (GTK_WINDOW (end_node_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (end_node_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (end_node_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox38 = GTK_DIALOG (end_node_properties_dialog)->vbox;
   gtk_widget_show (vbox38);
@@ -3106,6 +3069,7 @@ create_end_node_properties_dialog (void)
   gtk_widget_show (texture_pixmapentry);
   gtk_box_pack_start (GTK_BOX (texture_vbox), texture_pixmapentry, FALSE, FALSE, 0);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -3154,7 +3118,6 @@ create_end_node_properties_dialog (void)
   label177 = gtk_label_new ("Left Width");
   gtk_widget_show (label177);
   gtk_box_pack_start (GTK_BOX (hbox168), label177, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label177), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label177), 0, 0.5);
 
   left_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3170,7 +3133,6 @@ create_end_node_properties_dialog (void)
   label185 = gtk_label_new ("Right Width");
   gtk_widget_show (label185);
   gtk_box_pack_start (GTK_BOX (hbox175), label185, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label185), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label185), 0, 0.5);
 
   right_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3190,7 +3152,6 @@ create_end_node_properties_dialog (void)
   label193 = gtk_label_new ("Magnitude");
   gtk_widget_show (label193);
   gtk_box_pack_start (GTK_BOX (magnitude_hbox), label193, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label193), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label193), 0, 0.5);
 
   magnitude_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3206,7 +3167,6 @@ create_end_node_properties_dialog (void)
   label200 = gtk_label_new ("Wall Left Width");
   gtk_widget_show (label200);
   gtk_box_pack_start (GTK_BOX (wall_left_width_hbox), label200, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label200), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label200), 0, 0.5);
 
   wall_left_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3222,7 +3182,6 @@ create_end_node_properties_dialog (void)
   label201 = gtk_label_new ("Wall Right Width");
   gtk_widget_show (label201);
   gtk_box_pack_start (GTK_BOX (wall_right_width_hbox), label201, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label201), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label201), 0, 0.5);
 
   wall_right_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3235,10 +3194,9 @@ create_end_node_properties_dialog (void)
   gtk_widget_show (angle_hbox);
   gtk_box_pack_start (GTK_BOX (vbox48), angle_hbox, TRUE, TRUE, 0);
 
-  label199 = gtk_label_new ("Angle (º)");
+  label199 = gtk_label_new ("Angle (\302\272)");
   gtk_widget_show (label199);
   gtk_box_pack_start (GTK_BOX (angle_hbox), label199, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label199), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label199), 0, 0.5);
 
   angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -3446,6 +3404,7 @@ create_crossover_node_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (crossover_node_properties_dialog), "Node Properties");
   gtk_window_set_modal (GTK_WINDOW (crossover_node_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (crossover_node_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (crossover_node_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox44 = GTK_DIALOG (crossover_node_properties_dialog)->vbox;
   gtk_widget_show (vbox44);
@@ -3516,6 +3475,7 @@ create_crossover_node_properties_dialog (void)
   gtk_widget_show (texture_pixmapentry);
   gtk_box_pack_start (GTK_BOX (texture_vbox), texture_pixmapentry, FALSE, FALSE, 0);
   gnome_file_entry_set_modal (GNOME_FILE_ENTRY (texture_pixmapentry), TRUE);
+  g_object_set (G_OBJECT (texture_pixmapentry), "use_filechooser", TRUE, NULL);
 
   texture_entry = gnome_file_entry_gtk_entry (GNOME_FILE_ENTRY (texture_pixmapentry));
   gtk_widget_show (texture_entry);
@@ -3570,7 +3530,6 @@ create_crossover_node_properties_dialog (void)
   label186 = gtk_label_new ("Axis 1 Magnitude");
   gtk_widget_show (label186);
   gtk_box_pack_start (GTK_BOX (axis1_mag_hbox), label186, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label186), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label186), 0, 0.5);
 
   axis1_mag_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3586,7 +3545,6 @@ create_crossover_node_properties_dialog (void)
   label187 = gtk_label_new ("Axis 1 Left Width");
   gtk_widget_show (label187);
   gtk_box_pack_start (GTK_BOX (axis1_left_width_hbox), label187, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label187), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label187), 0, 0.5);
 
   axis1_left_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3602,7 +3560,6 @@ create_crossover_node_properties_dialog (void)
   label188 = gtk_label_new ("Axis 1 Right Width");
   gtk_widget_show (label188);
   gtk_box_pack_start (GTK_BOX (axis1_right_width_hbox), label188, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label188), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label188), 0, 0.5);
 
   axis1_right_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3618,7 +3575,6 @@ create_crossover_node_properties_dialog (void)
   label189 = gtk_label_new ("Axis 2 Magnitude");
   gtk_widget_show (label189);
   gtk_box_pack_start (GTK_BOX (axis2_mag_hbox), label189, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label189), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label189), 0, 0.5);
 
   axis2_mag_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3634,7 +3590,6 @@ create_crossover_node_properties_dialog (void)
   label190 = gtk_label_new ("Axis 2 Left Width");
   gtk_widget_show (label190);
   gtk_box_pack_start (GTK_BOX (axis2_left_width_hbox), label190, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label190), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label190), 0, 0.5);
 
   axis2_left_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3650,7 +3605,6 @@ create_crossover_node_properties_dialog (void)
   label191 = gtk_label_new ("Axis 2 Right Width");
   gtk_widget_show (label191);
   gtk_box_pack_start (GTK_BOX (axis2_right_width_hbox), label191, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label191), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label191), 0, 0.5);
 
   axis2_right_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3663,10 +3617,9 @@ create_crossover_node_properties_dialog (void)
   gtk_widget_show (angle_hbox);
   gtk_box_pack_start (GTK_BOX (vbox45), angle_hbox, TRUE, TRUE, 0);
 
-  label192 = gtk_label_new ("Angle (º)");
+  label192 = gtk_label_new ("Angle (\302\272)");
   gtk_widget_show (label192);
   gtk_box_pack_start (GTK_BOX (angle_hbox), label192, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label192), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label192), 0, 0.5);
 
   angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -3861,6 +3814,7 @@ create_straight_through_node_properties_dialog (void)
   gtk_window_set_title (GTK_WINDOW (straight_through_node_properties_dialog), "Node Properties");
   gtk_window_set_modal (GTK_WINDOW (straight_through_node_properties_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (straight_through_node_properties_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (straight_through_node_properties_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox53 = GTK_DIALOG (straight_through_node_properties_dialog)->vbox;
   gtk_widget_show (vbox53);
@@ -3877,7 +3831,6 @@ create_straight_through_node_properties_dialog (void)
   label204 = gtk_label_new ("Magnitude");
   gtk_widget_show (label204);
   gtk_box_pack_start (GTK_BOX (magnitude_hbox), label204, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label204), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label204), 0, 0.5);
 
   magnitude_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3893,7 +3846,6 @@ create_straight_through_node_properties_dialog (void)
   label205 = gtk_label_new ("Wall Left Width");
   gtk_widget_show (label205);
   gtk_box_pack_start (GTK_BOX (left_wall_width_hbox), label205, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label205), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label205), 0, 0.5);
 
   wall_left_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3909,7 +3861,6 @@ create_straight_through_node_properties_dialog (void)
   label206 = gtk_label_new ("Wall Right Width");
   gtk_widget_show (label206);
   gtk_box_pack_start (GTK_BOX (right_wall_width_hbox), label206, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label206), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label206), 0, 0.5);
 
   wall_right_width_spinbutton_adj = gtk_adjustment_new (0, 0, 999999, 1, 10, 10);
@@ -3922,10 +3873,9 @@ create_straight_through_node_properties_dialog (void)
   gtk_widget_show (angle_hbox);
   gtk_box_pack_start (GTK_BOX (vbox54), angle_hbox, TRUE, TRUE, 0);
 
-  label207 = gtk_label_new ("Angle (º)");
+  label207 = gtk_label_new ("Angle (\302\272)");
   gtk_widget_show (label207);
   gtk_box_pack_start (GTK_BOX (angle_hbox), label207, TRUE, TRUE, 0);
-  gtk_label_set_justify (GTK_LABEL (label207), GTK_JUSTIFY_LEFT);
   gtk_misc_set_alignment (GTK_MISC (label207), 0, 0.5);
 
   angle_spinbutton_adj = gtk_adjustment_new (0, -180, 179.99, 0.01, 1, 1);
@@ -4025,6 +3975,7 @@ create_corrupt_file_dialog (void)
   gtk_window_set_title (GTK_WINDOW (corrupt_file_dialog), "Emergence Editor");
   gtk_window_set_modal (GTK_WINDOW (corrupt_file_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (corrupt_file_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (corrupt_file_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   dialog_vbox10 = GTK_DIALOG (corrupt_file_dialog)->vbox;
   gtk_widget_show (dialog_vbox10);
@@ -4045,7 +3996,6 @@ create_corrupt_file_dialog (void)
   label213 = gtk_label_new ("The File is Corrupt!");
   gtk_widget_show (label213);
   gtk_box_pack_start (GTK_BOX (vbox57), label213, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label213), GTK_JUSTIFY_LEFT);
 
   dialog_action_area10 = GTK_DIALOG (corrupt_file_dialog)->action_area;
   gtk_widget_show (dialog_action_area10);
@@ -4092,6 +4042,7 @@ create_map_compiling_dialog (void)
   gtk_window_set_title (GTK_WINDOW (map_compiling_dialog), "Emergence Editor");
   gtk_window_set_modal (GTK_WINDOW (map_compiling_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (map_compiling_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (map_compiling_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   dialog_vbox11 = GTK_DIALOG (map_compiling_dialog)->vbox;
   gtk_widget_show (dialog_vbox11);
@@ -4112,7 +4063,6 @@ create_map_compiling_dialog (void)
   label214 = gtk_label_new ("Please wait. Your map is compiling.");
   gtk_widget_show (label214);
   gtk_box_pack_start (GTK_BOX (vbox59), label214, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label214), GTK_JUSTIFY_LEFT);
 
   dialog_action_area11 = GTK_DIALOG (map_compiling_dialog)->action_area;
   gtk_widget_show (dialog_action_area11);
@@ -4156,6 +4106,7 @@ create_file_not_found_dialog (void)
   gtk_window_set_title (GTK_WINDOW (file_not_found_dialog), "Emergence Editor");
   gtk_window_set_modal (GTK_WINDOW (file_not_found_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (file_not_found_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (file_not_found_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox60 = GTK_DIALOG (file_not_found_dialog)->vbox;
   gtk_widget_show (vbox60);
@@ -4176,7 +4127,6 @@ create_file_not_found_dialog (void)
   label215 = gtk_label_new ("The File was Not Found!");
   gtk_widget_show (label215);
   gtk_box_pack_start (GTK_BOX (vbox61), label215, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label215), GTK_JUSTIFY_LEFT);
 
   hbuttonbox12 = GTK_DIALOG (file_not_found_dialog)->action_area;
   gtk_widget_show (hbuttonbox12);
@@ -4224,6 +4174,7 @@ create_specify_filename_dialog (void)
   gtk_window_set_title (GTK_WINDOW (specify_filename_dialog), "Emergence Editor");
   gtk_window_set_modal (GTK_WINDOW (specify_filename_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (specify_filename_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (specify_filename_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox62 = GTK_DIALOG (specify_filename_dialog)->vbox;
   gtk_widget_show (vbox62);
@@ -4244,6 +4195,7 @@ create_specify_filename_dialog (void)
   label216 = gtk_label_new ("You must specify your map's filename \n(by saving it) before you can compile it.\nDo you wish to save it now?");
   gtk_widget_show (label216);
   gtk_box_pack_start (GTK_BOX (vbox63), label216, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label216), GTK_JUSTIFY_CENTER);
 
   hbuttonbox13 = GTK_DIALOG (specify_filename_dialog)->action_area;
   gtk_widget_show (hbuttonbox13);
@@ -4295,6 +4247,7 @@ create_not_saved_dialog (void)
   gtk_window_set_title (GTK_WINDOW (not_saved_dialog), "Emergence Editor");
   gtk_window_set_modal (GTK_WINDOW (not_saved_dialog), TRUE);
   gtk_window_set_resizable (GTK_WINDOW (not_saved_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (not_saved_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
 
   vbox64 = GTK_DIALOG (not_saved_dialog)->vbox;
   gtk_widget_show (vbox64);
@@ -4315,6 +4268,7 @@ create_not_saved_dialog (void)
   label217 = gtk_label_new ("Your Map is not saved.");
   gtk_widget_show (label217);
   gtk_box_pack_start (GTK_BOX (vbox65), label217, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label217), GTK_JUSTIFY_CENTER);
 
   hbuttonbox14 = GTK_DIALOG (not_saved_dialog)->action_area;
   gtk_widget_show (hbuttonbox14);
@@ -4345,7 +4299,6 @@ create_not_saved_dialog (void)
   label218 = gtk_label_new_with_mnemonic ("Discard");
   gtk_widget_show (label218);
   gtk_box_pack_start (GTK_BOX (hbox183), label218, FALSE, FALSE, 0);
-  gtk_label_set_justify (GTK_LABEL (label218), GTK_JUSTIFY_LEFT);
 
   button9 = gtk_button_new_from_stock ("gtk-cancel");
   gtk_widget_show (button9);

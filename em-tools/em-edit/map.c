@@ -390,35 +390,35 @@ error:
 }
 
 
-void open_dialog_ok(GtkWidget *w, GtkFileSelection *fs)
+void open_dialog_ok(char *filename)
 {
-	gtk_widget_set_sensitive(GTK_WIDGET(fs), 0);
+/*	gtk_widget_set_sensitive(GTK_WIDGET(fs), 0);
 	
 	while(gtk_events_pending())
 		gtk_main_iteration_do(0);
-	
+*/	
 	stop_working();
 	
-	switch(try_load_map((char*)gtk_file_selection_get_filename(fs)))
+	switch(try_load_map(filename))
 	{
 	case 0:
 		view_all_map();
 		break;
 		
 	case -1:
-		run_file_not_found_dialog(GTK_WINDOW(fs));
+		run_file_not_found_dialog(GTK_WINDOW(window));
 		break;
 	
 	case -2:
-		run_corrupt_file_dialog(GTK_WINDOW(fs));
+		run_corrupt_file_dialog(GTK_WINDOW(window));
 		break;
 	}
 	
-	gtk_widget_destroy(GTK_WIDGET(fs));
+/*	gtk_widget_destroy(GTK_WIDGET(fs));
 	
 	while(gtk_events_pending())
 		gtk_main_iteration_do(0);
-	
+*/	
 	update_client_area();
 	
 	start_working();
@@ -427,18 +427,45 @@ void open_dialog_ok(GtkWidget *w, GtkFileSelection *fs)
 
 void run_open_dialog()
 {
-	GtkWidget *file_selection = gtk_file_selection_new("Open Map");
-	gtk_window_set_modal(GTK_WINDOW(file_selection), TRUE);
-	gtk_window_set_transient_for(GTK_WINDOW(file_selection), GTK_WINDOW(window));
-	g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(file_selection)->ok_button), "clicked", 
-		G_CALLBACK(open_dialog_ok), file_selection);
-	g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(file_selection)->cancel_button), "clicked", 
-		G_CALLBACK(gtk_widget_destroy), G_OBJECT(file_selection));
-	g_signal_connect(G_OBJECT(file_selection), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	GtkWidget *file_chooser = gtk_file_chooser_dialog_new("Open Map", GTK_WINDOW(window), 
+		GTK_FILE_CHOOSER_ACTION_OPEN,
+				      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
 	
-	gtk_widget_show(file_selection);
+	gtk_dialog_set_default_response (GTK_DIALOG (file_chooser), GTK_RESPONSE_ACCEPT);
+
+	GtkFileFilter *filter;
 	
-	gtk_main();
+	/* Filters */
+	filter = gtk_file_filter_new ();
+	gtk_file_filter_set_name (filter, "All Map Files");
+	gtk_file_filter_add_pattern (filter, "*.map");
+	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (file_chooser), filter);
+
+	/* Make this filter the default */
+	gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (file_chooser), filter);
+
+	filter = gtk_file_filter_new ();
+	gtk_file_filter_set_name (filter, "All Files");
+	gtk_file_filter_add_pattern (filter, "*");
+	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (file_chooser), filter);
+
+
+
+	
+
+if (gtk_dialog_run (GTK_DIALOG (file_chooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *filename;
+
+    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (file_chooser));
+    open_dialog_ok (filename);
+    g_free (filename);
+  }
+
+  
+gtk_widget_destroy (file_chooser);
+
 }
 
 
@@ -469,25 +496,22 @@ int map_save()
 }
 
 
-void save_dialog_ok(GtkFileSelection *file_selection)
+void save_dialog_ok(char *filename)
 {
-	gtk_widget_set_sensitive(GTK_WIDGET(file_selection), 0);
+/*	gtk_widget_set_sensitive(GTK_WIDGET(file_selection), 0);
 	
 	while(gtk_events_pending())
 		gtk_main_iteration_do(0);
-	
+*/	
 	stop_working();
 	
 	string_clear(map_filename);
-	string_cat_text(map_filename, (char*)gtk_file_selection_get_filename(file_selection));
+	string_cat_text(map_filename, filename);
 	set_map_path();
 	
 	map_save();
 	
 	start_working();
-
-	g_object_set_data(G_OBJECT(file_selection), "retval", (gpointer)1);
-	gtk_main_quit();
 }
 
 
@@ -500,27 +524,59 @@ gboolean cancel(GtkFileSelection *file_selection)
 
 int run_save_dialog()	// returns 0 if user canceled
 {
-	GtkWidget *file_selection = gtk_file_selection_new("Save Map");
-	gtk_window_set_modal(GTK_WINDOW(file_selection), TRUE);
-	gtk_window_set_transient_for(GTK_WINDOW(file_selection), GTK_WINDOW(window));
-	g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(file_selection)->ok_button), "clicked", 
-		G_CALLBACK(save_dialog_ok), G_OBJECT(file_selection));
-	g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(file_selection)->cancel_button), "clicked", 
-		G_CALLBACK(cancel), G_OBJECT(file_selection));
-	g_signal_connect_swapped(G_OBJECT(file_selection), "delete-event", 
-		G_CALLBACK(cancel), G_OBJECT(file_selection));
+	GtkWidget *file_chooser = gtk_file_chooser_dialog_new("Open Map", GTK_WINDOW(window), 
+		GTK_FILE_CHOOSER_ACTION_SAVE,
+				      GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
 	
-	g_object_set_data(G_OBJECT(file_selection), "retval", (gpointer)0);
+	gtk_dialog_set_default_response (GTK_DIALOG (file_chooser), GTK_RESPONSE_ACCEPT);
 
-	gtk_widget_show(file_selection);
+	GtkFileFilter *filter;
 	
-	gtk_main();
+	/* Filters */
+	filter = gtk_file_filter_new ();
+	gtk_file_filter_set_name (filter, "All Map Files");
+	gtk_file_filter_add_pattern (filter, "*.map");
+	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (file_chooser), filter);
+
+	/* Make this filter the default */
+	gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (file_chooser), filter);
+
+	filter = gtk_file_filter_new ();
+	gtk_file_filter_set_name (filter, "All Files");
+	gtk_file_filter_add_pattern (filter, "*");
+	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (file_chooser), filter);
+
+	gchar *current_folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (file_chooser));
 	
-	int retval = (int)g_object_get_data(G_OBJECT(file_selection), "retval");
+	struct string_t *rel_filename = arb_abs2rel(map_filename->text, current_folder);
+
+	if(rel_filename)
+		gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (file_chooser), rel_filename->text);
 	
-	gtk_widget_destroy(file_selection);
-	
-	return retval;
+	g_free(current_folder);
+	free_string(rel_filename);
+
+
+	int retval;
+
+if (gtk_dialog_run (GTK_DIALOG (file_chooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *filename;
+
+    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (file_chooser));
+    save_dialog_ok (filename);
+    g_free (filename);
+	  retval = 1;
+  }
+  else
+	  retval = 0;
+
+  
+gtk_widget_destroy (file_chooser);
+
+
+return retval;
 }
 
 
