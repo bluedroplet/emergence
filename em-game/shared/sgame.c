@@ -1407,6 +1407,20 @@ void s_tick_craft(struct entity_t *craft)
 		craft->yvel *= BRAKE_FRICTION;
 	}
 	
+	
+	if(craft->craft_data.left_weapon)
+	{
+		craft->craft_data.left_weapon->xdis += craft->xvel;
+		craft->craft_data.left_weapon->ydis += craft->yvel;
+	}
+	
+
+	if(craft->craft_data.right_weapon)
+	{
+		craft->craft_data.right_weapon->xdis += craft->xvel;
+		craft->craft_data.right_weapon->ydis += craft->yvel;
+	}
+	
 
 	int restart = 0;
 	double xdis;
@@ -1799,8 +1813,8 @@ void s_tick_weapon(struct entity_t *weapon)
 		
 		// rotate around craft
 	
-		double xdis = weapon->xdis + craft->xvel;
-		double ydis = weapon->ydis + craft->yvel;
+		double xdis = weapon->xdis;// + craft->xvel;
+		double ydis = weapon->ydis;// + craft->yvel;
 		
 		double theta_side = -M_PI / 4.0;
 		
@@ -1851,6 +1865,11 @@ void s_tick_weapon(struct entity_t *weapon)
 	
 		apply_gravity_acceleration(weapon);
 	//	slow_entity(weapon);
+		
+		weapon->xdis = xdis;
+		weapon->ydis = ydis;
+		
+		weapon->xvel = weapon->yvel = 0.0;
 	}
 	else
 	{
