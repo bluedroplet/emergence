@@ -24,6 +24,8 @@ struct player_t
 	uint32_t firing_left, firing_right;
 	uint32_t firing_left_start, firing_right_start;
 	uint32_t left_fired, right_fired;
+	
+	int frags;
 
 	struct ping_t *ping0;
 	int next_ping;

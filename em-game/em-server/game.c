@@ -472,7 +472,7 @@ int game_process_status(struct player_t *player, struct buffer_t *buffer)
 }
 
 
-void spawn_plasma(struct entity_t *weapon)
+void spawn_plasma(struct entity_t *weapon, struct player_t *player)
 {
 	struct entity_t *plasma = new_entity(&entity0);
 	
@@ -489,12 +489,14 @@ void spawn_plasma(struct entity_t *weapon)
 	
 	plasma->plasma_data.in_weapon = 1;
 	plasma->plasma_data.weapon_id = weapon->index;
+	
+	plasma->plasma_data.owner = player;
 
 	spawn_entity_on_all_players(plasma);
 }
 
 
-void spawn_bullet(struct entity_t *weapon)
+void spawn_bullet(struct entity_t *weapon, struct player_t *player)
 {
 	struct entity_t *bullet = new_entity(&entity0);
 	
@@ -511,10 +513,12 @@ void spawn_bullet(struct entity_t *weapon)
 	
 	bullet->bullet_data.in_weapon = 1;
 	bullet->bullet_data.weapon_id = weapon->index;
+	
+	bullet->plasma_data.owner = player;
 }
 
 
-void spawn_rocket(struct entity_t *weapon)
+void spawn_rocket(struct entity_t *weapon, struct player_t *player)
 {
 	struct entity_t *rocket = new_entity(&entity0);
 	
@@ -530,6 +534,8 @@ void spawn_rocket(struct entity_t *weapon)
 	rocket->rocket_data.start_tick = game_tick;
 	rocket->rocket_data.in_weapon = 1;
 	rocket->rocket_data.weapon_id = weapon->index;
+	
+	rocket->plasma_data.owner = player;
 	
 	spawn_entity_on_all_players(rocket);
 }
@@ -624,7 +630,7 @@ void tick_player(struct player_t *player)
 					
 					if(fire > 0)
 					{
-						spawn_plasma(player->craft->craft_data.left_weapon);
+						spawn_plasma(player->craft->craft_data.left_weapon, player);
 						player->left_fired += fire;
 						player->craft->craft_data.left_weapon->weapon_data.ammo--;
 					}
@@ -635,7 +641,7 @@ void tick_player(struct player_t *player)
 					
 					if(fire > 0)
 					{
-						spawn_bullet(player->craft->craft_data.left_weapon);
+						spawn_bullet(player->craft->craft_data.left_weapon, player);
 						player->left_fired += fire;
 						player->craft->craft_data.left_weapon->weapon_data.ammo--;
 					}
@@ -662,7 +668,7 @@ void tick_player(struct player_t *player)
 					
 					if(fire > 0)
 					{
-						spawn_plasma(player->craft->craft_data.right_weapon);
+						spawn_plasma(player->craft->craft_data.right_weapon, player);
 						player->right_fired += fire;
 						player->craft->craft_data.right_weapon->weapon_data.ammo--;
 					}
@@ -673,7 +679,7 @@ void tick_player(struct player_t *player)
 					
 					if(fire > 0)
 					{
-						spawn_bullet(player->craft->craft_data.right_weapon);
+						spawn_bullet(player->craft->craft_data.right_weapon, player);
 						player->right_fired += fire;
 						player->craft->craft_data.right_weapon->weapon_data.ammo--;
 					}
@@ -770,6 +776,7 @@ void spawn_player(struct player_t *player)
 	player->craft = new_entity(&entity0);
 	player->craft->type = ENT_CRAFT;
 	player->craft->craft_data.shield_strength = 1.0;
+	player->craft->craft_data.owner = player;
 	
 	if(old_craft)
 	{
@@ -1196,7 +1203,7 @@ int game_process_suicide(struct player_t *player)
 {
 	struct entity_t *old_craft = player->craft;
 	respawn_craft(old_craft);
-	explode_craft(old_craft);
+	explode_craft(old_craft, player);
 	remove_entity(&entity0, old_craft);
 	
 	struct string_t *s = new_string_string(player->name);
@@ -1429,13 +1436,26 @@ int game_process_fire_rail(struct player_t *player)
 		
 		switch(crail_entity->entity->type)
 		{
-		case ENT_CRAFT:		destroyed = craft_force(crail_entity->entity, RAIL_DAMAGE);		break;
-		case ENT_WEAPON:	destroyed = weapon_force(crail_entity->entity, RAIL_DAMAGE);	break;
-	//	case ENT_PLASMA:	destroyed = plasma_force(crail_entity->entity, RAIL_DAMAGE);	break;
-		case ENT_ROCKET:	destroyed = rocket_force(crail_entity->entity, RAIL_DAMAGE);	break;
-		case ENT_MINE:		destroyed = mine_force(crail_entity->entity, RAIL_DAMAGE);		break;
-		case ENT_RAILS:		destroyed = rails_force(crail_entity->entity, RAIL_DAMAGE);		break;
-		case ENT_SHIELD:	destroyed = shield_force(crail_entity->entity, RAIL_DAMAGE);	break;
+		case ENT_CRAFT:		destroyed = craft_force(crail_entity->entity, RAIL_DAMAGE, player);
+			break;
+		
+		case ENT_WEAPON:	destroyed = weapon_force(crail_entity->entity, RAIL_DAMAGE, player);
+			break;
+		
+	//	case ENT_PLASMA:	destroyed = plasma_force(crail_entity->entity, RAIL_DAMAGE);
+			break;
+		
+		case ENT_ROCKET:	destroyed = rocket_force(crail_entity->entity, RAIL_DAMAGE);
+			break;
+		
+		case ENT_MINE:		destroyed = mine_force(crail_entity->entity, RAIL_DAMAGE);
+			break;
+		
+		case ENT_RAILS:		destroyed = rails_force(crail_entity->entity, RAIL_DAMAGE, player);
+			break;
+		
+		case ENT_SHIELD:	destroyed = shield_force(crail_entity->entity, RAIL_DAMAGE);
+			break;
 		}
 		
 		if(!destroyed)
@@ -1500,7 +1520,7 @@ int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 	
 		if(state && player->craft->craft_data.left_weapon->weapon_data.ammo)
 		{
-			spawn_plasma(player->craft->craft_data.left_weapon);
+			spawn_plasma(player->craft->craft_data.left_weapon, player);
 			player->firing_left_start = game_tick + 1;
 			player->left_fired = 0;
 			player->craft->craft_data.left_weapon->weapon_data.ammo--;
@@ -1513,7 +1533,7 @@ int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 	
 		if(state && player->craft->craft_data.left_weapon->weapon_data.ammo)
 		{
-			spawn_bullet(player->craft->craft_data.left_weapon);
+			spawn_bullet(player->craft->craft_data.left_weapon, player);
 			player->firing_left_start = game_tick + 1;
 			player->left_fired = 0;
 			player->craft->craft_data.left_weapon->weapon_data.ammo--;
@@ -1525,7 +1545,7 @@ int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 		
 		if(state && player->craft->craft_data.left_weapon->weapon_data.ammo)
 		{
-			spawn_rocket(player->craft->craft_data.left_weapon);
+			spawn_rocket(player->craft->craft_data.left_weapon, player);
 			player->craft->craft_data.left_weapon->weapon_data.ammo--;
 		}
 		
@@ -1556,7 +1576,7 @@ int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 	
 		if(state && player->craft->craft_data.right_weapon->weapon_data.ammo)
 		{
-			spawn_plasma(player->craft->craft_data.right_weapon);
+			spawn_plasma(player->craft->craft_data.right_weapon, player);
 			player->firing_right_start = game_tick + 1;
 			player->right_fired = 0;
 			player->craft->craft_data.right_weapon->weapon_data.ammo--;
@@ -1569,7 +1589,7 @@ int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 	
 		if(state && player->craft->craft_data.right_weapon->weapon_data.ammo)
 		{
-			spawn_bullet(player->craft->craft_data.right_weapon);
+			spawn_bullet(player->craft->craft_data.right_weapon, player);
 			player->firing_right_start = game_tick + 1;
 			player->right_fired = 0;
 			player->craft->craft_data.right_weapon->weapon_data.ammo--;
@@ -1581,7 +1601,7 @@ int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 		
 		if(state && player->craft->craft_data.right_weapon->weapon_data.ammo)
 		{
-			spawn_rocket(player->craft->craft_data.right_weapon);
+			spawn_rocket(player->craft->craft_data.right_weapon, player);
 			player->craft->craft_data.right_weapon->weapon_data.ammo--;
 		}
 		

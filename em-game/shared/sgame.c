@@ -272,6 +272,15 @@ struct entity_t *get_entity(struct entity_t *entity0, uint32_t index)
 	return NULL;
 }
 
+#ifdef EMSERVER
+struct player_t *get_weapon_owner(struct entity_t *weapon)
+{
+	if(weapon->weapon_data.craft)
+		return weapon->weapon_data.craft->craft_data.owner;
+	else
+		return NULL;
+}
+#endif
 
 int point_in_circle(double px, double py, double cx, double cy, double cr)
 {
@@ -561,11 +570,12 @@ void strip_craft_from_weapon(struct entity_t *weapon)
 	}
 }
 
-	
-void explode_craft(struct entity_t *craft);
-int craft_force(struct entity_t *craft, double force)
+
+#ifdef EMSERVER
+void explode_craft(struct entity_t *craft, struct player_t *responsibility);
+
+int craft_force(struct entity_t *craft, double force, struct player_t *responsibility)
 {
-	#ifdef EMSERVER
 	craft->craft_data.shield_strength -= force;
 	if(craft->craft_data.shield_strength < 0.0)
 	{
@@ -582,7 +592,7 @@ int craft_force(struct entity_t *craft, double force)
 			}
 			else
 			{
-				explode_craft(craft);
+				explode_craft(craft, responsibility);
 				return 1;
 			}
 		}
@@ -590,7 +600,7 @@ int craft_force(struct entity_t *craft, double force)
 		{
 			if(craft->craft_data.shield_strength < -0.25)
 			{
-				explode_craft(craft);
+				explode_craft(craft, responsibility);
 				return 1;
 			}
 		}
@@ -601,20 +611,19 @@ int craft_force(struct entity_t *craft, double force)
 		craft->craft_data.shield_flare = min(craft->craft_data.shield_flare, 1.0);
 		craft->propagate_me = 1;
 	}
-	#endif
 	
 	return 0;
 }
 
 
-void explode_weapon(struct entity_t *weapon);
-int weapon_force(struct entity_t *weapon, double force)
+void explode_weapon(struct entity_t *weapon, struct player_t *responsibility);
+
+int weapon_force(struct entity_t *weapon, double force, struct player_t *responsibility)
 {
-	#ifdef EMSERVER
 	weapon->weapon_data.shield_strength -= force;
 	if(weapon->weapon_data.shield_strength < 0.0)
 	{
-		explode_weapon(weapon);
+		explode_weapon(weapon, responsibility);
 		return 1;
 	}
 	else
@@ -623,13 +632,15 @@ int weapon_force(struct entity_t *weapon, double force)
 		weapon->weapon_data.shield_flare = min(weapon->weapon_data.shield_flare, 1.0);
 		weapon->propagate_me = 1;
 	}
-	#endif
 	
 	return 0;
 }
 
 
+
 void explode_rocket(struct entity_t *rocket);
+
+
 int rocket_force(struct entity_t *rocket, double force)
 {
 	if(force > ROCKET_FORCE_THRESHOLD)
@@ -655,12 +666,14 @@ int mine_force(struct entity_t *mine, double force)
 }
 
 
-void explode_rails(struct entity_t *rails);
-int rails_force(struct entity_t *rails, double force)
+void explode_rails(struct entity_t *rails, struct player_t *responsibility);
+
+
+int rails_force(struct entity_t *rails, double force, struct player_t *responsibility)
 {
 	if(force > RAILS_FORCE_THRESHOLD)
 	{
-		explode_rails(rails);
+		explode_rails(rails, responsibility);
 		return 1;
 	}
 	
@@ -680,9 +693,8 @@ int shield_force(struct entity_t *shield, double force)
 }
 
 
-#ifdef EMSERVER
 
-void splash_force(double x, double y, double force)
+void splash_force(double x, double y, double force, struct player_t *responsibility)
 {
 	struct entity_t *entity = *sentity0;
 	
@@ -723,11 +735,11 @@ void splash_force(double x, double y, double force)
 		switch(entity->type)
 		{
 		case ENT_CRAFT:
-			craft_force(entity, att_force);
+			craft_force(entity, att_force, responsibility);
 			break;
 		
 		case ENT_WEAPON:
-			weapon_force(entity, att_force);
+			weapon_force(entity, att_force, responsibility);
 			break;
 		
 		case ENT_ROCKET:
@@ -739,7 +751,7 @@ void splash_force(double x, double y, double force)
 			break;
 		
 		case ENT_RAILS:
-			rails_force(entity, att_force);
+			rails_force(entity, att_force, responsibility);
 			break;
 		
 		case ENT_SHIELD:
@@ -762,21 +774,21 @@ void splash_force(double x, double y, double force)
 }
 
 
-void explode_craft(struct entity_t *craft)
+void explode_craft(struct entity_t *craft, struct player_t *responsibility)
 {
 	craft->kill_me = 1;
 	strip_weapons_from_craft(craft);
 	remove_entity_from_all_players(craft);
-	splash_force(craft->xdis, craft->ydis, CRAFT_SPLASH_FORCE);
+	splash_force(craft->xdis, craft->ydis, CRAFT_SPLASH_FORCE, responsibility);
 }
 
 
-void explode_weapon(struct entity_t *weapon)
+void explode_weapon(struct entity_t *weapon, struct player_t *responsibility)
 {
 	weapon->kill_me = 1;
 	strip_craft_from_weapon(weapon);
 	remove_entity_from_all_players(weapon);
-	splash_force(weapon->xdis, weapon->ydis, WEAPON_SPLASH_FORCE);
+	splash_force(weapon->xdis, weapon->ydis, WEAPON_SPLASH_FORCE, responsibility);
 	
 	if(!weapon->weapon_data.spawn_point->respawn)
 		calculate_respawn_tick(weapon->weapon_data.spawn_point);
@@ -796,7 +808,7 @@ void explode_rocket(struct entity_t *rocket)
 	rocket->kill_me = 1;
 	
 	#ifdef EMSERVER
-	splash_force(rocket->xdis, rocket->ydis, ROCKET_SPLASH_FORCE);
+	splash_force(rocket->xdis, rocket->ydis, ROCKET_SPLASH_FORCE, rocket->rocket_data.owner);
 	#endif
 }
 
@@ -810,12 +822,13 @@ void explode_mine(struct entity_t *mine)
 	mine->kill_me = 1;
 
 	#ifdef EMSERVER
-	splash_force(mine->xdis, mine->ydis, MINE_SPLASH_FORCE);
+	splash_force(mine->xdis, mine->ydis, MINE_SPLASH_FORCE, mine->mine_data.owner);
 	#endif
 }
 
 
-void explode_rails(struct entity_t *rails)
+#ifdef EMSERVER
+void explode_rails(struct entity_t *rails, struct player_t *responsibility)
 {
 	#ifdef EMCLIENT
 	explosion(rails);
@@ -824,17 +837,21 @@ void explode_rails(struct entity_t *rails)
 	rails->kill_me = 1;
 
 	#ifdef EMSERVER
-	splash_force(rails->xdis, rails->ydis, RAILS_SPLASH_FORCE);
+	splash_force(rails->xdis, rails->ydis, RAILS_SPLASH_FORCE, responsibility);
 	#endif
 }
-
+#endif
 
 void craft_craft_collision(struct entity_t *craft1, struct entity_t *craft2)
 {
-	craft_force(craft1, hypot(craft2->xvel, craft2->yvel) * VELOCITY_FORCE_MULTIPLIER);
+	#ifdef EMSERVER
+	craft_force(craft1, hypot(craft2->xvel, craft2->yvel) * VELOCITY_FORCE_MULTIPLIER, 
+		craft2->craft_data.owner);
 	
 	if(!craft2->kill_me)
-		craft_force(craft2, hypot(craft1->xvel, craft1->yvel) * VELOCITY_FORCE_MULTIPLIER);
+		craft_force(craft2, hypot(craft1->xvel, craft1->yvel) * VELOCITY_FORCE_MULTIPLIER,
+			craft1->craft_data.owner);
+	#endif
 	
 	if(!craft1->kill_me && !craft2->kill_me)
 		equal_bounce(craft1, craft2);
@@ -843,12 +860,14 @@ void craft_craft_collision(struct entity_t *craft1, struct entity_t *craft2)
 
 void craft_weapon_collision(struct entity_t *craft, struct entity_t *weapon)
 {
+	#ifdef EMSERVER
 	craft_force(craft, hypot(weapon->xvel, weapon->yvel) * (WEAPON_MASS / CRAFT_MASS) * 
-		VELOCITY_FORCE_MULTIPLIER);
+		VELOCITY_FORCE_MULTIPLIER, get_weapon_owner(weapon));
 	
 	if(!weapon->kill_me)
 		weapon_force(weapon, hypot(craft->xvel, craft->yvel) * (CRAFT_MASS / WEAPON_MASS) * 
-			VELOCITY_FORCE_MULTIPLIER);
+			VELOCITY_FORCE_MULTIPLIER, craft->craft_data.owner);
+	#endif
 	
 	if(!craft->kill_me && !weapon->kill_me)
 		craft_weapon_bounce(craft, weapon);
@@ -857,14 +876,20 @@ void craft_weapon_collision(struct entity_t *craft, struct entity_t *weapon)
 
 void craft_plasma_collision(struct entity_t *craft, struct entity_t *plasma)
 {
-	craft_force(craft, PLASMA_DAMAGE);
+	#ifdef EMSERVER
+	craft_force(craft, PLASMA_DAMAGE, plasma->plasma_data.owner);
+	#endif
+	
 	plasma->kill_me = 1;
 }
 
 
 void craft_bullet_collision(struct entity_t *craft, struct entity_t *bullet)
 {
-	craft_force(craft, BULLET_DAMAGE);
+	#ifdef EMSERVER
+	craft_force(craft, BULLET_DAMAGE, bullet->bullet_data.owner);
+	#endif
+	
 	bullet->kill_me = 1;
 }
 
@@ -889,10 +914,15 @@ void craft_shield_collision(struct entity_t *craft, struct entity_t *shield)
 
 void weapon_weapon_collision(struct entity_t *weapon1, struct entity_t *weapon2)
 {
-	weapon_force(weapon1, hypot(weapon2->xvel, weapon2->yvel) * VELOCITY_FORCE_MULTIPLIER);
-	if(!weapon2->kill_me)
-		weapon_force(weapon2, hypot(weapon1->xvel, weapon1->yvel) * VELOCITY_FORCE_MULTIPLIER);
+	#ifdef EMSERVER
+	weapon_force(weapon1, hypot(weapon2->xvel, weapon2->yvel) * VELOCITY_FORCE_MULTIPLIER, 
+		get_weapon_owner(weapon2));
 	
+	if(!weapon2->kill_me)
+		weapon_force(weapon2, hypot(weapon1->xvel, weapon1->yvel) * VELOCITY_FORCE_MULTIPLIER,
+			get_weapon_owner(weapon1));
+	#endif
+
 	if(!weapon1->kill_me && !weapon2->kill_me)
 		equal_bounce(weapon1, weapon2);
 }
@@ -900,14 +930,20 @@ void weapon_weapon_collision(struct entity_t *weapon1, struct entity_t *weapon2)
 
 void weapon_plasma_collision(struct entity_t *weapon, struct entity_t *plasma)
 {
-	weapon_force(weapon, PLASMA_DAMAGE);
+	#ifdef EMSERVER
+	weapon_force(weapon, PLASMA_DAMAGE, plasma->plasma_data.owner);
+	#endif
+	
 	plasma->kill_me = 1;
 }
 
 
 void weapon_bullet_collision(struct entity_t *weapon, struct entity_t *bullet)
 {
-	weapon_force(weapon, BULLET_DAMAGE);
+	#ifdef EMSERVER
+	weapon_force(weapon, BULLET_DAMAGE, bullet->bullet_data.owner);
+	#endif
+	
 	bullet->kill_me = 1;
 }
 
@@ -938,7 +974,10 @@ void plasma_mine_collision(struct entity_t *plasma, struct entity_t *mine)
 void plasma_rails_collision(struct entity_t *plasma, struct entity_t *rails)
 {
 	plasma->kill_me = 1;
-	explode_rails(rails);
+	
+	#ifdef EMSERVER
+	explode_rails(rails, plasma->plasma_data.owner);
+	#endif
 }
 
 
@@ -966,7 +1005,10 @@ void bullet_mine_collision(struct entity_t *bullet, struct entity_t *mine)
 void bullet_rails_collision(struct entity_t *bullet, struct entity_t *rails)
 {
 	bullet->kill_me = 1;
-	explode_rails(rails);
+	
+	#ifdef EMSERVER
+	explode_rails(rails, bullet->bullet_data.owner);
+	#endif
 }
 
 
@@ -1008,9 +1050,11 @@ void mine_rails_collision(struct entity_t *mine, struct entity_t *rails)
 
 void rails_rails_collision(struct entity_t *rails1, struct entity_t *rails2)
 {
-	explode_rails(rails1);
+	#ifdef EMSERVER
+	explode_rails(rails1, NULL);
 	if(!rails2->kill_me)
-		explode_rails(rails2);
+		explode_rails(rails2, NULL);
+	#endif
 }
 
 
@@ -1172,7 +1216,7 @@ void s_tick_craft(struct entity_t *craft)
 		{
 			#ifdef EMSERVER
 			respawn_craft(craft);
-			explode_craft(craft);
+			explode_craft(craft, craft->craft_data.owner);
 			char *msg = "infinite iteration craft collison broken\n";
 			console_print(msg);
 			print_on_all_players(msg);
@@ -1200,9 +1244,10 @@ void s_tick_craft(struct entity_t *craft)
 		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, CRAFT_RADIUS, &t);
 		if(node)
 		{
-			craft_force(craft, hypot(craft->xvel, craft->yvel) * VELOCITY_FORCE_MULTIPLIER);
-			
 			#ifdef EMSERVER
+			craft_force(craft, hypot(craft->xvel, craft->yvel) * VELOCITY_FORCE_MULTIPLIER,
+				craft->craft_data.owner);
+			
 			if(craft->kill_me)
 				return;
 			#endif
@@ -1511,6 +1556,10 @@ void s_tick_weapon(struct entity_t *weapon)
 	}
 
 	struct entity_t *craft = weapon->weapon_data.craft;
+		
+	#ifdef EMSERVER
+	struct player_t *owner = get_weapon_owner(weapon);
+	#endif
 
 	if(craft && !weapon->weapon_data.detached)
 	{
@@ -1607,7 +1656,7 @@ void s_tick_weapon(struct entity_t *weapon)
 		if(restart && weapon->xdis == xdis && weapon->ydis == ydis)
 		{
 			#ifdef EMSERVER
-			explode_weapon(weapon);
+			explode_weapon(weapon, owner);
 			char *msg = "infinite iteration weapon collison broken\n";
 			console_print(msg);
 			print_on_all_players(msg);
@@ -1634,9 +1683,10 @@ void s_tick_weapon(struct entity_t *weapon)
 		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, WEAPON_RADIUS, &t);
 		if(node)
 		{
-			weapon_force(weapon, hypot(weapon->xvel, weapon->yvel) * VELOCITY_FORCE_MULTIPLIER);
-			
 			#ifdef EMSERVER
+			weapon_force(weapon, hypot(weapon->xvel, weapon->yvel) * VELOCITY_FORCE_MULTIPLIER, 
+				owner);
+			
 			if(weapon->kill_me)
 				return;
 			#endif
@@ -2757,7 +2807,9 @@ void s_tick_rails(struct entity_t *rails)
 		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, RAILS_RADIUS, NULL);
 		if(node)
 		{
-			explode_rails(rails);
+			#ifdef EMSERVER
+			explode_rails(rails, NULL);
+			#endif
 ;//			remove_entity(rails);
 			return;
 		}
@@ -2781,35 +2833,35 @@ void s_tick_rails(struct entity_t *rails)
 			case ENT_CRAFT:
 				if(circles_intersect(xdis, ydis, RAILS_RADIUS, entity->xdis, entity->ydis, CRAFT_RADIUS))
 				{
-					explode_rails(rails);
+				//	explode_rails(rails, NULL);
 				}
 				break;
 				
 			case ENT_WEAPON:
 				if(circles_intersect(xdis, ydis, RAILS_RADIUS, entity->xdis, entity->ydis, WEAPON_RADIUS))
 				{
-					explode_rails(rails);
+				//	explode_rails(rails, NULL);
 				}
 				break;
 				
 			case ENT_PLASMA:
 				if(circles_intersect(xdis, ydis, RAILS_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 				{
-					plasma_rails_collision(entity, rails);
+				//	plasma_rails_collision(entity, rails);
 				}
 				break;
 				
 			case ENT_ROCKET:
 				if(circles_intersect(xdis, ydis, RAILS_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
 				{
-					rocket_rails_collision(entity, rails);
+				//	rocket_rails_collision(entity, rails);
 				}
 				break;
 			
 			case ENT_RAILS:
 				if(circles_intersect(xdis, ydis, RAILS_RADIUS, entity->xdis, entity->ydis, RAILS_RADIUS))
 				{
-					rails_rails_collision(rails, entity);
+				//	rails_rails_collision(rails, entity);
 				}
 				break;
 			

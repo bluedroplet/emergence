@@ -93,6 +93,7 @@ struct craft_data_t
 	
 	#ifdef EMSERVER
 	float shield_strength;
+	struct player_t *owner;
 	#endif
 	
 	#ifdef EMCLIENT
@@ -347,23 +348,26 @@ int read_speedup_ramp(gzFile file);
 int read_shield_energy(gzFile file);
 #endif
 
+#ifdef EMSERVER
+void splash_force(double x, double y, double force, struct player_t *responsibility);
+void explode_craft(struct entity_t *craft, struct player_t *responsibility);
+int craft_force(struct entity_t *craft, double force, struct player_t *responsibility);
+int weapon_force(struct entity_t *weapon, double force, struct player_t *responsibility);
+int rocket_force(struct entity_t *rocket, double force);
+int mine_force(struct entity_t *mine, double force);
+int rails_force(struct entity_t *rails, double force, struct player_t *responsibility);
+int shield_force(struct entity_t *shield, double force);
+#endif
+
 void s_tick_entities(struct entity_t **entity0);
-void splash_force(double x, double y, double force);
 void strip_weapons_from_craft(struct entity_t *craft);
 void strip_craft_from_weapon(struct entity_t *weapon);
-void explode_craft(struct entity_t *craft);
 void get_spawn_point_coords(uint32_t index, float *x, float *y);
 int line_in_circle(double lx1, double ly1, double lx2, double ly2, 
 	double cx, double cy, double cr);
 int line_in_circle_with_coords(double lx1, double ly1, double lx2, double ly2, 
 	double cx, double cy, double cr, float *out_x, float *out_y);
 
-int craft_force(struct entity_t *craft, double force);
-int weapon_force(struct entity_t *weapon, double force);
-int rocket_force(struct entity_t *rocket, double force);
-int mine_force(struct entity_t *mine, double force);
-int rails_force(struct entity_t *rails, double force);
-int shield_force(struct entity_t *shield, double force);
 
 
 
