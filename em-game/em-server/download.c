@@ -127,7 +127,7 @@ void *download_thread(void *a)
 		pthread_exit(NULL);
 	}
 
-	if(listen(listen_fd, 1) < 0)
+	if(listen(listen_fd, SOMAXCONN) < 0)
 	{
 		close(listen_fd);
 		pthread_exit(NULL);
