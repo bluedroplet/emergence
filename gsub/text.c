@@ -105,7 +105,7 @@ int blit_text(int x, int y, char *text, uint8_t red, uint8_t green, uint8_t blue
 
 		w += params.width;
 
-		blit_partial_alpha_surface(&params);
+		blit_partial_surface(&params);
 		
 		text++;
 	}

@@ -63,11 +63,8 @@ void rect_draw_888P8_c(struct blit_params_t *params)
 }
 
 
-void alpha_rect_draw_888P8_c(struct blit_params_t *params)
+void rect_alpha_draw_888P8_c(struct blit_params_t *params)
 {
-	if(params->alpha == 0)
-		return;
-	
 	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 
 	uint8_t redalpha = vid_alphalookup[params->red << 8 | params->alpha];
@@ -93,7 +90,7 @@ void alpha_rect_draw_888P8_c(struct blit_params_t *params)
 }
 
 
-void alpha_surface_blit_888P8_c(struct blit_params_t *params)
+void surface_blit_A8_888P8_c(struct blit_params_t *params)
 {
 	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
 	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
@@ -122,15 +119,10 @@ void alpha_surface_blit_888P8_c(struct blit_params_t *params)
 }
 
 
-void surface_alpha_blit_888_888P8_c(struct blit_params_t *params)
+void surface_alpha_blit_A8_888P8_c(struct blit_params_t *params)
 {
-	if(params->alpha == 0)
-		return;
-	
-	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
 	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
-
-	uint8_t negalpha = ~params->alpha;
 
 	int x, y = params->height;
 
@@ -138,12 +130,18 @@ void surface_alpha_blit_888_888P8_c(struct blit_params_t *params)
 	{
 		for(x = 0; x != params->width; x++)
 		{
-			dst[x * 4] = vid_alphalookup[src[x * 3 + 2] << 8 | params->alpha] + vid_alphalookup[dst[x * 4] << 8 | negalpha];
-			dst[x * 4 + 1] = vid_alphalookup[src[x * 3 + 1] << 8 | params->alpha] + vid_alphalookup[dst[x * 4 + 1] << 8 | negalpha];
-			dst[x * 4 + 2] = vid_alphalookup[src[x * 3] << 8 | params->alpha] + vid_alphalookup[dst[x * 4 + 2] << 8 | negalpha];
+			uint8_t alpha = vid_alphalookup[alpha_src[x] << 8 | params->alpha];
+			if(alpha == 0)
+				continue;
+			
+			uint8_t negalpha = ~alpha;
+
+			dst[x * 4] = vid_alphalookup[params->blue << 8 | alpha] + vid_alphalookup[dst[x * 4] << 8 | negalpha];
+			dst[x * 4 + 1] = vid_alphalookup[params->green << 8 | alpha] + vid_alphalookup[dst[x * 4 + 1] << 8 | negalpha];
+			dst[x * 4 + 2] = vid_alphalookup[params->red << 8 | alpha] + vid_alphalookup[dst[x * 4 + 2] << 8 | negalpha];
 		}
 
-		src += params->source->pitch;
+		alpha_src += params->source->alpha_pitch;
 		dst += params->dest->pitch;
 		y--;
 	}
@@ -164,6 +162,31 @@ void surface_blit_888_888P8_c(struct blit_params_t *params)
 			dst[x * 4] = src[x * 3 + 2];
 			dst[x * 4 + 1] = src[x * 3 + 1];
 			dst[x * 4 + 2] = src[x * 3];
+		}
+
+		src += params->source->pitch;
+		dst += params->dest->pitch;
+		y--;
+	}
+}
+
+
+void surface_alpha_blit_888_888P8_c(struct blit_params_t *params)
+{
+	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
+
+	uint8_t negalpha = ~params->alpha;
+
+	int x, y = params->height;
+
+	while(y)
+	{
+		for(x = 0; x != params->width; x++)
+		{
+			dst[x * 4] = vid_alphalookup[src[x * 3 + 2] << 8 | params->alpha] + vid_alphalookup[dst[x * 4] << 8 | negalpha];
+			dst[x * 4 + 1] = vid_alphalookup[src[x * 3 + 1] << 8 | params->alpha] + vid_alphalookup[dst[x * 4 + 1] << 8 | negalpha];
+			dst[x * 4 + 2] = vid_alphalookup[src[x * 3] << 8 | params->alpha] + vid_alphalookup[dst[x * 4 + 2] << 8 | negalpha];
 		}
 
 		src += params->source->pitch;
@@ -204,19 +227,45 @@ void surface_blit_888A8_888P8_c(struct blit_params_t *params)
 }
 
 
-
-
-void alpha_pixel_plot_888_c(struct blit_params_t *params)
+void surface_alpha_blit_888A8_888P8_c(struct blit_params_t *params)
 {
-	if(params->alpha == 0)
-		return;
-	
+	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
+
+	int x, y = params->height;
+
+	while(y)
+	{
+		for(x = 0; x != params->width; x++)
+		{
+			uint8_t alpha = vid_alphalookup[alpha_src[x] << 8 | params->alpha];
+			if(alpha == 0)
+				continue;
+			
+			uint8_t negalpha = ~alpha;
+			
+			dst[x * 4] = vid_alphalookup[src[x * 3 + 2] << 8 | alpha] + vid_alphalookup[dst[x * 4] << 8 | negalpha];
+			dst[x * 4 + 1] = vid_alphalookup[src[x * 3 + 1] << 8 | alpha] + vid_alphalookup[dst[x * 4 + 1] << 8 | negalpha];
+			dst[x * 4 + 2] = vid_alphalookup[src[x * 3] << 8 | alpha] + vid_alphalookup[dst[x * 4 + 2] << 8 | negalpha];
+		}
+
+		src += params->source->pitch;
+		alpha_src += params->source->alpha_pitch;
+		dst += params->dest->pitch;
+		y--;
+	}
+}
+
+
+void pixel_alpha_plot_888_c(struct blit_params_t *params)
+{
 	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 	uint8_t negalpha = ~params->alpha;
 	
-	dst[0] = vid_alphalookup[params->red << 8 | params->alpha] + vid_alphalookup[dst[0] << 8 | negalpha];
+	dst[0] = vid_alphalookup[params->blue << 8 | params->alpha] + vid_alphalookup[dst[0] << 8 | negalpha];
 	dst[1] = vid_alphalookup[params->green << 8 | params->alpha] + vid_alphalookup[dst[1] << 8 | negalpha];
-	dst[2] = vid_alphalookup[params->blue << 8 | params->alpha] + vid_alphalookup[dst[2] << 8 | negalpha];
+	dst[2] = vid_alphalookup[params->red << 8 | params->alpha] + vid_alphalookup[dst[2] << 8 | negalpha];
 }
 
 
@@ -241,11 +290,8 @@ void rect_draw_888_c(struct blit_params_t *params)
 }
 
 
-void alpha_rect_draw_888_c(struct blit_params_t *params)
+void rect_alpha_draw_888_c(struct blit_params_t *params)
 {
-	if(params->alpha == 0)
-		return;
-	
 	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 
 	uint8_t redalpha = vid_alphalookup[params->red << 8 | params->alpha];
@@ -271,7 +317,7 @@ void alpha_rect_draw_888_c(struct blit_params_t *params)
 }
 
 
-void alpha_surface_blit_888_c(struct blit_params_t *params)
+void surface_blit_A8_888_c(struct blit_params_t *params)
 {
 	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
 	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
@@ -300,15 +346,10 @@ void alpha_surface_blit_888_c(struct blit_params_t *params)
 }
 
 
-void surface_alpha_blit_888_888_c(struct blit_params_t *params)
+void surface_alpha_blit_A8_888_c(struct blit_params_t *params)
 {
-	if(params->alpha == 0)
-		return;
-	
-	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
 	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
-
-	uint8_t negalpha = ~params->alpha;
 
 	int x, y = params->height;
 
@@ -316,12 +357,18 @@ void surface_alpha_blit_888_888_c(struct blit_params_t *params)
 	{
 		for(x = 0; x != params->width; x++)
 		{
-			dst[x * 3] = vid_alphalookup[src[x * 3] << 8 | params->alpha] + vid_alphalookup[dst[x * 3] << 8 | negalpha];
-			dst[x * 3 + 1] = vid_alphalookup[src[x * 3 + 1] << 8 | params->alpha] + vid_alphalookup[dst[x * 3 + 1] << 8 | negalpha];
-			dst[x * 3 + 2] = vid_alphalookup[src[x * 3 + 2] << 8 | params->alpha] + vid_alphalookup[dst[x * 3 + 2] << 8 | negalpha];
+			uint8_t alpha = vid_alphalookup[alpha_src[x] << 8 | params->alpha];
+			if(alpha == 0)
+				continue;
+			
+			uint8_t negalpha = ~alpha;
+
+			dst[x * 3] = vid_alphalookup[params->red << 8 | alpha] + vid_alphalookup[dst[x * 3] << 8 | negalpha];
+			dst[x * 3 + 1] = vid_alphalookup[params->green << 8 | alpha] + vid_alphalookup[dst[x * 3 + 1] << 8 | negalpha];
+			dst[x * 3 + 2] = vid_alphalookup[params->blue << 8 | alpha] + vid_alphalookup[dst[x * 3 + 2] << 8 | negalpha];
 		}
 
-		src += params->source->pitch;
+		alpha_src += params->source->alpha_pitch;
 		dst += params->dest->pitch;
 		y--;
 	}
@@ -338,6 +385,31 @@ void surface_blit_888_888_c(struct blit_params_t *params)
 	while(y)
 	{
 		memcpy(dst, src, params->width * 3);
+
+		src += params->source->pitch;
+		dst += params->dest->pitch;
+		y--;
+	}
+}
+
+
+void surface_alpha_blit_888_888_c(struct blit_params_t *params)
+{
+	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
+
+	uint8_t negalpha = ~params->alpha;
+
+	int x, y = params->height;
+
+	while(y)
+	{
+		for(x = 0; x != params->width; x++)
+		{
+			dst[x * 3] = vid_alphalookup[src[x * 3] << 8 | params->alpha] + vid_alphalookup[dst[x * 3] << 8 | negalpha];
+			dst[x * 3 + 1] = vid_alphalookup[src[x * 3 + 1] << 8 | params->alpha] + vid_alphalookup[dst[x * 3 + 1] << 8 | negalpha];
+			dst[x * 3 + 2] = vid_alphalookup[src[x * 3 + 2] << 8 | params->alpha] + vid_alphalookup[dst[x * 3 + 2] << 8 | negalpha];
+		}
 
 		src += params->source->pitch;
 		dst += params->dest->pitch;
@@ -377,9 +449,38 @@ void surface_blit_888A8_888_c(struct blit_params_t *params)
 }
 
 
+void surface_alpha_blit_888A8_888_c(struct blit_params_t *params)
+{
+	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
+
+	int x, y = params->height;
+
+	while(y)
+	{
+		for(x = 0; x != params->width; x++)
+		{
+			uint8_t alpha = vid_alphalookup[alpha_src[x] << 8 | params->alpha];
+			if(alpha == 0)
+				continue;
+			
+			uint8_t negalpha = ~alpha;
+			
+			dst[x * 3] = vid_alphalookup[src[x * 3] << 8 | alpha] + vid_alphalookup[dst[x * 3] << 8 | negalpha];
+			dst[x * 3 + 1] = vid_alphalookup[src[x * 3 + 1] << 8 | alpha] + vid_alphalookup[dst[x * 3 + 1] << 8 | negalpha];
+			dst[x * 3 + 2] = vid_alphalookup[src[x * 3 + 2] << 8 | alpha] + vid_alphalookup[dst[x * 3 + 2] << 8 | negalpha];
+		}
+
+		src += params->source->pitch;
+		alpha_src += params->source->alpha_pitch;
+		dst += params->dest->pitch;
+		y--;
+	}
+}
 
 
-void alpha_pixel_plot_565_c(struct blit_params_t *params)
+void pixel_alpha_plot_565_c(struct blit_params_t *params)
 {
 	uint16_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 	uint16_t colour = convert_24bit_to_16bit(params->red, params->green, params->blue); // error probably induced here
@@ -413,7 +514,7 @@ void rect_draw_565_c(struct blit_params_t *params)
 }
 
 
-void alpha_rect_draw_565_c(struct blit_params_t *params)
+void rect_alpha_draw_565_c(struct blit_params_t *params)
 {
 	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 	uint16_t colour = convert_24bit_to_16bit(params->red, params->green, params->blue); // error probably induced here
@@ -443,9 +544,9 @@ void alpha_rect_draw_565_c(struct blit_params_t *params)
 }
 
 
-void alpha_surface_blit_565_c(struct blit_params_t *params)
+void surface_blit_A8_565_c(struct blit_params_t *params)
 {
-	uint8_t *src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
 	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 	uint16_t colour = convert_24bit_to_16bit(params->red, params->green, params->blue); // error probably induced here
 
@@ -460,7 +561,7 @@ void alpha_surface_blit_565_c(struct blit_params_t *params)
 		for(x = 0; x != params->width; x++)
 		{
 			uint16_t oldcolour = ((uint16_t*)dst)[x];
-			uint8_t alpha = src[x];
+			uint8_t alpha = alpha_src[x];
 			uint8_t negalpha = ~alpha;
 
 			((uint16_t*)dst)[x] = (vid_redalphalookup[red | alpha] + 
@@ -471,13 +572,65 @@ void alpha_surface_blit_565_c(struct blit_params_t *params)
 				vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
 		}
 
-		src += params->source->alpha_pitch;
+		alpha_src += params->source->alpha_pitch;
 		dst += params->dest->pitch;
 		y--;
 	}
 }
 
 
+void surface_alpha_blit_A8_565_c(struct blit_params_t *params)
+{
+	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
+	uint16_t colour = convert_24bit_to_16bit(params->red, params->green, params->blue); // error probably induced here
+
+	uint16_t red = (colour & 0xf800) >> 3;
+	uint16_t green = (colour & 0x7e0) << 3;
+	uint16_t blue = (colour & 0x1f) << 8;
+
+	int x, y = params->height;
+
+	while(y)
+	{
+		for(x = 0; x != params->width; x++)
+		{
+			uint16_t oldcolour = ((uint16_t*)dst)[x];
+			uint8_t alpha = vid_alphalookup[alpha_src[x] << 8 | params->alpha];
+			uint8_t negalpha = ~alpha;
+
+			((uint16_t*)dst)[x] = (vid_redalphalookup[red | alpha] + 
+				vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
+				(vid_greenalphalookup[green | alpha] +
+				vid_greenalphalookup[((oldcolour & 0x7e0) << 3) | negalpha]) |
+				(vid_bluealphalookup[blue | alpha] + 
+				vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
+		}
+
+		alpha_src += params->source->alpha_pitch;
+		dst += params->dest->pitch;
+		y--;
+	}
+}
+
+
+void surface_blit_888_565_c(struct blit_params_t *params)
+{
+	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
+
+	int x, y = params->height;
+
+	while(y)
+	{
+		for(x = 0; x != params->width; x++)
+			((uint16_t*)dst)[x] = convert_24bit_to_16bit(src[x * 3], src[x * 3 + 1], src[x * 3 + 2]);
+
+		src += params->source->pitch;
+		dst += params->dest->pitch;
+		y--;
+	}
+}
 
 
 void surface_alpha_blit_888_565_c(struct blit_params_t *params)
@@ -511,29 +664,10 @@ void surface_alpha_blit_888_565_c(struct blit_params_t *params)
 }
 
 
-void surface_blit_888_565_c(struct blit_params_t *params)
-{
-	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
-	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
-
-	int x, y = params->height;
-
-	while(y)
-	{
-		for(x = 0; x != params->width; x++)
-			((uint16_t*)dst)[x] = convert_24bit_to_16bit(src[x * 3], src[x * 3 + 1], src[x * 3 + 2]);
-
-		src += params->source->pitch;
-		dst += params->dest->pitch;
-		y--;
-	}
-}
-
-
 void surface_blit_888A8_565_c(struct blit_params_t *params)
 {
-	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
 	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
 	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 
 	int x, y = params->height;
@@ -566,6 +700,58 @@ void surface_blit_888A8_565_c(struct blit_params_t *params)
 }
 
 
+void surface_alpha_blit_888A8_565_c(struct blit_params_t *params)
+{
+	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
+
+	int x, y = params->height;
+
+	while(y)
+	{
+		for(x = 0; x != params->width; x++)
+		{
+			uint8_t alpha = vid_alphalookup[alpha_src[x] << 8 | params->alpha];
+			if(alpha == 0)
+				continue;
+			
+			uint16_t oldcolour = ((uint16_t*)dst)[x];
+			uint8_t negalpha = ~alpha;
+			uint16_t blendcolour = convert_24bit_to_16bit(src[x * 3], src[x * 3 + 1], src[x * 3 + 2]);
+
+			((uint16_t*)dst)[x] = (vid_redalphalookup[((blendcolour & 0xf800) >> 3) | alpha] + 
+				vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
+				(vid_greenalphalookup[((blendcolour & 0x7e0) << 3) | alpha] +
+				vid_greenalphalookup[((oldcolour & 0x7e0) << 3) | negalpha]) |
+				(vid_bluealphalookup[((blendcolour & 0x1f) << 8) | alpha] + 
+				vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
+		}
+
+		alpha_src += params->source->alpha_pitch;
+		src += params->source->pitch;
+		dst += params->dest->pitch;
+		y--;
+	}
+}
+
+
+void surface_blit_565_565_c(struct blit_params_t *params)
+{
+	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
+
+	int y = params->height;
+
+	while(y)
+	{
+		memcpy(dst, src, params->width * 2);
+
+		src += params->source->pitch;
+		dst += params->dest->pitch;
+		y--;
+	}
+}
 
 
 void surface_alpha_blit_565_565_c(struct blit_params_t *params)
@@ -599,28 +785,10 @@ void surface_alpha_blit_565_565_c(struct blit_params_t *params)
 }
 
 
-void surface_blit_565_565_c(struct blit_params_t *params)
-{
-	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
-	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
-
-	int y = params->height;
-
-	while(y)
-	{
-		memcpy(dst, src, params->width * 2);
-
-		src += params->source->pitch;
-		dst += params->dest->pitch;
-		y--;
-	}
-}
-
-
 void surface_blit_565A8_565_c(struct blit_params_t *params)
 {
-	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
 	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
 	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 
 	int x, y = params->height;
@@ -653,33 +821,81 @@ void surface_blit_565A8_565_c(struct blit_params_t *params)
 }
 
 
+void surface_alpha_blit_565A8_565_c(struct blit_params_t *params)
+{
+	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *alpha_src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
+
+	int x, y = params->height;
+
+	while(y)
+	{
+		for(x = 0; x != params->width; x++)
+		{
+			uint8_t alpha = vid_alphalookup[alpha_src[x] << 8 | params->alpha];
+			if(alpha == 0)
+				continue;
+			
+			uint16_t oldcolour = ((uint16_t*)dst)[x];
+			uint8_t negalpha = ~alpha;
+			uint16_t blendcolour = ((uint16_t*)src)[x];
+
+			((uint16_t*)dst)[x] = (vid_redalphalookup[((blendcolour & 0xf800) >> 3) | alpha] + 
+				vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
+				(vid_greenalphalookup[((blendcolour & 0x7e0) << 3) | alpha] +
+				vid_greenalphalookup[((oldcolour & 0x7e0) << 3) | negalpha]) |
+				(vid_bluealphalookup[((blendcolour & 0x1f) << 8) | alpha] + 
+				vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
+		}
+
+		alpha_src += params->source->alpha_pitch;
+		src += params->source->pitch;
+		dst += params->dest->pitch;
+		y--;
+	}
+}
+
+
+void (*pixel_alpha_plot_888P8)(struct blit_params_t *params) = pixel_alpha_plot_888_c;
 void (*rect_draw_888P8)(struct blit_params_t *params) = rect_draw_888P8_c;
-void (*alpha_rect_draw_888P8)(struct blit_params_t *params) = alpha_rect_draw_888P8_c;
-void (*alpha_surface_blit_888P8)(struct blit_params_t *params) = alpha_surface_blit_888P8_c;
-void (*surface_alpha_blit_888_888P8)(struct blit_params_t *params) = surface_alpha_blit_888_888P8_c;
+void (*rect_alpha_draw_888P8)(struct blit_params_t *params) = rect_alpha_draw_888P8_c;
+void (*surface_blit_A8_888P8)(struct blit_params_t *params) = surface_blit_A8_888P8_c;
+void (*surface_alpha_blit_A8_888P8)(struct blit_params_t *params) = surface_alpha_blit_A8_888P8_c;
+
 void (*surface_blit_888_888P8)(struct blit_params_t *params) = surface_blit_888_888P8_c;
+void (*surface_alpha_blit_888_888P8)(struct blit_params_t *params) = surface_alpha_blit_888_888P8_c;
 void (*surface_blit_888A8_888P8)(struct blit_params_t *params) = surface_blit_888A8_888P8_c;
+void (*surface_alpha_blit_888A8_888P8)(struct blit_params_t *params) = surface_alpha_blit_888A8_888P8_c;
 
-void (*alpha_pixel_plot_888)(struct blit_params_t *params) = alpha_pixel_plot_888_c;
+
+void (*pixel_alpha_plot_888)(struct blit_params_t *params) = pixel_alpha_plot_888_c;
 void (*rect_draw_888)(struct blit_params_t *params) = rect_draw_888_c;
-void (*alpha_rect_draw_888)(struct blit_params_t *params) = alpha_rect_draw_888_c;
-void (*alpha_surface_blit_888)(struct blit_params_t *params) = alpha_surface_blit_888_c;
-void (*surface_alpha_blit_888_888)(struct blit_params_t *params) = surface_alpha_blit_888_888_c;
+void (*rect_alpha_draw_888)(struct blit_params_t *params) = rect_alpha_draw_888_c;
+void (*surface_blit_A8_888)(struct blit_params_t *params) = surface_blit_A8_888_c;
+void (*surface_alpha_blit_A8_888)(struct blit_params_t *params) = surface_alpha_blit_A8_888_c;
+
 void (*surface_blit_888_888)(struct blit_params_t *params) = surface_blit_888_888_c;
+void (*surface_alpha_blit_888_888)(struct blit_params_t *params) = surface_alpha_blit_888_888_c;
 void (*surface_blit_888A8_888)(struct blit_params_t *params) = surface_blit_888A8_888_c;
+void (*surface_alpha_blit_888A8_888)(struct blit_params_t *params) = surface_alpha_blit_888A8_888_c;
 
-void (*alpha_pixel_plot_565)(struct blit_params_t *params) = alpha_pixel_plot_565_c;
+
+void (*pixel_alpha_plot_565)(struct blit_params_t *params) = pixel_alpha_plot_565_c;
 void (*rect_draw_565)(struct blit_params_t *params) = rect_draw_565_c;
-void (*alpha_rect_draw_565)(struct blit_params_t *params) = alpha_rect_draw_565_c;
-void (*alpha_surface_blit_565)(struct blit_params_t *params) = alpha_surface_blit_565_c;
+void (*rect_alpha_draw_565)(struct blit_params_t *params) = rect_alpha_draw_565_c;
+void (*surface_blit_A8_565)(struct blit_params_t *params) = surface_blit_A8_565_c;
+void (*surface_alpha_blit_A8_565)(struct blit_params_t *params) = surface_alpha_blit_A8_565_c;
 
-void (*surface_alpha_blit_888_565)(struct blit_params_t *params) = surface_alpha_blit_888_565_c;
 void (*surface_blit_888_565)(struct blit_params_t *params) = surface_blit_888_565_c;
+void (*surface_alpha_blit_888_565)(struct blit_params_t *params) = surface_alpha_blit_888_565_c;
 void (*surface_blit_888A8_565)(struct blit_params_t *params) = surface_blit_888A8_565_c;
+void (*surface_alpha_blit_888A8_565)(struct blit_params_t *params) = surface_alpha_blit_888A8_565_c;
 
-void (*surface_alpha_blit_565_565)(struct blit_params_t *params) = surface_alpha_blit_565_565_c;
 void (*surface_blit_565_565)(struct blit_params_t *params) = surface_blit_565_565_c;
+void (*surface_alpha_blit_565_565)(struct blit_params_t *params) = surface_alpha_blit_565_565_c;
 void (*surface_blit_565A8_565)(struct blit_params_t *params) = surface_blit_565A8_565_c;
+void (*surface_alpha_blit_565A8_565)(struct blit_params_t *params) = surface_alpha_blit_565A8_565_c;
 
 
 int clip_blit_coords(struct blit_params_t *params)
@@ -744,8 +960,11 @@ void plot_pixel(struct blit_params_t *params)
 }
 
 
-void plot_alpha_pixel(struct blit_params_t *params)
+void alpha_plot_pixel(struct blit_params_t *params)
 {
+	if(params->alpha == 0)
+		return;
+	
 	if(!params->dest)
 		return;
 	
@@ -755,15 +974,18 @@ void plot_alpha_pixel(struct blit_params_t *params)
 
 	switch(params->dest->flags)
 	{
+	case SURFACE_24BITPADDING8BIT:
+		pixel_alpha_plot_888P8(params);
+		break;
+	
 	case SURFACE_24BIT:
 	case SURFACE_24BITALPHA8BIT:
-	case SURFACE_24BITPADDING8BIT:
-		alpha_pixel_plot_888(params);
+		pixel_alpha_plot_888(params);
 		break;
 	
 	case SURFACE_16BIT:
 	case SURFACE_16BITALPHA8BIT:
-		alpha_pixel_plot_565(params);
+		pixel_alpha_plot_565(params);
 		break;
 	}
 }
@@ -796,8 +1018,11 @@ void draw_rect(struct blit_params_t *params)
 }
 
 
-void draw_alpha_rect(struct blit_params_t *params)
+void alpha_draw_rect(struct blit_params_t *params)
 {
+	if(params->alpha == 0)
+		return;
+	
 	if(!params->dest)
 		return;
 	
@@ -807,135 +1032,19 @@ void draw_alpha_rect(struct blit_params_t *params)
 	switch(params->dest->flags)
 	{
 	case SURFACE_24BITPADDING8BIT:
-		alpha_rect_draw_888P8(params);
+		rect_alpha_draw_888P8(params);
 		break;
 	
 	case SURFACE_24BIT:
 	case SURFACE_24BITALPHA8BIT:
-		alpha_rect_draw_888(params);
+		rect_alpha_draw_888(params);
 		break;
 	
 	case SURFACE_16BIT:
 	case SURFACE_16BITALPHA8BIT:
-		alpha_rect_draw_565(params);
+		rect_alpha_draw_565(params);
 		break;
 	}
-}
-
-
-void alpha_surface_blit(struct blit_params_t *params)
-{
-	if(!clip_blit_coords(params))
-		return;
-	
-	switch(params->dest->flags)
-	{
-	case SURFACE_24BITPADDING8BIT:
-		alpha_surface_blit_888P8(params);
-		break;
-	
-	case SURFACE_24BIT:
-	case SURFACE_24BITALPHA8BIT:
-		alpha_surface_blit_888(params);
-		break;
-	
-	case SURFACE_16BIT:
-	case SURFACE_16BITALPHA8BIT:
-		alpha_surface_blit_565(params);
-		break;
-	}
-}
-
-
-void blit_partial_alpha_surface(struct blit_params_t *params)
-{
-	if(!params->source)
-		return;
-
-	alpha_surface_blit(params);
-}
-
-
-void blit_alpha_surface(struct blit_params_t *params)
-{
-	if(!params->source)
-		return;
-
-	params->source_x = 0;
-	params->source_y = 0;
-	params->width = params->source->width;
-	params->height = params->source->height;
-
-	alpha_surface_blit(params);
-}
-
-
-void surface_alpha_blit(struct blit_params_t *params)
-{
-	if(!clip_blit_coords(params))
-		return;
-	
-	switch(params->source->flags)
-	{
-	case SURFACE_24BIT:
-	case SURFACE_24BITALPHA8BIT:
-		
-		switch(params->dest->flags)
-		{
-		case SURFACE_24BITPADDING8BIT:
-			surface_alpha_blit_888_888P8(params);
-			break;
-		
-		case SURFACE_24BIT:
-		case SURFACE_24BITALPHA8BIT:
-			surface_alpha_blit_888_888(params);
-			break;
-		
-		case SURFACE_16BIT:
-		case SURFACE_16BITALPHA8BIT:
-			surface_alpha_blit_888_565(params);
-			break;
-		}
-		
-		break;
-
-		
-	case SURFACE_16BIT:
-	case SURFACE_16BITALPHA8BIT:
-		
-		switch(params->dest->flags)
-		{
-		case SURFACE_16BIT:
-		case SURFACE_16BITALPHA8BIT:
-			surface_alpha_blit_565_565(params);
-			break;
-		}
-		
-		break;
-	}
-}
-
-
-void alpha_blit_partial_surface(struct blit_params_t *params)
-{
-	if(!params->source || !params->dest)
-		return;
-	
-	surface_alpha_blit(params);
-}
-
-
-void alpha_blit_surface(struct blit_params_t *params)
-{
-	if(!params->source || !params->dest)
-		return;
-	
-	params->source_x = 0;
-	params->source_y = 0;
-	params->width = params->source->width;
-	params->height = params->source->height;
-
-	surface_alpha_blit(params);
 }
 
 
@@ -946,6 +1055,28 @@ void surface_blit(struct blit_params_t *params)
 	
 	switch(params->source->flags)
 	{
+	case SURFACE_ALPHA8BIT:
+		
+		switch(params->dest->flags)
+		{
+		case SURFACE_24BITPADDING8BIT:
+			surface_blit_A8_888P8(params);
+			break;
+		
+		case SURFACE_24BIT:
+		case SURFACE_24BITALPHA8BIT:
+			surface_blit_A8_888(params);
+			break;
+		
+		case SURFACE_16BIT:
+		case SURFACE_16BITALPHA8BIT:
+			surface_blit_A8_565(params);
+			break;
+		}
+		
+		break;
+
+
 	case SURFACE_24BIT:
 		
 		switch(params->dest->flags)
@@ -1018,15 +1149,6 @@ void surface_blit(struct blit_params_t *params)
 }	
 
 
-void blit_partial_surface(struct blit_params_t *params)
-{
-	if(!params->source || !params->dest)
-		return;
-	
-	surface_blit(params);
-}
-
-
 void blit_surface(struct blit_params_t *params)
 {
 	if(!params->source || !params->dest)
@@ -1038,4 +1160,143 @@ void blit_surface(struct blit_params_t *params)
 	params->height = params->source->height;
 
 	surface_blit(params);
+}
+
+
+void blit_partial_surface(struct blit_params_t *params)
+{
+	if(!params->source || !params->dest)
+		return;
+	
+	surface_blit(params);
+}
+
+
+void surface_alpha_blit(struct blit_params_t *params)
+{
+	if(!clip_blit_coords(params))
+		return;
+	
+	switch(params->source->flags)
+	{
+	case SURFACE_ALPHA8BIT:
+		
+		switch(params->dest->flags)
+		{
+		case SURFACE_24BITPADDING8BIT:
+			surface_alpha_blit_A8_888P8(params);
+			break;
+		
+		case SURFACE_24BIT:
+		case SURFACE_24BITALPHA8BIT:
+			surface_alpha_blit_A8_888(params);
+			break;
+		
+		case SURFACE_16BIT:
+		case SURFACE_16BITALPHA8BIT:
+			surface_alpha_blit_A8_565(params);
+			break;
+		}
+		
+		break;
+
+		
+	case SURFACE_24BIT:
+		
+		switch(params->dest->flags)
+		{
+		case SURFACE_24BITPADDING8BIT:
+			surface_alpha_blit_888_888P8(params);
+			break;
+		
+		case SURFACE_24BIT:
+		case SURFACE_24BITALPHA8BIT:
+			surface_alpha_blit_888_888(params);
+			break;
+		
+		case SURFACE_16BIT:
+		case SURFACE_16BITALPHA8BIT:
+			surface_alpha_blit_888_565(params);
+			break;
+		}
+		
+		break;
+
+		
+	case SURFACE_24BITALPHA8BIT:
+		
+		switch(params->dest->flags)
+		{
+		case SURFACE_24BITPADDING8BIT:
+			surface_alpha_blit_888A8_888P8(params);
+			break;
+		
+		case SURFACE_24BIT:
+		case SURFACE_24BITALPHA8BIT:
+			surface_alpha_blit_888A8_888(params);
+			break;
+		
+		case SURFACE_16BIT:
+		case SURFACE_16BITALPHA8BIT:
+			surface_alpha_blit_888A8_565(params);
+			break;
+		}
+		
+		break;
+
+		
+	case SURFACE_16BIT:
+		
+		switch(params->dest->flags)
+		{
+		case SURFACE_16BIT:
+		case SURFACE_16BITALPHA8BIT:
+			surface_alpha_blit_565_565(params);
+			break;
+		}
+		
+		break;
+	
+	
+	case SURFACE_16BITALPHA8BIT:
+		
+		switch(params->dest->flags)
+		{
+		case SURFACE_16BIT:
+		case SURFACE_16BITALPHA8BIT:
+			surface_alpha_blit_565A8_565(params);
+			break;
+		}
+		
+		break;
+	}
+}
+
+
+void alpha_blit_surface(struct blit_params_t *params)
+{
+	if(params->alpha == 0)
+		return;
+	
+	if(!params->source || !params->dest)
+		return;
+	
+	params->source_x = 0;
+	params->source_y = 0;
+	params->width = params->source->width;
+	params->height = params->source->height;
+
+	surface_alpha_blit(params);
+}
+
+
+void alpha_blit_partial_surface(struct blit_params_t *params)
+{
+	if(params->alpha == 0)
+		return;
+	
+	if(!params->source || !params->dest)
+		return;
+	
+	surface_alpha_blit(params);
 }

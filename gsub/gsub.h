@@ -162,18 +162,13 @@ extern uint16_t *vid_bluealphalookup;
 
 
 void plot_pixel(struct blit_params_t *params);
-void plot_alpha_pixel(struct blit_params_t *params);
+void alpha_plot_pixel(struct blit_params_t *params);
 void draw_rect(struct blit_params_t *params);
-void draw_alpha_rect(struct blit_params_t *params);
-void alpha_surface_blit(struct blit_params_t *params);
-void blit_partial_alpha_surface(struct blit_params_t *params);
-void blit_alpha_surface(struct blit_params_t *params);
-void surface_alpha_blit(struct blit_params_t *params);
-void alpha_blit_partial_surface(struct blit_params_t *params);
-void alpha_blit_surface(struct blit_params_t *params);
-void surface_blit(struct blit_params_t *params);
-void blit_partial_surface(struct blit_params_t *params);
+void alpha_draw_rect(struct blit_params_t *params);
 void blit_surface(struct blit_params_t *params);
+void blit_partial_surface(struct blit_params_t *params);
+void alpha_blit_surface(struct blit_params_t *params);
+void alpha_blit_partial_surface(struct blit_params_t *params);
 
 
 // text.cpp
