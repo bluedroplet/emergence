@@ -71,6 +71,8 @@ int nextentity = 0;
 #define VELOCITY_FORCE_MULTIPLIER	0.005
 #define FORCE_VELOCITY_MULTIPLIER	40.0
 
+#define ROLLING_SPEED	0.024
+
 #define IDEAL_CRAFT_WEAPON_DIST			100.0
 #define MAX_CRAFT_WEAPON_DIST			150.0
 #define MAX_WEAPON_ROTATE_SPEED			0.075
@@ -2069,6 +2071,17 @@ void s_tick_craft(struct entity_t *craft)
 	while(craft->craft_data.theta < -M_PI)
 		craft->craft_data.theta += 2 * M_PI;
 
+	#ifdef EMCLIENT
+	if(craft->craft_data.rolling_left || craft->craft_data.rolling_right)
+		craft->craft_data.old_theta = craft->craft_data.theta;
+	#endif
+	
+	if(craft->craft_data.rolling_left)
+		craft->craft_data.theta += ROLLING_SPEED;
+	
+	if(craft->craft_data.rolling_right)
+		craft->craft_data.theta -= ROLLING_SPEED;
+	
 	if(!craft->craft_data.carcass)
 	{
 		double sin_theta, cos_theta;

@@ -158,6 +158,8 @@ void write_craft_data_to_net(uint32_t conn, struct entity_t *craft)
 	net_emit_float(conn, craft->craft_data.acc);
 	net_emit_float(conn, craft->craft_data.theta);
 	net_emit_int(conn, craft->craft_data.braking);
+	net_emit_int(conn, craft->craft_data.rolling_left);
+	net_emit_int(conn, craft->craft_data.rolling_right);
 	
 	if(craft->craft_data.left_weapon)
 		net_emit_uint32(conn, craft->craft_data.left_weapon->index);
@@ -1520,6 +1522,38 @@ int game_process_roll(struct player_t *player, struct buffer_t *stream)
 }
 
 
+int game_process_roll_left(struct player_t *player)
+{
+	player->craft->craft_data.rolling_left = 1;
+	propagate_entity(player->craft);
+	return 1;
+}
+
+
+int game_process_no_roll_left(struct player_t *player)
+{
+	player->craft->craft_data.rolling_left = 0;
+	propagate_entity(player->craft);
+	return 1;
+}
+
+
+int game_process_roll_right(struct player_t *player)
+{
+	player->craft->craft_data.rolling_right = 1;
+	propagate_entity(player->craft);
+	return 1;
+}
+
+
+int game_process_no_roll_right(struct player_t *player)
+{
+	player->craft->craft_data.rolling_right = 0;
+	propagate_entity(player->craft);
+	return 1;
+}
+
+
 void propagate_rail_trail(float x1, float y1, float x2, float y2, 
 	struct player_t *firer)
 {
@@ -1972,6 +2006,26 @@ void game_process_stream(uint32_t conn, uint32_t index, struct buffer_t *stream)
 		
 		case EMMSG_ROLL:
 			if(!game_process_roll(player, stream))
+				return;
+			break;
+		
+		case EMMSG_ROLL_LEFT:
+			if(!game_process_roll_left(player))
+				return;
+			break;
+		
+		case EMMSG_NOROLL_LEFT:
+			if(!game_process_no_roll_left(player))
+				return;
+			break;
+		
+		case EMMSG_ROLL_RIGHT:
+			if(!game_process_roll_right(player))
+				return;
+			break;
+		
+		case EMMSG_NOROLL_RIGHT:
+			if(!game_process_no_roll_right(player))
 				return;
 			break;
 		

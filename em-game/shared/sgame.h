@@ -70,17 +70,21 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 #define EMMSG_BRAKE				0x05
 #define EMMSG_NOBRAKE			0x06
 #define EMMSG_ROLL				0x07
-#define EMMSG_FIRERAIL			0x08
-#define EMMSG_FIRELEFT			0x09
-#define EMMSG_FIRERIGHT			0x0a
-#define EMMSG_DROPMINE			0x0b
-#define EMMSG_ENTERRCON			0x0c
-#define EMMSG_LEAVERCON			0x0d
-#define EMMSG_RCONMSG			0x0e
-#define EMMSG_STATUS			0x0f
-#define EMMSG_NAMECNGE			0x10
-#define EMMSG_SUICIDE			0x11
-#define EMMSG_COLOURS			0x12
+#define EMMSG_ROLL_LEFT			0x08
+#define EMMSG_NOROLL_LEFT		0x09
+#define EMMSG_ROLL_RIGHT		0x0a
+#define EMMSG_NOROLL_RIGHT		0x0b
+#define EMMSG_FIRERAIL			0x0c
+#define EMMSG_FIRELEFT			0x0d
+#define EMMSG_FIRERIGHT			0x0e
+#define EMMSG_DROPMINE			0x0f
+#define EMMSG_ENTERRCON			0x10
+#define EMMSG_LEAVERCON			0x11
+#define EMMSG_RCONMSG			0x12
+#define EMMSG_STATUS			0x13
+#define EMMSG_NAMECNGE			0x14
+#define EMMSG_SUICIDE			0x15
+#define EMMSG_COLOURS			0x16
 
 
 
@@ -90,6 +94,8 @@ struct craft_data_t
 	float acc;
 	float theta;
 	int braking;
+	int rolling_left;
+	int rolling_right;
 
 	struct entity_t *left_weapon, *right_weapon;
 	float shield_flare;

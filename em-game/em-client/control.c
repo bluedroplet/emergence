@@ -415,13 +415,29 @@ void action_roll(float val)
 
 void action_roll_left(uint32_t state)
 {
-	rolling_left = state;
+	if(game_state != GAMESTATE_PLAYING)
+		return;
+
+	if(state)
+		net_emit_uint8(game_conn, EMMSG_ROLL_LEFT);
+	else
+		net_emit_uint8(game_conn, EMMSG_NOROLL_LEFT);
+	
+	net_emit_end_of_stream(game_conn);
 }
 
 
 void action_roll_right(uint32_t state)
 {
-	rolling_right = state;
+	if(game_state != GAMESTATE_PLAYING)
+		return;
+
+	if(state)
+		net_emit_uint8(game_conn, EMMSG_ROLL_RIGHT);
+	else
+		net_emit_uint8(game_conn, EMMSG_NOROLL_RIGHT);
+	
+	net_emit_end_of_stream(game_conn);
 }
 
 

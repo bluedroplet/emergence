@@ -57,6 +57,8 @@ struct event_craft_data_t
 	float acc;
 	float theta;
 	int braking;
+	int rolling_left;
+	int rolling_right;
 	uint32_t left_weapon_index;
 	uint32_t right_weapon_index;
 	float shield_flare;
@@ -622,6 +624,8 @@ void read_craft_data(struct event_craft_data_t *craft_data)
 	craft_data->acc = message_reader_read_float();
 	craft_data->theta = message_reader_read_float();
 	craft_data->braking = message_reader_read_int();
+	craft_data->rolling_left = message_reader_read_int();
+	craft_data->rolling_right = message_reader_read_int();
 	craft_data->left_weapon_index = message_reader_read_uint32();
 	craft_data->right_weapon_index = message_reader_read_uint32();
 	craft_data->shield_flare = message_reader_read_float();
@@ -918,6 +922,8 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->craft_data.old_theta = entity->craft_data.theta = 
 			event->ent_data.craft_data.theta;
 		entity->craft_data.braking = event->ent_data.craft_data.braking;
+		entity->craft_data.rolling_left = event->ent_data.craft_data.rolling_left;
+		entity->craft_data.rolling_right = event->ent_data.craft_data.rolling_right;
 		entity->craft_data.left_weapon = get_entity(centity0, 
 			event->ent_data.craft_data.left_weapon_index);
 		entity->craft_data.right_weapon = get_entity(centity0, 
@@ -1079,6 +1085,8 @@ void process_update_ent_event(struct event_t *event)
 		entity->craft_data.old_theta = entity->craft_data.theta;
 		entity->craft_data.theta = event->ent_data.craft_data.theta;
 		entity->craft_data.braking = event->ent_data.craft_data.braking;
+		entity->craft_data.rolling_left = event->ent_data.craft_data.rolling_left;
+		entity->craft_data.rolling_right = event->ent_data.craft_data.rolling_right;
 		entity->craft_data.left_weapon = get_entity(centity0, 
 			event->ent_data.craft_data.left_weapon_index);
 		entity->craft_data.right_weapon = get_entity(centity0, 
@@ -2280,6 +2288,8 @@ void write_craft_data_to_demo(struct entity_t *craft)
 	gzwrite(gzrecording, &craft->craft_data.acc, 4);
 	gzwrite(gzrecording, &craft->craft_data.theta, 4);
 	gzwrite(gzrecording, &craft->craft_data.braking, 4);
+	gzwrite(gzrecording, &craft->craft_data.rolling_left, 4);
+	gzwrite(gzrecording, &craft->craft_data.rolling_right, 4);
 	
 	if(craft->craft_data.left_weapon)
 		gzwrite(gzrecording, &craft->craft_data.left_weapon->index, 4);
@@ -2755,7 +2765,6 @@ void tick_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 	
 		for(p = 0; p < np; p++)
 		{
-			sincos(craft->craft_data.theta, &sin_theta, &cos_theta);
 			
 			double r = drand48();
 			
@@ -2789,6 +2798,8 @@ void tick_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 				(delta_theta) * (double)(p + 1) / (double)np;
 			
 		
+			sincos(theta, &sin_theta, &cos_theta);
+			
 			particle.xpos = nxdis + sin_theta * 25;
 			particle.ypos = nydis - cos_theta * 25;
 	
