@@ -1505,7 +1505,7 @@ void game_process_play(struct player_t *player)
 
 		if(num_players >= max_players || match_begun)
 		{
-			if(num_spectators >= max_spectators)
+		//	if(num_spectators >= max_spectators)
 			{
 				net_emit_uint8(player->conn, EMNETMSG_PRINT);
 				net_emit_string(player->conn, "No room!\n");
@@ -1514,8 +1514,8 @@ void game_process_play(struct player_t *player)
 				return;
 			}
 			
-			player->state = PLAYER_STATE_SPECTATING;
-			num_spectators++;
+		//	player->state = PLAYER_STATE_SPECTATING;
+		//	num_spectators++;
 		}
 		
 		player->state = PLAYER_STATE_PLAYING;
@@ -1578,7 +1578,7 @@ void game_process_spectate(struct player_t *player)
 	switch(player->state)
 	{
 	case PLAYER_STATE_ASLEEP:
-		if(num_spectators >= max_spectators)
+	//	if(num_spectators >= max_spectators)
 		{
 			net_emit_uint8(player->conn, EMNETMSG_PRINT);
 			net_emit_string(player->conn, "No room!\n");
@@ -1587,12 +1587,12 @@ void game_process_spectate(struct player_t *player)
 			return;
 		}
 		
-		player->state = PLAYER_STATE_SPECTATING;
-		num_spectators++;
+	//	player->state = PLAYER_STATE_SPECTATING;
+	//	num_spectators++;
 		break;
 	
 	case PLAYER_STATE_PLAYING:
-		if(num_spectators >= max_spectators)
+	//	if(num_spectators >= max_spectators)
 		{
 			net_emit_uint8(player->conn, EMNETMSG_PRINT);
 			net_emit_string(player->conn, "No room!\n");
@@ -1600,10 +1600,10 @@ void game_process_spectate(struct player_t *player)
 			return;
 		}
 		
-		destroy_player(player);
-		player->state = PLAYER_STATE_SPECTATING;
-		num_players--;
-		num_spectators++;
+	//	destroy_player(player);
+	//	player->state = PLAYER_STATE_SPECTATING;
+	//	num_players--;
+	//	num_spectators++;
 		break;
 	
 	case PLAYER_STATE_SPECTATING:
