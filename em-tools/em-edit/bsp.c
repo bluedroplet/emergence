@@ -1,5 +1,5 @@
 /* 
-	Copyright (C) 1998-2002 Jonathan Brown
+	Copyright (C) 1998-2004 Jonathan Brown
 
     This file is part of em-edit.
 
@@ -511,8 +511,10 @@ void generate_curved_conn_lines(struct curve_t *curve, struct conn_t *conn,
 			right_index = end_bsp_points[1];
 		}
 		
-		double leftwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * ct->t2 + conn->node1->width[left1];
-		double rightwidth = (conn->node2->width[right2] - conn->node1->width[right1]) * ct->t2 + conn->node1->width[right1];
+		double leftwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * 
+			ct->t2 + conn->node1->width[left1];
+		double rightwidth = (conn->node2->width[right2] - conn->node1->width[right1]) * 
+			ct->t2 + conn->node1->width[right1];
 
 		double lx2 = ct->x2 - ct->deltay2 * leftwidth;
 		double ly2 = ct->y2 + ct->deltax2 * leftwidth;
@@ -682,7 +684,8 @@ void generate_straight_conn_lines(struct curve_t *curve, struct conn_t *conn,
 }
 
 
-void generate_conn_start_line(struct curve_t *curve, struct conn_t *conn, uint32_t *start_bsp_points)
+void generate_conn_start_line(struct curve_t *curve, struct conn_t *conn, 
+	uint32_t *start_bsp_points)
 {
 	struct node_t *node;
 	int sat;
@@ -747,7 +750,8 @@ void generate_conn_start_line(struct curve_t *curve, struct conn_t *conn, uint32
 }
 
 
-void generate_conn_end_line(struct curve_t *curve, struct conn_t *conn, uint32_t *start_bsp_points)
+void generate_conn_end_line(struct curve_t *curve, struct conn_t *conn, 
+	uint32_t *start_bsp_points)
 {
 	struct node_t *node;
 	int sat;
@@ -967,7 +971,8 @@ void generate_curve_lines(struct curve_t *curve)
 		switch(cconnp->conn->type)
 		{
 		case CONN_TYPE_STRAIGHT:
-			generate_straight_conn_lines(curve, cconnp->conn, start_bsp_points, end_bsp_points, previous_straight);
+			generate_straight_conn_lines(curve, cconnp->conn, start_bsp_points, end_bsp_points, 
+				previous_straight);
 			previous_straight = 1;
 			break;
 		
@@ -1091,7 +1096,8 @@ void generate_conn_fill_right_edge_segment_lines(struct fill_t *fill, struct con
 }
 
 
-void generate_t1_conn_fill_left_edge_segment_lines(struct fill_t *fill, struct conn_t *conn, uint32_t t1_index)
+void generate_t1_conn_fill_left_edge_segment_lines(struct fill_t *fill, struct conn_t *conn, 
+	uint32_t t1_index)
 {
 	struct bsp_line_t *cline = bsp_line0;
 	
@@ -1109,7 +1115,8 @@ void generate_t1_conn_fill_left_edge_segment_lines(struct fill_t *fill, struct c
 }
 
 
-void generate_t1_conn_fill_right_edge_segment_lines(struct fill_t *fill, struct conn_t *conn, uint32_t t1_index)
+void generate_t1_conn_fill_right_edge_segment_lines(struct fill_t *fill, struct conn_t *conn, 
+	uint32_t t1_index)
 {
 	struct bsp_line_t *cline = bsp_line0;
 	
@@ -1127,7 +1134,8 @@ void generate_t1_conn_fill_right_edge_segment_lines(struct fill_t *fill, struct 
 }
 
 
-void generate_t2_conn_fill_left_edge_segment_lines(struct fill_t *fill, struct conn_t *conn, uint32_t t2_index)
+void generate_t2_conn_fill_left_edge_segment_lines(struct fill_t *fill, struct conn_t *conn, 
+	uint32_t t2_index)
 {
 	struct bsp_line_t *cline = bsp_line0;
 	
@@ -1145,7 +1153,8 @@ void generate_t2_conn_fill_left_edge_segment_lines(struct fill_t *fill, struct c
 }
 
 
-void generate_t2_conn_fill_right_edge_segment_lines(struct fill_t *fill, struct conn_t *conn, uint32_t t2_index)
+void generate_t2_conn_fill_right_edge_segment_lines(struct fill_t *fill, struct conn_t *conn, 
+	uint32_t t2_index)
 {
 	struct bsp_line_t *cline = bsp_line0;
 	
@@ -1265,7 +1274,8 @@ void generate_fill_lines(struct fill_t *fill)
 				}
 				else
 				{
-					generate_t1_conn_fill_left_edge_segment_lines(fill, first_connp->conn, first_t_index);
+					generate_t1_conn_fill_left_edge_segment_lines(fill, first_connp->conn, 
+						first_t_index);
 					
 					cconnp = first_connp->next;
 					
@@ -1287,7 +1297,8 @@ void generate_fill_lines(struct fill_t *fill)
 				}
 				else
 				{
-					generate_t1_conn_fill_right_edge_segment_lines(fill, first_connp->conn, first_t_index);
+					generate_t1_conn_fill_right_edge_segment_lines(fill, first_connp->conn, 
+						first_t_index);
 					
 					cconnp = first_connp->next;
 					
@@ -1307,15 +1318,17 @@ void generate_fill_lines(struct fill_t *fill)
 			
 			if(last_fill_edge->point2->pos < last_fill_edge->point1->pos)
 			{
-				bsp_line.x1 = fill_edge->point1->x - fill_edge->point1->deltay * fill_edge->point1->left_width;
-				bsp_line.y1 = fill_edge->point1->y + fill_edge->point1->deltax * fill_edge->point1->left_width;
+				bsp_line.x1 = fill_edge->point1->x - fill_edge->point1->deltay * 
+					fill_edge->point1->left_width;
+				bsp_line.y1 = fill_edge->point1->y + fill_edge->point1->deltax * 
+					fill_edge->point1->left_width;
 
 				struct bsp_line_t *cline = bsp_line0;
 		
 				while(cline)
 				{
-					if(cline->conn == fill_edge->point1->conn && cline->t_index == fill_edge->point1->t_index
-						&& cline->conn_side == BSP_LINE_CONN_LEFT)
+					if(cline->conn == fill_edge->point1->conn && cline->t_index == 
+						fill_edge->point1->t_index && cline->conn_side == BSP_LINE_CONN_LEFT)
 					{
 						bsp_line.start_index = cline->start_index;
 						break;
@@ -1328,15 +1341,17 @@ void generate_fill_lines(struct fill_t *fill)
 			}
 			else
 			{
-				bsp_line.x1 = fill_edge->point1->x + fill_edge->point1->deltay * fill_edge->point1->right_width;
-				bsp_line.y1 = fill_edge->point1->y - fill_edge->point1->deltax * fill_edge->point1->right_width;
+				bsp_line.x1 = fill_edge->point1->x + fill_edge->point1->deltay * 
+					fill_edge->point1->right_width;
+				bsp_line.y1 = fill_edge->point1->y - fill_edge->point1->deltax * 
+					fill_edge->point1->right_width;
 
 				struct bsp_line_t *cline = bsp_line0;
 		
 				while(cline)
 				{
-					if(cline->conn == fill_edge->point1->conn && cline->t_index == fill_edge->point1->t_index
-						&& cline->conn_side == BSP_LINE_CONN_RIGHT)
+					if(cline->conn == fill_edge->point1->conn && cline->t_index == 
+						fill_edge->point1->t_index && cline->conn_side == BSP_LINE_CONN_RIGHT)
 					{
 						bsp_line.start_index = cline->start_index;
 						break;
@@ -1350,15 +1365,17 @@ void generate_fill_lines(struct fill_t *fill)
 			
 			if(next_fill_edge->point2->pos < next_fill_edge->point1->pos)
 			{
-				bsp_line.x2 = fill_edge->point2->x - fill_edge->point2->deltay * fill_edge->point2->left_width;
-				bsp_line.y2 = fill_edge->point2->y + fill_edge->point2->deltax * fill_edge->point2->left_width;
+				bsp_line.x2 = fill_edge->point2->x - fill_edge->point2->deltay * 
+					fill_edge->point2->left_width;
+				bsp_line.y2 = fill_edge->point2->y + fill_edge->point2->deltax * 
+					fill_edge->point2->left_width;
 
 				struct bsp_line_t *cline = bsp_line0;
 		
 				while(cline)
 				{
-					if(cline->conn == fill_edge->point2->conn && cline->t_index == fill_edge->point2->t_index
-						&& cline->conn_side == BSP_LINE_CONN_LEFT)
+					if(cline->conn == fill_edge->point2->conn && cline->t_index == 
+						fill_edge->point2->t_index && cline->conn_side == BSP_LINE_CONN_LEFT)
 					{
 						bsp_line.end_index = cline->start_index;
 						break;
@@ -1371,15 +1388,17 @@ void generate_fill_lines(struct fill_t *fill)
 			}
 			else
 			{
-				bsp_line.x2 = fill_edge->point2->x + fill_edge->point2->deltay * fill_edge->point2->right_width;
-				bsp_line.y2 = fill_edge->point2->y - fill_edge->point2->deltax * fill_edge->point2->right_width;
+				bsp_line.x2 = fill_edge->point2->x + fill_edge->point2->deltay * 
+					fill_edge->point2->right_width;
+				bsp_line.y2 = fill_edge->point2->y - fill_edge->point2->deltax * 
+					fill_edge->point2->right_width;
 
 				struct bsp_line_t *cline = bsp_line0;
 		
 				while(cline)
 				{
-					if(cline->conn == fill_edge->point2->conn && cline->t_index == fill_edge->point2->t_index
-						&& cline->conn_side == BSP_LINE_CONN_RIGHT)
+					if(cline->conn == fill_edge->point2->conn && cline->t_index == 
+						fill_edge->point2->t_index && cline->conn_side == BSP_LINE_CONN_RIGHT)
 					{
 						bsp_line.end_index = cline->start_index;
 						break;
@@ -1577,11 +1596,13 @@ bsp_tline_t *find_least_cutting_line(bsp_tline_t *space)
 			{
 				double t = numer / denom;
 					
-				if((cuttee->start_index == cutter->start_index) || (cuttee->start_index == cutter->end_index))
+				if((cuttee->start_index == cutter->start_index) || 
+					(cuttee->start_index == cutter->end_index))
 				{
 					;
 				}
-				else if((cuttee->end_index == cutter->start_index) || (cuttee->end_index == cutter->end_index))
+				else if((cuttee->end_index == cutter->start_index) || 
+					(cuttee->end_index == cutter->end_index))
 				{
 					;
 				}
@@ -1647,10 +1668,13 @@ bsp_tline_t *find_most_even_cutting_line(bsp_tline_t *space)
 				double t = numer / denom;
 					
 				double ct = (cuttee->tstart + cuttee->tend) / 2.0;
-				double new_numer = nx * ((cuttee->line->x1 + ct * (cuttee->line->x2 - cuttee->line->x1)) - cutter->line->x1) + 
-					ny * ((cuttee->line->y1 + ct * (cuttee->line->y2 - cuttee->line->y1)) - cutter->line->y1);
+				double new_numer = nx * ((cuttee->line->x1 + ct * 
+					(cuttee->line->x2 - cuttee->line->x1)) - cutter->line->x1) + 
+					ny * ((cuttee->line->y1 + ct * 
+					(cuttee->line->y2 - cuttee->line->y1)) - cutter->line->y1);
 					
-				if((cuttee->start_index == cutter->start_index) || (cuttee->start_index == cutter->end_index))
+				if((cuttee->start_index == cutter->start_index) || 
+					(cuttee->start_index == cutter->end_index))
 				{
 					if(new_numer < 0.0)	// current line in front of dividing line
 					{
@@ -1661,7 +1685,8 @@ bsp_tline_t *find_most_even_cutting_line(bsp_tline_t *space)
 						left++;
 					}
 				}
-				else if((cuttee->end_index == cutter->start_index) || (cuttee->end_index == cutter->end_index))
+				else if((cuttee->end_index == cutter->start_index) || 
+					(cuttee->end_index == cutter->end_index))
 				{
 					if(new_numer < 0.0)	// current line in front of dividing line
 					{
@@ -1740,7 +1765,8 @@ int split_space(bsp_tline_t *space, bsp_node_t **node)
 		if(cline == cutter)		// skip the cutting line
 			continue;
 		
-		if(cutter->line->colinear_index != 0 && cutter->line->colinear_index == cline->line->colinear_index)
+		if(cutter->line->colinear_index != 0 && 
+			cutter->line->colinear_index == cline->line->colinear_index)
 			continue;			// skip colinear line
 		
 		double nx = cutter->line->y1 - cutter->line->y2;
@@ -1770,12 +1796,15 @@ int split_space(bsp_tline_t *space, bsp_node_t **node)
 		
 		double ct = (cline->tstart + cline->tend) / 2.0;
 		
-		double new_numer = nx * ((cline->line->x1 + ct * (cline->line->x2 - cline->line->x1)) - cutter->line->x1) + 
-			ny * ((cline->line->y1 + ct * (cline->line->y2 - cline->line->y1)) - cutter->line->y1);
+		double new_numer = nx * ((cline->line->x1 + ct * (cline->line->x2 - cline->line->x1)) - 
+			cutter->line->x1) + 
+			ny * ((cline->line->y1 + ct * (cline->line->y2 - cline->line->y1)) - 
+			cutter->line->y1);
 		
 		struct bsp_line_pointer_t *colinear_line;
 			
-		if((cline->start_index != 0) && ((cline->start_index == cutter->start_index) || (cline->start_index == cutter->end_index)))
+		if((cline->start_index != 0) && ((cline->start_index == cutter->start_index) || 
+			(cline->start_index == cutter->end_index)))
 		{
 			cline->start_cutter = *node;
 			
@@ -1791,7 +1820,8 @@ int split_space(bsp_tline_t *space, bsp_node_t **node)
 			continue;
 		}
 		
-		if((cline->end_index != 0) && ((cline->end_index == cutter->start_index) || (cline->end_index == cutter->end_index)))
+		if((cline->end_index != 0) && ((cline->end_index == cutter->start_index) || 
+			(cline->end_index == cutter->end_index)))
 		{
 			cline->end_cutter = *node;
 			
@@ -1811,7 +1841,8 @@ int split_space(bsp_tline_t *space, bsp_node_t **node)
 		{
 			int stop = 0;
 			
-			for(colinear_line = cutter->line->colinear_friends; colinear_line; colinear_line = colinear_line->next)
+			for(colinear_line = cutter->line->colinear_friends; colinear_line; 
+				colinear_line = colinear_line->next)
 			{
 				if(colinear_line->bsp_line->start_index != 0)
 				{
@@ -1861,7 +1892,8 @@ int split_space(bsp_tline_t *space, bsp_node_t **node)
 		{
 			int stop = 0;
 			
-			for(colinear_line = cline->line->colinear_friends; colinear_line; colinear_line = colinear_line->next)
+			for(colinear_line = cline->line->colinear_friends; colinear_line; 
+				colinear_line = colinear_line->next)
 			{
 				if(colinear_line->bsp_line->start_index != 0)
 				{
