@@ -202,19 +202,30 @@ void write_weapon_data_to_net(uint32_t conn, struct entity_t *weapon)
 
 void write_plasma_data_to_net(uint32_t conn, struct entity_t *plasma)
 {
+	net_emit_uint8(conn, plasma->plasma_data.in_weapon);
 	net_emit_uint32(conn, plasma->plasma_data.weapon_id);
+}
+
+
+void write_bullet_data_to_net(uint32_t conn, struct entity_t *bullet)
+{
+	net_emit_uint8(conn, bullet->bullet_data.in_weapon);
+	net_emit_uint32(conn, bullet->bullet_data.weapon_id);
 }
 
 
 void write_rocket_data_to_net(uint32_t conn, struct entity_t *rocket)
 {
 	net_emit_float(conn, rocket->rocket_data.theta);
+	net_emit_uint32(conn, rocket->rocket_data.start_tick);
+	net_emit_uint8(conn, rocket->rocket_data.in_weapon);
 	net_emit_uint32(conn, rocket->rocket_data.weapon_id);
 }
 
 
 void write_mine_data_to_net(uint32_t conn, struct entity_t *mine)
 {
+	net_emit_uint8(conn, mine->mine_data.under_craft);
 	net_emit_uint32(conn, mine->mine_data.craft_id);
 }
 
@@ -339,6 +350,10 @@ void emit_spawn_entity(uint32_t conn, struct entity_t *entity)
 		net_emit_uint8(conn, entity->craft_data.shield_green);
 		net_emit_uint8(conn, entity->craft_data.shield_blue);
 	
+		net_emit_uint8(conn, entity->craft_data.plasma_red);
+		net_emit_uint8(conn, entity->craft_data.plasma_green);
+		net_emit_uint8(conn, entity->craft_data.plasma_blue);
+	
 		net_emit_uint8(conn, entity->craft_data.carcass);
 		break;
 	
@@ -358,6 +373,10 @@ void emit_spawn_entity(uint32_t conn, struct entity_t *entity)
 		net_emit_uint8(conn, entity->plasma_data.red);
 		net_emit_uint8(conn, entity->plasma_data.green);
 		net_emit_uint8(conn, entity->plasma_data.blue);
+		break;
+	
+	case ENT_BULLET:
+		write_bullet_data_to_net(conn, entity);
 		break;
 	
 	case ENT_ROCKET:
@@ -542,9 +561,7 @@ void propagate_player_info()
 				net_emit_uint8(out_player->conn, EMNETMSG_PLAYER_INFO);
 				net_emit_uint32(out_player->conn, info_player->index);
 				net_emit_string(out_player->conn, info_player->name->text);
-				
 				net_emit_uint8(out_player->conn, info_player->ready);
-				
 				net_emit_int(out_player->conn, info_player->frags);
 				net_emit_end_of_stream(out_player->conn);
 				
@@ -557,20 +574,33 @@ void propagate_player_info()
 }
 
 
+void propagate_player_info_to_all_players(struct player_t *info_player)
+{
+	struct player_t *out_player = player0;
+		
+	while(out_player)
+	{
+		net_emit_uint8(out_player->conn, EMNETMSG_PLAYER_INFO);
+		net_emit_uint32(out_player->conn, info_player->index);
+		net_emit_string(out_player->conn, info_player->name->text);
+		net_emit_uint8(out_player->conn, info_player->ready);
+		net_emit_int(out_player->conn, info_player->frags);
+		net_emit_end_of_stream(out_player->conn);
+		
+		out_player = out_player->next;
+	}
+}
+
+
 void remove_player_info(struct player_t *info_player)
 {
 	struct player_t *out_player = player0;
 		
 	while(out_player)
 	{
-		if(out_player->propagate_info)
-		{
-			out_player->propagate_info = 0;
-			
-			net_emit_uint8(out_player->conn, EMNETMSG_REMOVE_PLAYER_INFO);
-			net_emit_uint32(out_player->conn, info_player->index);
-			net_emit_end_of_stream(out_player->conn);
-		}
+		net_emit_uint8(out_player->conn, EMNETMSG_REMOVE_PLAYER_INFO);
+		net_emit_uint32(out_player->conn, info_player->index);
+		net_emit_end_of_stream(out_player->conn);
 		
 		out_player = out_player->next;
 	}
@@ -637,56 +667,6 @@ int game_process_status(struct player_t *player, struct buffer_t *buffer)
 	free_string(string);
 	
 	return 1;
-}
-
-
-void spawn_plasma(struct entity_t *weapon, struct player_t *player)
-{
-	struct entity_t *plasma = new_entity(&entity0);
-	
-	plasma->type = ENT_PLASMA;
-	
-	plasma->xdis = weapon->xdis;
-	plasma->ydis = weapon->ydis;
-	
-	double sin_theta, cos_theta;
-	sincos(weapon->weapon_data.theta, &sin_theta, &cos_theta);
-	
-	plasma->xvel = weapon->weapon_data.craft->xvel - sin_theta * 8.0;
-	plasma->yvel = weapon->weapon_data.craft->yvel + cos_theta * 8.0;
-	
-	plasma->plasma_data.in_weapon = 1;
-	plasma->plasma_data.weapon_id = weapon->index;
-	
-	plasma->plasma_data.red = weapon->weapon_data.plasma_red;
-	plasma->plasma_data.green = weapon->weapon_data.plasma_green;
-	plasma->plasma_data.blue = weapon->weapon_data.plasma_blue;
-	
-	plasma->plasma_data.owner = player;
-
-	spawn_entity_on_all_players(plasma);
-}
-
-
-void spawn_bullet(struct entity_t *weapon, struct player_t *player)
-{
-	struct entity_t *bullet = new_entity(&entity0);
-	
-	bullet->type = ENT_BULLET;
-	
-	bullet->xdis = weapon->xdis;
-	bullet->ydis = weapon->ydis;
-	
-	double sin_theta, cos_theta;
-	sincos(weapon->weapon_data.theta, &sin_theta, &cos_theta);
-	
-	bullet->xvel = weapon->weapon_data.craft->xvel - sin_theta * 24.0;
-	bullet->yvel = weapon->weapon_data.craft->yvel + cos_theta * 24.0;
-	
-	bullet->bullet_data.in_weapon = 1;
-	bullet->bullet_data.weapon_id = weapon->index;
-	
-	bullet->bullet_data.owner = player;
 }
 
 
@@ -781,91 +761,51 @@ void tick_player(struct player_t *player)
 
 		player->next_pulse_event += 200;
 	}
+}
+
+
+void update_player_shield_strengths(struct player_t *player)
+{
+	net_emit_uint8(player->conn, EMEVENT_SHIELD_STRENGTHS);
+	net_emit_uint32(player->conn, game_tick);
+	net_emit_float(player->conn, player->craft->craft_data.shield_strength);
 	
+	if(player->craft->craft_data.left_weapon)
+		net_emit_float(player->conn, 
+			player->craft->craft_data.left_weapon->weapon_data.shield_strength);
+	else
+		net_emit_float(player->conn, 0.0f);
 	
-	// fire guns
+	if(player->craft->craft_data.right_weapon)
+		net_emit_float(player->conn, 
+			player->craft->craft_data.right_weapon->weapon_data.shield_strength);
+	else
+		net_emit_float(player->conn, 0.0f);
 	
-	int fire;
+	net_emit_end_of_stream(player->conn);
+}
+
+
+void update_player_ammo_levels(struct player_t *player)
+{
+	net_emit_uint8(player->conn, EMEVENT_AMMO_LEVELS);
+	net_emit_uint32(player->conn, game_tick);
+	net_emit_int(player->conn, player->rails);
+	net_emit_int(player->conn, player->mines);
 	
-	if(player->firing_left)
-	{
-		if(!player->craft->craft_data.left_weapon)
-		{
-			player->firing_left = 0;
-		}
-		else
-		{
-			if(player->craft->craft_data.left_weapon->weapon_data.ammo)		
-			{
-				switch(player->craft->craft_data.left_weapon->weapon_data.type)
-				{
-				case WEAPON_PLASMA_CANNON:
-					fire = ((game_tick - player->firing_left_start) * 20) / 200 
-						- player->left_fired;
-					
-					if(fire > 0)
-					{
-						spawn_plasma(player->craft->craft_data.left_weapon, player);
-						player->left_fired += fire;
-						player->craft->craft_data.left_weapon->weapon_data.ammo--;
-					}
-					break;
-					
-				case WEAPON_MINIGUN:
-					fire = ((game_tick - player->firing_left_start) * 50) / 200 
-						- player->left_fired;
-					
-					if(fire > 0)
-					{
-						spawn_bullet(player->craft->craft_data.left_weapon, player);
-						player->left_fired += fire;
-						player->craft->craft_data.left_weapon->weapon_data.ammo--;
-					}
-					break;
-				}
-			}
-		}
-	}
+	if(player->craft->craft_data.left_weapon)
+		net_emit_int(player->conn, 
+			player->craft->craft_data.left_weapon->weapon_data.ammo);
+	else
+		net_emit_int(player->conn, 0);
 	
-	if(player->firing_right)
-	{
-		if(!player->craft->craft_data.right_weapon)
-		{
-			player->firing_right = 0;
-		}
-		else
-		{
-			if(player->craft->craft_data.right_weapon->weapon_data.ammo)		
-			{
-				switch(player->craft->craft_data.right_weapon->weapon_data.type)
-				{
-				case WEAPON_PLASMA_CANNON:
-					fire = ((game_tick - player->firing_right_start) * 20) / 200 
-						- player->right_fired;
-					
-					if(fire > 0)
-					{
-						spawn_plasma(player->craft->craft_data.right_weapon, player);
-						player->right_fired += fire;
-						player->craft->craft_data.right_weapon->weapon_data.ammo--;
-					}
-					break;
-					
-				case WEAPON_MINIGUN:
-					fire = ((game_tick - player->firing_right_start) * 50) / 200 
-						- player->right_fired;
-					
-					if(fire > 0)
-					{
-						spawn_bullet(player->craft->craft_data.right_weapon, player);
-						player->right_fired += fire;
-						player->craft->craft_data.right_weapon->weapon_data.ammo--;
-					}
-					break;
-				}
-			}
-		}
-	}
+	if(player->craft->craft_data.right_weapon)
+		net_emit_int(player->conn, 
+			player->craft->craft_data.right_weapon->weapon_data.ammo);
+	else
+		net_emit_int(player->conn, 0);
+	
+	net_emit_end_of_stream(player->conn);
 }
 
 
@@ -978,6 +918,9 @@ void spawn_player(struct player_t *player)
 	player->craft->craft_data.shield_red = player->shield_red;
 	player->craft->craft_data.shield_green = player->shield_green;
 	player->craft->craft_data.shield_blue = player->shield_blue;
+	player->craft->craft_data.plasma_red = player->plasma_red;
+	player->craft->craft_data.plasma_green = player->plasma_green;
+	player->craft->craft_data.plasma_blue = player->plasma_blue;
 	
 	if(old_craft)
 	{
@@ -1008,6 +951,8 @@ void spawn_player(struct player_t *player)
 	player->craft->ydis = spawn_point->y;
 	
 	spawn_entity_on_all_players(player->craft);
+	update_player_shield_strengths(player);
+	update_player_ammo_levels(player);
 	follow_me_on_player(player);
 }
 
@@ -1109,8 +1054,8 @@ struct entity_t *spawn_pickup(struct pickup_spawn_point_t *spawn_point)
 		entity->weapon_data.spawn_point = spawn_point;
 	
 		entity->weapon_data.smoke_start_red = 0xff;
-		entity->weapon_data.smoke_start_green = 0;
-		entity->weapon_data.smoke_start_blue = 0;
+		entity->weapon_data.smoke_start_green = 0xff;
+		entity->weapon_data.smoke_start_blue = 0xff;
 
 		entity->weapon_data.smoke_end_red = 0xff;
 		entity->weapon_data.smoke_end_green = 0xff;
@@ -1130,8 +1075,8 @@ struct entity_t *spawn_pickup(struct pickup_spawn_point_t *spawn_point)
 		entity->weapon_data.spawn_point = spawn_point;
 	
 		entity->weapon_data.smoke_start_red = 0xff;
-		entity->weapon_data.smoke_start_green = 0;
-		entity->weapon_data.smoke_start_blue = 0;
+		entity->weapon_data.smoke_start_green = 0xff;
+		entity->weapon_data.smoke_start_blue = 0xff;
 
 		entity->weapon_data.smoke_end_red = 0xff;
 		entity->weapon_data.smoke_end_green = 0xff;
@@ -1151,8 +1096,8 @@ struct entity_t *spawn_pickup(struct pickup_spawn_point_t *spawn_point)
 		entity->weapon_data.spawn_point = spawn_point;
 	
 		entity->weapon_data.smoke_start_red = 0xff;
-		entity->weapon_data.smoke_start_green = 0;
-		entity->weapon_data.smoke_start_blue = 0;
+		entity->weapon_data.smoke_start_green = 0xff;
+		entity->weapon_data.smoke_start_blue = 0xff;
 
 		entity->weapon_data.smoke_end_red = 0xff;
 		entity->weapon_data.smoke_end_green = 0xff;
@@ -1214,6 +1159,10 @@ void propagate_colours(struct entity_t *entity)
 				net_emit_uint8(player->conn, entity->craft_data.shield_red);
 				net_emit_uint8(player->conn, entity->craft_data.shield_green);
 				net_emit_uint8(player->conn, entity->craft_data.shield_blue);
+			
+				net_emit_uint8(player->conn, entity->craft_data.plasma_red);
+				net_emit_uint8(player->conn, entity->craft_data.plasma_green);
+				net_emit_uint8(player->conn, entity->craft_data.plasma_blue);
 				break;
 			
 			case ENT_WEAPON:
@@ -1378,8 +1327,12 @@ void end_match()
 	{
 		if(cplayer != winner)
 		{
-			cplayer->firing_left = 0;
-			cplayer->firing_right = 0;
+			if(cplayer->craft->craft_data.left_weapon)
+				cplayer->craft->craft_data.left_weapon->weapon_data.firing = 0;
+
+			if(cplayer->craft->craft_data.right_weapon)
+				cplayer->craft->craft_data.right_weapon->weapon_data.firing = 0;
+			
 			cplayer->craft->craft_data.acc = 0;
 			cplayer->craft->craft_data.rolling_left = 0;
 			cplayer->craft->craft_data.rolling_right = 0;
@@ -1486,6 +1439,9 @@ int game_process_colours(struct player_t *player, struct buffer_t *stream)
 		player->craft->craft_data.shield_red = player->shield_red;
 		player->craft->craft_data.shield_green = player->shield_green;
 		player->craft->craft_data.shield_blue = player->shield_blue;
+		player->craft->craft_data.plasma_red = player->plasma_red;
+		player->craft->craft_data.plasma_green = player->plasma_green;
+		player->craft->craft_data.plasma_blue = player->plasma_blue;
 	}
 	
 	return 1;
@@ -1544,7 +1500,7 @@ void game_process_play(struct player_t *player)
 		}
 		
 		player->state = PLAYER_STATE_PLAYING;
-		player->propagate_info = 1;
+		propagate_player_info_to_all_players(player);
 		num_players++;
 		break;
 	
@@ -1562,7 +1518,7 @@ void game_process_play(struct player_t *player)
 		}
 		
 		player->state = PLAYER_STATE_PLAYING;
-		player->propagate_info = 1;
+		propagate_player_info_to_all_players(player);
 		num_spectators--;
 		num_players++;
 		break;
@@ -2085,6 +2041,7 @@ int game_process_fire_rail(struct player_t *player)
 		return 1;
 	
 	player->rails--;
+	update_player_ammo_levels(player);
 	
 	double sin_theta, cos_theta;
 	sincos(player->craft->craft_data.theta, &sin_theta, &cos_theta);
@@ -2260,7 +2217,7 @@ void detach_weapon(struct entity_t *weapon)
 }
 
 
-void propagate_minigun_start_firing(struct entity_t *entity)
+void propagate_weapon_start_firing(struct entity_t *entity)
 {
 	struct player_t *player = player0;
 
@@ -2268,7 +2225,7 @@ void propagate_minigun_start_firing(struct entity_t *entity)
 	{
 		if(player->propagate_events)
 		{
-			net_emit_uint8(player->conn, EMEVENT_MINIGUN_START_FIRING);
+			net_emit_uint8(player->conn, EMEVENT_WEAPON_START_FIRING);
 			net_emit_uint32(player->conn, game_tick);
 			net_emit_uint32(player->conn, entity->index);
 			net_emit_end_of_stream(player->conn);
@@ -2279,7 +2236,7 @@ void propagate_minigun_start_firing(struct entity_t *entity)
 }
 
 
-void propagate_minigun_stop_firing(struct entity_t *entity)
+void propagate_weapon_stop_firing(struct entity_t *entity)
 {
 	struct player_t *player = player0;
 
@@ -2287,7 +2244,7 @@ void propagate_minigun_stop_firing(struct entity_t *entity)
 	{
 		if(player->propagate_events)
 		{
-			net_emit_uint8(player->conn, EMEVENT_MINIGUN_STOP_FIRING);
+			net_emit_uint8(player->conn, EMEVENT_WEAPON_STOP_FIRING);
 			net_emit_uint32(player->conn, game_tick);
 			net_emit_uint32(player->conn, entity->index);
 			net_emit_end_of_stream(player->conn);
@@ -2320,37 +2277,27 @@ int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 	switch(player->craft->craft_data.left_weapon->weapon_data.type)
 	{
 	case WEAPON_PLASMA_CANNON:
-		player->firing_left = state;
-	
-		if(state && player->craft->craft_data.left_weapon->weapon_data.ammo)
-		{
-			spawn_plasma(player->craft->craft_data.left_weapon, player);
-			player->firing_left_start = game_tick + 1;
-			player->left_fired = 0;
-			player->craft->craft_data.left_weapon->weapon_data.ammo--;
-		}
-
-		break;
-	
 	case WEAPON_MINIGUN:
-		player->firing_left = state;
+		
+		if(player->craft->craft_data.left_weapon->weapon_data.firing == state)
+			break;
+
+		player->craft->craft_data.left_weapon->weapon_data.firing = state;
 	
 		if(state)
 		{
 			if(player->craft->craft_data.left_weapon->weapon_data.ammo)
 			{
-				spawn_bullet(player->craft->craft_data.left_weapon, player);
-				player->firing_left_start = game_tick + 1;
-				player->left_fired = 0;
-				player->craft->craft_data.left_weapon->weapon_data.ammo--;
-				propagate_minigun_start_firing(player->craft->craft_data.left_weapon);
+				player->craft->craft_data.left_weapon->weapon_data.firing_start = game_tick + 1;
+				player->craft->craft_data.left_weapon->weapon_data.fired = 0;
+				propagate_weapon_start_firing(player->craft->craft_data.left_weapon);
 			}
 		}
 		else
 		{
-			propagate_minigun_stop_firing(player->craft->craft_data.left_weapon);
+			propagate_weapon_stop_firing(player->craft->craft_data.left_weapon);
 		}
-	
+
 		break;
 	
 	case WEAPON_ROCKET_LAUNCHER:
@@ -2359,6 +2306,7 @@ int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 		{
 			spawn_rocket(player->craft->craft_data.left_weapon, player);
 			player->craft->craft_data.left_weapon->weapon_data.ammo--;
+			update_player_ammo_levels(player);
 		}
 		
 		break;
@@ -2390,35 +2338,25 @@ int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 	switch(player->craft->craft_data.right_weapon->weapon_data.type)
 	{
 	case WEAPON_PLASMA_CANNON:
-		player->firing_right = state;
-	
-		if(state && player->craft->craft_data.right_weapon->weapon_data.ammo)
-		{
-			spawn_plasma(player->craft->craft_data.right_weapon, player);
-			player->firing_right_start = game_tick + 1;
-			player->right_fired = 0;
-			player->craft->craft_data.right_weapon->weapon_data.ammo--;
-		}
-
-		break;
-	
 	case WEAPON_MINIGUN:
-		player->firing_right = state;
+		
+		if(player->craft->craft_data.right_weapon->weapon_data.firing == state)
+			break;
+		
+		player->craft->craft_data.right_weapon->weapon_data.firing = state;
 	
 		if(state)
 		{
 			if(player->craft->craft_data.right_weapon->weapon_data.ammo)
 			{
-				spawn_bullet(player->craft->craft_data.right_weapon, player);
-				player->firing_right_start = game_tick + 1;
-				player->right_fired = 0;
-				player->craft->craft_data.right_weapon->weapon_data.ammo--;
-				propagate_minigun_start_firing(player->craft->craft_data.right_weapon);
+				player->craft->craft_data.right_weapon->weapon_data.firing_start = game_tick + 1;
+				player->craft->craft_data.right_weapon->weapon_data.fired = 0;
+				propagate_weapon_start_firing(player->craft->craft_data.right_weapon);
 			}
 		}
 		else
 		{
-			propagate_minigun_stop_firing(player->craft->craft_data.right_weapon);
+			propagate_weapon_stop_firing(player->craft->craft_data.right_weapon);
 		}
 
 		break;
@@ -2429,6 +2367,7 @@ int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 		{
 			spawn_rocket(player->craft->craft_data.right_weapon, player);
 			player->craft->craft_data.right_weapon->weapon_data.ammo--;
+			update_player_ammo_levels(player);
 		}
 		
 		break;
@@ -2450,6 +2389,7 @@ int game_process_drop_mine(struct player_t *player)
 		return 1;
 	
 	player->mines--;
+	update_player_ammo_levels(player);
 	
 	struct entity_t *mine = new_entity(&entity0);
 	

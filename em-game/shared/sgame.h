@@ -49,21 +49,23 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 #define EMNETMSG_MATCH_OVER			(EMMSGCLASS_NETONLY | 0x0a)
 #define EMNETMSG_LOBBY				(EMMSGCLASS_NETONLY | 0x0b)
 
-#define EMEVENT_PULSE					(EMMSGCLASS_EVENT | 0x00)
-#define EMEVENT_PRINT					(EMMSGCLASS_EVENT | 0x01)
-#define EMEVENT_SPAWN_ENT				(EMMSGCLASS_EVENT | 0x02)
-#define EMEVENT_UPDATE_ENT				(EMMSGCLASS_EVENT | 0x03)
-#define EMEVENT_KILL_ENT				(EMMSGCLASS_EVENT | 0x04)
-#define EMEVENT_FOLLOW_ME				(EMMSGCLASS_EVENT | 0x05)
-#define EMEVENT_CARCASS					(EMMSGCLASS_EVENT | 0x06)
-#define EMEVENT_RAILTRAIL				(EMMSGCLASS_EVENT | 0x07)
-#define EMEVENT_DETACH					(EMMSGCLASS_EVENT | 0x08)
-#define EMEVENT_TELEPORT				(EMMSGCLASS_EVENT | 0x09)
-#define EMEVENT_SPEEDUP					(EMMSGCLASS_EVENT | 0x0a)
-#define EMEVENT_EXPLOSION				(EMMSGCLASS_EVENT | 0x0c)
-#define EMEVENT_COLOURS					(EMMSGCLASS_EVENT | 0x0d)
-#define EMEVENT_MINIGUN_START_FIRING	(EMMSGCLASS_EVENT | 0x0e)
-#define EMEVENT_MINIGUN_STOP_FIRING		(EMMSGCLASS_EVENT | 0x0f)
+#define EMEVENT_PULSE				(EMMSGCLASS_EVENT | 0x00)
+#define EMEVENT_PRINT				(EMMSGCLASS_EVENT | 0x01)
+#define EMEVENT_SPAWN_ENT			(EMMSGCLASS_EVENT | 0x02)
+#define EMEVENT_UPDATE_ENT			(EMMSGCLASS_EVENT | 0x03)
+#define EMEVENT_KILL_ENT			(EMMSGCLASS_EVENT | 0x04)
+#define EMEVENT_FOLLOW_ME			(EMMSGCLASS_EVENT | 0x05)
+#define EMEVENT_CARCASS				(EMMSGCLASS_EVENT | 0x06)
+#define EMEVENT_RAILTRAIL			(EMMSGCLASS_EVENT | 0x07)
+#define EMEVENT_DETACH				(EMMSGCLASS_EVENT | 0x08)
+#define EMEVENT_TELEPORT			(EMMSGCLASS_EVENT | 0x09)
+#define EMEVENT_SPEEDUP				(EMMSGCLASS_EVENT | 0x0a)
+#define EMEVENT_EXPLOSION			(EMMSGCLASS_EVENT | 0x0c)
+#define EMEVENT_COLOURS				(EMMSGCLASS_EVENT | 0x0d)
+#define EMEVENT_WEAPON_START_FIRING	(EMMSGCLASS_EVENT | 0x0e)
+#define EMEVENT_WEAPON_STOP_FIRING	(EMMSGCLASS_EVENT | 0x0f)
+#define EMEVENT_SHIELD_STRENGTHS	(EMMSGCLASS_EVENT | 0x10)
+#define EMEVENT_AMMO_LEVELS			(EMMSGCLASS_EVENT | 0x11)
 
 
 
@@ -118,6 +120,7 @@ struct craft_data_t
 	uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
 	uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
 	uint8_t shield_red, shield_green, shield_blue;
+	uint8_t plasma_red, plasma_green, plasma_blue;
 	
 	#ifdef EMSERVER
 	float shield_strength;
@@ -144,16 +147,21 @@ struct weapon_data_t
 	uint8_t shield_red, shield_green, shield_blue;
 	int detached;
 	
-	#ifdef EMSERVER
-	int ammo;
-	float shield_strength;
-	struct pickup_spawn_point_t *spawn_point;
+	uint8_t firing;
+	uint32_t firing_start;
+	uint32_t fired;
+	
 	int original_ownership_defined;
-	int respawned;
 	uint8_t magic_smoke;
 	uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
 	uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
 	uint8_t plasma_red, plasma_green, plasma_blue;
+
+	#ifdef EMSERVER
+	int ammo;
+	float shield_strength;
+	struct pickup_spawn_point_t *spawn_point;
+	int respawned;
 	#endif
 	
 	#ifdef EMCLIENT
@@ -212,6 +220,10 @@ struct bullet_data_t
 
 	#ifdef EMSERVER
 	struct player_t *owner;
+	#endif
+	
+	#ifdef EMCLIENT
+	float old_xdis, old_ydis;
 	#endif
 };
 

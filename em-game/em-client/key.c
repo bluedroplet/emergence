@@ -182,6 +182,9 @@ void init_key()
 
 void kill_key()
 {
+	if(!key_loaded)
+		return;
+	
 	uint8_t msg = KEY_THREAD_IN_SHUTDOWN;
 	write(key_in_pipe[1], &msg, 1);
 	pthread_join(key_thread_id, NULL);

@@ -98,3 +98,24 @@ extern uint32_t game_conn;
 
 extern int game_state;
 extern int game_rendering;
+
+
+extern struct sample_t *plasma_cannon_sample;
+
+
+struct game_state_t
+{
+	uint32_t tick;
+	struct entity_t *entity0;
+	uint32_t follow_me;
+	float craft_shield;
+	float left_shield, right_shield;
+	int rails, mines;
+	int left_ammo, right_ammo;
+	int tainted;
+	
+	struct game_state_t *next;
+		
+};
+
+extern struct game_state_t *cgame_state;

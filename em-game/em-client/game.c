@@ -68,6 +68,7 @@ struct event_craft_data_t
 	uint8_t magic_smoke;
 	uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
 	uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
+	uint8_t plasma_red, plasma_green, plasma_blue;
 	
 	int carcass;	// handled sepatately
 };
@@ -91,6 +92,8 @@ struct event_weapon_data_t
 struct event_rocket_data_t
 {
 	float theta;
+	uint32_t start_tick;
+	uint8_t in_weapon;
 	uint32_t weapon_id;
 	uint8_t magic_smoke;
 	uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
@@ -98,16 +101,25 @@ struct event_rocket_data_t
 };
 
 
+struct event_mine_data_t
+{
+	uint8_t under_craft;
+	uint32_t craft_id;
+};
+
+
 struct event_plasma_data_t
 {
+	uint8_t in_weapon;
 	uint32_t weapon_id;
 	uint8_t red, green, blue;
 };
 
 
-struct event_mine_data_t
+struct event_bullet_data_t
 {
-	uint32_t craft_id;
+	uint8_t in_weapon;
+	uint32_t weapon_id;
 };
 
 
@@ -139,8 +151,9 @@ struct event_t
 			{
 				struct event_craft_data_t craft_data;
 				struct event_weapon_data_t weapon_data;
-				struct event_rocket_data_t rocket_data;
 				struct event_plasma_data_t plasma_data;
+				struct event_bullet_data_t bullet_data;
+				struct event_rocket_data_t rocket_data;
 				struct event_mine_data_t mine_data;
 			};
 			
@@ -186,8 +199,23 @@ struct event_t
 			uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
 			uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
 			uint8_t shield_red, shield_green, shield_blue;
+			uint8_t plasma_red, plasma_green, plasma_blue;
 			
 		} colours_data;
+		
+		struct
+		{
+			float craft_shield;
+			float left_shield, right_shield;
+			
+		} shield_strengths_data;
+		
+		struct
+		{
+			int rails, mines;
+			int left, right;
+			
+		} ammo_levels_data;
 	};
 	
 	struct event_t *next;
@@ -257,19 +285,7 @@ struct ris_t *ris_plasma, *ris_craft_shield, *ris_weapon_shield,
 
 uint32_t game_conn;
 
-struct game_state_t
-{
-	uint32_t tick;
-	struct entity_t *entity0;
-	uint32_t follow_me;
-	float craft_shield;
-	float left_shield, right_shield;
-	int left_ammo, right_ammo;
-	int tainted;
-	
-	struct game_state_t *next;
-		
-} *game_state0, last_known_game_state, *cgame_state;
+struct game_state_t *game_state0, last_known_game_state, *cgame_state;
 
 
 uint32_t demo_first_tick;
@@ -670,18 +686,29 @@ void read_weapon_data(struct event_weapon_data_t *weapon_data)
 void read_rocket_data(struct event_rocket_data_t *rocket_data)
 {
 	rocket_data->theta = message_reader_read_float();
+	rocket_data->start_tick = message_reader_read_uint32();
+	rocket_data->in_weapon = message_reader_read_uint8();
 	rocket_data->weapon_id = message_reader_read_uint32();
 }
 
 
 void read_plasma_data(struct event_plasma_data_t *plasma_data)
 {
+	plasma_data->in_weapon = message_reader_read_uint8();
 	plasma_data->weapon_id = message_reader_read_uint32();
+}
+
+
+void read_bullet_data(struct event_bullet_data_t *bullet_data)
+{
+	bullet_data->in_weapon = message_reader_read_uint8();
+	bullet_data->weapon_id = message_reader_read_uint32();
 }
 
 
 void read_mine_data(struct event_mine_data_t *mine_data)
 {
+	mine_data->under_craft = message_reader_read_uint8();
 	mine_data->craft_id = message_reader_read_uint32();
 }
 
@@ -1173,6 +1200,10 @@ void add_spawn_ent_event(struct event_t *event)
 		event->ent_data.craft_data.shield_green = message_reader_read_uint8();
 		event->ent_data.craft_data.shield_blue = message_reader_read_uint8();
 	
+		event->ent_data.craft_data.plasma_red = message_reader_read_uint8();
+		event->ent_data.craft_data.plasma_green = message_reader_read_uint8();
+		event->ent_data.craft_data.plasma_blue = message_reader_read_uint8();
+	
 		event->ent_data.craft_data.carcass = message_reader_read_uint8();
 		break;
 	
@@ -1188,10 +1219,14 @@ void add_spawn_ent_event(struct event_t *event)
 	
 	case ENT_PLASMA:
 		read_plasma_data(&event->ent_data.plasma_data);
-	
+
 		event->ent_data.plasma_data.red = message_reader_read_uint8();
 		event->ent_data.plasma_data.green = message_reader_read_uint8();
 		event->ent_data.plasma_data.blue = message_reader_read_uint8();
+		break;
+	
+	case ENT_BULLET:
+		read_bullet_data(&event->ent_data.bullet_data);
 		break;
 	
 	case ENT_ROCKET:
@@ -1260,6 +1295,10 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->craft_data.shield_green = event->ent_data.craft_data.shield_green;
 		entity->craft_data.shield_blue = event->ent_data.craft_data.shield_blue;
 	
+		entity->craft_data.plasma_red = event->ent_data.craft_data.plasma_red;
+		entity->craft_data.plasma_green = event->ent_data.craft_data.plasma_green;
+		entity->craft_data.plasma_blue = event->ent_data.craft_data.plasma_blue;
+	
 		entity->craft_data.carcass = event->ent_data.craft_data.carcass;
 	
 		entity->craft_data.skin = event->ent_data.skin;
@@ -1298,21 +1337,25 @@ void process_spawn_ent_event(struct event_t *event)
 		}
 		
 		break;
-	
+		
 	case ENT_PLASMA:
-		entity->plasma_data.in_weapon = 1;
+		entity->plasma_data.in_weapon = event->ent_data.plasma_data.in_weapon;
 		entity->plasma_data.weapon_id = event->ent_data.plasma_data.weapon_id;
-	
+		
 		entity->plasma_data.red = event->ent_data.plasma_data.red;
 		entity->plasma_data.green = event->ent_data.plasma_data.green;
 		entity->plasma_data.blue = event->ent_data.plasma_data.blue;
-		start_sample(plasma_cannon_sample, event->tick);
+		break;
+	
+	case ENT_BULLET:
+		entity->bullet_data.in_weapon = event->ent_data.bullet_data.in_weapon;
+		entity->bullet_data.weapon_id = event->ent_data.bullet_data.weapon_id;
 		break;
 	
 	case ENT_ROCKET:
 		entity->rocket_data.theta = event->ent_data.rocket_data.theta;
-		entity->rocket_data.start_tick = cgame_tick;
-		entity->rocket_data.in_weapon = 1;
+		entity->rocket_data.start_tick = event->ent_data.rocket_data.start_tick;
+		entity->rocket_data.in_weapon = event->ent_data.rocket_data.in_weapon;
 		entity->rocket_data.weapon_id = event->ent_data.rocket_data.weapon_id;
 	
 		entity->rocket_data.magic_smoke = event->ent_data.rocket_data.magic_smoke;
@@ -1328,7 +1371,7 @@ void process_spawn_ent_event(struct event_t *event)
 		break;
 	
 	case ENT_MINE:
-		entity->mine_data.under_craft = 1;
+		entity->mine_data.under_craft = event->ent_data.mine_data.under_craft;
 		entity->mine_data.craft_id = event->ent_data.mine_data.craft_id;
 		break;
 	}
@@ -1648,6 +1691,10 @@ void add_colours_event(struct event_t *event)
 		event->colours_data.shield_red = message_reader_read_uint8();
 		event->colours_data.shield_green = message_reader_read_uint8();
 		event->colours_data.shield_blue = message_reader_read_uint8();
+	
+		event->colours_data.plasma_red = message_reader_read_uint8();
+		event->colours_data.plasma_green = message_reader_read_uint8();
+		event->colours_data.plasma_blue = message_reader_read_uint8();
 		break;
 	
 	case ENT_WEAPON:
@@ -1682,6 +1729,10 @@ void process_colours_event(struct event_t *event)
 		entity->craft_data.shield_red = event->colours_data.shield_red;
 		entity->craft_data.shield_green = event->colours_data.shield_green;
 		entity->craft_data.shield_blue = event->colours_data.shield_blue;
+	
+		entity->craft_data.plasma_red = event->colours_data.plasma_red;
+		entity->craft_data.plasma_green = event->colours_data.plasma_green;
+		entity->craft_data.plasma_blue = event->colours_data.plasma_blue;
 		break;
 	
 	case ENT_WEAPON:
@@ -1693,33 +1744,73 @@ void process_colours_event(struct event_t *event)
 }
 
 
-void add_minigun_start_firing_event(struct event_t *event)
+void add_weapon_start_firing_event(struct event_t *event)
 {
 	event->ent_data.index = message_reader_read_uint32();
 }
 
 
-void process_minigun_start_firing_event(struct event_t *event)
+void process_weapon_start_firing_event(struct event_t *event)
 {
 	struct entity_t *entity = get_entity(centity0, event->ent_data.index);
 
 	if(!entity)
 		return;
+	
+	entity->weapon_data.firing = 1;
+	entity->weapon_data.firing_start = cgame_tick + 1;
+	entity->weapon_data.fired = 0;
 }
 
 
-void add_minigun_stop_firing_event(struct event_t *event)
+void add_weapon_stop_firing_event(struct event_t *event)
 {
 	event->ent_data.index = message_reader_read_uint32();
 }
 
 
-void process_minigun_stop_firing_event(struct event_t *event)
+void process_weapon_stop_firing_event(struct event_t *event)
 {
 	struct entity_t *entity = get_entity(centity0, event->ent_data.index);
 
 	if(!entity)
 		return;
+
+	entity->weapon_data.firing = 0;
+}
+
+
+void add_shield_strengths_event(struct event_t *event)
+{
+	event->shield_strengths_data.craft_shield = message_reader_read_float();
+	event->shield_strengths_data.left_shield = message_reader_read_float();
+	event->shield_strengths_data.right_shield = message_reader_read_float();
+}
+
+
+void process_shield_strengths_event(struct event_t *event)
+{
+	cgame_state->craft_shield = event->shield_strengths_data.craft_shield;
+	cgame_state->left_shield = event->shield_strengths_data.left_shield;
+	cgame_state->right_shield = event->shield_strengths_data.right_shield;
+}
+
+
+void add_ammo_levels_event(struct event_t *event)
+{
+	event->ammo_levels_data.rails = message_reader_read_int();
+	event->ammo_levels_data.mines = message_reader_read_int();
+	event->ammo_levels_data.left = message_reader_read_int();
+	event->ammo_levels_data.right = message_reader_read_int();
+}
+
+
+void process_ammo_levels_event(struct event_t *event)
+{
+	cgame_state->rails = event->ammo_levels_data.rails;
+	cgame_state->mines = event->ammo_levels_data.mines;
+	cgame_state->left_ammo = event->ammo_levels_data.left;
+	cgame_state->right_ammo = event->ammo_levels_data.right;
 }
 
 
@@ -1782,12 +1873,20 @@ void process_tick_events(uint32_t tick)
 				process_colours_event(event);
 				break;
 			
-			case EMEVENT_MINIGUN_START_FIRING:
-				process_minigun_start_firing_event(event);
+			case EMEVENT_WEAPON_START_FIRING:
+				process_weapon_start_firing_event(event);
 				break;
 				
-			case EMEVENT_MINIGUN_STOP_FIRING:
-				process_minigun_stop_firing_event(event);
+			case EMEVENT_WEAPON_STOP_FIRING:
+				process_weapon_stop_firing_event(event);
+				break;
+				
+			case EMEVENT_SHIELD_STRENGTHS:
+				process_shield_strengths_event(event);
+				break;
+				
+			case EMEVENT_AMMO_LEVELS:
+				process_ammo_levels_event(event);
 				break;
 			}
 			
@@ -1866,12 +1965,20 @@ int process_tick_events_do_not_remove(uint32_t tick)
 				process_colours_event(event);
 				break;
 			
-			case EMEVENT_MINIGUN_START_FIRING:
-				process_minigun_start_firing_event(event);
+			case EMEVENT_WEAPON_START_FIRING:
+				process_weapon_start_firing_event(event);
 				break;
 				
-			case EMEVENT_MINIGUN_STOP_FIRING:
-				process_minigun_stop_firing_event(event);
+			case EMEVENT_WEAPON_STOP_FIRING:
+				process_weapon_stop_firing_event(event);
+				break;
+				
+			case EMEVENT_SHIELD_STRENGTHS:
+				process_shield_strengths_event(event);
+				break;
+				
+			case EMEVENT_AMMO_LEVELS:
+				process_ammo_levels_event(event);
 				break;
 			}
 			
@@ -2015,12 +2122,20 @@ int game_demo_process_event()
 		add_colours_event(&event);
 		break;
 			
-	case EMEVENT_MINIGUN_START_FIRING:
-		add_minigun_start_firing_event(&event);
+	case EMEVENT_WEAPON_START_FIRING:
+		add_weapon_start_firing_event(&event);
 		break;
 		
-	case EMEVENT_MINIGUN_STOP_FIRING:
-		add_minigun_stop_firing_event(&event);
+	case EMEVENT_WEAPON_STOP_FIRING:
+		add_weapon_stop_firing_event(&event);
+		break;
+		
+	case EMEVENT_SHIELD_STRENGTHS:
+		add_shield_strengths_event(&event);
+		break;
+		
+	case EMEVENT_AMMO_LEVELS:
+		add_ammo_levels_event(&event);
 		break;
 	}
 	
@@ -2085,12 +2200,20 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp)
 		add_colours_event(&event);
 		break;
 	
-	case EMEVENT_MINIGUN_START_FIRING:
-		add_minigun_start_firing_event(&event);
+	case EMEVENT_WEAPON_START_FIRING:
+		add_weapon_start_firing_event(&event);
 		break;
 	
-	case EMEVENT_MINIGUN_STOP_FIRING:
-		add_minigun_stop_firing_event(&event);
+	case EMEVENT_WEAPON_STOP_FIRING:
+		add_weapon_stop_firing_event(&event);
+		break;
+		
+	case EMEVENT_SHIELD_STRENGTHS:
+		add_shield_strengths_event(&event);
+		break;
+		
+	case EMEVENT_AMMO_LEVELS:
+		add_ammo_levels_event(&event);
 		break;
 	}
 	
@@ -2154,12 +2277,20 @@ int game_process_event_untimed(uint32_t index)
 		add_colours_event(&event);
 		break;
 	
-	case EMEVENT_MINIGUN_START_FIRING:
-		add_minigun_start_firing_event(&event);
+	case EMEVENT_WEAPON_START_FIRING:
+		add_weapon_start_firing_event(&event);
 		break;
 	
-	case EMEVENT_MINIGUN_STOP_FIRING:
-		add_minigun_stop_firing_event(&event);
+	case EMEVENT_WEAPON_STOP_FIRING:
+		add_weapon_stop_firing_event(&event);
+		break;
+		
+	case EMEVENT_SHIELD_STRENGTHS:
+		add_shield_strengths_event(&event);
+		break;
+		
+	case EMEVENT_AMMO_LEVELS:
+		add_ammo_levels_event(&event);
 		break;
 	}
 	
@@ -2220,12 +2351,20 @@ int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp)
 		add_colours_event(&event);
 		break;
 	
-	case EMEVENT_MINIGUN_START_FIRING:
-		add_minigun_start_firing_event(&event);
+	case EMEVENT_WEAPON_START_FIRING:
+		add_weapon_start_firing_event(&event);
 		break;
 	
-	case EMEVENT_MINIGUN_STOP_FIRING:
-		add_minigun_stop_firing_event(&event);
+	case EMEVENT_WEAPON_STOP_FIRING:
+		add_weapon_stop_firing_event(&event);
+		break;
+		
+	case EMEVENT_SHIELD_STRENGTHS:
+		add_shield_strengths_event(&event);
+		break;
+		
+	case EMEVENT_AMMO_LEVELS:
+		add_ammo_levels_event(&event);
 		break;
 	}
 	
@@ -2284,12 +2423,20 @@ int game_process_event_untimed_ooo(uint32_t index)
 		add_colours_event(&event);
 		break;
 	
-	case EMEVENT_MINIGUN_START_FIRING:
-		add_minigun_start_firing_event(&event);
+	case EMEVENT_WEAPON_START_FIRING:
+		add_weapon_start_firing_event(&event);
 		break;
 	
-	case EMEVENT_MINIGUN_STOP_FIRING:
-		add_minigun_stop_firing_event(&event);
+	case EMEVENT_WEAPON_STOP_FIRING:
+		add_weapon_stop_firing_event(&event);
+		break;
+		
+	case EMEVENT_SHIELD_STRENGTHS:
+		add_shield_strengths_event(&event);
+		break;
+		
+	case EMEVENT_AMMO_LEVELS:
+		add_ammo_levels_event(&event);
 		break;
 	}
 	
@@ -3548,6 +3695,20 @@ void render_entities()
 		
 			
 		case ENT_BULLET:
+			world_to_screen(entity->bullet_data.old_xdis, entity->bullet_data.old_ydis, 
+				&params.x1, &params.y1);
+			world_to_screen(entity->xdis, entity->ydis, 
+				&params.x2, &params.y2);
+		
+			params.red = 0xff;
+			params.green = 0xff;
+			params.blue = 0xff;
+			
+			draw_line(&params);
+		
+			entity->bullet_data.old_xdis = entity->xdis;
+			entity->bullet_data.old_ydis = entity->ydis;
+		
 			break;
 		
 		
@@ -3737,6 +3898,8 @@ void duplicate_game_state(struct game_state_t *old_game_state, struct game_state
 	new_game_state->craft_shield = old_game_state->craft_shield;
 	new_game_state->left_shield = old_game_state->left_shield;
 	new_game_state->right_shield = old_game_state->right_shield;
+	new_game_state->rails = old_game_state->rails;
+	new_game_state->mines = old_game_state->mines;
 	new_game_state->left_ammo = old_game_state->left_ammo;
 	new_game_state->right_ammo = old_game_state->right_ammo;
 }
@@ -4320,8 +4483,6 @@ void render_player_info()
 				"%i", cplayer->frags);
 		}
 		
-		
-		
 		y += 14;
 		cplayer = cplayer->next;
 	}
@@ -4433,7 +4594,37 @@ void render_match_info()
 
 void render_health_and_ammo()
 {
-	;
+	if(r_DrawConsole)
+		return;
+	
+	blit_text_centered(vid_width / 2, vid_height * 5 / 6, 0xff, 0xff, 0xff, 
+		s_backbuffer, "%.0f", round(cgame_state->craft_shield * 100.0));
+
+	blit_text_centered(vid_width / 2, vid_height * 16 / 18, 0xff, 0, 0, 
+		s_backbuffer, "%u", cgame_state->rails);
+
+	blit_text_centered(vid_width / 2, vid_height * 17 / 18, 0xff, 0, 0, 
+		s_backbuffer, "%u", cgame_state->mines);
+
+	struct entity_t *craft = get_entity(centity0, cgame_state->follow_me);
+
+	if(craft->craft_data.left_weapon)
+	{
+		blit_text_centered(vid_width * 8 / 18, vid_height * 5 / 6, 0xff, 0xff, 0xff, 
+			s_backbuffer, "%.0f", round(cgame_state->left_shield * 100.0));
+
+		blit_text_centered(vid_width * 8 / 18, vid_height * 16 / 18, 0xff, 0, 0, 
+			s_backbuffer, "%u", cgame_state->left_ammo);
+	}
+
+	if(craft->craft_data.right_weapon)
+	{
+		blit_text_centered(vid_width * 10 / 18, vid_height * 5 / 6, 0xff, 0xff, 0xff, 
+			s_backbuffer, "%.0f", round(cgame_state->right_shield * 100.0));
+
+		blit_text_centered(vid_width * 10 / 18, vid_height * 16 / 18, 0xff, 0, 0, 
+			s_backbuffer, "%u", cgame_state->right_ammo);
+	}
 }
 
 

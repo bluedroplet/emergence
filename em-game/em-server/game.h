@@ -24,10 +24,6 @@ struct player_t
 	int rails;
 	int mines;
 	
-	uint32_t firing_left, firing_right;
-	uint32_t firing_left_start, firing_right_start;
-	uint32_t left_fired, right_fired;
-	
 	int frags;
 	int propagate_info;
 	

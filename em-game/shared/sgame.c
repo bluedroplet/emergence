@@ -295,6 +295,7 @@ struct player_t *get_weapon_owner(struct entity_t *weapon)
 }
 #endif
 
+
 int point_in_circle(double px, double py, double cx, double cy, double cr)
 {
 	double xdist = px - cx;
@@ -662,6 +663,20 @@ void craft_flare(struct entity_t *craft, double force)
 }
 
 
+#ifdef EMCLIENT
+void craft_force(struct entity_t *craft, double force)
+{
+	if(!craft->craft_data.carcass)
+	{
+		if(cgame_state->follow_me == craft->index)
+			cgame_state->craft_shield -= force;
+		
+		craft_flare(craft, force);
+	}
+}
+#endif
+
+
 #ifdef EMSERVER
 void explode_craft(struct entity_t *craft, struct player_t *responsibility);
 int craft_force(struct entity_t *craft, double force, struct player_t *responsibility)
@@ -710,6 +725,25 @@ void weapon_flare(struct entity_t *weapon, double force)
 	weapon->weapon_data.shield_flare += force * 40.0;
 	weapon->weapon_data.shield_flare = min(weapon->weapon_data.shield_flare, 1.0);
 }
+
+
+#ifdef EMCLIENT
+void weapon_force(struct entity_t *weapon, double force)
+{
+	if(weapon->weapon_data.craft)
+	{
+		if(cgame_state->follow_me == weapon->weapon_data.craft->index)
+		{
+			if(weapon->weapon_data.craft->craft_data.left_weapon == weapon)
+				cgame_state->left_shield -= force;
+			else
+				cgame_state->right_shield -= force;
+		}
+	}
+		
+	weapon_flare(weapon, force);
+}
+#endif
 
 
 #ifdef EMSERVER
@@ -761,6 +795,7 @@ int mine_force(struct entity_t *mine, double force)
 {
 	if(force > MINE_FORCE_THRESHOLD)
 	{
+		remove_entity_from_all_players(mine);
 		destroy_mine(mine);
 		return 1;
 	}
@@ -802,19 +837,13 @@ void splash_force(float x, float y, float force, struct player_t *responsibility
 	
 	while(entity)
 	{
-		if(entity->teleporting)
+		if(entity->type == ENT_BULLET || entity->teleporting || entity->kill_me)
 		{
 			entity = entity->next;
 			continue;
 		}
-		
+			
 		if(line_walk_bsp_tree(x, y, entity->xdis, entity->ydis))
-		{
-			entity = entity->next;
-			continue;
-		}
-		
-		if(entity->kill_me)
 		{
 			entity = entity->next;
 			continue;
@@ -826,11 +855,8 @@ void splash_force(float x, float y, float force, struct player_t *responsibility
 		double dist = sqrt(dist_squared);
 		double att_force = force / dist_squared;
 		
-	//	if(entity->type != ENT_PLASMA)
-	//	{
-			entity->xvel += (xdist / dist) * att_force * FORCE_VELOCITY_MULTIPLIER;
-			entity->yvel += (ydist / dist) * att_force * FORCE_VELOCITY_MULTIPLIER;
-	//	}
+		entity->xvel += (xdist / dist) * att_force * FORCE_VELOCITY_MULTIPLIER;
+		entity->yvel += (ydist / dist) * att_force * FORCE_VELOCITY_MULTIPLIER;
 
 		int in_tick = entity->in_tick;
 		entity->in_tick = 1;
@@ -839,10 +865,18 @@ void splash_force(float x, float y, float force, struct player_t *responsibility
 		{
 		case ENT_CRAFT:
 			craft_force(entity, att_force, responsibility);
+		
+			if(!entity->kill_me)
+				update_player_shield_strengths(entity->craft_data.owner);
+			
 			break;
 		
 		case ENT_WEAPON:
 			weapon_force(entity, att_force, responsibility);
+		
+			if(!entity->kill_me && entity->weapon_data.craft)
+				update_player_shield_strengths(entity->weapon_data.craft->craft_data.owner);
+			
 			break;
 		
 		case ENT_ROCKET:
@@ -995,8 +1029,8 @@ void craft_craft_collision(struct entity_t *craft1, struct entity_t *craft2)
 	#endif
 	
 	#ifdef EMCLIENT
-	craft_flare(craft1, hypot(craft2->xvel, craft2->yvel) * VELOCITY_FORCE_MULTIPLIER);
-	craft_flare(craft2, hypot(craft1->xvel, craft1->yvel) * VELOCITY_FORCE_MULTIPLIER);
+	craft_force(craft1, hypot(craft2->xvel, craft2->yvel) * VELOCITY_FORCE_MULTIPLIER);
+	craft_force(craft2, hypot(craft1->xvel, craft1->yvel) * VELOCITY_FORCE_MULTIPLIER);
 	#endif
 	
 	if(!craft1->kill_me && !craft2->kill_me)
@@ -1016,9 +1050,9 @@ void craft_weapon_collision(struct entity_t *craft, struct entity_t *weapon)
 	#endif
 	
 	#ifdef EMCLIENT
-	craft_flare(craft, hypot(weapon->xvel, weapon->yvel) * (WEAPON_MASS / CRAFT_MASS) * 
+	craft_force(craft, hypot(weapon->xvel, weapon->yvel) * (WEAPON_MASS / CRAFT_MASS) * 
 		VELOCITY_FORCE_MULTIPLIER);
-	weapon_flare(weapon, hypot(craft->xvel, craft->yvel) * (CRAFT_MASS / WEAPON_MASS) * 
+	weapon_force(weapon, hypot(craft->xvel, craft->yvel) * (CRAFT_MASS / WEAPON_MASS) * 
 			VELOCITY_FORCE_MULTIPLIER);
 	#endif
 	
@@ -1034,7 +1068,7 @@ void craft_plasma_collision(struct entity_t *craft, struct entity_t *plasma)
 	#endif
 	
 	#ifdef EMCLIENT
-	craft_flare(craft, PLASMA_DAMAGE);
+	craft_force(craft, PLASMA_DAMAGE);
 	#endif
 	
 	plasma->kill_me = 1;
@@ -1048,7 +1082,7 @@ void craft_bullet_collision(struct entity_t *craft, struct entity_t *bullet)
 	#endif
 	
 	#ifdef EMCLIENT
-	craft_flare(craft, BULLET_DAMAGE);
+	craft_force(craft, BULLET_DAMAGE);
 	#endif
 	
 	bullet->kill_me = 1;
@@ -1060,6 +1094,7 @@ void craft_rails_collision(struct entity_t *craft, struct entity_t *rails)
 	#ifdef EMSERVER
 	craft->craft_data.owner->rails = min(CRAFT_MAX_RAILS, 
 		craft->craft_data.owner->rails + rails->rails_data.quantity);
+	update_player_ammo_levels(craft->craft_data.owner);
 	
 	schedule_respawn(rails->rails_data.spawn_point);
 	#endif
@@ -1073,6 +1108,7 @@ void craft_shield_collision(struct entity_t *craft, struct entity_t *shield)
 	#ifdef EMSERVER
 	craft->craft_data.shield_strength = min(1.0, 
 		craft->craft_data.shield_strength + shield->shield_data.strength);
+	update_player_shield_strengths(craft->craft_data.owner);
 	#endif
 	
 	destroy_shield(shield);
@@ -1091,8 +1127,8 @@ void weapon_weapon_collision(struct entity_t *weapon1, struct entity_t *weapon2)
 	#endif
 
 	#ifdef EMCLIENT
-	weapon_flare(weapon1, hypot(weapon2->xvel, weapon2->yvel) * VELOCITY_FORCE_MULTIPLIER);
-	weapon_flare(weapon2, hypot(weapon1->xvel, weapon1->yvel) * VELOCITY_FORCE_MULTIPLIER);
+	weapon_force(weapon1, hypot(weapon2->xvel, weapon2->yvel) * VELOCITY_FORCE_MULTIPLIER);
+	weapon_force(weapon2, hypot(weapon1->xvel, weapon1->yvel) * VELOCITY_FORCE_MULTIPLIER);
 	#endif
 
 	if(!weapon1->kill_me && !weapon2->kill_me)
@@ -1107,7 +1143,7 @@ void weapon_plasma_collision(struct entity_t *weapon, struct entity_t *plasma)
 	#endif
 	
 	#ifdef EMCLIENT
-	weapon_flare(weapon, PLASMA_DAMAGE);
+	weapon_force(weapon, PLASMA_DAMAGE);
 	#endif
 	
 	plasma->kill_me = 1;
@@ -1121,7 +1157,7 @@ void weapon_bullet_collision(struct entity_t *weapon, struct entity_t *bullet)
 	#endif
 	
 	#ifdef EMCLIENT
-	weapon_flare(weapon, BULLET_DAMAGE);
+	weapon_force(weapon, BULLET_DAMAGE);
 	#endif
 	
 	bullet->kill_me = 1;
@@ -1140,7 +1176,7 @@ void weapon_rails_collision(struct entity_t *weapon, struct entity_t *rails)
 	#endif
 	
 	#ifdef EMCLIENT
-	weapon_flare(weapon, hypot(rails->xvel, rails->yvel) * (RAILS_MASS / WEAPON_MASS) * 
+	weapon_force(weapon, hypot(rails->xvel, rails->yvel) * (RAILS_MASS / WEAPON_MASS) * 
 		VELOCITY_FORCE_MULTIPLIER);
 	#endif
 	
@@ -1154,6 +1190,8 @@ void weapon_shield_collision(struct entity_t *weapon, struct entity_t *shield)
 	#ifdef EMSERVER
 	weapon->weapon_data.shield_strength = min(1.0, 
 		weapon->weapon_data.shield_strength + shield->shield_data.strength);
+	if(weapon->weapon_data.craft)
+		update_player_shield_strengths(weapon->weapon_data.craft->craft_data.owner);
 	#endif
 	
 	destroy_shield(shield);
@@ -1491,7 +1529,7 @@ int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 		#endif
 		
 		#ifdef EMCLIENT
-		craft_flare(craft, hypot(craft->xvel, craft->yvel) * VELOCITY_FORCE_MULTIPLIER);
+		craft_force(craft, hypot(craft->xvel, craft->yvel) * VELOCITY_FORCE_MULTIPLIER);
 		#endif
 		
 		entity_wall_bounce(craft, node);
@@ -1717,7 +1755,7 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 		#endif
 		
 		#ifdef EMCLIENT
-		weapon_flare(weapon, hypot(weapon->xvel, weapon->yvel) * VELOCITY_FORCE_MULTIPLIER);
+		weapon_force(weapon, hypot(weapon->xvel, weapon->yvel) * VELOCITY_FORCE_MULTIPLIER);
 		#endif
 		
 		entity_wall_bounce(weapon, node);
@@ -1930,6 +1968,7 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 			craft->craft_data.right_weapon = NULL;
 		
 		weapon->weapon_data.craft = NULL;
+		weapon->weapon_data.firing = 0;
 		craft = NULL;
 	}
 	else
@@ -1948,6 +1987,7 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 			{
 				craft->craft_data.left_weapon = NULL;
 				weapon->weapon_data.craft = NULL;
+				weapon->weapon_data.firing = 0;
 			}
 		}
 		else
@@ -1964,6 +2004,7 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 			{
 				craft->craft_data.right_weapon = NULL;
 				weapon->weapon_data.craft = NULL;
+				weapon->weapon_data.firing = 0;
 			}
 		}
 	}
@@ -2373,6 +2414,63 @@ void s_tick_craft(struct entity_t *craft)
 }
 
 
+void spawn_plasma(struct entity_t *weapon)
+{
+	struct entity_t *plasma = new_entity(sentity0);
+	
+	plasma->type = ENT_PLASMA;
+	
+	plasma->xdis = weapon->xdis;
+	plasma->ydis = weapon->ydis;
+	
+	double sin_theta, cos_theta;
+	sincos(weapon->weapon_data.theta, &sin_theta, &cos_theta);
+	
+	plasma->xvel = weapon->weapon_data.craft->xvel - sin_theta * 8.0;
+	plasma->yvel = weapon->weapon_data.craft->yvel + cos_theta * 8.0;
+	
+	plasma->plasma_data.in_weapon = 1;
+	plasma->plasma_data.weapon_id = weapon->index;
+	
+	plasma->plasma_data.red = weapon->weapon_data.plasma_red;
+	plasma->plasma_data.green = weapon->weapon_data.plasma_green;
+	plasma->plasma_data.blue = weapon->weapon_data.plasma_blue;
+	
+	#ifdef EMSERVER
+	plasma->plasma_data.owner = get_weapon_owner(weapon);
+	#endif
+}
+
+
+void spawn_bullet(struct entity_t *weapon)
+{
+	struct entity_t *bullet = new_entity(sentity0);
+	
+	bullet->type = ENT_BULLET;
+	
+	bullet->xdis = weapon->xdis;
+	bullet->ydis = weapon->ydis;
+	
+	#ifdef EMCLIENT
+	bullet->bullet_data.old_xdis = bullet->xdis;
+	bullet->bullet_data.old_ydis = bullet->ydis;
+	#endif
+	
+	double sin_theta, cos_theta;
+	sincos(weapon->weapon_data.theta, &sin_theta, &cos_theta);
+	
+	bullet->xvel = weapon->weapon_data.craft->xvel - sin_theta * 24.0;
+	bullet->yvel = weapon->weapon_data.craft->yvel + cos_theta * 24.0;
+	
+	bullet->bullet_data.in_weapon = 1;
+	bullet->bullet_data.weapon_id = weapon->index;
+	
+	#ifdef EMSERVER
+	bullet->plasma_data.owner = get_weapon_owner(weapon);
+	#endif
+}
+
+
 void s_tick_weapon(struct entity_t *weapon)
 {
 	weapon->weapon_data.shield_flare = max(0.0, weapon->weapon_data.shield_flare - 0.005);
@@ -2411,6 +2509,78 @@ void s_tick_weapon(struct entity_t *weapon)
 	}
 
 		
+	int fire;
+	
+	if(weapon->weapon_data.firing && weapon->weapon_data.craft)
+	{
+		#ifdef EMSERVER
+		if(weapon->weapon_data.ammo)
+		#endif
+		{
+			switch(weapon->weapon_data.type)
+			{
+			case WEAPON_PLASMA_CANNON:
+				fire = ((cgame_tick - weapon->weapon_data.firing_start) * 20) / 200 
+					- weapon->weapon_data.fired;
+				
+				if(fire > 0)
+				{
+					#ifdef EMCLIENT
+					start_sample(plasma_cannon_sample, cgame_tick);
+					
+					if(cgame_state->follow_me == weapon->weapon_data.craft->index && 
+						weapon->weapon_data.craft->craft_data.left_weapon == weapon)
+						cgame_state->left_ammo--;
+					else
+						cgame_state->right_ammo--;
+					#endif
+					
+					spawn_plasma(weapon);
+					weapon->weapon_data.fired += fire;
+					
+					#ifdef EMSERVER
+					weapon->weapon_data.ammo--;
+					#endif
+				}
+				break;
+				
+			case WEAPON_MINIGUN:
+				fire = ((cgame_tick - weapon->weapon_data.firing_start) * 50) / 200 
+					- weapon->weapon_data.fired;
+				
+				if(fire > 0)
+				{
+					#ifdef EMCLIENT
+					start_sample(plasma_cannon_sample, cgame_tick);
+					
+					if(cgame_state->follow_me == weapon->weapon_data.craft->index && 
+						weapon->weapon_data.craft->craft_data.left_weapon == weapon)
+						cgame_state->left_ammo--;
+					else
+						cgame_state->right_ammo--;
+					#endif
+					
+					spawn_bullet(weapon);
+					weapon->weapon_data.fired += fire;
+					
+					#ifdef EMSERVER
+					weapon->weapon_data.ammo--;
+					#endif
+				}
+				break;
+			}
+		}
+		
+		#ifdef EMSERVER
+		else
+		{
+			weapon->weapon_data.firing = 0;
+			propagate_weapon_stop_firing(weapon);
+		}
+		#endif
+	}
+	
+
 	if(weapon->weapon_data.craft)
 	{
 		struct entity_t *craft = weapon->weapon_data.craft;
@@ -2424,6 +2594,7 @@ void s_tick_weapon(struct entity_t *weapon)
 				craft->craft_data.right_weapon = NULL;
 			
 			weapon->weapon_data.craft = NULL;
+			weapon->weapon_data.firing = 0;
 			craft = NULL;
 		}
 		else
@@ -2442,6 +2613,7 @@ void s_tick_weapon(struct entity_t *weapon)
 				{
 					craft->craft_data.left_weapon = NULL;
 					weapon->weapon_data.craft = NULL;
+					weapon->weapon_data.firing = 0;
 				}
 			}
 			else
@@ -2458,6 +2630,7 @@ void s_tick_weapon(struct entity_t *weapon)
 				{
 					craft->craft_data.right_weapon = NULL;
 					weapon->weapon_data.craft = NULL;
+					weapon->weapon_data.firing = 0;
 				}
 			}
 		}
@@ -2465,6 +2638,7 @@ void s_tick_weapon(struct entity_t *weapon)
 		return;
 	}
 	
+
 	#ifdef EMSERVER
 	struct player_t *owner = get_weapon_owner(weapon);
 	#endif
@@ -2523,7 +2697,7 @@ void s_tick_weapon(struct entity_t *weapon)
 			#endif
 			
 			#ifdef EMCLIENT
-			weapon_flare(weapon, hypot(weapon->xvel, weapon->yvel) * VELOCITY_FORCE_MULTIPLIER);
+			weapon_force(weapon, hypot(weapon->xvel, weapon->yvel) * VELOCITY_FORCE_MULTIPLIER);
 			#endif
 			
 			entity_wall_bounce(weapon, node);
@@ -2663,7 +2837,7 @@ void s_tick_weapon(struct entity_t *weapon)
 				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->x - cos_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->y - sin_theta * speedup_ramp->width / 2.0,
-				xdis, ydis, CRAFT_RADIUS))
+				xdis, ydis, WEAPON_RADIUS))
 			{
 				s = 1;
 				
@@ -2752,8 +2926,8 @@ void s_tick_weapon(struct entity_t *weapon)
 					entity->craft_data.left_weapon = weapon;
 					weapon->weapon_data.craft = entity;
 					craft = entity;
+					weapon->weapon_data.firing = 0;
 					
-					#ifdef EMSERVER
 					if(!weapon->weapon_data.original_ownership_defined)
 					{
 						weapon->weapon_data.shield_red = 
@@ -2766,11 +2940,11 @@ void s_tick_weapon(struct entity_t *weapon)
 						if(weapon->weapon_data.type == WEAPON_PLASMA_CANNON)
 						{
 							weapon->weapon_data.plasma_red = 
-								craft->craft_data.owner->plasma_red;
+								craft->craft_data.plasma_red;
 							weapon->weapon_data.plasma_green = 
-								craft->craft_data.owner->plasma_green;
+								craft->craft_data.plasma_green;
 							weapon->weapon_data.plasma_blue = 
-								craft->craft_data.owner->plasma_blue;
+								craft->craft_data.plasma_blue;
 						}
 
 						weapon->weapon_data.magic_smoke = 
@@ -2790,10 +2964,14 @@ void s_tick_weapon(struct entity_t *weapon)
 						weapon->weapon_data.smoke_end_blue = 
 							craft->craft_data.smoke_end_blue;
 					
-						propagate_colours(weapon);
 						weapon->weapon_data.original_ownership_defined = 1;
 					}
+					
+					#ifdef EMSERVER
+					update_player_shield_strengths(craft->craft_data.owner);
+					update_player_ammo_levels(craft->craft_data.owner);
 					#endif
+					
 					break;
 				}
 				
@@ -2802,8 +2980,8 @@ void s_tick_weapon(struct entity_t *weapon)
 					entity->craft_data.right_weapon = weapon;
 					weapon->weapon_data.craft = entity;
 					craft = entity;
+					weapon->weapon_data.firing = 0;
 					
-					#ifdef EMSERVER
 					if(!weapon->weapon_data.original_ownership_defined)
 					{
 						weapon->weapon_data.shield_red = 
@@ -2816,11 +2994,11 @@ void s_tick_weapon(struct entity_t *weapon)
 						if(weapon->weapon_data.type == WEAPON_PLASMA_CANNON)
 						{
 							weapon->weapon_data.plasma_red = 
-								craft->craft_data.owner->plasma_red;
+								craft->craft_data.plasma_red;
 							weapon->weapon_data.plasma_green = 
-								craft->craft_data.owner->plasma_green;
+								craft->craft_data.plasma_green;
 							weapon->weapon_data.plasma_blue = 
-								craft->craft_data.owner->plasma_blue;
+								craft->craft_data.plasma_blue;
 						}
 
 						weapon->weapon_data.magic_smoke = 
@@ -2840,10 +3018,14 @@ void s_tick_weapon(struct entity_t *weapon)
 						weapon->weapon_data.smoke_end_blue = 
 							craft->craft_data.smoke_end_blue;
 						
-						propagate_colours(weapon);
 						weapon->weapon_data.original_ownership_defined = 1;
 					}
+					
+					#ifdef EMSERVER
+					update_player_shield_strengths(craft->craft_data.owner);
+					update_player_ammo_levels(craft->craft_data.owner);
 					#endif
+					
 					break;
 				}
 			}
@@ -3038,8 +3220,8 @@ void s_tick_bullet(struct entity_t *bullet)
 {
 	apply_gravity_acceleration(bullet);
 	
-	double xdis = bullet->xdis + bullet->xvel;
-	double ydis = bullet->ydis + bullet->yvel;
+	float xdis = bullet->xdis + bullet->xvel;
+	float ydis = bullet->ydis + bullet->yvel;
 	
 	
 	// check for collision against wall
@@ -3140,7 +3322,13 @@ void s_tick_bullet(struct entity_t *bullet)
 		if(line_in_circle(bullet->xdis, bullet->ydis, xdis, ydis, 
 			teleporter->x, teleporter->y, teleporter->radius))
 		{
-			get_teleporter_spawn_point(teleporter, &bullet->xdis, &bullet->ydis);
+			get_teleporter_spawn_point(teleporter, &xdis, &ydis);
+			
+			#ifdef EMCLIENT
+			bullet->bullet_data.old_xdis = xdis;
+			bullet->bullet_data.old_ydis = ydis;
+			#endif
+			
 			break;
 		}
 		
@@ -3392,6 +3580,7 @@ void s_tick_rocket(struct entity_t *rocket)
 				
 				rocket->teleporting = TELEPORTING_DISAPPEARING;
 				rocket->teleporting_tick = cgame_tick;
+				
 				#ifdef EMSERVER
 				emit_teleport_to_all_players();
 				#endif
@@ -3427,6 +3616,7 @@ void s_tick_mine(struct entity_t *mine)
 {
 	if(mine->teleporting)
 	{
+		float teleporter_x, teleporter_y;
 		double time = (double)(cgame_tick - mine->teleporting_tick) / 200.0;
 		if(time > TELEPORT_FADE_TIME)
 		{
@@ -3435,6 +3625,12 @@ void s_tick_mine(struct entity_t *mine)
 			case TELEPORTING_DISAPPEARING:
 				mine->teleporting = TELEPORTING_APPEARING;
 				mine->teleporting_tick = cgame_tick;
+			
+				get_spawn_point_coords(mine->teleport_spawn_index, &teleporter_x, &teleporter_y);
+			
+				// this should really use descrete ticks
+				mine->xdis = teleporter_x - mine->xvel * TELEPORT_FADE_TIME * 200.0;
+				mine->ydis = teleporter_y - mine->yvel * TELEPORT_FADE_TIME * 200.0;
 				break;
 			
 			case TELEPORTING_APPEARING:
@@ -3646,12 +3842,16 @@ void s_tick_mine(struct entity_t *mine)
 			if(circle_in_circle(xdis, ydis, MINE_RADIUS, 
 				teleporter->x, teleporter->y, teleporter->radius))
 			{
-				get_teleporter_spawn_point(teleporter, &mine->xdis, &mine->ydis);
+				mine->teleport_spawn_index = teleporter->spawn_index;
+				
+				mine->teleporting = TELEPORTING_DISAPPEARING;
+				mine->teleporting_tick = cgame_tick;
+				
 				#ifdef EMSERVER
 				emit_teleport_to_all_players();
 				#endif
 				
-				restart = 1;
+			//	restart = 1;
 				break;
 			}
 			
@@ -3674,6 +3874,7 @@ void s_tick_rails(struct entity_t *rails)
 {
 	if(rails->teleporting)
 	{
+		float teleporter_x, teleporter_y;
 		double time = (double)(cgame_tick - rails->teleporting_tick) / 200.0;
 		if(time > TELEPORT_FADE_TIME)
 		{
@@ -3682,6 +3883,12 @@ void s_tick_rails(struct entity_t *rails)
 			case TELEPORTING_DISAPPEARING:
 				rails->teleporting = TELEPORTING_APPEARING;
 				rails->teleporting_tick = cgame_tick;
+			
+				get_spawn_point_coords(rails->teleport_spawn_index, &teleporter_x, &teleporter_y);
+			
+				// this should really use descrete ticks
+				rails->xdis = teleporter_x - rails->xvel * TELEPORT_FADE_TIME * 200.0;
+				rails->ydis = teleporter_y - rails->yvel * TELEPORT_FADE_TIME * 200.0;
 				break;
 			
 			case TELEPORTING_APPEARING:
@@ -3923,6 +4130,7 @@ void s_tick_shield(struct entity_t *shield)
 {
 	if(shield->teleporting)
 	{
+		float teleporter_x, teleporter_y;
 		double time = (double)(cgame_tick - shield->teleporting_tick) / 200.0;
 		if(time > TELEPORT_FADE_TIME)
 		{
@@ -3931,6 +4139,12 @@ void s_tick_shield(struct entity_t *shield)
 			case TELEPORTING_DISAPPEARING:
 				shield->teleporting = TELEPORTING_APPEARING;
 				shield->teleporting_tick = cgame_tick;
+			
+				get_spawn_point_coords(shield->teleport_spawn_index, &teleporter_x, &teleporter_y);
+			
+				// this should really use descrete ticks
+				shield->xdis = teleporter_x - shield->xvel * TELEPORT_FADE_TIME * 200.0;
+				shield->ydis = teleporter_y - shield->yvel * TELEPORT_FADE_TIME * 200.0;
 				break;
 			
 			case TELEPORTING_APPEARING:
