@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+#include <assert.h>
+
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/epoll.h>
@@ -67,7 +69,7 @@ struct vid_mode_t
 		
 } *vid_mode0 = NULL;
 
-int vid_mode;
+int vid_mode = -1;
 int depth;
 
 pthread_mutex_t x_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
@@ -411,6 +413,25 @@ void query_vid_modes()
 		if(modf((double)width / 8, &d) != 0.0)	// make sure 200x200 blocks scale to integer
 									// (change this to integer)
 			continue;
+		
+		struct vid_mode_t *cvid_mode = vid_mode0;
+		int dup = 0;
+			
+		while(cvid_mode)
+		{
+			if(cvid_mode->width == width &&
+				cvid_mode->height == height)
+			{
+				dup = 1;
+				break;
+			}
+			
+			cvid_mode = cvid_mode->next;
+		}
+		
+		if(dup)
+			continue;
+			
 			
 		vid_modes++;
 		
@@ -446,6 +467,40 @@ void query_vid_modes()
 	
 	vid_mode0 = new_vid_mode0;
 	
+	if(vid_mode == -1 || vid_mode >= vid_modes)
+	{
+		// find a nice mode
+	
+		struct vid_mode_t *cvid_mode;
+		int nearest = 0;
+		int dist;
+		
+		assert(vid_mode0);
+		
+		dist = abs(vid_mode0->width - 640);
+			
+		cvid_mode = vid_mode0->next;
+		
+		int m = 1;
+		
+		while(cvid_mode)
+		{
+			int this_dist = abs(cvid_mode->width - 640);
+			
+			if(this_dist < dist)
+			{
+				dist = this_dist;
+				nearest = m;
+			}
+			
+			cvid_mode = cvid_mode->next;
+			m++;
+		}
+		
+		vid_mode = nearest;
+	}
+	
+	
 	Rotation r;
 	original_mode = XRRConfigCurrentConfiguration(screen_config, &r);
 	XRRFreeScreenConfigInfo(screen_config);
@@ -454,6 +509,9 @@ void query_vid_modes()
 
 void set_vid_mode(int mode)	// use goto error crap
 {
+	if(mode >= vid_modes)
+		return;
+	
 	pthread_mutex_lock(&x_mutex);
 	
 	
@@ -582,6 +640,9 @@ void set_vid_mode(int mode)	// use goto error crap
 
 void vid_mode_qc(int mode)
 {
+	if(mode == vid_mode)
+		return;
+	
 	if(mode >= vid_modes)
 		return;
 	
@@ -697,8 +758,8 @@ void init_x()
 	fcntl(x_fd, F_SETFL, O_NONBLOCK);
 	
 	query_vid_modes();
-	set_int_cvar_qc_function("vid_mode", vid_mode_qc);
 	set_vid_mode(vid_mode);
+	set_int_cvar_qc_function("vid_mode", vid_mode_qc);
 
 	pipe(x_render_pipe);
 	fcntl(x_render_pipe[0], F_SETFL, O_NONBLOCK);
@@ -735,11 +796,16 @@ void kill_x()
 	}
 	
 	screen_config = XRRGetScreenInfo(xdisplay, RootWindow(xdisplay, xscreen));
-	XRRSetScreenConfig (xdisplay, screen_config,
-			   RootWindow(xdisplay, xscreen),
-			   original_mode,
-			   RR_Rotate_0,
-			   CurrentTime);
+	
+	Rotation r;
+	if(original_mode != XRRConfigCurrentConfiguration(screen_config, &r))
+	{
+		XRRSetScreenConfig (xdisplay, screen_config,
+				   RootWindow(xdisplay, xscreen),
+				   original_mode,
+				   RR_Rotate_0,
+				   CurrentTime);
+	}
 	
 	XRRFreeScreenConfigInfo(screen_config);
 	
