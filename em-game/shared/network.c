@@ -1715,41 +1715,40 @@ void init_network()
 	console_print("Host: %s\n", hostname);
 
 	struct hostent *hostent;
-	hostent = gethostbyname(hostname);
+	hostent = gethostbyname2(hostname, AF_INET);
 	free(hostname);
 	if(!hostent)
-		#ifdef EMSERVER
-		server_libc_error("gethostbyname failure");
-		#endif
-		#ifdef EMCLIENT
-		client_libc_error("gethostbyname failure");
-		#endif
-
-	struct in_addr **addr = (struct in_addr**)hostent->h_addr_list;
-
-	struct string_t *addr_list = new_string_text(inet_ntoa(**addr));
-
-	addr++;
-
-	int multiple = 0;
-
-	while(*addr)
 	{
-		string_cat_text(addr_list, "; ");
-		string_cat_text(addr_list, inet_ntoa(**addr));
-
-		addr++;
-		multiple = 1;
+		console_print("Error: gethostbyname2 failure; %s\n", strerror(h_errno));
 	}
-
-	create_cvar_string("ipaddr", addr_list->text, CVAR_PROTECTED);
-
-	if(multiple)
-		console_print("IP addresses: %s\n", addr_list->text);
 	else
-		console_print("IP address: %s\n", addr_list->text);
+	{
+		struct in_addr **addr = (struct in_addr**)hostent->h_addr_list;
 	
-	free_string(addr_list);
+		struct string_t *addr_list = new_string_text(inet_ntoa(**addr));
+	
+		addr++;
+	
+		int multiple = 0;
+	
+		while(*addr)
+		{
+			string_cat_text(addr_list, "; ");
+			string_cat_text(addr_list, inet_ntoa(**addr));
+	
+			addr++;
+			multiple = 1;
+		}
+	
+		create_cvar_string("ipaddr", addr_list->text, CVAR_PROTECTED);
+	
+		if(multiple)
+			console_print("IP addresses: %s\n", addr_list->text);
+		else
+			console_print("IP address: %s\n", addr_list->text);
+		
+		free_string(addr_list);
+	}
 
 	udp_fd = socket(PF_INET, SOCK_DGRAM, 0);
 	if(udp_fd < 0)
