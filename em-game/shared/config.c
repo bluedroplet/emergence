@@ -78,7 +78,11 @@ void exec_config_file(char *filename)
 void write_config_file()
 {
 	struct string_t *string = new_string_string(emergence_home_dir);
-	string_cat_text(string, "/nfcl.cfg");
+#ifdef EMCLIENT
+	string_cat_text(string, "/client.config");
+#else
+	string_cat_text(string, "/server.config");
+#endif
 	
 	FILE *file = fopen(string->text, "w");
 	

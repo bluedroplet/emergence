@@ -223,7 +223,7 @@ void init()
 	init_input();
 	
 	struct string_t *string = new_string_string(emergence_home_dir);
-	string_cat_text(string, "/nfcl.cfg");
+	string_cat_text(string, "/client.config");
 	
 	exec_config_file(string->text);
 	
@@ -242,7 +242,7 @@ void init()
 	
 	render_frame();
 	
-/*	string = new_string_text("%s%s", home_dir->text, "/autoexec.cfg");
+/*	string = new_string_text("%s%s", home_dir->text, "/autoexec");
 	
 	exec_config_file(string->text);
 	

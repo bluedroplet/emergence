@@ -452,7 +452,7 @@ void console_keypress(char c)
 void dump_console()
 {
 	struct string_t *string = new_string_string(emergence_home_dir);
-	string_cat_text(string, "/nfcl.log");
+	string_cat_text(string, "/client.log");
 	
 	FILE *file = fopen(string->text, "w");
 	
