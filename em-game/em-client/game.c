@@ -1138,7 +1138,10 @@ int game_process_player_info()
 			{
 				if(cplayer->frags < lowest_player->frags)
 					lowest_player = cplayer;
-				
+				else if(cplayer->frags == lowest_player->frags)
+					if(cplayer->index < lowest_player->index)
+						lowest_player = cplayer;
+			
 				cplayer = cplayer->next;
 			}
 			
