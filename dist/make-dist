@@ -25,8 +25,8 @@ cp em-tools-$ver.tar.bz2 ../dist/em-tools-$ver.tbz2
 cd ../dist
 
 
-for arch in i386 i686 pentiumpro pentium2 pentium3 pentium4 athlon athlon-tbird athlon-xp athlon-mp
-#for arch in pentium3
+#for arch in i386 i686 pentiumpro pentium2 pentium3 pentium4 athlon athlon-tbird athlon-xp athlon-mp
+for arch in pentium3
 do
 
 stage3=i686
@@ -56,12 +56,9 @@ D=`pwd`/../dist/emergence/
 ./configure --prefix=/usr || exit
 make || exit
 make prefix=${D}/usr \
+		    bindir=${D}/usr/bin \
 		    datadir=${D}/usr/share \
-		    infodir=${D}/usr/share/info \
-		    localstatedir=${D}/var/lib \
-		    mandir=${D}/usr/share/man \
-		    sysconfdir=${D}/etc \
-		    install || exit
+			install || exit
 
 cd ../dist/emergence
 
@@ -70,18 +67,15 @@ tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-$ver.bin.$arch.tbz2 * ||
 cd ..
 
 
-#cd ../em-tools
-#make clean
-#
-#./configure --prefix=/usr || exit
-#make || exit
-#make prefix=${D}/usr \
-#		    datadir=${D}/usr/share \
-#		    infodir=${D}/usr/share/info \
-#		    localstatedir=${D}/var/lib \
-#		    mandir=${D}/usr/share/man \
-#		    sysconfdir=${D}/etc \
-#		    install || exit
+cd ../em-tools
+make clean
+
+./configure --prefix=/usr || exit
+make || exit
+make prefix=${D}/usr \
+		    bindir=${D}/usr/bin \
+		    datadir=${D}/usr/share \
+		    install || exit
 
 
 cd ../dist/emergence
@@ -90,9 +84,6 @@ strip usr/bin/* || exit
 
 tar --owner=0 --group=0 --numeric-owner -cjf ../emergence-$ver.bin.$arch.tbz2 * || exit
 
-cd ..
-
-tar --owner=0 --group=0 --numeric-owner -cjf emergence-$ver.bin.$arch.home.tbz2 emergence || exit
 
 cd emergence
 
@@ -109,7 +100,43 @@ rpmbuild -bb emergence.spec
 cp ../../redhat/emergence/i386/emergence-$ver-1.i386.rpm emergence-$ver.$arch.rpm
 
 
+rm -rf emergence
+mkdir emergence
+
+
+cd ../em-game
+
+
+make prefix=${D} \
+		    bindir=${D} \
+		    datadir=${D}/share \
+			pkgdatadir=${D}/share \
+		    install || exit
+
+
+
+cd ../em-tools
+
+make prefix=${D} \
+		    bindir=${D} \
+		    datadir=${D}/share \
+			pkgdatadir=${D}/share \
+		    install || exit
+
+
+cd ../dist
+
+strip emergence/em-client || exit
+strip emergence/em-server || exit
+
+tar --owner=0 --group=0 --numeric-owner -cjf emergence-$ver.bin.$arch.home.tbz2 emergence || exit
+
+
+
+
 done
+
+exit
 
 arch=pentium3
 stage3=pentium3
@@ -131,11 +158,8 @@ D=`pwd`/../dist/emergence/
 ./configure --prefix=/usr --enable-nonauthenticating || exit
 make || exit
 make prefix=${D}/usr \
+		    bindir=${D}/usr/bin \
 		    datadir=${D}/usr/share \
-		    infodir=${D}/usr/share/info \
-		    localstatedir=${D}/var/lib \
-		    mandir=${D}/usr/share/man \
-		    sysconfdir=${D}/etc \
 		    install || exit
 
 cd ../dist/emergence

@@ -24,6 +24,7 @@
 #include "../common/llist.h"
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
+#include "../common/resource.h"
 #include "shared/parse.h"
 #include "../common/user.h"
 #include "shared/timer.h"
@@ -2077,11 +2078,11 @@ void map(char *args)
 	
 
 
-	struct string_t *filename = new_string_text(BR_DATADIR("/emergence/stock-maps/"));
+	struct string_t *filename = new_string_text("stock-maps/");
 	string_cat_text(filename, args);
 	string_cat_text(filename, ".cmap");
 
-	gzFile file = gzopen(filename->text, "rb");
+	gzFile file = gzopen(find_resource(filename->text), "rb");
 	if(!file)
 	{
 		free_string(filename);

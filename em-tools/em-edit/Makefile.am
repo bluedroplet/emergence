@@ -1,5 +1,3 @@
-SUBDIRS = share
-
 LDADD =   @GNOME_LIBS@  ../gsub/libgsub.a ../common/libcommon.a -lm -lpthread -lz -lpng
 AM_CPPFLAGS = $(BINRELOC_CFLAGS) @GNOME_CFLAGS@ -DLINUX -Wall
 

@@ -34,6 +34,7 @@
 
 #include "../common/prefix.h"
 
+#include "../common/resource.h"
 #include "../gsub/gsub.h"
 #include "nodes.h"
 #include "map.h"
@@ -108,7 +109,7 @@ void draw_cameron()
 
 void init_cameron()
 {
-	s_cameron = read_png_surface(BR_DATADIR("/emergence/em-edit/splash.png"));
+	s_cameron = read_png_surface(find_resource("em-edit/splash.png"));
 	cameron_width = s_cameron->width;
 	cameron_height = s_cameron->height;
 }

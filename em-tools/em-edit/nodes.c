@@ -43,6 +43,7 @@
 #include "../common/llist.h"
 #include "../common/stringbuf.h"
 #include "../common/vertex.h"
+#include "../common/resource.h"
 #include "../gsub/gsub.h"
 #include "nodes.h"
 #include "map.h"
@@ -991,9 +992,9 @@ void draw_width_sats()
 
 void init_nodes()
 {
-	s_node = read_png_surface(BR_DATADIR("/emergence/em-edit/node.png"));
-	s_vectsat = read_png_surface(BR_DATADIR("/emergence/em-edit/vect-sat.png"));
-	s_widthsat = read_png_surface(BR_DATADIR("/emergence/em-edit/width-sat.png"));
+	s_node = read_png_surface(find_resource("em-edit/node.png"));
+	s_vectsat = read_png_surface(find_resource("em-edit/vect-sat.png"));
+	s_widthsat = read_png_surface(find_resource("em-edit/width-sat.png"));
 }
 
 

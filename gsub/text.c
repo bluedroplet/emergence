@@ -35,7 +35,7 @@
 #include "../common/prefix.h"
 
 #include "../common/stringbuf.h"
-#include "../common/vertex.h"
+#include "../common/resource.h"
 #include "gsub.h"
 
 uint8_t charlengths[256];
@@ -44,7 +44,7 @@ struct surface_t *smallfont;
 
 void init_text()
 {
-	smallfont = read_png_surface(BR_DATADIR("/emergence/em-client/smallfont.png"));
+	smallfont = read_png_surface(find_resource("em-client/smallfont.png"));
 
 	int i;
 

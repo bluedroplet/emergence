@@ -12,7 +12,15 @@ AC_SUBST(GNOME_LIBS)
 
 AM_BINRELOC
 
+pkgdatadir=${datadir}/emergence
+AC_SUBST(pkgdatadir)
+
+
 AC_OUTPUT(Makefile common/Makefile gsub/Makefile em-edit/Makefile \
-	em-edit/share/Makefile em-skin/Makefile \
-	stock-object-textures/Makefile \
+	em-skin/Makefile \
+
+	share/Makefile \
+	share/em-edit/Makefile \
+	share/stock-object-textures/Makefile \
+
 	pixmaps/Makefile desktop/Makefile)

@@ -1,6 +1,6 @@
 OBJECTS = map3.cmap
 
-sharedatadir = $(datadir)/emergence/stock-maps
+sharedatadir = $(pkgdatadir)/stock-maps
 
 sharedata_DATA = $(OBJECTS)
 EXTRA_DIST = $(OBJECTS)

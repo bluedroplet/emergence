@@ -41,6 +41,7 @@
 #include "../common/prefix.h"
 
 #include "../common/llist.h"
+#include "../common/resource.h"
 #include "../gsub/gsub.h"
 #include "conns.h"
 #include "bezier.h"
@@ -694,7 +695,7 @@ void draw_points()
 
 void init_points()
 {
-	s_pointnode = read_png_surface(BR_DATADIR("/emergence/em-edit/point.png"));
+	s_pointnode = read_png_surface(find_resource("em-edit/point.png"));
 }
 
 

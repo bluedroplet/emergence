@@ -13,6 +13,8 @@
 #include "../common/prefix.h"
 
 #include "../common/types.h"
+#include "../common/resource.h"
+
 #include "shared/cvar.h"
 #include "shared/bsp.h"
 #include "shared/objects.h"
@@ -194,11 +196,11 @@ int load_map(char *map_name)
 	render_frame();
 	
 	
-	struct string_t *map_filename = new_string_text(BR_DATADIR("/emergence/stock-maps/"));
+	struct string_t *map_filename = new_string_text("stock-maps/");
 	string_cat_text(map_filename, map_name);
 	string_cat_text(map_filename, ".cmap");
 
-	gzFile gzfile = gzopen(map_filename->text, "rb");
+	gzFile gzfile = gzopen(find_resource(map_filename->text), "rb");
 	if(!gzfile)
 	{
 		free_string(map_filename);

@@ -43,6 +43,7 @@
 #include "../common/minmax.h"
 #include "../common/llist.h"
 #include "../common/stringbuf.h"
+#include "../common/resource.h"
 #include "../gsub/gsub.h"
 #include "nodes.h"
 #include "conns.h"
@@ -260,7 +261,7 @@ void run_about_box()
 	
 	gchar *translator_credits = "translator_credits";
 
-	GdkPixbuf*  logo_image = gdk_pixbuf_new_from_file(BR_DATADIR("/pixmaps/emergence.png"), NULL);
+	GdkPixbuf*  logo_image = gdk_pixbuf_new_from_file(find_resource("pixmaps/emergence.png"), NULL);
 
 	
 	about = gnome_about_new ("Emergence Editor", VERSION,
@@ -2335,7 +2336,7 @@ void finished_defining_fill()
 
 void init_interface()
 {
-	s_select = read_png_surface(BR_DATADIR("/emergence/em-edit/select.png"));
+	s_select = read_png_surface(find_resource("em-edit/select.png"));
 	init_nodes();
 	init_points();
 	init_objects();

@@ -1,6 +1,6 @@
 OBJECTS = default.skin
 
-sharedatadir = $(datadir)/emergence/stock-skins
+sharedatadir = $(pkgdatadir)/stock-skins
 
 sharedata_DATA = $(OBJECTS)
 EXTRA_DIST = $(OBJECTS)

@@ -16,6 +16,7 @@
 #include <sys/poll.h>
 
 #include "../common/prefix.h"
+#include "../common/resource.h"
 
 #include "../common/types.h"
 #include "../common/stringbuf.h"
@@ -222,7 +223,7 @@ void init()
 	string_cat_text(string, "/client.config");
 	
 	if(!exec_config_file(string->text))
-		exec_config_file(BR_DATADIR("/emergence/em-client/default-controls.config"));
+		exec_config_file(find_resource("em-client/default-controls.config"));
 	
 	free_string(string);
 	
@@ -245,7 +246,7 @@ void init()
 	
 	string = new_string_text("%s%s", emergence_home_dir->text, "/client.autoexec");
 	if(!exec_config_file(string->text))
-		exec_config_file(BR_DATADIR("/emergence/em-client/default-autoexec"));
+		exec_config_file(find_resource("em-client/default-autoexec"));
 	free_string(string);
 }
 

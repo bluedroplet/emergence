@@ -12,11 +12,15 @@ AM_NONAUTHENTICATING
 
 AC_OUTPUT(Makefile common/Makefile gsub/Makefile  \
 	em-client/Makefile em-client/shared/Makefile \
-	em-client/share/Makefile \
 	em-server/Makefile em-server/shared/Makefile \
-	stock-sounds/Makefile \
-	base-maps/Makefile  \
-	stock-skins/Makefile \
-	stock-object-textures/Makefile \
 	pixmaps/Makefile desktop/Makefile \
-	demos/Makefile stock-maps/Makefile)
+
+	share/Makefile \
+	share/em-client/Makefile \
+	share/stock-sounds/Makefile \
+	share/base-maps/Makefile \
+	share/stock-skins/Makefile \
+	share/stock-object-textures/Makefile \
+	share/demos/Makefile \
+	share/stock-maps/Makefile)
+

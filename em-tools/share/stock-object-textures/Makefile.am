@@ -1,13 +1,13 @@
 OBJECTS = rails.png  shield-pickup.png  unowned-minigun.png \
 	unowned-plasma-cannon.png  unowned-rocket-launcher.png
 
-sharedatadir = $(datadir)/emergence/stock-object-textures
+sharedatadir = $(pkgdatadir)/stock-object-textures
 
 sharedata_DATA = $(OBJECTS)
 EXTRA_DIST = $(OBJECTS)
 
 $(OBJECTS):
-	ln -s ../../stock-object-textures/$@
+	ln -s ../../../stock-object-textures/$@
                                                                                                                                
 all: $(OBJECTS)
 

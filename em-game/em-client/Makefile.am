@@ -1,4 +1,4 @@
-SUBDIRS = shared share
+SUBDIRS = shared
 
 AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -DEMCLIENT -Wall -I/usr/X11R6/include/X11/extensions/
 LDADD = ../gsub/libgsub.a shared/libshared.a ../common/libcommon.a ../../../stage3s/current-stage3/usr/lib/libssl.a ../../../stage3s/current-stage3/usr/lib/libcrypto.a

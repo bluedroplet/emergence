@@ -1,7 +1,7 @@
 SOURCES = stock-speedup-ramp.svg
 OBJECTS = $(SOURCES:.svg=.png)
 
-sharedatadir = $(datadir)/emergence/em-edit
+sharedatadir = $(pkgdatadir)/em-edit
 
 sharedata_DATA = splash.png gravity-well-placeholder.png \
 	node.png teleporter-placeholder.png \

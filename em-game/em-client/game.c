@@ -13,12 +13,14 @@
 #include <zlib.h>
 
 #include "../common/prefix.h"
+#include "../common/resource.h"
 
 #include "../common/types.h"
 #include "../common/minmax.h"
 #include "../common/llist.h"
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
+#include "../common/resource.h"
 #include "shared/rdtsc.h"
 #include "shared/cvar.h"
 #include "shared/network.h"
@@ -2346,8 +2348,8 @@ void cf_demo(char *c)
 	
 	if(!gzdemo)
 	{
-		char *filename = br_strcat("/emergence/demos/", demo0->filename->text);
-		gzdemo = gzopen(BR_DATADIR(filename), "rb");
+		char *filename = br_strcat("demos/", demo0->filename->text);
+		gzdemo = gzopen(find_resource(filename), "rb");
 		free(filename);
 		
 		if(!gzdemo)
@@ -3239,7 +3241,7 @@ void update_demo()
 			
 			if(!gzdemo)
 			{
-				char *filename = br_strcat("/emergence/demos/", demo0->filename->text);
+				char *filename = br_strcat("demos/", demo0->filename->text);
 				gzdemo = gzopen(BR_DATADIR(filename), "rb");
 				free(filename);
 				
@@ -3656,15 +3658,15 @@ void init_game()
 	
 	create_cvar_command("suicide", cf_suicide);
 	
-	ris_plasma = load_ri_surface(BR_DATADIR("/emergence/stock-object-textures/plasma.png"));
-	ris_craft_shield = load_ri_surface(BR_DATADIR("/emergence/stock-object-textures/craft-shield.png"));
-	ris_weapon_shield = load_ri_surface(BR_DATADIR("/emergence/stock-object-textures/weapon-shield.png"));
-	ris_shield_pickup = load_ri_surface(BR_DATADIR("/emergence/stock-object-textures/shield-pickup.png"));
-	ris_mine = load_ri_surface(BR_DATADIR("/emergence/stock-object-textures/mine.png"));
+	ris_plasma = load_ri_surface(find_resource("stock-object-textures/plasma.png"));
+	ris_craft_shield = load_ri_surface(find_resource("stock-object-textures/craft-shield.png"));
+	ris_weapon_shield = load_ri_surface(find_resource("stock-object-textures/weapon-shield.png"));
+	ris_shield_pickup = load_ri_surface(find_resource("stock-object-textures/shield-pickup.png"));
+	ris_mine = load_ri_surface(find_resource("stock-object-textures/mine.png"));
 	
-	railgun_sample = load_sample(BR_DATADIR("/emergence/stock-sounds/railgun.ogg"));
-	teleporter_sample = load_sample(BR_DATADIR("/emergence/stock-sounds/teleporter.ogg"));
-	speedup_ramp_sample = load_sample(BR_DATADIR("/emergence/stock-sounds/speedup-ramp.ogg"));
+	railgun_sample = load_sample(find_resource("stock-sounds/railgun.ogg"));
+	teleporter_sample = load_sample(find_resource("stock-sounds/teleporter.ogg"));
+	speedup_ramp_sample = load_sample(find_resource("stock-sounds/speedup-ramp.ogg"));
 }
 
 
