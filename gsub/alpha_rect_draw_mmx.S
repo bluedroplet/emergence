@@ -56,7 +56,7 @@ alpha_rect_draw_mmx:
 			mov al, dl
 		
 			mov esi, vid_redalphalookup
-			mov bx, [esi][ax*2]
+			mov bx, [esi][eax*2]
 		
 			mov ax, cx
 			and ax, 0x7e0
@@ -64,7 +64,7 @@ alpha_rect_draw_mmx:
 			mov al, dl
 		
 			mov esi, vid_greenalphalookup
-			or bx, [esi][ax*2]
+			or bx, [esi][eax*2]
 		
 			mov ax, cx
 			and ax, 0x1f
@@ -72,7 +72,7 @@ alpha_rect_draw_mmx:
 			mov al, dl
 		
 			mov esi, vid_bluealphalookup
-			or bx, [esi][ax*2]
+			or bx, [esi][eax*2]
 		
 			mov ax, 0xff
 		
