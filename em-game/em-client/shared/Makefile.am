@@ -1,4 +1,4 @@
-AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -DEMCLIENT -Wall
+AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -DEMCLIENT -Wall -I../../../stage3s/current-stage3/usr/include/
 
 noinst_LIBRARIES = libshared.a
 libshared_a_SOURCES = bsp.c config.h parse.h sgame.c timer.h \

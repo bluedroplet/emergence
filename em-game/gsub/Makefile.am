@@ -1,4 +1,4 @@
-AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -DPKGDATADIR=\""$(datadir)/emergence/"\" -Wall
+AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -Wall -I../../../stage3s/current-stage3/usr/include/
 
 noinst_LIBRARIES = libgsub.a
 libgsub_a_SOURCES = alpha_pixel_plot_x86.S convert_16bit_to_32bit_mmx.S \

@@ -1,0 +1,4 @@
+rm /var/tmp/portage/alsa-lib-1.0.5-r3 /var/tmp/portage/libsdl-1.2.7-r2 -rf
+
+CFLAGS="-march=i686 -O3 -pipe -fomit-frame-pointer" USE="-jack static" /usr/sbin/ebuild /usr/portage/media-libs/alsa-lib/alsa-lib-1.0.5-r3.ebuild install
+CFLAGS="-march=i686 -O3 -pipe -fomit-frame-pointer" USE="X -aalib alsa arts -dga -directfb esd -fbcon -ggi -libcaca nas -noaudio nojoystick novideo -opengl oss -svga -xinerama -xv" /usr/sbin/ebuild /usr/portage/media-libs/libsdl/libsdl-1.2.7-r2.ebuild install
