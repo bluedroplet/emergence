@@ -2174,6 +2174,7 @@ void render_entities()
 	struct blit_params_t params;
 	params.dest = s_backbuffer;
 	double time;
+	int f;
 
 	while(entity)
 	{
@@ -2183,11 +2184,21 @@ void render_entities()
 		{
 		case ENT_CRAFT:
 			
+			while(entity->craft_data.theta >= M_PI)
+				entity->craft_data.theta -= 2 * M_PI;
+			
+			while(entity->craft_data.theta < -M_PI)
+				entity->craft_data.theta += 2 * M_PI;
+		
 			params.source = entity->craft_data.surface;
 		
 			params.source_x = 0;
-			params.source_y = (lrint((entity->craft_data.theta / (2 * M_PI) + 0.5) * ROTATIONS) % 
-				ROTATIONS) * entity->craft_data.surface->width;
+			
+			f = lrint((entity->craft_data.theta / (2 * M_PI) + 0.5) * ROTATIONS);
+			
+			assert(f >= 0);
+			
+			params.source_y = (f % ROTATIONS) * entity->craft_data.surface->width;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
@@ -2236,9 +2247,21 @@ void render_entities()
 		case ENT_WEAPON:
 			params.source = entity->weapon_data.surface;
 		
+			while(entity->weapon_data.theta >= M_PI)
+				entity->weapon_data.theta -= 2 * M_PI;
+			
+			while(entity->weapon_data.theta < -M_PI)
+				entity->weapon_data.theta += 2 * M_PI;
+		
+			params.source = entity->weapon_data.surface;
+		
 			params.source_x = 0;
-			params.source_y = (lrint((entity->weapon_data.theta / (2 * M_PI) + 0.5) * ROTATIONS) % 
-				ROTATIONS) * entity->weapon_data.surface->width;
+			
+			f = lrint((entity->weapon_data.theta / (2 * M_PI) + 0.5) * ROTATIONS);
+			
+			assert(f >= 0);
+			
+			params.source_y = (f % ROTATIONS) * entity->weapon_data.surface->width;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
