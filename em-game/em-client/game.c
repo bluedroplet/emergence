@@ -20,6 +20,7 @@
 #include "../shared/rdtsc.h"
 #include "../shared/cvar.h"
 #include "../shared/network.h"
+#include "particles.h"
 #include "../shared/sgame.h"
 #include "rcon.h"
 #include "map.h"
@@ -32,7 +33,6 @@
 #include "tick.h"
 #include "skin.h"
 #include "game.h"
-#include "particles.h"
 #include "line.h"
 #include "entry.h"
 #include "sound.h"
@@ -2585,7 +2585,6 @@ void render_particle(float wx, float wy, uint8_t alpha, uint8_t red, uint8_t gre
 }
 
 
-
 void render_rail_trails()
 {
 	struct rail_trail_t *rail_trail = rail_trail0;
@@ -2667,6 +2666,103 @@ void render_recording()
 }
 
 
+void render_teleporters()
+{
+	float time = get_double_time();
+	
+	struct teleporter_t *cteleporter = teleporter0;
+		
+	while(cteleporter)
+	{
+		cteleporter->particle_power += frame_time * 400.0;
+		
+		int p, np = 0;
+		
+		while(cteleporter->particle_power >= 1.0)
+		{
+			cteleporter->particle_power -= 1.0;
+			np++;
+		}
+	
+		
+		for(p = 0; p < np; p++)
+		{
+			double sin_theta, cos_theta;
+			sincos(drand48() * 2 * M_PI, &sin_theta, &cos_theta);
+			
+			
+			cteleporter->particles[cteleporter->next_particle].xpos = 0.0;
+			cteleporter->particles[cteleporter->next_particle].ypos = 0.0;
+			
+			float r = drand48();
+			
+			cteleporter->particles[cteleporter->next_particle].xvel = -sin_theta * 1000.0 * r;
+			cteleporter->particles[cteleporter->next_particle].yvel = cos_theta * 1000.0 * r;
+			
+			switch(game_state)
+			{
+			case GAMESTATE_PLAYING:
+				cteleporter->particles[cteleporter->next_particle].creation = 
+					cteleporter->particles[cteleporter->next_particle].last = get_double_time();
+				//	get_time_from_game_tick(cgame_tick + (float)p / (float)100 - 1.0);
+				break;
+			
+			case GAMESTATE_DEMO:
+				cteleporter->particles[cteleporter->next_particle].creation = 
+					cteleporter->particles[cteleporter->next_particle].last = get_double_time();
+				//	(double)(demo_last_tick - demo_first_tick) / 200.0;
+				break;
+			}
+			
+			++cteleporter->next_particle;
+			cteleporter->next_particle %= 800;
+		}
+		
+		
+		for(p = 0; p < 800; p++)
+		{
+			float age = time - cteleporter->particles[p].creation;
+			
+			if(age <= 1.0f)
+			{
+				float dampening = exp(-12.0f * frame_time);
+				
+				cteleporter->particles[p].xvel *= dampening;
+				cteleporter->particles[p].yvel *= dampening;
+	
+				cteleporter->particles[p].xpos += cteleporter->particles[p].xvel * frame_time;
+				cteleporter->particles[p].ypos += cteleporter->particles[p].yvel * frame_time;
+				
+				
+				int alpha  = (uint8_t)(255 - floor(age * 255.0f));
+				
+				render_particle(cteleporter->x + cteleporter->particles[p].xpos, 
+					cteleporter->y + cteleporter->particles[p].ypos, 
+					alpha, 0xff, 0xff, 0xff);
+			}
+		}
+			
+		
+		cteleporter = cteleporter->next;
+	}
+}
+
+
+void create_teleporter_sparkles()
+{
+	struct teleporter_t *cteleporter = teleporter0;
+		
+	while(cteleporter)
+	{
+		memset(cteleporter->particles, 0, sizeof(struct particle_t) * 800);
+		cteleporter->particle_power = 0.0;
+		cteleporter->next_particle = 0;
+		
+		cteleporter = cteleporter->next;
+	}
+}	
+
+
 void render_game()
 {
 	struct entity_t *entity;
@@ -2707,6 +2803,7 @@ void render_game()
 	render_entities();
 	render_upper_particles();
 	render_map();
+	render_teleporters();
 	render_recording();
 	
 	blit_text(((vid_width * 2) / 3) + (vid_width / 200), 

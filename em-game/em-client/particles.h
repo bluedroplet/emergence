@@ -1,3 +1,6 @@
+#ifndef _INC_PARTICLES
+#define _INC_PARTICLES
+
 struct particle_t
 {
 	float	xpos, ypos;
@@ -11,3 +14,5 @@ void create_upper_particle(struct particle_t *particle);
 void create_lower_particle(struct particle_t *particle);
 void render_upper_particles();
 void render_lower_particles();
+
+#endif

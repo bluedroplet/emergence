@@ -256,6 +256,7 @@ struct spawn_point_t
 	struct spawn_point_t *next;
 };
 
+#if defined (EMSERVER) || defined (_INC_PARTICLES)
 
 struct teleporter_t
 {
@@ -264,8 +265,16 @@ struct teleporter_t
 	uint16_t colour;
 	int spawn_index;
 	
+	#ifdef EMCLIENT
+	struct particle_t particles[800];
+	float particle_power;
+	int next_particle;
+	#endif
+	
 	struct teleporter_t *next;
 };
+
+#endif	// _INC_PARTICLES
 
 
 struct speedup_ramp_t

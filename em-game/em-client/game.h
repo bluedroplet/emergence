@@ -28,6 +28,7 @@ struct string_t *message_reader_read_string();
 
 
 
+void start_moving_view(float x1, float y1, float x2, float y2);
 
 
 
@@ -55,6 +56,8 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis);
 void tick_rocket(struct entity_t *rocket, float xdis, float ydis);
 void explosion(struct entity_t *entity);
 #endif	
+
+void create_teleporter_sparkles();
 
 extern double viewx, viewy;
 

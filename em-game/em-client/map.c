@@ -166,18 +166,15 @@ void bypass_objects(gzFile gzfile)
 			break;
 		
 		case OBJECTTYPE_SPAWNPOINT:
-			gzseek(gzfile, 16, SEEK_CUR);
-			gzseek(gzfile, 16, SEEK_CUR);
+			read_spawn_point(gzfile);
 			break;
 			
 		case OBJECTTYPE_SPEEDUPRAMP:
-			gzseek(gzfile, 16, SEEK_CUR);
-			gzseek(gzfile, 24, SEEK_CUR);
+			read_speedup_ramp(gzfile);
 			break;
 			
 		case OBJECTTYPE_TELEPORTER:
-			gzseek(gzfile, 16, SEEK_CUR);
-			gzseek(gzfile, 12, SEEK_CUR);
+			read_teleporter(gzfile);
 			break;
 			
 		case OBJECTTYPE_GRAVITYWELL:
@@ -226,6 +223,7 @@ int load_map(char *map_name)
 		{
 			console_print("Loading cached scaled map tiles\n");
 			
+			bypass_objects(gzfile);
 			load_map_tiles(gzcachedfile);
 		}
 		else
@@ -248,6 +246,8 @@ int load_map(char *map_name)
 	}
 	
 	gzclose(gzfile);
+	
+	create_teleporter_sparkles();
 	
 	free_string(map_filename);
 

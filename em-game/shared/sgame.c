@@ -18,7 +18,6 @@
 #include "../../common/llist.h"
 #include "../../common/stringbuf.h"
 #include "../../common/buffer.h"
-#include "sgame.h"
 #include "bsp.h"
 #include "objects.h"
 
@@ -26,6 +25,12 @@
 #include "../game.h"
 #include "../console.h"
 #endif
+
+#ifdef EMCLIENT
+#include "../particles.h"
+#endif
+
+#include "sgame.h"
 
 #ifdef EMCLIENT
 #include "../game.h"
@@ -1584,15 +1589,18 @@ void s_tick_craft(struct entity_t *craft)
 			speedup_ramp = speedup_ramp->next;
 		}
 		
+		*/
+		
 		
 		// check for collision with teleporter
 		
 		struct teleporter_t *teleporter = teleporter0;
 		while(teleporter)
 		{
-			if(circle_in_circle(xdis, ydis, CRAFT_RADIUS, teleporter->x, teleporter->y, teleporter->radius))
+			if(circle_in_circle(xdis, ydis, CRAFT_RADIUS, 
+				teleporter->x, teleporter->y, teleporter->radius))
 			{
-				double teleporter_x, teleporter_y;
+				float teleporter_x, teleporter_y;
 				get_teleporter_spawn_point(teleporter, &teleporter_x, &teleporter_y);
 				
 				if(craft->craft_data.left_weapon)
@@ -1609,6 +1617,10 @@ void s_tick_craft(struct entity_t *craft)
 				
 				craft->xdis = teleporter_x;
 				craft->ydis = teleporter_y;
+				
+				#ifdef EMCLIENT
+				start_moving_view(viewx, viewy, teleporter_x, teleporter_y);
+				#endif
 				
 				check_craft_teleportation(craft);
 				
@@ -1660,7 +1672,7 @@ void s_tick_craft(struct entity_t *craft)
 			teleporter = teleporter->next;
 		}
 		
-		*/
+		
 		
 		if(restart)
 			continue;
@@ -1979,7 +1991,7 @@ void s_tick_weapon(struct entity_t *weapon)
 			entity = next;
 		}
 		
-	/*	
+	
 		if(!craft)
 		{
 			// check for collision with speedup ramp
@@ -2034,7 +2046,7 @@ void s_tick_weapon(struct entity_t *weapon)
 				teleporter = teleporter->next;
 			}
 		}
-		*/
+
 		
 		if(restart)
 			continue;
@@ -2262,7 +2274,7 @@ void s_tick_bogie(struct entity_t *bogie)
 			entity = next;
 		}
 		
-	/*	
+	
 		// check for collision with teleporter
 		
 		struct teleporter_t *teleporter = teleporter0;
@@ -2278,7 +2290,7 @@ void s_tick_bogie(struct entity_t *bogie)
 			teleporter = teleporter->next;
 		}
 		
-		*/
+		
 		
 		if(!restart)
 			break;
@@ -2539,7 +2551,7 @@ void s_tick_rocket(struct entity_t *rocket)
 		}
 		
 		
-/*		// check for collision with speedup ramp
+		// check for collision with speedup ramp
 		
 		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
@@ -2589,7 +2601,7 @@ void s_tick_rocket(struct entity_t *rocket)
 			teleporter = teleporter->next;
 		}
 		
-		*/
+		
 		
 		if(restart)
 			continue;
@@ -2714,7 +2726,7 @@ void s_tick_mine(struct entity_t *mine)
 		}
 		
 		
-/*		// check for collision with speedup ramp
+		// check for collision with speedup ramp
 		
 		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
@@ -2763,7 +2775,7 @@ void s_tick_mine(struct entity_t *mine)
 			
 			teleporter = teleporter->next;
 		}
-*/		
+
 		if(restart)
 			continue;
 		
