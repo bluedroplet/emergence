@@ -29,6 +29,7 @@
 #include "entry.h"
 #include "control.h"
 #include "render.h"
+#include "map.h"
 #include "shared/cvar.h"
 
 Display *xdisplay;
@@ -59,7 +60,7 @@ int vid_mode;
 void update_frame_buffer()
 {
 	XShmPutImage(xdisplay, xwindow, gc, image, 
-		0, 0, 0, 0, 800, 600, True);
+		0, 0, 0, 0, vid_width, vid_height, True);
 	XFlush(xdisplay);
 }
 
@@ -188,7 +189,7 @@ void query_vid_modes()
 {
 	console_print("Querying available video modes\n");
 	
-	screen_config = XRRGetScreenInfo(xdisplay, xwindow);
+	screen_config = XRRGetScreenInfo(xdisplay, RootWindow(xdisplay, xscreen));
 	
 	if(!screen_config)
 		client_error("XRRScreenConfig failed");
@@ -266,14 +267,94 @@ void set_vid_mode(int mode)
 			return;
 	}
 	
-	
+	int old_sigio_process = sigio_process;	
+	sigio_process &= ~SIGIO_PROCESS_X;
+
 	XRRSetScreenConfig (xdisplay, screen_config,
-			   xwindow,
+			   RootWindow(xdisplay, xscreen),
 			   cvid_mode->index,
 			   RR_Rotate_0,
 			   CurrentTime);
 	
+    XSetWindowAttributes xattr;
+
+    xattr.override_redirect = True;
+    xattr.background_pixel = BlackPixel(xdisplay, xscreen);
+    xattr.border_pixel = 0;
+    xattr.colormap = DefaultColormap(xdisplay, xscreen);
+
+	vid_width = cvid_mode->width;
+	vid_height = cvid_mode->height;
+
+    xwindow = XCreateWindow(xdisplay, RootWindow(xdisplay, xscreen), 0, 0, vid_width, vid_height, 0,
+			     24, InputOutput, DefaultVisual(xdisplay, xscreen),
+			     CWOverrideRedirect | CWBackPixel | CWBorderPixel
+			     | CWColormap,
+			     &xattr);
+
+
+	XSelectInput(xdisplay, xwindow, KeyPressMask | KeyReleaseMask | ExposureMask);
+   
+	XMapRaised(xdisplay, xwindow);
+	
+	XSetInputFocus(xdisplay, xwindow, RevertToNone, CurrentTime);
+	
+	Cursor xcursor = create_blank_cursor();
+	
+	XDefineCursor(xdisplay, xwindow, xcursor);
+	
+  gc=XCreateGC(xdisplay, xwindow, 0, NULL);	
+	
+
+	
+
+      int ShmMajor,ShmMinor;
+      Bool ShmPixmaps;
+
+     XShmQueryVersion(xdisplay,&ShmMajor,&ShmMinor,&ShmPixmaps);
+
+	XShmSegmentInfo *shmseginfo = (XShmSegmentInfo *)malloc(sizeof(XShmSegmentInfo));
+
+    memset(shmseginfo,0, sizeof(XShmSegmentInfo));
+
+	image=XShmCreateImage(xdisplay, DefaultVisual(xdisplay, xscreen), 24, ZPixmap,
+                                  NULL, shmseginfo, vid_width, vid_height);	
+   
+   	if(!image)
+		client_shutdown();
+   
+   
+ 	shmseginfo->shmid=shmget(IPC_PRIVATE, image->bytes_per_line*
+			         image->height, IPC_CREAT|0777);
+	
+   	if(shmseginfo->shmid < 0)
+		client_shutdown();
+	
+  	shmseginfo->shmaddr=shmat(shmseginfo->shmid,NULL,0);
+   	if(!shmseginfo->shmaddr)
+		client_shutdown();
+	shmseginfo->readOnly=False;
+	
+	s_backbuffer = new_surface_no_buf(SURFACE_24BITPADDING8BIT, vid_width, vid_height);
+	
+	s_backbuffer->buf = image->data = shmseginfo->shmaddr;
+	s_backbuffer->pitch = image->bytes_per_line;
+	
+	XShmAttach(xdisplay, shmseginfo);
+
+	sigio_process |= SIGIO_PROCESS_X;
+
 }
+
+
+void vid_mode_qc(int mode)
+{
+	console_print("dsa\n");
+	vid_mode = mode;
+	set_vid_mode(mode);
+	reload_map();
+}
+
 
 void create_x_cvars()
 {
@@ -316,81 +397,10 @@ void init_x()
 	
 	console_print("ok\n");
 	
-    XSetWindowAttributes xattr;
-
-    xattr.override_redirect = True;
-    xattr.background_pixel = BlackPixel(xdisplay, xscreen);
-    xattr.border_pixel = 0;
-    xattr.colormap = DefaultColormap(xdisplay, xscreen);
-
-    xwindow = XCreateWindow(xdisplay, RootWindow(xdisplay, xscreen), 0, 0, 800, 600, 0,
-			     24, InputOutput, DefaultVisual(xdisplay, xscreen),
-			     CWOverrideRedirect | CWBackPixel | CWBorderPixel
-			     | CWColormap,
-			     &xattr);
-	
-
 	query_vid_modes();
-	
-
-//	xwindow = XCreateWindow(xdisplay, RootWindow(xdisplay, xscreen),
-  //                                 0, 0, 800, 600, 0, 16, InputOutput,
-	//			   DefaultVisual(xdisplay, xscreen), 0, NULL);
-
-	XSelectInput(xdisplay, xwindow, KeyPressMask | KeyReleaseMask | ExposureMask);
-   
-	XMapRaised(xdisplay, xwindow);
-	
-	XSetInputFocus(xdisplay, xwindow, RevertToNone, CurrentTime);
-	
-	Cursor xcursor = create_blank_cursor();
-	
-	XDefineCursor(xdisplay, xwindow, xcursor);
-	
-  gc=XCreateGC(xdisplay, xwindow, 0, NULL);	
-	
-	vid_width = 800;
-	vid_height = 600;
-
-	
-
-      int ShmMajor,ShmMinor;
-      Bool ShmPixmaps;
-
-     XShmQueryVersion(xdisplay,&ShmMajor,&ShmMinor,&ShmPixmaps);
-
-	XShmSegmentInfo *shmseginfo = (XShmSegmentInfo *)malloc(sizeof(XShmSegmentInfo));
-
-    memset(shmseginfo,0, sizeof(XShmSegmentInfo));
-
-	image=XShmCreateImage(xdisplay, DefaultVisual(xdisplay, xscreen), 24, ZPixmap,
-                                  NULL, shmseginfo, 800, 600);	
-   
-   	if(!image)
-		client_shutdown();
-   
-   
- 	shmseginfo->shmid=shmget(IPC_PRIVATE, image->bytes_per_line*
-			         image->height, IPC_CREAT|0777);
-	
-   	if(shmseginfo->shmid < 0)
-		client_shutdown();
-	
-  	shmseginfo->shmaddr=shmat(shmseginfo->shmid,NULL,0);
-   	if(!shmseginfo->shmaddr)
-		client_shutdown();
-	shmseginfo->readOnly=False;
-	
-	s_backbuffer = new_surface_no_buf(SURFACE_24BITPADDING8BIT, 800, 600);
-	
-	s_backbuffer->buf = image->data = shmseginfo->shmaddr;
-	s_backbuffer->pitch = image->bytes_per_line;
-	
-	XShmAttach(xdisplay, shmseginfo);
-
+	set_int_cvar_qc_function("vid_mode", vid_mode_qc);
 	set_vid_mode(vid_mode);
-	
-	sigio_process |= SIGIO_PROCESS_X;
+
 	
 	return;
 

@@ -36,9 +36,13 @@ struct tile_t
 
 int r_DrawBSPTree = 0;
 
+struct string_t *map_filename;
+
 
 int load_map_tiles(gzFile gzfile)
 {
+	LL_REMOVE_ALL(struct tile_t, &tile0);
+	
 	int num_tiles;
 
 	if(gzread(gzfile, &num_tiles, 4) != 4)
@@ -141,36 +145,51 @@ void bypass_objects(gzFile gzfile)
 }
 
 
+void load_map(char *name)
+{
+	printf(name);
+	printf("\n");
+	gzFile gzfile = gzopen(name, "rb");
+	if(!gzfile)
+	{
+		console_print("Could not load map: %s\n", name);
+		return 1;
+	}
+	
+	console_print("Loading BSP Tree\n");
+	load_bsp_tree(gzfile);
+	bypass_objects(gzfile);
+	console_print("Loading Map Tiles\n");
+	load_map_tiles(gzfile);
+	
+	gzclose(gzfile);
+}
+
+
 int game_process_load_map(struct buffer_t *stream)
 {
 	struct string_t *map_name = buffer_read_string(stream);
 	
-	struct string_t *filename = new_string_string(emergence_home_dir);
-	string_cat_text(filename, "/maps/");	
-	string_cat_string(filename, map_name);
-	string_cat_text(filename, ".cm");
+	map_filename = new_string_string(emergence_home_dir);
+	string_cat_text(map_filename, "/maps/");	
+	string_cat_string(map_filename, map_name);
+	string_cat_text(map_filename, ".cm");
 
-	gzFile gzfile = gzopen(filename->text, "rb");
-	if(!gzfile)
-	{
-		console_print("Could not load map: %s\n", filename->text);
-		free_string(filename);
-		free_string(map_name);
-		return 1;
-	}
-	
-	free_string(filename);
+
+	load_map(map_filename->text);
 	free_string(map_name);
-	
-	load_bsp_tree(gzfile);
-	bypass_objects(gzfile);
-	load_map_tiles(gzfile);
-	
-	gzclose(gzfile);
 	
 	console_print("Map loaded ok.\n");
 	
 	return 1;
+}
+
+
+void reload_map()
+{
+	printf("as\n");
+	
+	load_map(map_filename->text);
 }
 
 /*
@@ -281,7 +300,7 @@ int generate_scaled_map(char *name)
 	return 1;
 }
 
-
+/*
 int load_map(char *name)
 {
 	LL_REMOVE_ALL(struct tile_t, &tile0);
@@ -351,7 +370,7 @@ int load_map(char *name)
 
 	return 1;
 }
-
+*/
 
 void render_map()
 {

@@ -70,7 +70,7 @@ int game_process_load_skin(struct buffer_t *stream)
 	craft_rot.out_surface = &skin.craft;
 	craft_rot.next = NULL;
 	
-	do_rotate(&craft_rot, 40, 40, ROTATIONS);
+	do_rotate(&craft_rot, 52, 52, ROTATIONS);
 	
 	struct rotate_t rocket_launcher_rot;
 	rocket_launcher_rot.in_surface = gzread_raw_surface(gzfile);
@@ -87,7 +87,7 @@ int game_process_load_skin(struct buffer_t *stream)
 	plasma_cannon_rot.out_surface = &skin.plasma_cannon;
 	plasma_cannon_rot.next = &minigun_rot;
 	
-	do_rotate(&plasma_cannon_rot, 25, 25, ROTATIONS);
+	do_rotate(&plasma_cannon_rot, 32, 32, ROTATIONS);
 	
 	gzclose(gzfile);
 	LL_ADD(struct skin_t, &skin0, &skin);

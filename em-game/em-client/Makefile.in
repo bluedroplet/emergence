@@ -116,7 +116,7 @@ em_client_SOURCES = bsp.c entry.c game.c main.c map.h ping.h stars.h \
 	render.c control.c line.c input.c input.h \
 	render.h control.h line.h map.c ping.c stars.c rotate.c rotate.h \
 	skin.c skin.h particles.c particles.h screenshot.c screenshot.h \
-	x.c x.h
+	x.c x.h ris.c ris.h
 
 subdir = em-client
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -130,7 +130,8 @@ am_em_client_OBJECTS = bsp.$(OBJEXT) entry.$(OBJEXT) game.$(OBJEXT) \
 	console.$(OBJEXT) event.$(OBJEXT) render.$(OBJEXT) \
 	control.$(OBJEXT) line.$(OBJEXT) input.$(OBJEXT) map.$(OBJEXT) \
 	ping.$(OBJEXT) stars.$(OBJEXT) rotate.$(OBJEXT) skin.$(OBJEXT) \
-	particles.$(OBJEXT) screenshot.$(OBJEXT) x.$(OBJEXT)
+	particles.$(OBJEXT) screenshot.$(OBJEXT) x.$(OBJEXT) \
+	ris.$(OBJEXT)
 em_client_OBJECTS = $(am_em_client_OBJECTS)
 em_client_LDADD = $(LDADD)
 em_client_DEPENDENCIES = ../gsub/libgsub.a ../common/libcommon.a \
@@ -147,10 +148,10 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/main.Po ./$(DEPDIR)/map.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/network.Po ./$(DEPDIR)/particles.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/ping.Po ./$(DEPDIR)/rcon.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/render.Po ./$(DEPDIR)/rotate.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/screenshot.Po ./$(DEPDIR)/skin.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/stars.Po ./$(DEPDIR)/tick.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/x.Po
+@AMDEP_TRUE@	./$(DEPDIR)/render.Po ./$(DEPDIR)/ris.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/rotate.Po ./$(DEPDIR)/screenshot.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/skin.Po ./$(DEPDIR)/stars.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/tick.Po ./$(DEPDIR)/x.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -224,6 +225,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ping.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rcon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/render.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ris.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rotate.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/screenshot.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/skin.Po@am__quote@
