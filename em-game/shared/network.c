@@ -113,13 +113,15 @@ struct conn_t
 #define STREAM_RESEND_DELAY			0.1
 
 pthread_t network_thread_id;
-pthread_mutex_t net_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t net_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 int udp_fd = -1;
 int net_timer_fd = -1;
 
 int net_kill_pipe[2];
 int net_out_pipe[2];
+
+int net_shutting_down = 0;
 
 
 struct conn_t *new_conn()
@@ -694,6 +696,22 @@ void check_stream(struct conn_t *conn)
 }
 
 
+int all_connections_disconnected()
+{
+	struct conn_t *conn = conn0;
+
+	while(conn)
+	{
+		if(conn->state != NETSTATE_DISCONNECTED)
+			return 0;
+		
+		conn = conn->next;
+	}
+
+	return 1;
+}
+
+
 void process_udp_data()
 {
 	struct packet_t packet;
@@ -1016,6 +1034,12 @@ void process_udp_data()
 			break;
 		}
 	}
+	
+	if(net_shutting_down)
+	{
+		if(all_connections_disconnected())
+			pthread_exit(NULL);
+	}
 }
 
 
@@ -1074,8 +1098,11 @@ void network_alarm()
 			if(time - conn->last_time > CONNECTION_TIMEOUT)
 			{
 				emit_process_connection_failed(conn);
+				
+				struct conn_t *temp = conn->next;
 				delete_conn(conn);
-				return;
+				conn = temp;
+				continue;
 			}
 			
 			if(time > packet->next_resend_time)
@@ -1173,6 +1200,12 @@ void network_alarm()
 
 		conn = conn->next;
 	}
+	
+	if(net_shutting_down)
+	{
+		if(all_connections_disconnected())
+			pthread_exit(NULL);
+	}
 }
 
 
@@ -1213,9 +1246,9 @@ void *network_thread(void *a)
 			break;
 		
 		case 2:
-			pthread_exit(NULL);
+			if(all_connections_disconnected())
+				pthread_exit(NULL);
 		}
-		
 	}
 }
 
@@ -1683,8 +1716,27 @@ void init_network()
 }
 
 
+void disconnect_all_connections()
+{
+	pthread_mutex_lock(&net_mutex);
+	
+	struct conn_t *conn = conn0;
+
+	while(conn)
+	{
+		em_disconnect((uint32_t)conn);
+		conn = conn->next;
+	}
+
+	pthread_mutex_unlock(&net_mutex);
+}
+
+
 void kill_network()		// FIXME
 {
+	disconnect_all_connections();
+	net_shutting_down = 1;
+	
 	char c;
 	write(net_kill_pipe[1], &c, 1);
 	pthread_join(network_thread_id, NULL);
