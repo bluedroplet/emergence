@@ -59,6 +59,7 @@
 #include "glade.h"
 #include "points.h"
 #include "main_lock.h"
+#include "bsp.h"
 
 
 
@@ -1838,6 +1839,49 @@ void menu_insert_point(GtkWidget *menu, struct curve_t *curve)
 }
 
 
+void menu_remove_wall(GtkWidget *menu, struct curve_t *curve)
+{
+	stop_working();
+	
+	struct conn_pointer_t *connp = curve->connp0, *next;
+	struct node_t *node1, *node2;
+		
+	if(!connp->conn->orientation)
+		node1 = connp->conn->node1;
+	else
+		node1 = connp->conn->node2;
+	
+	int first = 1;
+	
+	while(connp)
+	{
+		if(!connp->conn->orientation)
+			node2 = connp->conn->node2;
+		else
+			node2 = connp->conn->node1;
+		
+		next = connp->next;
+		delete_conn(connp->conn);
+		connp = next;
+		
+		if(first)
+		{
+			invalidate_node(node1);
+			LL_REMOVE(struct node_t, &node0, node1);
+			node_deleted(node1);
+			first = 0;
+		}
+
+		invalidate_node(node2);
+		LL_REMOVE(struct node_t, &node0, node2);
+		node_deleted(node2);
+	}
+	
+	invalidate_bsp_tree();
+	start_working();
+	
+	update_client_area();
+}
 
 
 void run_curve_menu(struct curve_t *curve)
@@ -1860,9 +1904,9 @@ void run_curve_menu(struct curve_t *curve)
 */
 	
 	menu_items = gtk_menu_item_new_with_label("Remove Wall");
-/*	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
-		GTK_SIGNAL_FUNC(menu_insert_point), curve);
-*/	gtk_menu_append(GTK_MENU(menu), menu_items);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(menu_remove_wall), curve);
+	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 	
 	gtk_menu_popup (GTK_MENU(menu), NULL, NULL, (GtkMenuPositionFunc)(NULL), NULL, 0, 0);
