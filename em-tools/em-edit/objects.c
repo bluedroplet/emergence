@@ -218,7 +218,7 @@ void insert_object(int type, double x, double y)
 		object.speedup_ramp_data.non_default_texture = 0;
 		object.speedup_ramp_data.texture_filename = NULL;
 		object.speedup_ramp_data.texture_pre_surface = NULL;
-		object.speedup_ramp_data.width = 64.0;
+		object.speedup_ramp_data.width = 128.0;
 		object.speedup_ramp_data.height = 64.0;
 		object.speedup_ramp_data.angle = 0.0;
 		object.speedup_ramp_data.activation_width = 64.0;
@@ -2509,7 +2509,7 @@ void init_objects()
 	s_gravity_well_placeholder = read_png_surface(PKGDATADIR 
 		"/em-edit/gravity-well-placeholder.png");
 		
-	s_stock_speedup_ramp = read_png_surface(PKGDATADIR "/stock-speedup-ramp.png");
+	s_stock_speedup_ramp = read_png_surface(PKGDATADIR "/em-edit/stock-speedup-ramp.png");
 }
 
 
