@@ -36,6 +36,7 @@
 #include <zlib.h>
 
 #include "../common/stringbuf.h"
+#include "../common/user.h"
 #include "../common/rel2abs.h"
 #include "../common/abs2rel.h"
 #include "../gsub/gsub.h"
@@ -87,10 +88,27 @@ void clear_map()		// always called when not working
 
 void compile()
 {
-	struct string_t *compile_filename = new_string();
-
+	struct string_t *compile_filename = new_string_string(emergence_home_dir);
+	string_cat_text(compile_filename, "/maps/");
+	
+	int slashes = 0;
 	char *cc = map_filename->text;
-
+	
+	while(*cc)
+	{
+		if(*cc++ == '/')
+			slashes++;
+	}
+	
+	cc = map_filename->text;
+	
+	while(slashes)
+	{
+		if(*cc++ == '/')
+			slashes--;
+	}
+	
+		
 	while(*cc && *cc != '.')
 		string_cat_char(compile_filename, *cc++);
 
