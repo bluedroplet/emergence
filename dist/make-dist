@@ -25,8 +25,8 @@ cp em-tools-$ver.tar.bz2 ../dist/em-tools-$ver.tbz2
 cd ../dist
 
 
-for arch in pentiumpro pentium2 pentium3 pentium4 athlon athlon-tbird athlon-xp athlon-mp
-#for arch in pentium3
+for arch in i686 pentiumpro pentium2 pentium3 pentium4 athlon athlon-tbird athlon-xp athlon-mp
+#for arch in i686
 do
 
 stage3=i686
