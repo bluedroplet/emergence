@@ -348,7 +348,7 @@ void clear_game()
 	clear_ticks();
 	clear_skins();
 	
-	if(recording)
+	if((game_state == GAMESTATE_SPECTATING || game_state == GAMESTATE_PLAYING) && recording)
 	{
 		recording = 0;
 		gzclose(gzrecording);
@@ -695,6 +695,12 @@ void game_process_connection(uint32_t conn)
 	
 	if(!recording)
 		message_reader.type = MESSAGE_READER_STREAM;
+	
+	if(recording)
+	{
+		message_reader.type = MESSAGE_READER_STREAM_WRITE_GZDEMO;
+		message_reader.gzdemo = gzrecording;
+	}
 	
 	console_print("\xab\nConnected!\n");
 }
@@ -2450,7 +2456,10 @@ void write_all_entities_to_demo()
 void cf_record(char *c)
 {
 	if(recording)
-		;
+	{
+		recording = 0;
+		gzclose(gzrecording);
+	}
 	
 	message_reader.type = MESSAGE_READER_STREAM_WRITE_GZDEMO;
 	recording_filename = new_string_text(c);
@@ -2525,12 +2534,6 @@ void cf_demo(char *c)
 		LL_REMOVE(struct demo_t, &demo0, demo0)
 	}
 	
-	if(gzdemo)
-	{
-		gzclose(gzdemo);
-		gzdemo = NULL;
-	}
-	
 	switch(game_state)
 	{
 	case GAMESTATE_DEAD:
@@ -2538,6 +2541,7 @@ void cf_demo(char *c)
 	
 	case GAMESTATE_DEMO:
 		gzclose(gzdemo);
+		gzdemo = NULL;
 		break;
 	
 	case GAMESTATE_CONNECTING:
