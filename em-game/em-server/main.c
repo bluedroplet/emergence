@@ -11,9 +11,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <pthread.h>
 
 #include <sys/epoll.h>
 #include <sys/poll.h>
+#include <netinet/in.h>
 
 #include "../common/prefix.h"
 #include "../common/resource.h"
@@ -38,6 +40,7 @@
 #include "entry.h"
 #include "key.h"
 #include "download.h"
+#include "servers.h"
 
 
 struct conn_state_t
@@ -59,13 +62,14 @@ struct conn_state_t
 #define CONN_STATE_VERIFYING		2
 #define CONN_STATE_JOINED			3
 
-int game_timer_fd;
+pthread_mutex_t main_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 void server_shutdown()
 {
 	console_print("Shutting down...\n");
 
+	kill_servers();
 	kill_key();
 	kill_openssl();
 	kill_download();
@@ -234,6 +238,13 @@ void process_virgin_stream(uint32_t conn, uint32_t index, struct buffer_t *strea
 		cstate->state = CONN_STATE_VERIFYING;
 		
 		break;
+
+
+	case EMMSG_SERVERS:
+		
+		process_servers(stream);
+		
+		break;
 	}
 }
 
@@ -324,7 +335,7 @@ void process_stream_timed(uint32_t conn, uint32_t index, uint64_t *stamp, struct
 	{
 	case CONN_STATE_VIRGIN:
 	case CONN_STATE_AUTHENTICATING:
-	process_virgin_stream(conn, index, stream);
+		process_virgin_stream(conn, index, stream);
 		break;
 	
 	case CONN_STATE_JOINED:
@@ -445,10 +456,11 @@ void process_console()
 void process_network()
 {
 	uint32_t conn;
-	struct buffer_t *stream;
+	struct buffer_t *buffer;
 	uint32_t index;
 	uint64_t stamp;
 	int type;
+	struct sockaddr_in sockaddr;
 
 	while(1)
 	{
@@ -480,34 +492,39 @@ void process_network()
 			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &index, 4));
 			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stamp, 8));
 			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
-			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stream, 4));
-			process_stream_timed(conn, index, &stamp, stream);
-			free_buffer(stream);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &buffer, 4));
+			process_stream_timed(conn, index, &stamp, buffer);
+			free_buffer(buffer);
 			break;
 	
 		case NETMSG_STREAM_UNTIMED:
 			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &index, 4));
 			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
-			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stream, 4));
-			process_stream_untimed(conn, index, stream);
-			free_buffer(stream);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &buffer, 4));
+			process_stream_untimed(conn, index, buffer);
+			free_buffer(buffer);
 			break;
 	
 		case NETMSG_STREAM_TIMED_OOO:
 			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &index, 4));
 			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stamp, 8));
 			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
-			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stream, 4));
-			process_stream_timed_ooo(conn, index, &stamp, stream);
-			free_buffer(stream);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &buffer, 4));
+			process_stream_timed_ooo(conn, index, &stamp, buffer);
+			free_buffer(buffer);
 			break;
 	
 		case NETMSG_STREAM_UNTIMED_OOO:
 			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &index, 4));
 			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
-			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stream, 4));
-			process_stream_untimed_ooo(conn, index, stream);
-			free_buffer(stream);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &buffer, 4));
+			process_stream_untimed_ooo(conn, index, buffer);
+			free_buffer(buffer);
+			break;
+	
+		case NETMSG_SERVERINFO_REQUEST:
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &sockaddr, sizeof(struct sockaddr_in)));
+			servers_process_serverinfo(&sockaddr);
 			break;
 		}
 	
@@ -518,14 +535,15 @@ void process_network()
 
 void process_game_timer()
 {
-	uint32_t m;
-	while(TEMP_FAILURE_RETRY(read(game_timer_fd, &m, 1)) != -1);
-		
+	pthread_mutex_lock(&main_mutex);
+	
 	#ifndef NONAUTHENTICATING
 	check_sessions();
 	#endif
 		
 	update_game();
+
+	pthread_mutex_unlock(&main_mutex);
 }
 
 
@@ -536,14 +554,13 @@ void main_thread()
 	
 	fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
 	
-	fdcount = 4;
+	fdcount = 3;
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
 	
 	fds[0].fd = STDIN_FILENO;		fds[0].events = POLLIN;
 	fds[1].fd = net_out_pipe[0];	fds[1].events = POLLIN;
-	fds[2].fd = game_timer_fd;		fds[2].events = POLLIN;
-	fds[3].fd = key_out_pipe[0];	fds[3].events = POLLIN;
+	fds[2].fd = key_out_pipe[0];	fds[2].events = POLLIN;
 	
 
 	while(1)
@@ -555,16 +572,25 @@ void main_thread()
 		}
 
 		if(fds[0].revents & POLLIN)
+		{
+			pthread_mutex_lock(&main_mutex);
 			process_console();
+			pthread_mutex_unlock(&main_mutex);
+		}
 		
 		if(fds[1].revents & POLLIN)
+		{
+			pthread_mutex_lock(&main_mutex);
 			process_network();
+			pthread_mutex_unlock(&main_mutex);
+		}
 		
 		if(fds[2].revents & POLLIN)
-			process_game_timer();
-		
-		if(fds[3].revents & POLLIN)
+		{
+			pthread_mutex_lock(&main_mutex);
 			process_key_out_pipe();
+			pthread_mutex_unlock(&main_mutex);
+		}
 	}
 }
 
@@ -631,8 +657,9 @@ void init()
 	init_openssl();
 	init_key();
 	init_download();
+	init_servers();
 	
-	game_timer_fd = create_alarm_listener();
+	create_alarm_listener(process_game_timer);
 
 //	create_cvar_command("daemonize", cf_go_daemon);
 	create_cvar_command("quit", cf_quit);

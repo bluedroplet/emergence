@@ -25,7 +25,7 @@
 
 struct alarm_listener_t
 {
-	int pipe[2];
+	void (*func)();
 	struct alarm_listener_t *next;
 		
 } *alarm_listener0 = NULL;
@@ -35,21 +35,20 @@ pthread_t alarm_thread_id;
 //pthread_mutex_t alarm_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-int create_alarm_listener()
+void create_alarm_listener(void (*func)())
 {
 //	pthread_mutex_lock(&alarm_mutex);
 	
-	struct alarm_listener_t alarm_listener;
-	pipe(alarm_listener.pipe);
-	fcntl(alarm_listener.pipe[0], F_SETFL, O_NONBLOCK);
+	struct alarm_listener_t alarm_listener = {
+		func
+	};
+	
 	LL_ADD(struct alarm_listener_t, &alarm_listener0, &alarm_listener);
 
 //	pthread_mutex_unlock(&alarm_mutex);
-
-	return alarm_listener.pipe[0];
 }
 
-
+/*
 void destroy_alarm_listener(int read_fd)
 {
 //	pthread_mutex_lock(&alarm_mutex);
@@ -69,7 +68,7 @@ void destroy_alarm_listener(int read_fd)
 
 //	pthread_mutex_unlock(&alarm_mutex);
 }
-
+*/
 
 void *alarm_thread(void *a)
 {
@@ -103,8 +102,7 @@ void *alarm_thread(void *a)
 			
 		while(calarm_listener)
 		{
-			char c;
-			TEMP_FAILURE_RETRY(write(calarm_listener->pipe[1], &c, 1));
+			calarm_listener->func();
 		
 			calarm_listener = calarm_listener->next;
 		};

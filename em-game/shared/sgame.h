@@ -78,6 +78,7 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 #define EMMSG_START				0x05
 #define EMMSG_SAY				0x19
 #define EMMSG_READY				0x1a
+#define EMMSG_SERVERS			0x1b
 
 #define EMMSG_THRUST			0x06
 #define EMMSG_BRAKE				0x07

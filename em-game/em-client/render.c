@@ -19,6 +19,7 @@
 #include "x.h"
 #include "screenshot.h"
 #include "ris.h"
+#include "servers.h"
 
 
 int g_VidMode = 2;
@@ -156,6 +157,8 @@ void render_frame()
 	clear_surface(s_backbuffer);
 	
 	render_game();
+	render_servers();
+	
 	
 //	if(r_DrawFPS)
 		render_fr();

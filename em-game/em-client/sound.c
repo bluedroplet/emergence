@@ -22,10 +22,12 @@
 #include "../common/minmax.h"
 #include "shared/timer.h"
 #include "shared/alarm.h"
+#include "shared/sgame.h"
 #include "console.h"
 #include "entry.h"
 #include "tick.h"
 #include "sound.h"
+#include "game.h"
 
 
 //snd_pcm_t *playback_handle = NULL;
@@ -34,7 +36,11 @@
 struct queued_sample_t
 {
 	uint32_t index;
+	int type;
 	struct sample_t *sample;
+	uint32_t ent_index;
+	float x;
+	float y;
 	uint32_t start_tick;
 	int begun;
 	int next_frame;
@@ -43,12 +49,18 @@ struct queued_sample_t
 		
 } *queued_sample0 = NULL;
 
+
+#define SAMPLE_TYPE_GLOBAL	0
+#define SAMPLE_TYPE_STATIC	1
+#define SAMPLE_TYPE_ENTITY	2
+
+
 uint32_t next_queued_sample_index = 0;
 
-int sound_kill_pipe[2];
+//int sound_kill_pipe[2];
 int sound_active = 0;
-pthread_mutex_t sound_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
-pthread_t sound_thread_id;
+pthread_mutex_t sound_mutex = PTHREAD_MUTEX_INITIALIZER;
+//pthread_t sound_thread_id;
 
 int alsa_fd;
 
@@ -62,6 +74,63 @@ void add_frames(int32_t *dst, int16_t *src, int c)
 		dst[i] += src[i];
 		i++;
 		c--;
+	}
+}
+
+
+void multiply_and_add_frames(int32_t *dst, int16_t *src, float m, int c)
+{
+	int i = 0;
+	
+	while(c)
+	{
+		dst[i] += lrint((double)src[i] * m);
+		i++;
+		c--;
+	}
+}
+
+
+double get_attenuation(float x, float y)
+{
+	double xdist = (viewx - x) / 750.0;
+	double ydist = (viewy - y) / 750.0;
+	
+	return min(1.0, 1.0 / (xdist * xdist + ydist * ydist));
+}
+
+
+double get_entity_attenuation(uint32_t ent_index)
+{
+	struct entity_t *entity = get_entity(centity0, ent_index);
+		
+	if(!entity)
+		return 0.0;
+	
+	return get_attenuation(entity->xdis, entity->ydis);
+}
+
+
+void add_sample_frames(int32_t *dst, struct queued_sample_t *sample, int s, int c)
+{
+	int16_t *src = sample->sample->buf;
+	double att;
+	
+	switch(sample->type)
+	{
+	case SAMPLE_TYPE_GLOBAL:
+		add_frames(dst, &src[s], c);
+		break;
+	
+	case SAMPLE_TYPE_STATIC:
+		att = get_attenuation(sample->x, sample->y);
+		multiply_and_add_frames(dst, &src[s], att, c);
+		break;
+	
+	case SAMPLE_TYPE_ENTITY:
+		att = get_entity_attenuation(sample->ent_index);
+		multiply_and_add_frames(dst, &src[s], att, c);
+		break;
 	}
 }
 
@@ -81,15 +150,13 @@ void saturate_frames(int32_t *dst, int c)
 
 void sound_mutex_lock()
 {
-	SDL_LockAudio();
-//	pthread_mutex_lock(&sound_mutex);
+	pthread_mutex_lock(&sound_mutex);
 }
 	
 
 void sound_mutex_unlock()
 {
-	SDL_UnlockAudio();
-//	pthread_mutex_unlock(&sound_mutex);
+	pthread_mutex_unlock(&sound_mutex);
 }
 
 
@@ -101,6 +168,9 @@ void process_sound(void *userdata, Uint8 *stream, int len)	// check for off-by-o
 	memset(buf, 0, avail * 4);
 	
 
+	pthread_mutex_lock(&gamestate_mutex);
+	sound_mutex_lock();
+	
 	uint32_t start_tick = get_game_tick();
 	uint32_t end_tick = start_tick + (avail * counts_per_second) / 44100;
 	
@@ -132,7 +202,7 @@ void process_sound(void *userdata, Uint8 *stream, int len)	// check for off-by-o
 			
 			if(c_queued_sample->start_tick <= start_tick)
 			{
-				add_frames(buf, c_queued_sample->sample->buf, 
+				add_sample_frames(buf, c_queued_sample, 0, 
 					min(c_queued_sample->sample->len, avail));
 				
 				
@@ -163,7 +233,7 @@ void process_sound(void *userdata, Uint8 *stream, int len)	// check for off-by-o
 				int start_frame = ((c_queued_sample->start_tick - start_tick) * avail) / 
 					((avail * counts_per_second) / 44100);
 				
-				add_frames(&buf[start_frame], c_queued_sample->sample->buf, 
+				add_sample_frames(&buf[start_frame], c_queued_sample, 0, 
 					min(c_queued_sample->sample->len, avail - start_frame));
 				
 				
@@ -186,7 +256,7 @@ void process_sound(void *userdata, Uint8 *stream, int len)	// check for off-by-o
 		}
 		else
 		{
-			add_frames(buf, &c_queued_sample->sample->buf[c_queued_sample->next_frame], 
+			add_sample_frames(buf, c_queued_sample, c_queued_sample->next_frame, 
 				min(c_queued_sample->sample->len - c_queued_sample->next_frame, avail));
 			
 			
@@ -209,6 +279,10 @@ void process_sound(void *userdata, Uint8 *stream, int len)	// check for off-by-o
 		c_queued_sample = c_queued_sample->next;
 	}
 	
+
+	sound_mutex_unlock();
+	pthread_mutex_unlock(&gamestate_mutex);
+	
 	saturate_frames(buf, avail);
 //	snd_pcm_writei(playback_handle, buf, avail);
 	
@@ -218,14 +292,54 @@ void process_sound(void *userdata, Uint8 *stream, int len)	// check for off-by-o
 }
 
 
-uint32_t start_sample(struct sample_t *sample, uint32_t start_tick)
+uint32_t start_global_sample(struct sample_t *sample, uint32_t start_tick)
 {
 	if(!sound_active)
 		return -1;
 	
 	struct queued_sample_t queued_sample = {
 		next_queued_sample_index++, 
-		sample, start_tick, 0};
+		SAMPLE_TYPE_GLOBAL,
+		sample, 0, 0.0, 0.0,
+		start_tick, 0};
+		
+	sound_mutex_lock();
+	LL_ADD(struct queued_sample_t, &queued_sample0, &queued_sample);
+	sound_mutex_unlock();
+	
+	return queued_sample.index;
+}
+
+
+uint32_t start_static_sample(struct sample_t *sample, float x, float y, uint32_t start_tick)
+{
+	if(!sound_active)
+		return -1;
+	
+	struct queued_sample_t queued_sample = {
+		next_queued_sample_index++, 
+		SAMPLE_TYPE_STATIC,
+		sample, 0, x, y,
+		start_tick, 0};
+		
+	sound_mutex_lock();
+	LL_ADD(struct queued_sample_t, &queued_sample0, &queued_sample);
+	sound_mutex_unlock();
+	
+	return queued_sample.index;
+}
+
+
+uint32_t start_entity_sample(struct sample_t *sample, uint32_t ent_index, uint32_t start_tick)
+{
+	if(!sound_active)
+		return -1;
+	
+	struct queued_sample_t queued_sample = {
+		next_queued_sample_index++, 
+		SAMPLE_TYPE_ENTITY,
+		sample, ent_index, 0.0, 0.0,
+		start_tick, 0};
 		
 	sound_mutex_lock();
 	LL_ADD(struct queued_sample_t, &queued_sample0, &queued_sample);

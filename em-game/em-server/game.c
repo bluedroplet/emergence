@@ -485,7 +485,7 @@ void make_carcass_on_all_players(struct entity_t *craft)
 }
 
 
-void emit_teleport_to_all_players()
+void emit_teleport_to_all_players(struct entity_t *entity)
 {
 	struct player_t *player = player0;
 		
@@ -495,6 +495,7 @@ void emit_teleport_to_all_players()
 		{
 			net_emit_uint8(player->conn, EMEVENT_TELEPORT);
 			net_emit_uint32(player->conn, game_tick);
+			net_emit_uint32(player->conn, entity->index);
 			net_emit_end_of_stream(player->conn);
 		}
 		
@@ -503,7 +504,7 @@ void emit_teleport_to_all_players()
 }
 
 
-void emit_speedup_to_all_players()
+void emit_speedup_to_all_players(struct speedup_ramp_t *speedup_ramp)
 {
 	struct player_t *player = player0;
 		
@@ -513,6 +514,8 @@ void emit_speedup_to_all_players()
 		{
 			net_emit_uint8(player->conn, EMEVENT_SPEEDUP);
 			net_emit_uint32(player->conn, game_tick);
+			net_emit_float(player->conn, speedup_ramp->x);
+			net_emit_float(player->conn, speedup_ramp->y);
 			net_emit_end_of_stream(player->conn);
 		}
 		

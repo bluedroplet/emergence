@@ -12,9 +12,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <time.h>
 
 #include <sys/epoll.h>
 #include <sys/poll.h>
+#include <netinet/in.h>
 
 #include <SDL/SDL.h>
 
@@ -32,6 +34,7 @@
 #include "shared/network.h"
 #include "shared/parse.h"
 #include "shared/openssl.h"
+#include "shared/servers.h"
 #include "render.h"
 #include "console.h"
 #include "control.h"
@@ -47,6 +50,7 @@
 #include "skin.h"
 #include "key.h"
 #include "download.h"
+#include "servers.h"
 
 #ifdef LINUX
 #include "entry.h"
@@ -69,6 +73,7 @@ void client_shutdown()
 {
 	console_print("Shutting down...\n");
 	
+	kill_servers();
 	kill_download();
 	kill_key();
 	kill_openssl();
@@ -133,6 +138,7 @@ void client_libc_error(const char *fmt, ...)
 void process_network()
 {
 	uint32_t conn;
+	struct sockaddr_in sockaddr;
 	struct buffer_t *stream;
 	uint32_t index;
 	uint64_t stamp;
@@ -160,6 +166,9 @@ void process_network()
 		
 		case NETMSG_CONNECTION:
 			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &sockaddr, sizeof(struct sockaddr_in)));
+			add_new_server(&rumoured_servers, &sockaddr, time(NULL));
+			save_rumoured_servers();
 			game_process_connection(conn);
 			break;
 	
@@ -236,6 +245,7 @@ void init()
 	init_openssl();
 	init_key();
 	init_download();
+	init_servers();
 
 	create_cvars();
 	init_console_cvars();
@@ -304,6 +314,8 @@ void init()
 	if(!exec_config_file(string->text))
 		exec_config_file(find_resource("default-client.autoexec"));
 	free_string(string);
+	
+	start_server_discovery();
 }
 
 

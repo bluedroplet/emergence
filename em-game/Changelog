@@ -1,3 +1,22 @@
+2004-10-13 - Emergence 0.8
+----------------------------------------
+stop weapons from flying off upon detach
+weapons with no ammo can no longer be picked up
+better default colours
+autodownloading
+compiled maps versioning
+checksumming
+ports
+SDL audio
+sgame fixups and lockup prevention
+fix longstanding smoke/uptime issue
+server map changing
+fix weapon respawn timing
+fix server crash at end of match
+don't play demo if map cannot be found
+don't allow more players in the map than there are spawn points
+editor
+more bugfixes
 
 2004-09-03 - Emergence 0.7
 ----------------------------------------

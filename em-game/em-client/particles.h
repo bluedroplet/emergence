@@ -12,6 +12,7 @@ struct particle_t
 
 void init_particles();
 void kill_particles();
+void clear_particles();
 void create_upper_particle(struct particle_t *particle);
 void create_lower_particle(struct particle_t *particle);
 void render_upper_particles();

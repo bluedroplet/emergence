@@ -31,9 +31,9 @@
 #include "entry.h"
 #include "render.h"
 #include "input.h"
+#include "servers.h"
 
 
-int control_timer_fd;
 int control_kill_pipe[2];
 
 pthread_mutex_t control_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
@@ -47,7 +47,30 @@ void control_enter(int state)
 	if(r_DrawConsole)
 		console_enter(state);
 	else
-		toggle_ready(state);
+	{
+		if(server_discovery_started)
+			server_enter(state);
+		else
+			toggle_ready(state);
+	}
+}
+
+
+void control_up(int state)
+{
+	if(r_DrawConsole)
+		next_command(state);
+	else
+		server_up(state);
+}
+
+
+void control_down(int state)
+{
+	if(r_DrawConsole)
+		prev_command(state);
+	else
+		server_down(state);
 }
 
 
@@ -149,13 +172,13 @@ struct
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
-	{"up",			NULL,	prev_command},
+	{"up",			NULL,	control_up},
 	{"",			NULL,	NULL},
 	{"left",		NULL,	NULL},
 	{"",			NULL,	NULL},
 	{"right",		NULL,	NULL},
 	{"",			NULL,	NULL},
-	{"down",		NULL,	next_command},
+	{"down",		NULL,	control_down},
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
@@ -533,15 +556,12 @@ double next_control_tick;
 
 void process_control_alarm()
 {
-	pthread_mutex_lock(&control_mutex);
-	
-	char c;
-	while(TEMP_FAILURE_RETRY(read(control_timer_fd, &c, 1)) == 1);
-		
 	double time = get_wall_time();
 		
 	if(time > next_control_tick)
 	{
+		pthread_mutex_lock(&control_mutex);
+		
 		if(game_state == GAMESTATE_PLAYING)
 		{
 			pthread_mutex_lock(&control_mutex);
@@ -574,9 +594,9 @@ void process_control_alarm()
 		
 		next_control_tick = ((int)(time / CONTROL_TICK_INTERVAL) + 1) * 
 			(double)CONTROL_TICK_INTERVAL;
+		
+		pthread_mutex_unlock(&control_mutex);
 	}
-	
-	pthread_mutex_unlock(&control_mutex);
 }
 
 
@@ -979,13 +999,12 @@ void *control_thread(void *a)
 	struct pollfd *fds;
 	int fdcount;
 	
-	fdcount = 3;
+	fdcount = 2;
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
 	
 	fds[0].fd = input_fd; 				fds[0].events = POLLIN;
-	fds[1].fd = control_timer_fd;		fds[1].events = POLLIN;
-	fds[2].fd = control_kill_pipe[0];	fds[2].events = POLLIN;
+	fds[1].fd = control_kill_pipe[0];	fds[1].events = POLLIN;
 	
 
 	while(1)
@@ -1000,9 +1019,6 @@ void *control_thread(void *a)
 			process_input();
 		
 		if(fds[1].revents & POLLIN)
-			process_control_alarm();
-		
-		if(fds[2].revents & POLLIN)
 		{
 			free(fds);
 			pthread_exit(NULL);
@@ -1072,7 +1088,7 @@ void init_control()
 	double time = get_wall_time();
 	next_control_tick = ((int)(time / CONTROL_TICK_INTERVAL) + 1) * (double)CONTROL_TICK_INTERVAL;
 	
-	control_timer_fd = create_alarm_listener();
+	create_alarm_listener(process_control_alarm);
 	pipe(control_kill_pipe);
 	pthread_create(&control_thread_id, NULL, control_thread, NULL);
 }

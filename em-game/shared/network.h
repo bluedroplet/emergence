@@ -45,8 +45,7 @@ changes to this file must not break backward compatibility
 
 #define EMNETPACKET_MAXSIZE				512
 #define EMNETHEADER_SIZE				4
-#define EMNETPAYLOAD_MAXSIZE			508
-
+#define EMNETPAYLOAD_MAXSIZE			(EMNETPACKET_MAXSIZE - EMNETHEADER_SIZE)
 
 
 struct packet_t
@@ -65,6 +64,7 @@ struct string_t *get_text_addr(uint32_t conn);
 	
 #ifdef _NETINET_IN_H
 void get_sockaddr_in_from_conn(uint32_t conn, struct sockaddr_in *sockaddr);
+void net_emit_server_info(struct sockaddr_in *addr, uint8_t *buf, int size);
 #endif
 
 #define CONN_TYPE_LOCAL		0
@@ -83,13 +83,16 @@ void net_emit_buf(uint32_t temp_conn, void *buf, int size);
 void net_emit_end_of_stream(uint32_t temp_conn);
 
 #ifdef EMCLIENT
-void em_connect(char *addr);
+void em_connect(uint32_t ip, uint16_t port);
+void em_connect_text(char *addrport);
 #endif
 
 #ifdef EMSERVER
 extern uint16_t net_listen_port;
 void net_set_listen_port(uint16_t port);
 #endif
+
+extern char *hostname;
 
 
 void em_disconnect(uint32_t conn);
@@ -104,6 +107,7 @@ void em_disconnect(uint32_t conn);
 #define NETMSG_STREAM_UNTIMED		7
 #define NETMSG_STREAM_TIMED_OOO		8
 #define NETMSG_STREAM_UNTIMED_OOO	9
+#define NETMSG_SERVERINFO_REQUEST	10
 
 extern int net_in_pipe[2];
 extern int net_out_pipe[2];

@@ -23,6 +23,7 @@
 #include <arpa/inet.h>
 
 #include "../../common/types.h"
+#include "../../common/minmax.h"
 #include "../../common/llist.h"
 #include "../../common/stringbuf.h"
 #include "../../common/buffer.h"
@@ -37,6 +38,10 @@
 #ifdef EMSERVER
 #include "../game.h"
 #include "../entry.h"
+#endif
+
+#ifdef EMCLIENT
+#include "../servers.h"
 #endif
 
 struct in_packet_ll_t
@@ -118,7 +123,6 @@ pthread_t network_thread_id;
 pthread_mutex_t net_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 int udp_fd = -1;
-int net_timer_fd = -1;
 
 int net_kill_pipe[2];
 int net_out_pipe[2];
@@ -128,6 +132,8 @@ int net_shutting_down = 0;
 #ifdef EMSERVER
 uint16_t net_listen_port = EMNET_DEFAULTPORT;
 #endif
+
+char *hostname = NULL;
 
 
 struct conn_t *new_conn()
@@ -255,7 +261,7 @@ int insert_in_packet(struct conn_t *conn, struct packet_t *packet, int size)
 			return 1;
 		}
 
-		cpacket = cpacket->next;
+		LL_NEXT(cpacket);
 	}
 
 	
@@ -457,10 +463,14 @@ void emit_process_connection(struct conn_t *conn)
 {
 	uint32_t msg = NETMSG_CONNECTION;
 	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &msg, 4));
-	write(net_out_pipe[1], &conn, 4);
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &conn, 4));
 	
 	#ifdef EMSERVER
 	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &conn->type, 4));
+	#endif
+	
+	#ifdef EMCLIENT
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &conn->sockaddr, sizeof(struct sockaddr_in)));
 	#endif
 }
 
@@ -726,6 +736,26 @@ void check_stream(struct conn_t *conn)
 		
 		cpacket = cpacket->next;
 	}
+}
+
+
+void emit_serverinfo(struct sockaddr_in *addr, uint8_t *info, int len)
+{
+	#ifdef EMSERVER
+	uint32_t msg = NETMSG_SERVERINFO_REQUEST;
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &msg, 4));
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], addr, sizeof(struct sockaddr_in)));
+	#endif
+	
+	#ifdef EMCLIENT
+	if(servers_info_pipe[1] != -1)
+	{
+		struct buffer_t *buffer = new_buffer();
+		buffer_cat_buf(buffer, info, len);
+		TEMP_FAILURE_RETRY(write(servers_info_pipe[1], addr, sizeof(struct sockaddr_in)));
+		TEMP_FAILURE_RETRY(write(servers_info_pipe[1], &buffer, 4));
+	}
+	#endif
 }
 
 
@@ -1065,6 +1095,7 @@ void process_udp_data()
 			
 				
 			case EMNETFLAG_SERVERINFO:
+				emit_serverinfo(&recv_addr, packet.payload, size - EMNETHEADER_SIZE);
 				break;
 			}
 			
@@ -1110,8 +1141,7 @@ void get_sockaddr_in_from_conn(uint32_t conn, struct sockaddr_in *sockaddr)
 
 void network_alarm()
 {
-	char c;
-	while(TEMP_FAILURE_RETRY(read(net_timer_fd, &c, 1)) != -1);
+	pthread_mutex_lock(&net_mutex);
 
 	float time = get_wall_time();
 	
@@ -1266,6 +1296,8 @@ void network_alarm()
 			pthread_exit(NULL);
 		}
 	}
+
+	pthread_mutex_unlock(&net_mutex);
 }
 
 
@@ -1274,13 +1306,12 @@ void *network_thread(void *a)
 	struct pollfd *fds;
 	int fdcount;
 	
-	fdcount = 3;
+	fdcount = 2;
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
 	
 	fds[0].fd = udp_fd;				fds[0].events = POLLIN;
-	fds[1].fd = net_timer_fd;		fds[1].events = POLLIN;
-	fds[2].fd = net_kill_pipe[0];	fds[2].events = POLLIN;
+	fds[1].fd = net_kill_pipe[0];	fds[1].events = POLLIN;
 	
 	
 	while(1)
@@ -1299,13 +1330,6 @@ void *network_thread(void *a)
 		}
 		
 		if(fds[1].revents & POLLIN)
-		{
-			pthread_mutex_lock(&net_mutex);
-			network_alarm();
-			pthread_mutex_unlock(&net_mutex);
-		}
-		
-		if(fds[2].revents & POLLIN)
 		{
 			pthread_mutex_lock(&net_mutex);
 			
@@ -1625,8 +1649,64 @@ void net_emit_end_of_stream(uint32_t temp_conn)
 }
 
 
+void net_emit_server_info(struct sockaddr_in *addr, uint8_t *buf, int size)
+{
+	struct packet_t packet = {
+		EMNETCLASS_MISC | EMNETFLAG_SERVERINFO
+	};
+	
+	if(buf)
+	{
+		size = min(EMNETPAYLOAD_MAXSIZE, size);
+		
+		memcpy(&packet.payload, buf, size);
+	
+		size += EMNETHEADER_SIZE;
+	}
+	else
+	{
+		size = EMNETHEADER_SIZE;
+	}
+	
+	TEMP_FAILURE_RETRY(sendto(udp_fd, (char*)&packet, size, 0, 
+		addr, sizeof(struct sockaddr_in)));
+}
+
+
 #ifdef EMCLIENT
-void em_connect(char *addrport)
+void em_connect(uint32_t ip, uint16_t port)
+{
+	pthread_mutex_lock(&net_mutex);
+	
+	// TODO : check we dont already have a connection to this ip:port, if we do then 
+	// enter a new state to disconnect gracefully from the server and then reconnect
+	
+	struct conn_t *conn = new_conn();
+	conn->state = NETSTATE_CONNECTING;
+
+	conn->sockaddr.sin_family = AF_INET;
+	conn->sockaddr.sin_port = port;
+	conn->sockaddr.sin_addr.s_addr = ip;
+
+	console_print("Connecting to ");
+	console_print(inet_ntoa(conn->sockaddr.sin_addr));
+	console_print("...\n");
+
+	
+	// send connect packet to server and keep sending it until it acknowledges
+
+	conn->cpacket.header = EMNETCLASS_CONTROL | EMNETFLAG_CONNECT | 
+		EMNETCONNECT_MAGIC;
+	conn->cpacket_payload_size = 0;
+	output_cpacket(conn);
+	
+	emit_process_connecting();
+	
+	pthread_mutex_unlock(&net_mutex);
+}
+
+
+void em_connect_text(char *addrport)
 {
 	char *addr = NULL;
 	uint16_t port = EMNET_DEFAULTPORT;
@@ -1657,34 +1737,7 @@ void em_connect(char *addrport)
 	
 	free(addr);
 	
-	
-	pthread_mutex_lock(&net_mutex);
-	
-	// TODO : check we dont already have a connection to this ip:port, if we do then 
-	// enter a new state to disconnect gracefully from the server and then reconnect
-	
-	struct conn_t *conn = new_conn();
-	conn->state = NETSTATE_CONNECTING;
-
-	conn->sockaddr.sin_family = AF_INET;
-	conn->sockaddr.sin_port = htons(port);
-	conn->sockaddr.sin_addr.s_addr = ip;
-
-	console_print("Connecting to ");
-	console_print(inet_ntoa(conn->sockaddr.sin_addr));
-	console_print("...\n");
-
-	
-	// send connect packet to server and keep sending it until it acknowledges
-
-	conn->cpacket.header = EMNETCLASS_CONTROL | EMNETFLAG_CONNECT | 
-		EMNETCONNECT_MAGIC;
-	conn->cpacket_payload_size = 0;
-	output_cpacket(conn);
-	
-	emit_process_connecting();
-	
-	pthread_mutex_unlock(&net_mutex);
+	em_connect(ip, htons(port));
 }
 #endif
 
@@ -1753,7 +1806,7 @@ void net_set_listen_port(uint16_t port)
 void init_network()
 {
 	size_t size = 20;
-	char *hostname = malloc(size);
+	hostname = malloc(size);
 
 	while(gethostname(hostname, size) == -1)
 	{
@@ -1788,7 +1841,6 @@ void init_network()
 
 	struct hostent *hostent;
 	hostent = gethostbyname2(hostname, AF_INET);
-	free(hostname);
 	if(!hostent)
 	{
 		console_print("Error: gethostbyname2 failure; %s\n", strerror(h_errno));
@@ -1865,7 +1917,7 @@ void init_network()
 	
 	fcntl(net_out_pipe[0], F_SETFL, O_NONBLOCK);
 	
-	net_timer_fd = create_alarm_listener();
+	create_alarm_listener(network_alarm);
 	
 	pthread_create(&network_thread_id, NULL, network_thread, NULL);
 }

@@ -34,9 +34,10 @@ struct string_t *message_reader_read_string();
 void start_moving_view(float x1, float y1, float x2, float y2);
 
 
-
+/*
 void world_to_screen(double worldx, double worldy, int *screenx, int *screeny);
 void screen_to_world(int screenx, int screeny, double *worldx, double *worldy);
+*/
 
 void rev_thrust(int state);
 void fire_rail();
@@ -118,4 +119,27 @@ struct game_state_t
 		
 };
 
+extern double viewx, viewy;
+
+extern struct entity_t *centity0;
+
 extern struct game_state_t *cgame_state;
+
+#ifdef _PTHREAD_H
+extern pthread_mutex_t gamestate_mutex;
+#endif
+
+#define world_to_screen(worldx, worldy, screenx, screeny)\
+{\
+	*screenx = (int)floor((worldx - viewx) * ((double)(vid_width) / 1600.0)) + vid_width / 2;\
+	*screeny = vid_height / 2 - 1 - (int)floor((worldy - viewy) * ((double)(vid_width) / 1600.0));\
+}
+
+
+#define screen_to_world(screenx, screeny, worldx, worldy)\
+{\
+	*worldx = ((double)screenx - vid_width / 2 + 0.5f) / \
+		((double)(vid_width) / 1600.0) + viewx;\
+	*worldy = (((double)(vid_height / 2 - 1 - screeny)) + 0.5f) / \
+		((double)(vid_width) / 1600.0) + viewx;\
+}

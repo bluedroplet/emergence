@@ -541,7 +541,14 @@ void save_dialog_ok(char *filename)
 		r = 1;
 
 	string_clear(map_filename);
-	string_cat_text(map_filename, filename);
+	char *cc = filename;
+		
+	while(*cc && *cc != '.')
+		string_cat_char(map_filename, *cc++);
+
+	string_cat_text(map_filename, ".map");
+
+
 	set_map_path();
 	
 	if(r)

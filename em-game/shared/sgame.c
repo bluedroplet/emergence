@@ -21,16 +21,18 @@
 #include "bsp.h"
 #include "objects.h"
 
+
 #ifdef EMSERVER
+#include "sgame.h"
 #include "../game.h"
 #include "../console.h"
 #endif
 
 #ifdef EMCLIENT
 #include "../particles.h"
+#include "sgame.h"
 #endif
 
-#include "sgame.h"
 
 #ifdef EMCLIENT
 #include "../game.h"
@@ -1698,7 +1700,7 @@ int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 					craft->craft_data.right_weapon->propagate_me = 1;
 				
 				
-				emit_speedup_to_all_players();
+				emit_speedup_to_all_players(speedup_ramp);
 				break;
 			}
 		}
@@ -1739,7 +1741,7 @@ int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 			
 			craft->propagate_me = 1;
 			
-			emit_teleport_to_all_players();
+			emit_teleport_to_all_players(craft);
 			break;
 		}
 		
@@ -1931,7 +1933,7 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 				if(weapon->weapon_data.craft)
 					weapon->weapon_data.craft->propagate_me = 1;
 				
-				emit_speedup_to_all_players();
+				emit_speedup_to_all_players(speedup_ramp);
 				break;
 			}
 		}			
@@ -1959,7 +1961,7 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 			weapon->teleporting_tick = cgame_tick;
 			
 			weapon->propagate_me = 1;
-			emit_teleport_to_all_players();
+			emit_teleport_to_all_players(weapon);
 			
 //			restart = 1;
 			return 1;
@@ -2485,7 +2487,7 @@ void s_tick_weapon(struct entity_t *weapon)
 				if(fire > 0)
 				{
 					#ifdef EMCLIENT
-					start_sample(plasma_cannon_sample, cgame_tick);
+					start_entity_sample(plasma_cannon_sample, weapon->index, cgame_tick);
 					
 					if(game_state != GAMESTATE_DEMO)
 					{
@@ -2519,7 +2521,7 @@ void s_tick_weapon(struct entity_t *weapon)
 				if(fire > 0)
 				{
 					#ifdef EMCLIENT
-					start_sample(plasma_cannon_sample, cgame_tick);
+					start_entity_sample(plasma_cannon_sample, weapon->index, cgame_tick);
 					
 					if(game_state != GAMESTATE_DEMO)
 					{
@@ -2861,7 +2863,7 @@ void s_tick_weapon(struct entity_t *weapon)
 					restart = 1;
 					weapon->propagate_me = 1;
 					weapon->speeding_up = 1;
-					emit_speedup_to_all_players();
+					emit_speedup_to_all_players(speedup_ramp);
 					break;
 				}
 			}			
@@ -2886,7 +2888,7 @@ void s_tick_weapon(struct entity_t *weapon)
 				weapon->teleporting_tick = cgame_tick;
 				
 				weapon->propagate_me = 1;
-				emit_teleport_to_all_players();
+				emit_teleport_to_all_players(weapon);
 				
 //				restart = 1;
 				return;
@@ -3216,7 +3218,7 @@ void s_tick_plasma(struct entity_t *plasma)
 			plasma->teleporting_tick = cgame_tick;
 			
 			#ifdef EMSERVER
-			emit_teleport_to_all_players();
+			emit_teleport_to_all_players(plasma);
 			#endif
 			break;
 		}
@@ -3564,7 +3566,7 @@ void s_tick_rocket(struct entity_t *rocket)
 					restart = 1;
 					rocket->speeding_up = 1;
 					#ifdef EMSERVER
-					emit_speedup_to_all_players();
+					emit_speedup_to_all_players(speedup_ramp);
 					#endif
 					break;
 				}
@@ -3590,7 +3592,7 @@ void s_tick_rocket(struct entity_t *rocket)
 				rocket->teleporting_tick = cgame_tick;
 				
 				#ifdef EMSERVER
-				emit_teleport_to_all_players();
+				emit_teleport_to_all_players(rocket);
 				#endif
 				break;
 			}
@@ -3828,7 +3830,7 @@ void s_tick_mine(struct entity_t *mine)
 					restart = 1;
 					mine->speeding_up = 1;
 					#ifdef EMSERVER
-					emit_speedup_to_all_players();
+					emit_speedup_to_all_players(speedup_ramp);
 					#endif
 					break;
 				}
@@ -3854,7 +3856,7 @@ void s_tick_mine(struct entity_t *mine)
 				mine->teleporting_tick = cgame_tick;
 				
 				#ifdef EMSERVER
-				emit_teleport_to_all_players();
+				emit_teleport_to_all_players(mine);
 				#endif
 				
 			//	restart = 1;
@@ -4084,7 +4086,7 @@ void s_tick_rails(struct entity_t *rails)
 					restart = 1;
 					rails->speeding_up = 1;
 					#ifdef EMSERVER
-					emit_speedup_to_all_players();
+					emit_speedup_to_all_players(speedup_ramp);
 					#endif
 					break;
 				}
@@ -4110,7 +4112,7 @@ void s_tick_rails(struct entity_t *rails)
 				rails->teleporting_tick = cgame_tick;
 				
 				#ifdef EMSERVER
-				emit_teleport_to_all_players();
+				emit_teleport_to_all_players(rails);
 				#endif
 				break;
 			}
@@ -4305,7 +4307,7 @@ void s_tick_shield(struct entity_t *shield)
 					restart = 1;
 					shield->speeding_up = 1;
 					#ifdef EMSERVER
-					emit_speedup_to_all_players();
+					emit_speedup_to_all_players(speedup_ramp);
 					#endif
 					break;
 				}
@@ -4331,7 +4333,7 @@ void s_tick_shield(struct entity_t *shield)
 				shield->teleporting_tick = cgame_tick;
 				
 				#ifdef EMSERVER
-				emit_teleport_to_all_players();
+				emit_teleport_to_all_players(shield);
 				#endif
 				break;
 			}

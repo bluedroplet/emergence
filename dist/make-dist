@@ -2,7 +2,7 @@
 
 export CC="/home/jonny/Desktop/apbuild-1.5/apgcc"
 export APBUILD_NO_STATIC_X=1
-ver=0.8-dev
+ver=0.9-dev
 
 cd ../em-tools
 make distclean

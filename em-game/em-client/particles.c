@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-
+#include <string.h>
 #include <math.h>
 
 
@@ -50,6 +50,13 @@ void kill_particles()
 {
 	free(upper_particles);
 	free(lower_particles);
+}
+
+
+void clear_particles()
+{
+	memset(upper_pinuse, 0, NUMPARTICLES);
+	memset(lower_pinuse, 0, NUMPARTICLES);
 }
 
 

@@ -136,13 +136,20 @@ void propagate_weapon_stop_firing(struct entity_t *entity);
 void detach_weapon(struct entity_t *weapon);
 
 
-void emit_teleport_to_all_players();
-void emit_speedup_to_all_players();
+#ifdef _INC_SGAME
+void emit_teleport_to_all_players(struct entity_t *entity);
+void emit_speedup_to_all_players(struct speedup_ramp_t *speedup_ramp);
+#endif
+
 void emit_explosion(float xdis, float ydis, float xvel, float yvel, float size, uint8_t magic, 
 	uint8_t start_red, uint8_t start_green, uint8_t start_blue,
 	uint8_t end_red, uint8_t end_green, uint8_t end_blue);
 
 extern uint32_t cgame_tick;
+extern struct string_t *mapname;
+
+extern int num_players;
+extern int max_players;
 
 
 #endif // _INC_GAME

@@ -131,7 +131,7 @@ void buffer_cat_string(struct buffer_t *buffer, struct string_t *cat_string)
 	if(!buffer)
 		return;
 
-	if(!cat_string);
+	if(!cat_string)
 		return;
 
 	int len = strlen(cat_string->text) + 1;
@@ -143,6 +143,24 @@ void buffer_cat_string(struct buffer_t *buffer, struct string_t *cat_string)
 }
 
 
+void buffer_cat_string_max(struct buffer_t *buffer, struct string_t *cat_string, int max)
+{
+	if(!buffer)
+		return;
+
+	if(!cat_string)
+		return;
+
+	int len = min(max, strlen(cat_string->text));
+	
+	buffer_ensure_space(buffer, len + 1);
+	
+	memcpy(&buffer->buf[buffer->writepos], cat_string->text, len);
+	buffer->buf[buffer->writepos + len] = '\0';
+	buffer->writepos += len + 1;
+}
+
+
 void buffer_cat_text(struct buffer_t *buffer, char *text)
 {
 	if(!buffer)
@@ -151,12 +169,30 @@ void buffer_cat_text(struct buffer_t *buffer, char *text)
 	if(!text)
 		return;
 
-	int len = strlen(text) + 1;
+	int len = strlen(text);
 	
 	buffer_ensure_space(buffer, len);
 	
 	memcpy(&buffer->buf[buffer->writepos], text, len);
 	buffer->writepos += len;
+}
+
+
+void buffer_cat_text_max(struct buffer_t *buffer, char *text, int max)
+{
+	if(!buffer)
+		return;
+
+	if(!text)
+		return;
+
+	int len = min(max, strlen(text));
+	
+	buffer_ensure_space(buffer, len + 1);
+	
+	memcpy(&buffer->buf[buffer->writepos], text, len);
+	buffer->buf[buffer->writepos + len] = '\0';
+	buffer->writepos += len + 1;
 }
 
 

@@ -670,7 +670,7 @@ void set_sat_dist(struct node_t *node, uint8_t sat, float x, float y)
 	
 	fix_satellites(node, sat);
 }
-	
+
 
 void delete_all_nodes()		// always called when not working
 {
@@ -741,14 +741,32 @@ uint32_t count_nodes()
 
 void gzwrite_nodes(gzFile file)
 {
-	uint32_t num_nodes = count_nodes();
-	gzwrite(file, &num_nodes, 4);
-
 	struct node_t *cnode = node0;
-	uint32_t cnode_index = 0;
+	uint32_t num_nodes = count_nodes();
 
 	while(cnode)
 	{
+		if(!finite(cnode->x) || !finite(cnode->y))
+			num_nodes--;
+		
+		LL_NEXT(cnode);
+	}
+	
+
+	gzwrite(file, &num_nodes, 4);
+
+	uint32_t cnode_index = 0;
+
+	cnode = node0;
+		
+	while(cnode)
+	{
+		if(!finite(cnode->x) || !finite(cnode->y))
+		{
+			LL_NEXT(cnode);
+			continue;
+		}
+		
 		cnode->index = cnode_index++;
 		gzwrite(file, &cnode->x, 4);
 		gzwrite(file, &cnode->y, 4);
@@ -785,7 +803,7 @@ int gzread_nodes(gzFile file)
 	{
 		struct node_t *cnode = new_node();
 
-		cnode->index = cnode_index;
+		cnode->index = cnode_index++;
 
 		if(gzread(file, &cnode->x, 4) != 4)
 			goto error;
@@ -833,9 +851,14 @@ int gzread_nodes(gzFile file)
 		if(gzread(file, &cnode->num_conns, 4) != 4)
 			goto error;
 		
-		make_node_effective(cnode);
-
-		cnode_index++;
+		if(!finite(cnode->x) || !finite(cnode->y))
+		{
+			LL_REMOVE(struct node_t, &node0, cnode);
+		}
+		else
+		{
+			make_node_effective(cnode);
+		}
 	}
 
 	return 1;

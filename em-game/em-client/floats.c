@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <math.h>
 
 #include <zlib.h>
 

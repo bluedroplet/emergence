@@ -1460,7 +1460,11 @@ int tile_conn(struct conn_t *conn)
 
 	assert(conn->squished_texture);
 	assert(conn->squished_texture->width);
-	assert(conn->squished_texture->height);
+	if(!conn->squished_texture->height)
+	{
+		leave_main_lock();
+		return 1;
+	}
 
 
 	int x, y, box_y, box_x;

@@ -48,7 +48,9 @@ void free_buffer(struct buffer_t *buffer);
 
 void buffer_cat_buffer(struct buffer_t *buffer, struct buffer_t *cat_buffer);
 void buffer_cat_string(struct buffer_t *buffer, struct string_t *cat_string);
+void buffer_cat_string_max(struct buffer_t *buffer, struct string_t *cat_string, int max);
 void buffer_cat_text(struct buffer_t *buffer, char *text);
+void buffer_cat_text_max(struct buffer_t *buffer, char *text, int max);
 void buffer_cat_buf(struct buffer_t *buffer, char *buf, int size);
 void buffer_cat_int(struct buffer_t *buffer, int val);
 void buffer_cat_uint64(struct buffer_t *buffer, uint64_t val);

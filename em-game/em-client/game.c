@@ -3,12 +3,15 @@
 #define _REENTRANT
 #endif
 
+#include <netinet/in.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
 #include <memory.h>
 #include <assert.h>
+#include <pthread.h>
 
 #include <zlib.h>
 
@@ -44,6 +47,7 @@
 #include "key.h"
 #include "download.h"
 #include "map.h"
+#include "servers.h"
 
 #ifdef LINUX
 #include "shared/timer.h"
@@ -217,6 +221,12 @@ struct event_t
 			int left, right;
 			
 		} ammo_levels_data;
+		
+		struct
+		{
+			float x, y;
+			
+		} static_sound_data;
 	};
 	
 	struct event_t *next;
@@ -299,6 +309,9 @@ gzFile gzdemo;
 #define RAIL_TRAIL_EXPAND_DISTANCE 10.0
 #define RAIL_TRAIL_INITIAL_EXPAND_VELOCITY ((2 * RAIL_TRAIL_EXPAND_DISTANCE) / RAIL_TRAIL_EXPAND_TIME)
 #define RAIL_TRAIL_EXPAND_ACC ((-RAIL_TRAIL_INITIAL_EXPAND_VELOCITY) / RAIL_TRAIL_EXPAND_TIME)
+
+
+pthread_mutex_t gamestate_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 uint8_t winner_type;
@@ -387,6 +400,7 @@ void clear_game()
 	clear_floating_images();
 	clear_ticks();
 	clear_skins();
+	clear_particles();
 	
 	if((game_state == GAMESTATE_SPECTATING || game_state == GAMESTATE_PLAYING) && recording)
 	{
@@ -426,7 +440,7 @@ void screen_to_world(int screenx, int screeny, double *worldx, double *worldy)
 }
 */
 
-
+/*
 void world_to_screen(double worldx, double worldy, int *screenx, int *screeny)
 {
 	*screenx = (int)floor((worldx - viewx) * ((double)(vid_width) / 1600.0)) + vid_width / 2;
@@ -441,7 +455,7 @@ void screen_to_world(int screenx, int screeny, double *worldx, double *worldy)
 	*worldy = (((double)(vid_height / 2 - 1 - screeny)) + 0.5f) / 
 		((double)(vid_width) / 1600.0) + viewx;
 }
-
+*/
 /*
 void add_offset_view(struct entity_t *entity)
 {
@@ -731,7 +745,11 @@ void game_process_connection(uint32_t conn)
 	switch(game_state)
 	{
 	case GAMESTATE_DEAD:
+		break;
+	
 	case GAMESTATE_DEMO:
+		gzclose(gzdemo);
+		gzdemo = NULL;
 		break;
 	
 	case GAMESTATE_CONNECTING:
@@ -760,6 +778,7 @@ void game_process_connection(uint32_t conn)
 		message_reader.type = MESSAGE_READER_STREAM;
 	}
 	
+	stop_server_discovery();
 	console_print("\xab\nConnected!\n");
 }
 
@@ -840,6 +859,7 @@ int game_process_proto_ver()
 		
 		if(game_state != GAMESTATE_DEMO)
 		{
+			emit_servers(game_conn);
 			net_emit_uint8(game_conn, EMMSG_JOIN);
 			net_emit_end_of_stream(game_conn);
 			game_state = GAMESTATE_JOINING;
@@ -1390,7 +1410,7 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->rocket_data.smoke_end_red = event->ent_data.rocket_data.smoke_end_red;
 		entity->rocket_data.smoke_end_green = event->ent_data.rocket_data.smoke_end_green;
 		entity->rocket_data.smoke_end_blue = event->ent_data.rocket_data.smoke_end_blue;
-		entity->rocket_data.sample = start_sample(rocket_sample, event->tick);
+		entity->rocket_data.sample = start_entity_sample(rocket_sample, entity->index, event->tick);
 		break;
 	
 	case ENT_MINE:
@@ -1615,7 +1635,7 @@ void process_railtrail_event(struct event_t *event)
 	rail_trail.outer_blue = event->railtrail_data.outer_blue;
 	
 	LL_ADD(struct rail_trail_t, &rail_trail0, &rail_trail);
-	start_sample(railgun_sample, event->tick);
+	start_static_sample(railgun_sample, rail_trail.x1, rail_trail.y1, event->tick);
 }
 
 
@@ -1678,19 +1698,37 @@ void process_explosion_event(struct event_t *event)
 		event->explosion_data.start_blue, event->explosion_data.end_red, 
 		event->explosion_data.end_green, event->explosion_data.end_blue);
 
-	start_sample(explosion_sample, event->tick);
+	start_static_sample(explosion_sample, 
+		event->explosion_data.xdis, event->explosion_data.ydis, 
+		event->tick);
+}
+
+
+void add_teleport_event(struct event_t *event)
+{
+	event->ent_data.index = message_reader_read_uint32();
 }
 
 
 void process_teleport_event(struct event_t *event)
 {
-	start_sample(teleporter_sample, event->tick);
+	start_entity_sample(teleporter_sample, 
+		event->ent_data.index, event->tick);
+}
+
+
+void add_speedup_event(struct event_t *event)
+{
+	event->static_sound_data.x = message_reader_read_float();
+	event->static_sound_data.y = message_reader_read_float();
 }
 
 
 void process_speedup_event(struct event_t *event)
 {
-	start_sample(speedup_ramp_sample, event->tick);
+	start_static_sample(speedup_ramp_sample, 
+		event->static_sound_data.x, event->static_sound_data.y, 
+		event->tick);
 }
 
 
@@ -2151,6 +2189,14 @@ int game_demo_process_event()
 		add_explosion_event(&event);
 		break;
 	
+	case EMEVENT_TELEPORT:
+		add_teleport_event(&event);
+		break;
+	
+	case EMEVENT_SPEEDUP:
+		add_speedup_event(&event);
+		break;
+	
 	case EMEVENT_COLOURS:
 		add_colours_event(&event);
 		break;
@@ -2227,6 +2273,14 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp)
 	
 	case EMEVENT_EXPLOSION:
 		add_explosion_event(&event);
+		break;
+	
+	case EMEVENT_TELEPORT:
+		add_teleport_event(&event);
+		break;
+	
+	case EMEVENT_SPEEDUP:
+		add_speedup_event(&event);
 		break;
 	
 	case EMEVENT_COLOURS:
@@ -2306,6 +2360,14 @@ int game_process_event_untimed(uint32_t index)
 		add_explosion_event(&event);
 		break;
 	
+	case EMEVENT_TELEPORT:
+		add_teleport_event(&event);
+		break;
+	
+	case EMEVENT_SPEEDUP:
+		add_speedup_event(&event);
+		break;
+	
 	case EMEVENT_COLOURS:
 		add_colours_event(&event);
 		break;
@@ -2380,6 +2442,14 @@ int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp)
 		add_explosion_event(&event);
 		break;
 	
+	case EMEVENT_TELEPORT:
+		add_teleport_event(&event);
+		break;
+	
+	case EMEVENT_SPEEDUP:
+		add_speedup_event(&event);
+		break;
+	
 	case EMEVENT_COLOURS:
 		add_colours_event(&event);
 		break;
@@ -2450,6 +2520,14 @@ int game_process_event_untimed_ooo(uint32_t index)
 	
 	case EMEVENT_EXPLOSION:
 		add_explosion_event(&event);
+		break;
+	
+	case EMEVENT_TELEPORT:
+		add_teleport_event(&event);
+		break;
+	
+	case EMEVENT_SPEEDUP:
+		add_speedup_event(&event);
 		break;
 	
 	case EMEVENT_COLOURS:
@@ -4698,6 +4776,8 @@ void render_game()
 	if(!game_rendering)
 		return;
 	
+	pthread_mutex_lock(&gamestate_mutex);
+	
 	struct entity_t *entity;
 	switch(game_state)
 	{
@@ -4712,14 +4792,21 @@ void render_game()
 		break;
 	
 	default:
+		pthread_mutex_unlock(&gamestate_mutex);
 		return;
 	}
 	
 	if(game_state == GAMESTATE_DEAD)
+	{
+		pthread_mutex_unlock(&gamestate_mutex);
 		return;
+	}
 		
 	if(!entity)
+	{
+		pthread_mutex_unlock(&gamestate_mutex);
 		return;
+	}
 	
 	if(entity->teleporting)
 	{
@@ -4735,6 +4822,8 @@ void render_game()
 //	add_offset_view(entity);
 	add_moving_view();
 	
+	pthread_mutex_unlock(&gamestate_mutex);
+
 	render_stars();
 	render_floating_images();
 	render_lower_particles();
@@ -4773,7 +4862,7 @@ void qc_name(char *new_name)
 
 void cf_connect(char *addr)
 {
-	em_connect(addr);
+	em_connect_text(addr);
 }
 
 

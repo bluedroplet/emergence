@@ -163,8 +163,11 @@ void fix_conic_conn_from_node(struct conn_t *conn, struct node_t *node1)
 		
 		double t = numer / denom;
 	
-		node2->x = bx1 + (bx2 - bx1) * t;
-		node2->y = by1 + (by2 - by1) * t;
+		if(finite(t))
+		{
+			node2->x = bx1 + (bx2 - bx1) * t;
+			node2->y = by1 + (by2 - by1) * t;
+		}
 	}
 	else
 	{
@@ -185,8 +188,11 @@ void fix_conic_conn_from_node(struct conn_t *conn, struct node_t *node1)
 		dx *= dist;
 		dy *= dist;
 		
-		node2->x = cx + dx;
-		node2->y = cy + dy;
+		if(finite(t))
+		{
+			node2->x = cx + dx;
+			node2->y = cy + dy;
+		}
 	}
 	
 	make_node_effective(node1);
@@ -1437,8 +1443,13 @@ void draw_conic_conn(struct conn_t *conn)
 }
 
 
+int draw_bezier_conn_recursion_count;
+
 void draw_bezier_conn_sub_left(struct conn_t *conn, struct bezier_t *bezier, double t1, double t2)
 {
+	if(draw_bezier_conn_recursion_count++ > 200)
+		return;
+	
 	float x1, y1, x2, y2;
 	float dx1, dy1, dx2, dy2;
 	int sx1, sy1, sx2, sy2;
@@ -1492,6 +1503,9 @@ void draw_bezier_conn_sub_left(struct conn_t *conn, struct bezier_t *bezier, dou
 
 void draw_bezier_conn_sub_right(struct conn_t *conn, struct bezier_t *bezier, double t1, double t2)
 {
+	if(draw_bezier_conn_recursion_count++ > 200)
+		return;
+	
 	float x1, y1, x2, y2;
 	float dx1, dy1, dx2, dy2;
 	int sx1, sy1, sx2, sy2;
@@ -1556,7 +1570,13 @@ void draw_bezier_conn(struct conn_t *conn)
 	bezier.x4 = conn->node2->effective_x[conn->sat2];
 	bezier.y4 = conn->node2->effective_y[conn->sat2];
 	
+//	if(bezier.x1 == bezier.x4 && bezier.y1 == bezier.y4)
+//		return;
+	
+	draw_bezier_conn_recursion_count = 0;
 	draw_bezier_conn_sub_left(conn, &bezier, 0, 1);
+	
+	draw_bezier_conn_recursion_count = 0;
 	draw_bezier_conn_sub_right(conn, &bezier, 0, 1);
 }
 
