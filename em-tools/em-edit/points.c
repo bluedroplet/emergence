@@ -699,7 +699,7 @@ void draw_points()
 
 void init_points()
 {
-	s_pointnode = read_png_surface(find_resource("em-edit/point.png"));
+	s_pointnode = read_png_surface(find_resource("point.png"));
 }
 
 

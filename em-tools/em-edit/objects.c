@@ -2658,16 +2658,16 @@ void init_objects()
 	s_rails = read_png_surface(find_resource(
 		"stock-object-textures/rails.png"));
 	s_spawn_point_placeholder = read_png_surface(find_resource(
-		"em-edit/spawn-point-placeholder.png"));
+		"spawn-point-placeholder.png"));
 	s_teleporter_placeholder = read_png_surface(find_resource(
-		"em-edit/teleporter-placeholder.png"));
+		"teleporter-placeholder.png"));
 	s_gravity_well_placeholder = read_png_surface(find_resource(
-		"em-edit/gravity-well-placeholder.png"));
+		"gravity-well-placeholder.png"));
 	s_shield_energy = read_png_surface(find_resource(
 		"stock-object-textures/shield-pickup.png"));
 	
 	s_stock_speedup_ramp = read_png_surface(find_resource(
-		"em-edit/stock-speedup-ramp.png"));
+		"stock-speedup-ramp.png"));
 }
 
 

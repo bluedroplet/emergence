@@ -2378,7 +2378,7 @@ void finished_defining_fill()
 
 void init_interface()
 {
-	s_select = read_png_surface(find_resource("em-edit/select.png"));
+	s_select = read_png_surface(find_resource("select.png"));
 	init_nodes();
 	init_points();
 	init_objects();

@@ -996,9 +996,9 @@ void draw_width_sats()
 
 void init_nodes()
 {
-	s_node = read_png_surface(find_resource("em-edit/node.png"));
-	s_vectsat = read_png_surface(find_resource("em-edit/vect-sat.png"));
-	s_widthsat = read_png_surface(find_resource("em-edit/width-sat.png"));
+	s_node = read_png_surface(find_resource("node.png"));
+	s_vectsat = read_png_surface(find_resource("vect-sat.png"));
+	s_widthsat = read_png_surface(find_resource("width-sat.png"));
 }
 
 
