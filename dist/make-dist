@@ -4,13 +4,13 @@ cd ../em-tools
 make distclean
 aclocal-1.8 || exit
 automake-1.8 || exit
-autoconf-2.58 || exit
+autoconf-2.59 || exit
 
 cd ../em-game
 make distclean
 aclocal-1.8 || exit
 automake-1.8 || exit
-autoconf-2.58 || exit
+autoconf-2.59 || exit
 
 cd ../em-tools
 
@@ -24,6 +24,7 @@ cd ../dist
                                                                                                                                
 
 for arch in pentiumpro pentium2 pentium3 pentium4 athlon athlon-tbird athlon-xp athlon-mp
+#for arch in pentium4
 do
 
 stage3=i686

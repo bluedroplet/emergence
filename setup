@@ -10,7 +10,7 @@ make distclean
 
 aclocal-1.8
 automake-1.8
-autoconf-2.58
+autoconf-2.59
 ./configure
 
 cd ../em-tools
@@ -19,7 +19,7 @@ make distclean
 
 aclocal-1.8
 automake-1.8
-autoconf-2.58
+autoconf-2.59
 ./configure
 
 cd ../misc
@@ -28,7 +28,7 @@ make distclean
 
 aclocal-1.8
 automake-1.8
-autoconf-2.58
+autoconf-2.59
 ./configure
 
 cd ../
