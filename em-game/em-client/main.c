@@ -47,7 +47,7 @@
 
 void create_cvars()
 {
-	create_cvar_string("name", "", 0);
+	create_cvar_string("name", "noname", 0);
 	create_cvar_command("exec", exec_config_file);
 }
 
