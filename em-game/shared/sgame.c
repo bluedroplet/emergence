@@ -229,6 +229,10 @@ struct entity_t *new_entity(struct entity_t **entity0)
 	entity->index = nextentity++;
 	#endif
 	
+	#ifdef EMCLIENT
+	entity->index = NO_ENT_INDEX;
+	#endif
+	
 	return entity;
 }
 
