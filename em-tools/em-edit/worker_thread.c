@@ -39,16 +39,10 @@ pthread_cond_t cond;
 pthread_mutex_t lock;
 int mypipe[2];
 int exit_worker_thread = 0;
-int worker_pid = 0;
 
 
 void *worker_thread(void *a)
 {
-	int worker_pid = getpid();
-	write(mypipe[1], &worker_pid, 4);
-	
-//	nice(20);
-	
 	while(1)
 	{
 		pthread_cond_wait(&cond, &lock);
@@ -91,7 +85,6 @@ void start_worker_thread()
 	pthread_mutex_lock(&lock);
 	pthread_cond_init(&cond, NULL);
 	pthread_create(&thread, NULL, worker_thread, NULL);
-	read(mypipe[0], &worker_pid, 4);
 }
 
 
