@@ -1663,7 +1663,7 @@ int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 	while(speedup_ramp)
 	{
 		double sin_theta, cos_theta;
-		sincos(speedup_ramp->theta + M_PI / 2.0, &sin_theta, &cos_theta);
+		sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 		
 		if(line_in_circle(speedup_ramp->x + cos_theta * speedup_ramp->width / 2.0, 
 			speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
@@ -1675,10 +1675,8 @@ int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 			
 			if(!craft->speeding_up)
 			{
-				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
-				
 				craft->xvel -= speedup_ramp->boost * sin_theta;
-				craft->yvel -= speedup_ramp->boost * cos_theta;
+				craft->yvel += speedup_ramp->boost * cos_theta;
 				
 				restart = 1;
 				craft->propagate_me = 1;
@@ -1892,7 +1890,7 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 	while(speedup_ramp)
 	{
 		double sin_theta, cos_theta;
-		sincos(speedup_ramp->theta + M_PI / 2.0, &sin_theta, &cos_theta);
+		sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 		
 		if(line_in_circle(speedup_ramp->x + cos_theta * speedup_ramp->width / 2.0, 
 			speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
@@ -1904,10 +1902,8 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 			
 			if(!weapon->speeding_up)
 			{
-				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
-				
 				weapon->xvel -= speedup_ramp->boost * sin_theta;
-				weapon->yvel -= speedup_ramp->boost * cos_theta;
+				weapon->yvel += speedup_ramp->boost * cos_theta;
 				
 				restart = 1;
 				weapon->propagate_me = 1;
@@ -2859,7 +2855,7 @@ void s_tick_weapon(struct entity_t *weapon)
 		while(speedup_ramp)
 		{
 			double sin_theta, cos_theta;
-			sincos(speedup_ramp->theta + M_PI / 2.0, &sin_theta, &cos_theta);
+			sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 			
 			if(line_in_circle(speedup_ramp->x + cos_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
@@ -2871,9 +2867,7 @@ void s_tick_weapon(struct entity_t *weapon)
 				
 				if(!weapon->speeding_up)
 				{
-					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
-					
-					weapon->xvel += speedup_ramp->boost * sin_theta;
+					weapon->xvel -= speedup_ramp->boost * sin_theta;
 					weapon->yvel += speedup_ramp->boost * cos_theta;
 					
 					restart = 1;
@@ -3563,8 +3557,8 @@ void s_tick_rocket(struct entity_t *rocket)
 		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
 		{
-			double sin_theta, cos_theta;
-			sincos(speedup_ramp->theta + M_PI / 2.0, &sin_theta, &cos_theta);
+		//	double sin_theta, cos_theta;
+			sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 			
 			if(line_in_circle(speedup_ramp->x + cos_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
@@ -3576,10 +3570,8 @@ void s_tick_rocket(struct entity_t *rocket)
 				
 				if(!rocket->speeding_up)
 				{
-					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
-					
 					rocket->xvel -= speedup_ramp->boost * sin_theta;
-					rocket->yvel -= speedup_ramp->boost * cos_theta;
+					rocket->yvel += speedup_ramp->boost * cos_theta;
 					
 					restart = 1;
 					rocket->speeding_up = 1;
@@ -3830,7 +3822,7 @@ void s_tick_mine(struct entity_t *mine)
 		while(speedup_ramp)
 		{
 			double sin_theta, cos_theta;
-			sincos(speedup_ramp->theta + M_PI / 2.0, &sin_theta, &cos_theta);
+			sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 			
 			if(line_in_circle(speedup_ramp->x + cos_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
@@ -3842,10 +3834,8 @@ void s_tick_mine(struct entity_t *mine)
 				
 				if(!mine->speeding_up)
 				{
-					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
-					
 					mine->xvel -= speedup_ramp->boost * sin_theta;
-					mine->yvel -= speedup_ramp->boost * cos_theta;
+					mine->yvel += speedup_ramp->boost * cos_theta;
 					
 					restart = 1;
 					mine->speeding_up = 1;
@@ -4088,7 +4078,7 @@ void s_tick_rails(struct entity_t *rails)
 		while(speedup_ramp)
 		{
 			double sin_theta, cos_theta;
-			sincos(speedup_ramp->theta + M_PI / 2.0, &sin_theta, &cos_theta);
+			sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 			
 			if(line_in_circle(speedup_ramp->x + cos_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
@@ -4100,10 +4090,8 @@ void s_tick_rails(struct entity_t *rails)
 				
 				if(!rails->speeding_up)
 				{
-					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
-					
 					rails->xvel -= speedup_ramp->boost * sin_theta;
-					rails->yvel -= speedup_ramp->boost * cos_theta;
+					rails->yvel += speedup_ramp->boost * cos_theta;
 					
 					restart = 1;
 					rails->speeding_up = 1;
@@ -4311,7 +4299,7 @@ void s_tick_shield(struct entity_t *shield)
 		while(speedup_ramp)
 		{
 			double sin_theta, cos_theta;
-			sincos(speedup_ramp->theta + M_PI / 2.0, &sin_theta, &cos_theta);
+			sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 			
 			if(line_in_circle(speedup_ramp->x + cos_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
@@ -4323,10 +4311,8 @@ void s_tick_shield(struct entity_t *shield)
 				
 				if(!shield->speeding_up)
 				{
-					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
-					
 					shield->xvel -= speedup_ramp->boost * sin_theta;
-					shield->yvel -= speedup_ramp->boost * cos_theta;
+					shield->yvel += speedup_ramp->boost * cos_theta;
 					
 					restart = 1;
 					shield->speeding_up = 1;

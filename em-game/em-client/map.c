@@ -196,30 +196,34 @@ int load_map(char *map_name)
 	render_frame();
 	
 	
-	struct string_t *map_filename = new_string_text("stock-maps/");
-	string_cat_text(map_filename, map_name);
-	string_cat_text(map_filename, ".cmap");
+	struct string_t *filename = new_string_string(emergence_home_dir);
+	string_cat_text(filename, "/maps/");
+	string_cat_text(filename, map_name);
+	string_cat_text(filename, ".cmap");
+	
+	gzFile gzfile = gzopen(filename->text, "rb");
 
-	gzFile gzfile = gzopen(find_resource(map_filename->text), "rb");
 	if(!gzfile)
 	{
-		free_string(map_filename);
-		map_filename = new_string_string(emergence_home_dir);
-		string_cat_text(map_filename, "/maps/");
-		string_cat_text(map_filename, map_name);
-		string_cat_text(map_filename, ".cmap");
+		free_string(filename);
+		filename = new_string_text("stock-maps/");
+		string_cat_text(filename, map_name);
+		string_cat_text(filename, ".cmap");
 	
-		gzFile gzfile = gzopen(map_filename->text, "rb");
+		gzfile = gzopen(find_resource(filename->text), "rb");
 		if(!gzfile)
 		{
 			console_print("Could not load map: %s\n", map_name);
-			return 1;
+			free_string(filename);
+			return 0;
 		}
 	}
-	
-	
-	console_print(map_filename->text);
+
+	console_print(filename->text);
 	console_print("\n");
+	
+	free_string(filename);
+
 	
 	clear_floating_images();
 	clear_sgame();
@@ -283,8 +287,6 @@ int load_map(char *map_name)
 	gzclose(gzfile);
 	
 	create_teleporter_sparkles();
-	
-	free_string(map_filename);
 
 	console_print("Map loaded ok.\n");
 	render_frame();

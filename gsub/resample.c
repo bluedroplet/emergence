@@ -929,10 +929,11 @@ struct surface_t *rotate_surface(struct surface_t *in_surface,
 
 				
 			uint8_t *src = &((uint8_t*)in_surface->alpha_buf)
-				[src_ypos * in_surface->width + src_xpos];
+				[(in_surface->height - src_ypos - 1) * in_surface->width + src_xpos];
 			double alpha = (double)(*src) / 255.0;
 			
-			src = &((uint8_t*)in_surface->buf)[(src_ypos * in_surface->width + src_xpos) * 3];
+			src = &((uint8_t*)in_surface->buf)
+				[((in_surface->height - src_ypos - 1) * in_surface->width + src_xpos) * 3];
 			double red = ((double)(*src++) / 255.0) * alpha;
 			double green = ((double)(*src++) / 255.0) * alpha;
 			double blue = ((double)(*src) / 255.0) * alpha;
@@ -975,13 +976,15 @@ struct surface_t *rotate_surface(struct surface_t *in_surface,
 
 					// actuate pixel intensity
 
-					float *dst = &((float*)out_surface->buf)[(dst_ypos * out_width + dst_xpos) * 3];
+					float *dst = &((float*)out_surface->buf)
+						[((out_width - dst_ypos - 1) * out_width + dst_xpos) * 3];
 
 					*dst++ += (float)(red * area);
 					*dst++ += (float)(green * area);
 					*dst += (float)(blue * area);
 
-					((float*)out_surface->alpha_buf)[dst_ypos * out_width + dst_xpos] += 
+					((float*)out_surface->alpha_buf)
+						[(out_width - dst_ypos - 1) * out_width + dst_xpos] += 
 						(float)(alpha * area);
 				}
 			}

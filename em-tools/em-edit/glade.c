@@ -237,6 +237,7 @@ create_speedup_ramp_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (vbox4), 5);
 
   frame3 = gtk_frame_new (NULL);
+  gtk_widget_show (frame3);
   gtk_box_pack_start (GTK_BOX (vbox4), frame3, FALSE, FALSE, 0);
 
   texture_pixmapentry = gnome_pixmap_entry_new (NULL, "Select Texture", TRUE);

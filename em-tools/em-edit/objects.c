@@ -92,6 +92,29 @@ int object_scale_job;
 #define OBJECT_THRESHOLD_SQUARED (OBJECT_THRESHOLD * OBJECT_THRESHOLD)
 
 
+double degrees_to_radians(double degrees)
+{
+	return 2 * M_PI - (degrees * M_PI) / 180.0;
+}
+
+
+double radians_to_degrees(double radians)
+{
+	double degrees = ((2 * M_PI - radians) * 180.0) / M_PI;
+	
+	while(degrees > 180.0)
+		degrees -= 360.0;
+	
+	while(degrees <= -180.0)
+		degrees += 360.0;
+	
+	if(degrees == -0.0)
+		degrees = 0.0;
+	
+	return degrees;
+}
+
+
 int add_object_pointer(struct object_pointer_t **objectp0, struct object_t *object)
 {
 	if(!objectp0)
@@ -453,8 +476,7 @@ void on_plasma_cannon_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, 
 	
 	stop_working();
 	
-	object->plasma_cannon_data.angle = 
-		gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
+	object->plasma_cannon_data.angle = degrees_to_radians(gtk_spin_button_get_value(spinbutton));
 
 	invalidate_object(object);
 	
@@ -501,7 +523,7 @@ void run_plasma_cannon_properties_dialog(void *menu, struct object_t *object)
 		"plasmas_spinbutton")), (gfloat)object->plasma_cannon_data.plasmas);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)(object->plasma_cannon_data.angle + M_PI) * (180.0 / M_PI));
+		"angle_spinbutton")), radians_to_degrees(object->plasma_cannon_data.angle));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"respawn_delay_spinbutton")), (gfloat)object->plasma_cannon_data.respawn_delay);
@@ -579,7 +601,7 @@ void on_minigun_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpoint
 	
 	stop_working();
 	
-	object->minigun_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
+	object->minigun_data.angle = degrees_to_radians(gtk_spin_button_get_value(spinbutton));
 
 	invalidate_object(object);
 	
@@ -625,7 +647,7 @@ void run_minigun_properties_dialog(void *menu, struct object_t *object)
 		"bullets_spinbutton")), (gfloat)object->minigun_data.bullets);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)(object->minigun_data.angle + M_PI) * (180.0 / M_PI));
+		"angle_spinbutton")), radians_to_degrees(object->minigun_data.angle));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"respawn_delay_spinbutton")), (gfloat)object->minigun_data.respawn_delay);
@@ -715,7 +737,7 @@ void on_rocket_launcher_angle_spinbutton_value_changed(GtkSpinButton *spinbutton
 		gtk_spin_button_set_value(spinbutton, value);
 	}
 */	
-	object->rocket_launcher_data.angle = value / (180.0 / M_PI) - M_PI;
+	object->rocket_launcher_data.angle = degrees_to_radians(value);
 	
 	invalidate_object(object);
 	
@@ -761,7 +783,7 @@ void run_rocket_launcher_properties_dialog(void *menu, struct object_t *object)
 		"rockets_spinbutton")), (gfloat)object->rocket_launcher_data.rockets);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)(object->rocket_launcher_data.angle + M_PI) * (180.0 / M_PI));
+		"angle_spinbutton")), radians_to_degrees(object->rocket_launcher_data.angle));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"respawn_delay_spinbutton")), (gfloat)object->rocket_launcher_data.respawn_delay);
@@ -839,7 +861,7 @@ void on_rails_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer
 	
 	stop_working();
 	
-	object->rails_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
+	object->rails_data.angle = degrees_to_radians(gtk_spin_button_get_value(spinbutton));
 
 	invalidate_object_type(OBJECTTYPE_RAILS);
 	
@@ -884,7 +906,7 @@ void run_rails_properties_dialog(void *menu, struct object_t *object)
 		"quantity_spinbutton")), (gfloat)object->rails_data.quantity);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)(object->rails_data.angle + M_PI) * (180.0 / M_PI));
+		"angle_spinbutton")), radians_to_degrees(object->rails_data.angle));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"respawn_delay_spinbutton")), (gfloat)object->rails_data.respawn_delay);
@@ -962,8 +984,7 @@ void on_shield_energy_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, 
 	
 	stop_working();
 	
-	object->shield_energy_data.angle = 
-		gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
+	object->shield_energy_data.angle = degrees_to_radians(gtk_spin_button_get_value(spinbutton));
 
 	invalidate_object_type(OBJECTTYPE_SHIELDENERGY);
 	
@@ -1009,7 +1030,7 @@ void run_shield_energy_properties_dialog(void *menu, struct object_t *object)
 		"energy_spinbutton")), (gfloat)object->shield_energy_data.energy);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)(object->shield_energy_data.angle + M_PI) * (180.0 / M_PI));
+		"angle_spinbutton")), radians_to_degrees(object->shield_energy_data.angle));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"respawn_delay_spinbutton")), (gfloat)object->shield_energy_data.respawn_delay);
@@ -1115,7 +1136,7 @@ void on_spawn_point_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gp
 
 	stop_working();
 
-	object->spawn_point_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
+	object->spawn_point_data.angle = degrees_to_radians(gtk_spin_button_get_value(spinbutton));
 
 	invalidate_object(object);
 	
@@ -1173,7 +1194,7 @@ void run_spawn_point_properties_dialog(void *menu, struct object_t *object)
 		"height_spinbutton")), (gfloat)object->spawn_point_data.height);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)(object->spawn_point_data.angle + M_PI) * (180.0 / M_PI));
+		"angle_spinbutton")), radians_to_degrees(object->spawn_point_data.angle));
 	
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"teleport_only_checkbutton")), (gboolean)object->spawn_point_data.teleport_only);
@@ -1282,7 +1303,7 @@ void on_speedup_ramp_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, g
 
 	stop_working();
 
-	object->speedup_ramp_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
+	object->speedup_ramp_data.angle = degrees_to_radians(gtk_spin_button_get_value(spinbutton));
 
 	invalidate_object(object);
 	
@@ -1340,7 +1361,7 @@ void run_speedup_ramp_properties_dialog(void *menu, struct object_t *object)
 		"height_spinbutton")), (gfloat)object->speedup_ramp_data.height);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)(object->speedup_ramp_data.angle + M_PI) * (180.0 / M_PI));
+		"angle_spinbutton")), radians_to_degrees(object->speedup_ramp_data.angle));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"activation_width_spinbutton")), (gfloat)object->speedup_ramp_data.activation_width);
@@ -1450,7 +1471,7 @@ void on_teleporter_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpo
 
 	stop_working();
 
-	object->teleporter_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
+	object->teleporter_data.angle = degrees_to_radians(gtk_spin_button_get_value(spinbutton));
 
 	invalidate_object(object);
 	
@@ -1522,7 +1543,7 @@ void on_teleporter_rotation_angle_spinbutton_value_changed(GtkSpinButton *spinbu
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
 
 	object->teleporter_data.rotation_angle = 
-		gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
+		gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) + M_PI;
 }
 
 
@@ -1548,7 +1569,7 @@ void on_teleporter_divider_angle_spinbutton_value_changed(GtkSpinButton *spinbut
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
 
 	object->teleporter_data.divider_angle = 
-		gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
+		gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) + M_PI;
 }
 
 
@@ -1581,7 +1602,7 @@ void run_teleporter_properties_dialog(void *menu, struct object_t *object)
 		"height_spinbutton")), (gfloat)object->teleporter_data.height);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)(object->teleporter_data.angle + M_PI) * (180.0 / M_PI));
+		"angle_spinbutton")), radians_to_degrees(object->teleporter_data.angle));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"radius_spinbutton")), (gfloat)object->teleporter_data.radius);
@@ -1600,7 +1621,7 @@ void run_teleporter_properties_dialog(void *menu, struct object_t *object)
 			"rotate_type_rel_radiobutton")), TRUE);
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"rotation_angle_spinbutton")), (gfloat)(object->teleporter_data.rotation_angle + M_PI) * 
+		"rotation_angle_spinbutton")), (gfloat)(object->teleporter_data.rotation_angle - M_PI) * 
 		(180.0 / M_PI));
 	
 	if(object->teleporter_data.divider)
@@ -1608,7 +1629,7 @@ void run_teleporter_properties_dialog(void *menu, struct object_t *object)
 			"divider_angle_checkbutton")), TRUE);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"divider_angle_spinbutton")), (gfloat)(object->teleporter_data.divider_angle + M_PI) * 
+		"divider_angle_spinbutton")), (gfloat)(object->teleporter_data.divider_angle - M_PI) * 
 		(180.0 / M_PI));
 	
 	
@@ -1713,7 +1734,7 @@ void on_gravity_well_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, g
 
 	stop_working();
 
-	object->gravity_well_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
+	object->gravity_well_data.angle = degrees_to_radians(gtk_spin_button_get_value(spinbutton));
 
 	invalidate_object(object);
 	
@@ -1771,7 +1792,7 @@ void run_gravity_well_properties_dialog(void *menu, struct object_t *object)
 		"height_spinbutton")), (gfloat)object->gravity_well_data.height);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)object->gravity_well_data.angle * (180.0 / M_PI));
+		"angle_spinbutton")), radians_to_degrees(object->gravity_well_data.angle));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"strength_spinbutton")), (gfloat)object->gravity_well_data.strength);
@@ -2835,12 +2856,12 @@ void resample_object()
 		{
 			working_object_surface = 
 				leave_main_lock_and_rotate_surface(dynamic_objects[OBJECTTYPE_PLASMACANNON].texture, 
-				64, 64, working_object->plasma_cannon_data.angle + M_PI);
+				64, 64, working_object->plasma_cannon_data.angle);
 		}
 		else
 		{
 			working_object_surface = leave_main_lock_and_rotate_surface(s_unowned_plasma_cannon, 
-				64, 64, working_object->plasma_cannon_data.angle + M_PI);
+				64, 64, working_object->plasma_cannon_data.angle);
 		}
 		break;
 	
@@ -2852,12 +2873,12 @@ void resample_object()
 		{
 			working_object_surface = leave_main_lock_and_rotate_surface(
 				dynamic_objects[OBJECTTYPE_MINIGUN].texture, 
-				64, 64, working_object->minigun_data.angle + M_PI);
+				64, 64, working_object->minigun_data.angle);
 		}
 		else
 		{
 			working_object_surface = leave_main_lock_and_rotate_surface(s_unowned_minigun, 64, 64, 
-				working_object->minigun_data.angle + M_PI);
+				working_object->minigun_data.angle);
 		}
 		break;
 	
@@ -2870,13 +2891,13 @@ void resample_object()
 			working_object_surface = 
 				leave_main_lock_and_rotate_surface(
 				dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture, 
-				64, 64, working_object->rocket_launcher_data.angle + M_PI);
+				64, 64, working_object->rocket_launcher_data.angle);
 		}
 		else
 		{
 			working_object_surface = leave_main_lock_and_rotate_surface(
 				s_unowned_rocket_launcher, 64, 64, 
-				working_object->rocket_launcher_data.angle + M_PI);
+				working_object->rocket_launcher_data.angle);
 		}
 		break;
 	
@@ -2888,12 +2909,12 @@ void resample_object()
 		{
 			working_object_surface = leave_main_lock_and_rotate_surface(
 				dynamic_objects[OBJECTTYPE_RAILS].texture, 
-				64, 64, working_object->rails_data.angle + M_PI);
+				64, 64, working_object->rails_data.angle);
 		}
 		else
 		{
 			working_object_surface = leave_main_lock_and_rotate_surface(s_rails, 64, 64, 
-				working_object->rails_data.angle + M_PI);
+				working_object->rails_data.angle);
 		}
 		break;
 	
@@ -2903,7 +2924,7 @@ void resample_object()
 			leave_main_lock_and_rotate_surface(working_object->spawn_point_data.texture_pre_surface, 
 			working_object->spawn_point_data.width, 
 			working_object->spawn_point_data.height,
-			working_object->spawn_point_data.angle + M_PI);
+			working_object->spawn_point_data.angle);
 		break;
 	
 	
@@ -2917,14 +2938,14 @@ void resample_object()
 				working_object->speedup_ramp_data.texture_pre_surface, 
 				working_object->speedup_ramp_data.width, 
 				working_object->speedup_ramp_data.height,
-				working_object->speedup_ramp_data.angle + M_PI);
+				working_object->speedup_ramp_data.angle);
 		}
 		else
 		{
 			working_object_surface = leave_main_lock_and_rotate_surface(s_stock_speedup_ramp, 
 				working_object->speedup_ramp_data.width, 
 				working_object->speedup_ramp_data.height,
-				working_object->speedup_ramp_data.angle + M_PI);
+				working_object->speedup_ramp_data.angle);
 		}
 		break;
 	
@@ -2934,7 +2955,7 @@ void resample_object()
 			leave_main_lock_and_rotate_surface(working_object->teleporter_data.texture_pre_surface, 
 			working_object->teleporter_data.width, 
 			working_object->teleporter_data.height,
-			working_object->teleporter_data.angle + M_PI);
+			working_object->teleporter_data.angle);
 		break;
 	
 	
@@ -2944,7 +2965,7 @@ void resample_object()
 			working_object->gravity_well_data.texture_pre_surface, 
 			working_object->gravity_well_data.width, 
 			working_object->gravity_well_data.height,
-			working_object->gravity_well_data.angle + M_PI);
+			working_object->gravity_well_data.angle);
 		break;
 	}
 }
