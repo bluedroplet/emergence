@@ -34,6 +34,8 @@
 #include "game.h"
 #include "particles.h"
 #include "line.h"
+#include "entry.h"
+#include "sound.h"
 
 #ifdef LINUX
 #include "../shared/timer.h"
@@ -546,7 +548,7 @@ void process_update_ent_event(struct event_t *event)
 	struct entity_t *entity = get_entity(centity0, event->ent_data.index);
 
 	if(!entity)
-		return;
+		return;		// due to ooo
 	
 	entity->xdis = event->ent_data.xdis;
 	entity->ydis = event->ent_data.ydis;
@@ -589,7 +591,7 @@ void process_kill_ent_event(struct event_t *event)
 	struct entity_t *entity = get_entity(centity0, event->ent_data.index);
 
 	if(!entity)
-		return;
+		return;		// due to ooo
 	
 	switch(entity->type)
 	{
@@ -616,9 +618,14 @@ void add_follow_me_event(struct event_t *event, struct buffer_t *stream)
 
 void process_follow_me_event(struct event_t *event)
 {
+	struct entity_t *entity = get_entity(centity0, event->follow_me_data.index);
+	
+	if(!entity)
+		return;		// due to ooo
+	
 	cgame_state->follow_me = event->follow_me_data.index;
-	struct entity_t *entity = get_entity(centity0, cgame_state->follow_me);
-	start_moving_view(viewx, viewy, entity->xdis, entity->ydis);
+	start_moving_view(viewx, viewy, entity->xdis, entity->ydis);	// violates gamestate scheme
+		// should possibly not call this second time around after ooo
 }
 
 
@@ -633,7 +640,7 @@ void process_carcass_event(struct event_t *event)
 	struct entity_t *craft = get_entity(centity0, event->carcass_data.index);
 
 	if(!craft)
-		return;
+		return;		// due to ooo
 
 	craft->craft_data.carcass = 1;
 	craft->craft_data.particle = 0.0;
@@ -662,6 +669,7 @@ void process_railtrail_event(struct event_t *event)
 	rail_trail.y2 = event->railtrail_data.y2;
 	
 	LL_ADD(struct rail_trail_t, &rail_trail0, &rail_trail);
+	start_sample(&railgun_sample, event->tick);
 }
 
 
@@ -765,24 +773,20 @@ int process_tick_events_do_not_remove(uint32_t tick)
 }
 
 
-int get_event_by_ooo_index(uint32_t index)
+void remove_event(uint32_t index)
 {
 	struct event_t *event = event0;
 		
 	while(event)
 	{
-		if(event->ooo && event->index == index)
+		if(event->index == index)
 		{
-		//	printf("ooo neutralized\n");
-			
-			event->ooo = 0;
-			return 1;
+			LL_REMOVE(struct event_t, &event0, event);
+			return;
 		}
 		
 		event = event->next;
 	}
-	
-	return 0;
 }
 
 
@@ -798,8 +802,7 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp, struct buffer_t *s
 	
 	add_game_tick(event.tick, stamp);
 	
-	if(get_event_by_ooo_index(index))
-		return 0;
+	remove_event(index);	// in case it has already arrived ooo
 	
 	event.type = buffer_read_uint8(stream);
 	event.ooo = 0;
@@ -831,7 +834,7 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp, struct buffer_t *s
 		break;
 	}
 	
-	LL_ADD_TAIL(struct event_t, &event0, &event);
+	LL_ADD_TAIL(struct event_t, &event0, &event);	// keep in order for tick processing
 	
 	
 	return 1;
@@ -847,8 +850,7 @@ int game_process_event_untimed(uint32_t index, struct buffer_t *stream)
 	event.tick = buffer_read_uint32(stream);
 	event.type = buffer_read_uint8(stream);
 	
-	if(get_event_by_ooo_index(index))
-		return 0;
+	remove_event(index);	// in case it has already arrived ooo
 	
 	event.ooo = 0;
 	
@@ -879,7 +881,7 @@ int game_process_event_untimed(uint32_t index, struct buffer_t *stream)
 		break;
 	}
 	
-	LL_ADD_TAIL(struct event_t, &event0, &event);
+	LL_ADD_TAIL(struct event_t, &event0, &event);	// keep in order for tick processing
 	
 	
 	return 1;
@@ -925,7 +927,7 @@ int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp, struct buffer_
 		break;
 	}
 	
-	LL_ADD_TAIL(struct event_t, &event0, &event);
+	LL_ADD_TAIL(struct event_t, &event0, &event);	// keep in order for tick processing
 	
 	
 	return 1;
@@ -970,7 +972,7 @@ int game_process_event_untimed_ooo(uint32_t index, struct buffer_t *stream)
 		break;
 	}
 	
-	LL_ADD_TAIL(struct event_t, &event0, &event);
+	LL_ADD_TAIL(struct event_t, &event0, &event);	// keep in order for tick processing
 	
 	
 	return 1;
@@ -1658,7 +1660,10 @@ void update_game()
 	// get render_tick and last_known_tick
 	
 	update_tick_parameters();
+	
+	sigio_process &= ~SIGIO_PROCESS_ALSA;
 	uint32_t render_tick = get_game_tick();
+	sigio_process |= SIGIO_PROCESS_ALSA;
 	
 	uint32_t new_io_tick = 0, new_ooo_tick = 0;
 	uint32_t first_io_tick = 0, last_io_tick = 0, first_ooo_tick = 0;
@@ -2031,7 +2036,6 @@ void init_game()
 	
 	s_craft_shield = resize(temp, 73, 73, NULL);
 	s_weapon_shield = resize(temp, 46, 46, NULL);
-
 }
 
 
