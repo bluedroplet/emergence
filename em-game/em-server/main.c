@@ -696,5 +696,6 @@ void init()
 		}
 	}
 	
-	max_players = arg_max_players;
+	if(arg_max_players != -1)
+		max_players = arg_max_players;
 }
