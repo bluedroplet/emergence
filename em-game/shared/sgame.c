@@ -2115,7 +2115,7 @@ void s_tick_bullet(struct entity_t *bullet)
 		struct bspnode_t *node = line_walk_bsp_tree(bullet->xdis, bullet->ydis, xdis, ydis);
 		if(node)
 		{
-;//			remove_entity(bullet);
+			bullet->kill_me = 1;
 			return;
 		}
 		
