@@ -46,7 +46,7 @@ struct
 } controls[] = 
 {
 	{"",			NULL,	NULL},
-	{"escape",		NULL,	NULL},
+	{"escape",		NULL,	console_toggle},
 	{"1",			NULL,	NULL},
 	{"2",			NULL,	NULL},
 	{"3",			NULL,	NULL},
