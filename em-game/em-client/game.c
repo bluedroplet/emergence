@@ -470,7 +470,7 @@ int message_reader_new_message()
 		break;
 	
 	case EMMSGCLASS_EVENT:
-		if(message_reader.message_type != EMEVENT_DUMMY)
+		if(message_reader.message_type != EMEVENT_PULSE)
 		{
 			if(old_reader_type == MESSAGE_READER_STREAM_WRITE_GZDEMO)
 				gzwrite(message_reader.gzdemo, &message_reader.message_type, 1);
@@ -1258,7 +1258,7 @@ void insert_event_in_order(struct event_t *event)
 
 int game_demo_process_event()
 {
-	if(message_reader.message_type == EMEVENT_DUMMY)
+	if(message_reader.message_type == EMEVENT_PULSE)
 		return 1;
 	
 	struct event_t event;

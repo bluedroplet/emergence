@@ -557,15 +557,15 @@ void tick_player(struct player_t *player)
 //	if(!player->craft && player->respawn_tick == game_tick)
 //		spawn_player(player);
 	
-	// see if we need to send a dummy event
+	// see if we need to send a pulse event
 	
-	if(player->next_dummy_event == game_tick)
+	if(player->next_pulse_event == game_tick)
 	{
-		net_emit_uint8(player->conn, EMEVENT_DUMMY);
+		net_emit_uint8(player->conn, EMEVENT_PULSE);
 		net_emit_uint32(player->conn, game_tick);
 		net_emit_end_of_stream(player->conn);
 
-		player->next_dummy_event += 200;
+		player->next_pulse_event += 200;
 	}
 	
 	
@@ -954,7 +954,7 @@ void game_process_join(uint32_t conn, uint32_t index, struct buffer_t *stream)
 	player->conn = conn;
 	player->name = name;
 	player->last_control_change = index;
-	player->next_dummy_event = game_tick + 200;
+	player->next_pulse_event = game_tick + 200;
 
 	
 	print_on_player(player, "Welcome to this server.\n");

@@ -16,7 +16,7 @@ struct player_t
 	struct entity_t *craft;
 	uint32_t respawn_tick;
 	
-	uint32_t next_dummy_event;
+	uint32_t next_pulse_event;
 	
 	int rails;
 	int mines;
