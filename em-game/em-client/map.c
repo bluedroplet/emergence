@@ -309,6 +309,28 @@ void reload_map()
 }
 
 
+void render_radar()
+{
+	if(r_DrawConsole)
+		return;
+	
+	struct blit_params_t params;
+		
+	params.red = r_ConsoleRed;
+	params.green = r_ConsoleRed;
+	params.blue = r_ConsoleRed;
+	params.alpha = r_ConsoleAlpha;
+	
+	params.dest = s_backbuffer;
+	params.dest_x = vid_width - vid_width / 4;
+	params.dest_y = vid_height - vid_height / 4;
+	params.width = vid_width / 4;
+	params.height = vid_height / 4;
+
+	alpha_draw_rect(&params);
+}
+
+
 void render_map()
 {
 	struct tile_t *tile = tile0;
@@ -336,6 +358,8 @@ void render_map()
 	
 	if(r_DrawBSPTree)
 		draw_bsp_tree();
+	
+//	render_radar();
 }
 
 
