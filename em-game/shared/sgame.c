@@ -581,7 +581,7 @@ int craft_force(struct entity_t *craft, double force, struct player_t *responsib
 	{
 		if(!craft->craft_data.carcass)
 		{
-			respawn_craft(craft);
+			respawn_craft(craft, responsibility);
 			
 			if(craft->craft_data.shield_strength > -0.25)
 			{
@@ -628,7 +628,7 @@ int weapon_force(struct entity_t *weapon, double force, struct player_t *respons
 	}
 	else
 	{
-		weapon->weapon_data.shield_flare += force;
+		weapon->weapon_data.shield_flare += force * 8.0;
 		weapon->weapon_data.shield_flare = min(weapon->weapon_data.shield_flare, 1.0);
 		weapon->propagate_me = 1;
 	}
@@ -776,14 +776,6 @@ void splash_force(double x, double y, double force, struct player_t *responsibil
 
 void explode_craft(struct entity_t *craft, struct player_t *responsibility)
 {
-	if(responsibility)
-	{
-		if(responsibility == craft->craft_data.owner)
-			responsibility->frags--;
-		else
-			responsibility->frags++;
-	}
-	
 	craft->kill_me = 1;
 	strip_weapons_from_craft(craft);
 	remove_entity_from_all_players(craft);
@@ -1223,7 +1215,7 @@ void s_tick_craft(struct entity_t *craft)
 		if(restart && craft->xdis == xdis && craft->ydis == ydis)
 		{
 			#ifdef EMSERVER
-			respawn_craft(craft);
+			respawn_craft(craft, craft->craft_data.owner);
 			explode_craft(craft, craft->craft_data.owner);
 			char *msg = "infinite iteration craft collison broken\n";
 			console_print(msg);

@@ -53,6 +53,7 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 #define EMEVENT_DETACH			(EMMSGCLASS_EVENT | 0x08)
 #define EMEVENT_TELEPORT		(EMMSGCLASS_EVENT | 0x09)
 #define EMEVENT_SPEEDUP			(EMMSGCLASS_EVENT | 0x0a)
+#define EMEVENT_FRAGS			(EMMSGCLASS_EVENT | 0x0b)
 
 
 

@@ -419,6 +419,27 @@ void emit_speedup_to_all_players()
 }
 
 
+void propagate_frags()
+{
+	struct player_t *player = player0;
+		
+	while(player)
+	{
+		if(player->propagate_frags)
+		{
+			player->propagate_frags = 0;
+			
+			net_emit_uint8(player->conn, EMEVENT_FRAGS);
+			net_emit_uint32(player->conn, game_tick);
+			net_emit_int(player->conn, player->frags);
+			net_emit_end_of_stream(player->conn);
+		}
+		
+		player = player->next;
+	}
+}
+
+
 void follow_me_on_player(struct player_t *player)
 {
 	net_emit_uint8(player->conn, EMEVENT_FOLLOW_ME);
@@ -514,7 +535,7 @@ void spawn_bullet(struct entity_t *weapon, struct player_t *player)
 	bullet->bullet_data.in_weapon = 1;
 	bullet->bullet_data.weapon_id = weapon->index;
 	
-	bullet->plasma_data.owner = player;
+	bullet->bullet_data.owner = player;
 }
 
 
@@ -535,7 +556,7 @@ void spawn_rocket(struct entity_t *weapon, struct player_t *player)
 	rocket->rocket_data.in_weapon = 1;
 	rocket->rocket_data.weapon_id = weapon->index;
 	
-	rocket->plasma_data.owner = player;
+	rocket->rocket_data.owner = player;
 	
 	spawn_entity_on_all_players(rocket);
 }
@@ -828,20 +849,19 @@ void spawn_player(struct player_t *player)
 
 
 
-void respawn_craft(struct entity_t *craft)
+void respawn_craft(struct entity_t *craft, struct player_t *responsibility)
 {
-	struct player_t *player = player0;
-		
-	while(player)
+	if(responsibility)
 	{
-		if(player->craft == craft)
-		{
-			spawn_player(player);
-			return;
-		}
+		if(responsibility == craft->craft_data.owner)
+			responsibility->frags--;
+		else
+			responsibility->frags++;
 		
-		player = player->next;
+		responsibility->propagate_frags = 1;
 	}
+	
+	spawn_player(craft->craft_data.owner);
 }
 
 
@@ -978,6 +998,7 @@ void update_game()
 	}
 	
 	propagate_entities();
+	propagate_frags();
 }
 
 
@@ -1202,7 +1223,7 @@ int game_process_name_change(struct player_t *player, struct buffer_t *stream)
 int game_process_suicide(struct player_t *player)
 {
 	struct entity_t *old_craft = player->craft;
-	respawn_craft(old_craft);
+	respawn_craft(old_craft, player);
 	explode_craft(old_craft, player);
 	remove_entity(&entity0, old_craft);
 	
@@ -1448,8 +1469,8 @@ int game_process_fire_rail(struct player_t *player)
 			break;
 		
 	//	case ENT_PLASMA:
-			destroyed = plasma_force(crail_entity->entity, RAIL_DAMAGE);
-			break;
+	//		destroyed = plasma_force(crail_entity->entity, RAIL_DAMAGE);
+	//		break;
 		
 		case ENT_ROCKET:
 			destroyed = rocket_force(crail_entity->entity, RAIL_DAMAGE);
@@ -1492,6 +1513,8 @@ int game_process_fire_rail(struct player_t *player)
 		propagate_rail_trail(x1, y1, crail_entity->x, crail_entity->y);
 	else
 		propagate_rail_trail(x1, y1, x2, y2);
+	
+	propagate_frags();
 
 	return 1;
 }

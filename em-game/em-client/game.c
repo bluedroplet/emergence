@@ -134,6 +134,8 @@ struct event_t
 			float x2, y2;
 			
 		} railtrail_data;
+		
+		int frags;
 	};
 	
 	struct event_t *next;
@@ -197,6 +199,7 @@ struct surface_t *s_plasma, *s_craft_shield, *s_weapon_shield;
 
 uint32_t game_conn;
 
+int frags = 0;
 
 struct game_state_t
 {
@@ -280,6 +283,7 @@ void clear_game()
 	memset(&message_reader, 0, sizeof(message_reader));
 	
 	centity0 = NULL;
+	frags = 0;
 }
 
 
@@ -668,6 +672,12 @@ void read_railtrail_event(struct event_t *event)
 }
 
 
+void read_frags_event(struct event_t *event)
+{
+	event->frags = message_reader_read_int();
+}
+
+
 void read_event(struct event_t *event)
 {
 	event->tick = message_reader.event_tick;
@@ -697,6 +707,10 @@ void read_event(struct event_t *event)
 	
 	case EMEVENT_RAILTRAIL:
 		read_railtrail_event(event);
+		break;
+	
+	case EMEVENT_FRAGS:
+		read_frags_event(event);
 		break;
 	}
 }
@@ -1139,6 +1153,12 @@ void add_railtrail_event(struct event_t *event)
 }
 
 
+void add_frags_event(struct event_t *event)
+{
+	event->frags = message_reader_read_int();
+}
+
+
 void process_railtrail_event(struct event_t *event)
 {
 	struct rail_trail_t rail_trail;
@@ -1187,6 +1207,12 @@ void process_teleport_event(struct event_t *event)
 void process_speedup_event(struct event_t *event)
 {
 	start_sample(speedup_ramp_sample, event->tick);
+}
+
+
+void process_frags_event(struct event_t *event)
+{
+	frags = event->frags;
 }
 
 
@@ -1239,6 +1265,10 @@ void process_tick_events(uint32_t tick)
 			
 			case EMEVENT_SPEEDUP:
 				process_speedup_event(event);
+				break;
+			
+			case EMEVENT_FRAGS:
+				process_frags_event(event);
 				break;
 			}
 			
@@ -1305,6 +1335,10 @@ int process_tick_events_do_not_remove(uint32_t tick)
 			
 			case EMEVENT_SPEEDUP:
 				process_speedup_event(event);
+				break;
+			
+			case EMEVENT_FRAGS:
+				process_frags_event(event);
 				break;
 			}
 		}
@@ -1437,6 +1471,10 @@ int game_demo_process_event()
 	case EMEVENT_DETACH:
 		add_detach_event(&event);
 		break;
+	
+	case EMEVENT_FRAGS:
+		add_frags_event(&event);
+		break;
 	}
 	
 	LL_ADD_TAIL(struct event_t, &event0, &event);
@@ -1491,6 +1529,10 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp)
 	case EMEVENT_DETACH:
 		add_detach_event(&event);
 		break;
+	
+	case EMEVENT_FRAGS:
+		add_frags_event(&event);
+		break;
 	}
 	
 	if(!ooon)
@@ -1544,6 +1586,10 @@ int game_process_event_untimed(uint32_t index)
 	case EMEVENT_DETACH:
 		add_detach_event(&event);
 		break;
+	
+	case EMEVENT_FRAGS:
+		add_frags_event(&event);
+		break;
 	}
 	
 	if(!ooon)
@@ -1593,6 +1639,10 @@ int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp)
 	case EMEVENT_DETACH:
 		add_detach_event(&event);
 		break;
+	
+	case EMEVENT_FRAGS:
+		add_frags_event(&event);
+		break;
 	}
 	
 	insert_event_in_order(&event);
@@ -1639,6 +1689,10 @@ int game_process_event_untimed_ooo(uint32_t index)
 	
 	case EMEVENT_DETACH:
 		add_detach_event(&event);
+		break;
+	
+	case EMEVENT_FRAGS:
+		add_frags_event(&event);
 		break;
 	}
 	
@@ -3284,6 +3338,8 @@ void render_game()
 	render_map();
 	render_teleporters();
 	render_recording();
+	
+	blit_text_centered(vid_width / 2, vid_height / 6, 0xff, 0x60, 0x0f, s_backbuffer, "%i", frags);
 	
 	blit_text(((vid_width * 2) / 3) + (vid_width / 200), 
 		vid_height / 6, 0xef, 0x6f, 0xff, s_backbuffer, "[virus] where are you?");

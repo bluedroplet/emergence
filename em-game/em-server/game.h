@@ -26,6 +26,7 @@ struct player_t
 	uint32_t left_fired, right_fired;
 	
 	int frags;
+	int propagate_frags;
 
 	struct ping_t *ping0;
 	int next_ping;
@@ -113,7 +114,7 @@ void kill_game();
 
 void print_on_all_players(char *text);
 void remove_entity_from_all_players(struct entity_t *entity);
-void respawn_craft(struct entity_t *craft);
+void respawn_craft(struct entity_t *craft, struct player_t *responsibility);
 void make_carcass_on_all_players(struct entity_t *craft);
 void calculate_respawn_tick(struct pickup_spawn_point_t *spawn_point);
 
