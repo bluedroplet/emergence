@@ -6,10 +6,10 @@
 #include <stdint.h>
 #include <math.h>
 
-#include "../shared/rdtsc.h"
-#include "../shared/cvar.h"
+#include "shared/rdtsc.h"
+#include "shared/cvar.h"
 #include "ping.h"
-#include "../shared/timer.h"
+#include "shared/timer.h"
 #define TABLE_SIZE 100
 
 int next_table_entry = 0;

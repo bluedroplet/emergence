@@ -11,9 +11,9 @@
 #include <pthread.h>
 
 #include "../common/types.h"
-#include "../shared/cvar.h"
+#include "shared/cvar.h"
 #include "../common/stringbuf.h"
-#include "../shared/parse.h"
+#include "shared/parse.h"
 #include "../common/user.h"
 #include "../gsub/gsub.h"
 #include "rcon.h"

@@ -15,7 +15,7 @@
 
 #include "../common/types.h"
 #include "../common/llist.h"
-#include "../shared/cvar.h"
+#include "shared/cvar.h"
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "shared/timer.h"

@@ -17,11 +17,11 @@
 #include "../common/llist.h"
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
-#include "../shared/rdtsc.h"
-#include "../shared/cvar.h"
-#include "../shared/network.h"
+#include "shared/rdtsc.h"
+#include "shared/cvar.h"
+#include "shared/network.h"
 #include "particles.h"
-#include "../shared/sgame.h"
+#include "shared/sgame.h"
 #include "rcon.h"
 #include "map.h"
 #include "console.h"
@@ -39,7 +39,7 @@
 #include "floats.h"
 
 #ifdef LINUX
-#include "../shared/timer.h"
+#include "shared/timer.h"
 #endif
 
 #ifdef WIN32
@@ -3395,7 +3395,7 @@ void init_game()
 		
 	s_plasma = resize(temp, 14, 14, NULL);
 	
-	temp = read_png_surface(PKGDATADIR "/stock-object-textures/craft-shield.png");
+	temp = read_png_surface(PKGDATADIR "/stock-object-textures/shield.png");
 	
 //	s_craft_shield = resize(temp, 57, 57, NULL);
 //	s_weapon_shield = resize(temp, 36, 36, NULL);

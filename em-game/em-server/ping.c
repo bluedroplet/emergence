@@ -11,8 +11,8 @@
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../common/llist.h"
-#include "../shared/timer.h"
-#include "../shared/network.h"
+#include "shared/timer.h"
+#include "shared/network.h"
 #include "ping.h"
 #include "game.h"
 /*

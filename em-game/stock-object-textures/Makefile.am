@@ -1,18 +1,20 @@
-OBJECTS = rails.png  shield.png  unowned-minigun.png \
+SHARED_OBJECTS = rails.png  shield.png  unowned-minigun.png \
 	unowned-plasma-cannon.png  unowned-rocket-launcher.png
+
+OBJECTS =  rocket.png plasma.png
 
 sharedatadir = $(datadir)/emergence/stock-object-textures
 
-sharedata_DATA = $(OBJECTS)
-EXTRA_DIST = $(OBJECTS)
+sharedata_DATA = $(SHARED_OBJECTS) $(OBJECTS)
+EXTRA_DIST = $(SHARED_OBJECTS) $(OBJECTS)
 
-$(OBJECTS):
+$(SHARED_OBJECTS):
 	ln -s ../../stock-object-textures/$@
                                                                                                                                
-all: $(OBJECTS)
+all: $(SHARED_OBJECTS)
 
 clean:
-	rm -f $(OBJECTS)
+	rm -f $(SHARED_OBJECTS)
                                                                                                                                
 distclean: clean
 	rm -f Makefile

@@ -7,8 +7,8 @@
 
 #include "../common/types.h"
 #include "../common/stringbuf.h"
-#include "../shared/cvar.h"
-#include "../shared/network.h"
+#include "shared/cvar.h"
+#include "shared/network.h"
 #include "console.h"
 #include "rcon.h"
 

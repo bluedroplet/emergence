@@ -6,10 +6,10 @@
 #include <math.h>
 
 #include "../common/types.h"
-#include "../shared/timer.h"
+#include "shared/timer.h"
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
-#include "../shared/cvar.h"
+#include "shared/cvar.h"
 #include "../gsub/gsub.h"
 #include "render.h"
 #include "game.h"

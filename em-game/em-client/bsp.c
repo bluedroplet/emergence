@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "../shared/bsp.h"
+#include "shared/bsp.h"
 #include "line.h"
 #include "../gsub/gsub.h"
 

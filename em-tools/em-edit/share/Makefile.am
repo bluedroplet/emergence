@@ -11,7 +11,7 @@ sharedata_DATA = about.png splash.png gravity-well-placeholder.png \
 EXTRA_DIST = about.png splash.png gravity-well-placeholder.png \
 	node.png teleporter-placeholder.png \
 	point.png vect-sat.png select.png width-sat.png \
-	spawn-point-placeholder.png
+	spawn-point-placeholder.png $(SOURCES)
 
  
 all: $(OBJECTS)
@@ -21,8 +21,9 @@ all: $(OBJECTS)
  
 clean:
 	rm -f $(OBJECTS)
- 
+
 distclean: clean
+	rm -f Makefile
  
 .PHONY: all clean
 

@@ -8,7 +8,7 @@
 #include <math.h>
 
 #include "../common/types.h"
-#include "../shared/cvar.h"
+#include "shared/cvar.h"
 #include "../gsub/gsub.h"
 #include "game.h"
 #include "render.h"

@@ -11,8 +11,8 @@
 #include <linux/input.h>
 
 #include "../common/types.h"
-#include "../shared/cvar.h"
-#include "../shared/timer.h"
+#include "shared/cvar.h"
+#include "shared/timer.h"
 #include "../common/stringbuf.h"
 #include "console.h"
 #include "main.h"

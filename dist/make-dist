@@ -1,57 +1,56 @@
+#!/bin/bash
+
 cd ../em-tools
 make distclean
-aclocal
-automake
-autoconf
+aclocal-1.8 || exit
+automake-1.8 || exit
+autoconf-2.58 || exit
 
-cd ../em-game
-make distclean
-aclocal
-automake
-autoconf
+
+./configure || exit
+
+make distcheck || exit
+                                                                                                                               
+cp em-tools-0.5.0.tar.bz2 ../dist
 
 cd ../dist
+                                                                                                                               
 
-rm -rf em-tools-build
-mkdir em-tools-build
-cd em-tools-build
-../../em-tools/configure
-
-make distcheck
-
-cd ..
-
-cp em-tools-build/em-tools-0.4.tar.gz .
-cp em-tools-build/em-tools-0.4.tar.bz2 .
 
 rm -rf root
 mkdir -p root/usr
-rm -rf em-tools-build
-mkdir em-tools-build
-cd em-tools-build
-../../em-tools/configure CFLAGS="-march=pentium3 -O3 -pipe -fomit-frame-pointer -fforce-addr -falign-functions=4 -fprefetch-loop-arrays" --prefix=`pwd`/../root/usr
-make
-make install
 
+cd ../em-game
+make distclean
+aclocal-1.8 || exit
+automake-1.8 || exit
+autoconf-2.58 || exit
+
+./configure CFLAGS="-march=pentium3 -O2 -pipe -fomit-frame-pointer -fprefetch-loop-arrays" --prefix=`pwd`/../dist/root/usr || exit
+make || exit
+make install || exit
+
+cd ../dist/root
+
+strip usr/bin/* || exit
+tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-0.5.0-bin.tar.bz2 * || exit
 cd ..
 
-rm -rf em-tools-build
 
-rm -rf em-game-build
+cd ../em-tools
 
-mkdir em-game-build
-cd em-game-build
+./configure CFLAGS="-march=pentium3 -O2 -pipe -fomit-frame-pointer -fprefetch-loop-arrays" --prefix=`pwd`/../dist/root/usr || exit
+make || exit
+make install || exit
 
-../../em-game/configure CFLAGS="-march=pentium3 -O3 -pipe -fomit-frame-pointer -fforce-addr -falign-functions=4 -fprefetch-loop-arrays" --prefix=`pwd`/../root/usr
-make
-make install
+cd ../dist/root
 
+strip usr/bin/* || exit
+
+tar --owner=0 --group=0 --numeric-owner -cjf ../emergence-0.5.0-bin.tar.bz2 * || exit
 cd ..
 
-rm -rf em-game-build
 
-strip root/usr/bin/*
+#rpmbuild -bb emergence-0.4.spec
 
-rpmbuild -bb emergence-0.4.spec
-
-cp /home/jonny/redhat/emergence/i386/emergence-0.4-1.i386.rpm .
+#cp /home/jonny/redhat/emergence/i386/emergence-0.4-1.i386.rpm .

@@ -13,7 +13,7 @@
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../common/minmax.h"
-#include "../shared/rdtsc.h"
+#include "shared/rdtsc.h"
 #include "../gsub/gsub.h"
 #include "shared/timer.h"
 #include "main.h"

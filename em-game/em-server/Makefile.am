@@ -7,7 +7,7 @@ bin_PROGRAMS = em-server
 
 em_server_SOURCES = console.c game.h  ping.h \
 	console.h  main.c  \
-	console.o  game.c main.h  ping.c entry.c \
-	entry.h objects.c objects.h
+	game.c main.h  ping.c entry.c \
+	entry.h
 
 

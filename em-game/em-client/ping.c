@@ -11,13 +11,13 @@
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../common/llist.h"
-#include "../shared/network.h"
-#include "../shared/cvar.h"
+#include "shared/network.h"
+#include "shared/cvar.h"
 #include "ping.h"
 #include "game.h"
 #include "console.h"
 #include "tick.h"
-#include "../shared/timer.h"
+#include "shared/timer.h"
 
 struct ping_t
 {
