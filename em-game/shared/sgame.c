@@ -1784,6 +1784,7 @@ void s_tick_weapon(struct entity_t *weapon)
 					restart = 1;
 					weapon->propagate_me = 1;
 					weapon->speeding_up = 1;
+					emit_speedup_to_all_players();
 					break;
 				}
 			}			
@@ -1813,6 +1814,7 @@ void s_tick_weapon(struct entity_t *weapon)
 				weapon->teleporting_tick = cgame_tick;
 				
 				weapon->propagate_me = 1;
+				emit_teleport_to_all_players();
 				
 //				restart = 1;
 				return;
@@ -2104,6 +2106,9 @@ void s_tick_plasma(struct entity_t *plasma)
 				
 				plasma->teleporting = TELEPORTING_DISAPPEARING;
 				plasma->teleporting_tick = cgame_tick;
+				#ifdef EMSERVER
+				emit_teleport_to_all_players();
+				#endif
 				break;
 			}
 			
@@ -2448,6 +2453,9 @@ void s_tick_rocket(struct entity_t *rocket)
 					
 					restart = 1;
 					rocket->speeding_up = 1;
+					#ifdef EMSERVER
+					emit_speedup_to_all_players();
+					#endif
 					break;
 				}
 			}			
@@ -2469,6 +2477,9 @@ void s_tick_rocket(struct entity_t *rocket)
 				
 				rocket->teleporting = TELEPORTING_DISAPPEARING;
 				rocket->teleporting_tick = cgame_tick;
+				#ifdef EMSERVER
+				emit_teleport_to_all_players();
+				#endif
 				break;
 			}
 			
@@ -2655,6 +2666,9 @@ void s_tick_mine(struct entity_t *mine)
 					
 					restart = 1;
 					mine->speeding_up = 1;
+					#ifdef EMSERVER
+					emit_speedup_to_all_players();
+					#endif
 					break;
 				}
 			}			
@@ -2673,6 +2687,9 @@ void s_tick_mine(struct entity_t *mine)
 			if(circle_in_circle(xdis, ydis, MINE_RADIUS, teleporter->x, teleporter->y, teleporter->radius))
 			{
 				get_teleporter_spawn_point(teleporter, &mine->xdis, &mine->ydis);
+				#ifdef EMSERVER
+				emit_teleport_to_all_players();
+				#endif
 				
 				restart = 1;
 				break;
@@ -2848,6 +2865,9 @@ void s_tick_rails(struct entity_t *rails)
 					
 					restart = 1;
 					rails->speeding_up = 1;
+					#ifdef EMSERVER
+					emit_speedup_to_all_players();
+					#endif
 					break;
 				}
 			}			
@@ -2866,6 +2886,9 @@ void s_tick_rails(struct entity_t *rails)
 			if(circle_in_circle(xdis, ydis, RAILS_RADIUS, teleporter->x, teleporter->y, teleporter->radius))
 			{
 				get_teleporter_spawn_point(teleporter, &rails->xdis, &rails->ydis);
+				#ifdef EMSERVER
+				emit_teleport_to_all_players();
+				#endif
 				
 				restart = 1;
 				break;
@@ -3039,6 +3062,9 @@ void s_tick_shield(struct entity_t *shield)
 					
 					restart = 1;
 					shield->speeding_up = 1;
+					#ifdef EMSERVER
+					emit_speedup_to_all_players();
+					#endif
 					break;
 				}
 			}			

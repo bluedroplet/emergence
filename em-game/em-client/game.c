@@ -3341,11 +3341,11 @@ void init_game()
 	
 	temp = read_png_surface(PKGDATADIR "/stock-object-textures/craft-shield.png");
 	
-	s_craft_shield = resize(temp, 57, 57, NULL);
-	s_weapon_shield = resize(temp, 36, 36, NULL);
+//	s_craft_shield = resize(temp, 57, 57, NULL);
+//	s_weapon_shield = resize(temp, 36, 36, NULL);
 	
-//	s_craft_shield = resize(temp, 73, 73, NULL);
-//	s_weapon_shield = resize(temp, 46, 46, NULL);
+	s_craft_shield = resize(temp, 46, 46, NULL);
+	s_weapon_shield = resize(temp, 28, 28, NULL);
 
 	
 	railgun_sample = load_sample(PKGDATADIR "/stock-sounds/railgun.ogg");
