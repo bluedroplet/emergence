@@ -35,9 +35,9 @@ void draw_bsp_tree();
 void kill_bsp_tree();
 
 extern int generate_bsp, generate_ui_bsp;
-struct curve_t *get_curve_bsp(double x, double y);
-struct node_t *get_node_bsp(double x, double y);
-struct fill_t *get_fill_bsp(double x, double y);
+struct curve_t *get_curve_bsp(float x, float y);
+struct node_t *get_node_bsp(float x, float y);
+struct fill_t *get_fill_bsp(float x, float y);
 void finished_generating_bsp_tree();
 void finished_generating_ui_bsp_tree();
 void clear_bsp_trees();

@@ -72,7 +72,7 @@ struct bsp_line_pointer_t
 
 typedef struct bsp_line_t
 {
-	double x1, y1, x2, y2;
+	float x1, y1, x2, y2;
 	uint32_t start_index, end_index;
 	int colinear_index;
 	struct bsp_line_pointer_t *colinear_friends;
@@ -111,8 +111,8 @@ bsp_line_t *bsp_line0 = NULL, *ui_bsp_line0 = NULL, **generating_bsp_line0 = NUL
 typedef struct bsp_node_t
 {
 	bsp_line_t *line;
-	double tstart, tend;
-	double dtstart, dtend;
+	float tstart, tend;
+	float dtstart, dtend;
 	struct bsp_node_t *start_cutter, *end_cutter;
 	
 	int extended_north_by_child;
@@ -130,7 +130,7 @@ typedef struct bsp_node_t
 typedef struct bsp_tline_t
 {
 	bsp_line_t *line;
-	double tstart, tend;
+	float tstart, tend;
 	uint32_t start_index, end_index;
 	struct bsp_node_t *start_cutter, *end_cutter;
 	
@@ -156,7 +156,7 @@ void add_bsp_line_pointer(struct bsp_line_pointer_t **bsp_linep0, struct bsp_lin
 }
 
 
-struct curve_t *get_curve_walk_bsp_node(bsp_node_t *node, double x, double y)
+struct curve_t *get_curve_walk_bsp_node(bsp_node_t *node, float x, float y)
 {
 	if(!inout(node->line->x1, node->line->y1, node->line->x2, node->line->y2, x, y))
 	{
@@ -191,7 +191,7 @@ struct curve_t *get_curve_walk_bsp_node(bsp_node_t *node, double x, double y)
 }
 
 
-struct curve_t *get_curve_bsp(double x, double y)
+struct curve_t *get_curve_bsp(float x, float y)
 {
 	if(ui_bsp_tree)
 		return get_curve_walk_bsp_node(ui_bsp_tree, x, y);
@@ -200,7 +200,7 @@ struct curve_t *get_curve_bsp(double x, double y)
 }
 
 
-struct node_t *get_node_walk_bsp_node(bsp_node_t *node, double x, double y)
+struct node_t *get_node_walk_bsp_node(bsp_node_t *node, float x, float y)
 {
 	if(!inout(node->line->x1, node->line->y1, node->line->x2, node->line->y2, x, y))
 	{
@@ -235,7 +235,7 @@ struct node_t *get_node_walk_bsp_node(bsp_node_t *node, double x, double y)
 }
 
 
-struct node_t *get_node_bsp(double x, double y)
+struct node_t *get_node_bsp(float x, float y)
 {
 	if(ui_bsp_tree)
 		return get_node_walk_bsp_node(ui_bsp_tree, x, y);
@@ -244,7 +244,7 @@ struct node_t *get_node_bsp(double x, double y)
 }
 
 
-struct fill_t *get_fill_walk_bsp_node(bsp_node_t *node, double x, double y)
+struct fill_t *get_fill_walk_bsp_node(bsp_node_t *node, float x, float y)
 {
 	if(!inout(node->line->x1, node->line->y1, node->line->x2, node->line->y2, x, y))
 	{
@@ -279,7 +279,7 @@ struct fill_t *get_fill_walk_bsp_node(bsp_node_t *node, double x, double y)
 }
 
 
-struct fill_t *get_fill_bsp(double x, double y)
+struct fill_t *get_fill_bsp(float x, float y)
 {
 	if(ui_bsp_tree)
 		return get_fill_walk_bsp_node(ui_bsp_tree, x, y);
@@ -315,14 +315,14 @@ void draw_bsp_tree()
 
 void gzwrite_bsp_node(gzFile file, struct bsp_node_t *node)
 {
-	gzwrite(file, &node->line->x1, 8);
-	gzwrite(file, &node->line->y1, 8);
-	gzwrite(file, &node->line->x2, 8);
-	gzwrite(file, &node->line->y2, 8);
-	gzwrite(file, &node->tstart, 8);
-	gzwrite(file, &node->tend, 8);
-	gzwrite(file, &node->dtstart, 8);
-	gzwrite(file, &node->dtend, 8);
+	gzwrite(file, &node->line->x1, 4);
+	gzwrite(file, &node->line->y1, 4);
+	gzwrite(file, &node->line->x2, 4);
+	gzwrite(file, &node->line->y2, 4);
+	gzwrite(file, &node->tstart, 4);
+	gzwrite(file, &node->tend, 4);
+	gzwrite(file, &node->dtstart, 4);
+	gzwrite(file, &node->dtend, 4);
 	
 	uint8_t b = 0;
 	

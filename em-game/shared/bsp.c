@@ -18,28 +18,28 @@ struct bspnode_t *bspnode0 = NULL;
 
 void read_bsp_node(gzFile file, struct bspnode_t *node)
 {
-	if(gzread(file, &node->x1, 8) != 8)
+	if(gzread(file, &node->x1, 4) != 4)
 		goto error;
 
-	if(gzread(file, &node->y1, 8) != 8)
+	if(gzread(file, &node->y1, 4) != 4)
 		goto error;
 
-	if(gzread(file, &node->x2, 8) != 8)
+	if(gzread(file, &node->x2, 4) != 4)
 		goto error;
 
-	if(gzread(file, &node->y2, 8) != 8)
+	if(gzread(file, &node->y2, 4) != 4)
 		goto error;
 
-	if(gzread(file, &node->tstart, 8) != 8)
+	if(gzread(file, &node->tstart, 4) != 4)
 		goto error;
 
-	if(gzread(file, &node->tend, 8) != 8)
+	if(gzread(file, &node->tend, 4) != 4)
 		goto error;
 
-	if(gzread(file, &node->dtstart, 8) != 8)
+	if(gzread(file, &node->dtstart, 4) != 4)
 		goto error;
 
-	if(gzread(file, &node->dtend, 8) != 8)
+	if(gzread(file, &node->dtend, 4) != 4)
 		goto error;
 
 	uint8_t g;
@@ -81,7 +81,8 @@ int load_bsp_tree(gzFile file)
 }
 
 
-struct bspnode_t *circle_walk_bsp_node(struct bspnode_t *node, double xdis, double ydis, double r, double *t_out)
+struct bspnode_t *circle_walk_bsp_node(struct bspnode_t *node, float xdis, float ydis, float r, 
+	float *t_out)
 {
 	struct bspnode_t *cnode;
 		
@@ -221,7 +222,7 @@ struct bspnode_t *circle_walk_bsp_node(struct bspnode_t *node, double xdis, doub
 }
 
 
-struct bspnode_t *circle_walk_bsp_tree(double xdis, double ydis, double r, double *t_out)
+struct bspnode_t *circle_walk_bsp_tree(float xdis, float ydis, float r, float *t_out)
 {
 	if(bspnode0)
 		return circle_walk_bsp_node(bspnode0, xdis, ydis, r, t_out);
@@ -230,7 +231,7 @@ struct bspnode_t *circle_walk_bsp_tree(double xdis, double ydis, double r, doubl
 }
 
 
-struct bspnode_t *line_walk_bsp_node(struct bspnode_t *node, double x1, double y1, 
+struct bspnode_t *line_walk_bsp_node(struct bspnode_t *node, float x1, float y1, 
 	double x2, double y2)
 {
 	// TODO: make this not brute force
@@ -335,7 +336,7 @@ struct bspnode_t *line_walk_bsp_node(struct bspnode_t *node, double x1, double y
 }
 
 
-struct bspnode_t *line_walk_bsp_tree(double x1, double y1, double x2, double y2)
+struct bspnode_t *line_walk_bsp_tree(float x1, float y1, float x2, float y2)
 {
 	if(bspnode0)
 		return line_walk_bsp_node(bspnode0, x1, y1, x2, y2);

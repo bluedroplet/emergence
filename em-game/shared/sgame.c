@@ -1292,7 +1292,7 @@ void s_tick_craft(struct entity_t *craft)
 		
 		// check for wall collision
 		
-		double t;
+		float t;
 		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, CRAFT_RADIUS, &t);
 		if(node)
 		{
@@ -1731,7 +1731,7 @@ void s_tick_weapon(struct entity_t *weapon)
 		
 		// check for collision against wall
 		
-		double t;
+		float t;
 		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, WEAPON_RADIUS, &t);
 		if(node)
 		{
