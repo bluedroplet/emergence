@@ -112,7 +112,7 @@ struct conn_t
 #define CONNECTION_TIMEOUT			5.0
 #define CONNECTION_MAX_OUT_PACKETS	400
 #define CONNECT_RESEND_DELAY		0.5
-#define STREAM_RESEND_DELAY			0.05
+#define STREAM_RESEND_DELAY			0.1
 
 pthread_t network_thread_id;
 pthread_mutex_t net_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
@@ -759,7 +759,7 @@ void process_udp_data()
 			break;
 		
 		
-	//	if(drand48() > 0.75)
+	//	if(drand48() > 0.95)
 	//		continue;
 
 		
