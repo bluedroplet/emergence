@@ -1786,7 +1786,7 @@ int split_space(bsp_tline_t *space, bsp_node_t **node)
 			{
 				LL_ADD(bsp_tline_t, &right, cline);
 			}
-			else					// current line behind dividing line
+			else if(numer > 0.0)	// current line behind dividing line
 			{
 				LL_ADD(bsp_tline_t, &left, cline);
 			}
@@ -1851,7 +1851,6 @@ int split_space(bsp_tline_t *space, bsp_node_t **node)
 					if((colinear_line->bsp_line->start_index == cline->start_index) || 
 						(colinear_line->bsp_line->start_index == cline->end_index))
 					{
-					
 						if(new_numer < 0.0)	// current line in front of dividing line
 						{
 							LL_ADD(bsp_tline_t, &right, cline);
@@ -2300,4 +2299,21 @@ void generate_ui_bsp_tree()
 		generating_bsp_tree = NULL;
 		return;
 	}
+
+/*	if(!extend_descendants(generating_bsp_tree))
+	{
+		delete_all_bsp_lines();
+		delete_bsp_node(generating_bsp_tree);
+		generating_bsp_tree = NULL;
+		return;
+	}
+	
+	if(!extend_ancestors(generating_bsp_tree))
+	{
+		delete_all_bsp_lines();
+		delete_bsp_node(generating_bsp_tree);
+		generating_bsp_tree = NULL;
+		return;
+	}
+	*/
 }
