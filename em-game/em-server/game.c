@@ -845,12 +845,6 @@ void spawn_player(struct player_t *player)
 		
 		while(spawn_point->respawn_index != i)
 			spawn_point = spawn_point->next;
-		
-		player->craft->xdis = spawn_point->x;
-		player->craft->ydis = spawn_point->y;
-		
-		spawn_entity_on_all_players(player->craft);
-		follow_me_on_player(player);
 	}
 	else
 	{
@@ -860,15 +854,14 @@ void spawn_player(struct player_t *player)
 		
 		while(i--)
 			spawn_point = spawn_point->next;
-		
-		player->craft->xdis = spawn_point->x;
-		player->craft->ydis = spawn_point->y;
-		
-		spawn_entity_on_all_players(player->craft);
-		follow_me_on_player(player);
 	}
+	
+	player->craft->xdis = spawn_point->x;
+	player->craft->ydis = spawn_point->y;
+	
+	spawn_entity_on_all_players(player->craft);
+	follow_me_on_player(player);
 }
-
 
 
 void respawn_craft(struct entity_t *craft, struct player_t *responsibility)
