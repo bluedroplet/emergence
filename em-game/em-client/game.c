@@ -1980,6 +1980,42 @@ void game_resolution_change()
 		
 		game_state = game_state->next;
 	}
+
+	
+	struct entity_t *entity = centity0;
+
+	while(entity)
+	{
+		switch(entity->type)
+		{
+		case ENT_CRAFT:
+			entity->craft_data.surface = skin_get_craft_surface(entity->craft_data.skin);
+			break;
+		
+		case ENT_WEAPON:
+			switch(entity->weapon_data.type)
+			{
+			case WEAPON_PLASMA_CANNON:
+				entity->weapon_data.surface = 
+					skin_get_plasma_cannon_surface(entity->weapon_data.skin);
+				break;
+			
+			case WEAPON_MINIGUN:
+				entity->weapon_data.surface = 
+					skin_get_minigun_surface(entity->weapon_data.skin);
+				break;
+			
+			case WEAPON_ROCKET_LAUNCHER:
+				entity->weapon_data.surface = 
+					skin_get_rocket_launcher_surface(entity->weapon_data.skin);
+				break;
+			}
+
+			break;
+		}
+		
+		entity = entity->next;
+	}
 }
 
 
