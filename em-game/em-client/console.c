@@ -56,7 +56,7 @@ int r_ConsoleActiveTextRed = 0xff;
 int r_ConsoleActiveTextGreen = 0xff;
 int r_ConsoleActiveTextBlue = 0xff;
 int r_ConsoleActiveTextColour = 0xffff;
-int r_DrawConsole = 0;
+int r_DrawConsole = 1;
 
 
 struct consolell_t

@@ -32,7 +32,11 @@ struct skin_t *skin0 = NULL;
 
 int load_skin(struct skin_t *skin)
 {
+	game_rendering = 0;
+	
 	console_print("loading skin\n");
+	render_frame();
+	game_rendering = 1;
 	
 	struct string_t *filename = new_string_string(emergence_home_dir);
 	string_cat_text(filename, "/skins/");	

@@ -267,6 +267,9 @@ struct demo_t
 } *demo0, *cdemo;
 
 
+int game_rendering = 1;
+
+
 void clear_game()
 {
 	LL_REMOVE_ALL(struct event_t, &event0);
@@ -2361,6 +2364,8 @@ void cf_demo(char *c)
 	demo_first_tick = 0;
 	cgame_tick = 0;
 	cdemo = demo0;
+	
+//	render_frame();
 }
 
 
@@ -3544,6 +3549,9 @@ void create_teleporter_sparkles()
 
 void render_game()
 {
+	if(!game_rendering)
+		return;
+	
 	struct entity_t *entity;
 	switch(game_state)
 	{

@@ -78,3 +78,4 @@ extern uint32_t game_conn;
 #define GAMESTATE_PLAYING		4
 
 extern int game_state;
+extern int game_rendering;

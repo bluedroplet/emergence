@@ -185,8 +185,13 @@ void bypass_objects(gzFile gzfile)
 
 int load_map(char *map_name)
 {
+	game_rendering = 0;
+	
+	console_print("Loading map ");
 	console_print(map_name);
 	console_print("\n");
+	
+	render_frame();
 	
 	
 	struct string_t *map_filename = new_string_text(BR_DATADIR("/emergence/stock-maps/"));
@@ -220,9 +225,11 @@ int load_map(char *map_name)
 	if(vid_width == 1600)
 	{
 		console_print("Loading BSP tree\n");
+	render_frame();
 		load_bsp_tree(gzfile);
 		bypass_objects(gzfile);
 		console_print("Loading map tiles\n");
+	render_frame();
 		load_map_tiles(gzfile);
 		gzread_floating_images(gzfile);
 	}
@@ -235,12 +242,14 @@ int load_map(char *map_name)
 		string_cat_text(cached_filename, "%s%u", ".cache", vid_width);
 		
 		console_print("Loading BSP tree\n");
+	render_frame();
 		load_bsp_tree(gzfile);
 		
 		gzFile gzcachedfile = gzopen(cached_filename->text, "rb");
 		if(gzcachedfile)
 		{
 			console_print("Loading cached scaled map tiles\n");
+	render_frame();
 			
 			bypass_objects(gzfile);
 			load_map_tiles(gzcachedfile);
@@ -253,6 +262,7 @@ int load_map(char *map_name)
 				return 0;
 			
 			console_print("Scaling and caching map tiles\n");
+	render_frame();
 			
 			bypass_objects(gzfile);
 			
@@ -275,7 +285,9 @@ int load_map(char *map_name)
 	free_string(map_filename);
 
 	console_print("Map loaded ok.\n");
+	render_frame();
 	
+	game_rendering = 1;
 	return 1;
 }
 
