@@ -1,12 +1,12 @@
 SUBDIRS = shared
-LDADD = ../common/libcommon.a shared/libshared.a -lm -lz -lssl -lcrypto
+LDADD = ../common/libcommon.a shared/libshared.a -lm -lz -lssl -lcrypto -lpthread
 AM_CPPFLAGS = -DLINUX -Wall -DEMSERVER -DPKGDATADIR=\""$(datadir)/emergence/"\"
-AM_LDFLAGS = -rdynamic -static
+#AM_LDFLAGS = -static
 
 bin_PROGRAMS = em-server
 
-em_server_SOURCES = console.c game.h  network.c  ping.h \
-	console.h  main.c  network.h \
+em_server_SOURCES = console.c game.h  ping.h \
+	console.h  main.c  \
 	console.o  game.c main.h  ping.c entry.c \
 	entry.h objects.c objects.h
 

@@ -23,7 +23,6 @@
 #include "../shared/sgame.h"
 #include "rcon.h"
 #include "map.h"
-#include "network.h"
 #include "console.h"
 #include "../gsub/gsub.h"
 #include "render.h"
@@ -188,6 +187,8 @@ float offset_view_y;
 
 struct surface_t *s_plasma, *s_craft_shield, *s_weapon_shield;
 
+
+uint32_t game_conn;
 
 
 
@@ -646,18 +647,37 @@ void read_event(struct event_t *event)
 }
 
 
-void game_process_connection()
+void game_process_connecting()
+{
+	console_print(">");
+}
+
+
+void game_process_cookie_echoed()
+{
+	console_print("<\xbb");
+}
+
+
+void game_process_connection(uint32_t conn)
 {
 	game_state = GAMESTATE_CONNECTING;
+	game_conn = conn;
 	
 	if(!recording)
 		message_reader.type = MESSAGE_READER_STREAM;
 	
-	console_print("Connected!\n");
+	console_print("\xab\nConnected!\n");
 }
 
 
-void game_process_disconnection()
+void game_process_connection_failed()
+{
+	console_print("\n");
+}
+
+
+void game_process_disconnection(uint32_t conn)
 {
 	game_state = GAMESTATE_DEAD;
 	
@@ -667,7 +687,7 @@ void game_process_disconnection()
 }
 
 
-void game_process_conn_lost()
+void game_process_conn_lost(uint32_t conn)
 {
 	game_state = GAMESTATE_DEAD;
 	console_print("Connection lost.\n");
@@ -693,15 +713,19 @@ int game_process_proto_ver()
 	if(proto_ver == EM_PROTO_VER)
 	{
 		console_print("Correct protocol version\n");
-		net_emit_uint8(EMMSG_JOIN);
-		net_emit_string(get_cvar_string("name"));
-		net_emit_end_of_stream();
+		
+		if(game_state != GAMESTATE_DEMO)
+		{
+			net_emit_uint8(game_conn, EMMSG_JOIN);
+			net_emit_string(game_conn, get_cvar_string("name"));
+			net_emit_end_of_stream(game_conn);
+		}
 	}
 	else
 	{
 		console_print("Incorrect protocol version\n");
 		game_state = GAMESTATE_DEAD;
-		em_disconnect(NULL);
+		em_disconnect(game_conn);
 	}
 	
 	return 1;
@@ -1027,6 +1051,7 @@ void process_tick_events(uint32_t tick)
 			switch(event->type)
 			{
 			case EMEVENT_SPAWN_ENT:
+			//	console_print("process_spawn_ent_event; tick: %u; index: %u\n", tick, event->index);
 				process_spawn_ent_event(event);
 				break;
 			
@@ -1039,6 +1064,7 @@ void process_tick_events(uint32_t tick)
 				break;
 			
 			case EMEVENT_FOLLOW_ME:
+			//	console_print("process_follow_me_event; tick: %u; index: %u\n", tick, event->index);
 				process_follow_me_event(event);
 				break;
 			
@@ -1232,7 +1258,7 @@ int game_demo_process_event()
 		break;
 	}
 	
-	insert_event_in_order(&event);
+	LL_ADD_TAIL(struct event_t, &event0, &event);
 	
 	
 	return 1;
@@ -1253,6 +1279,7 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp)
 	
 	event.type = message_reader.message_type;
 	event.ooo = 0;
+	event.index = index;
 	
 	switch(event.type)
 	{
@@ -1301,6 +1328,7 @@ int game_process_event_untimed(uint32_t index)
 		ooon = 1;
 	
 	event.ooo = 0;
+	event.index = index;
 	
 	switch(event.type)
 	{
@@ -1605,27 +1633,27 @@ void game_resolution_change()
 
 void cf_status(char *c)
 {
-	if(net_state != NETSTATE_CONNECTED)
+/*	if(net_state != NETSTATE_CONNECTED)
 		console_print("You are not connected.\n");
 	else
 	{
-		net_emit_uint8(EMMSG_STATUS);
-		net_emit_end_of_stream();
+		net_emit_uint8(game_conn, EMMSG_STATUS);
+		net_emit_end_of_stream(game_conn);
 	}
-}
+*/}
 
 
 void cf_say(char *c)
 {
-	if(net_state != NETSTATE_CONNECTED)
+/*	if(net_state != NETSTATE_CONNECTED)
 		console_print("You are not connected.\n");
 	else
 	{
-		net_emit_uint8(EMMSG_SAY);
-		net_emit_string(c);
-		net_emit_end_of_stream();
+		net_emit_uint8(game_conn, EMMSG_SAY);
+		net_emit_string(game_conn, c);
+		net_emit_end_of_stream(game_conn);
 	}
-}
+*/}
 
 
 void cf_spectate(char *c)
@@ -1643,8 +1671,8 @@ void cf_spectate(char *c)
 		break;
 	
 	case GAMESTATE_PLAYING:
-		net_emit_uint8(EMMSG_SPECTATE);
-		net_emit_end_of_stream();
+		net_emit_uint8(game_conn, EMMSG_SPECTATE);
+		net_emit_end_of_stream(game_conn);
 		break;
 	}	
 }
@@ -1661,8 +1689,8 @@ void cf_play(char *c)
 		break;
 	
 	case GAMESTATE_SPECTATING:
-		net_emit_uint8(EMMSG_PLAY);
-		net_emit_end_of_stream();
+		net_emit_uint8(game_conn, EMMSG_PLAY);
+		net_emit_end_of_stream(game_conn);
 		break;
 	
 	case GAMESTATE_PLAYING:
@@ -2210,9 +2238,7 @@ void update_game()
 	
 	update_tick_parameters();
 	
-	sigio_process &= ~SIGIO_PROCESS_ALSA;
 	uint32_t render_tick = get_game_tick();
-	sigio_process |= SIGIO_PROCESS_ALSA;
 	
 	uint32_t new_io_tick = 0, new_ooo_tick = 0;
 	uint32_t first_io_tick = 0, last_io_tick = 0, first_ooo_tick = 0;
@@ -2642,9 +2668,9 @@ void qc_name(char *new_name)
 	if(game_state == GAMESTATE_PLAYING || 
 		game_state == GAMESTATE_SPECTATING)
 	{
-		net_emit_uint8(EMMSG_NAMECNGE);
-		net_emit_string(new_name);
-		net_emit_end_of_stream();
+		net_emit_uint8(game_conn, EMMSG_NAMECNGE);
+		net_emit_string(game_conn, new_name);
+		net_emit_end_of_stream(game_conn);
 	}		
 }
 
@@ -2662,6 +2688,9 @@ void init_game()
 	create_cvar_command("record", cf_record);
 	create_cvar_command("stop", cf_stop);
 	create_cvar_command("demo", cf_demo);
+	
+	create_cvar_command("connect", em_connect);
+	
 	
 	set_string_cvar_qc_function("name", qc_name);
 	

@@ -13,7 +13,6 @@
 #include "../common/llist.h"
 #include "../shared/timer.h"
 #include "../shared/network.h"
-#include "network.h"
 #include "ping.h"
 #include "game.h"
 /*

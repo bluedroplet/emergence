@@ -8,6 +8,10 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include <sys/epoll.h>
 
 #include "../common/types.h"
 #include "../common/llist.h"
@@ -18,7 +22,7 @@
 #include "shared/sgame.h"
 #include "shared/network.h"
 #include "shared/parse.h"
-#include "network.h"
+#include "shared/user.h"
 #include "game.h"
 #include "ping.h"
 #include "console.h"
@@ -40,6 +44,8 @@ struct conn_state_t
 #define CONN_STATE_VIRGIN	0
 #define CONN_STATE_ACTIVE	1
 
+int game_timer_fd;
+
 
 void server_shutdown()
 {
@@ -47,6 +53,7 @@ void server_shutdown()
 
 	kill_network();
 	kill_game();
+	kill_timer();
 
 	terminate_process();
 }
@@ -88,7 +95,6 @@ void server_libc_error(const char *fmt, ...)
 }
 
 
-
 struct conn_state_t *find_conn_state(uint32_t conn)
 {
 	struct conn_state_t *ccstate = conn_state0;
@@ -107,6 +113,7 @@ struct conn_state_t *find_conn_state(uint32_t conn)
 
 void process_connection(uint32_t conn)
 {
+	printf("process_connection()\n");
 	net_emit_uint8(conn, EMMSG_PROTO_VER);
 	net_emit_uint8(conn, EM_PROTO_VER);
 	net_emit_end_of_stream(conn);
@@ -119,6 +126,7 @@ void process_connection(uint32_t conn)
 
 void process_disconnection(uint32_t conn)
 {
+	printf("process_disconnection()\n");
 	struct conn_state_t *cstate = find_conn_state(conn);
 	assert(cstate);
 	
@@ -234,87 +242,6 @@ void process_command(struct string_t *string)
 }
 
 
-void process_msg_buf(struct buffer_t *msg_buf)
-{
-	int stop = 0;
-
-	uint32_t conn;
-	struct buffer_t *stream;
-	uint32_t index;
-	uint64_t stamp;
-	struct string_t *string;
-
-	while(!stop)
-	{
-		switch(buffer_read_int(msg_buf))
-		{
-		case MSG_CONNECTION:
-			conn = buffer_read_uint32(msg_buf);
-			process_connection(conn);
-			break;
-
-		case MSG_DISCONNECTION:
-			conn = buffer_read_uint32(msg_buf);
-			process_disconnection(conn);
-			break;
-
-		case MSG_CONNLOST:
-			conn = buffer_read_uint32(msg_buf);
-			process_conn_lost(conn);
-			break;
-		
-		case MSG_STREAM_TIMED:
-			index = buffer_read_uint32(msg_buf);
-			stamp = buffer_read_uint64(msg_buf);
-			conn = buffer_read_uint32(msg_buf);
-			stream = (struct buffer_t*)buffer_read_uint32(msg_buf);
-			process_stream_timed(conn, index, &stamp, stream);
-			free_buffer(stream);
-			break;
-
-		case MSG_STREAM_UNTIMED:
-			index = buffer_read_uint32(msg_buf);
-			conn = buffer_read_uint32(msg_buf);
-			stream = (struct buffer_t*)buffer_read_uint32(msg_buf);
-			process_stream_untimed(conn, index, stream);
-			free_buffer(stream);
-			break;
-
-		case MSG_STREAM_TIMED_OOO:
-			index = buffer_read_uint32(msg_buf);
-			stamp = buffer_read_uint64(msg_buf);
-			conn = buffer_read_uint32(msg_buf);
-			stream = (struct buffer_t*)buffer_read_uint32(msg_buf);
-			process_stream_timed_ooo(conn, index, &stamp, stream);
-			free_buffer(stream);
-			break;
-
-		case MSG_STREAM_UNTIMED_OOO:
-			index = buffer_read_uint32(msg_buf);
-			conn = buffer_read_uint32(msg_buf);
-			stream = (struct buffer_t*)buffer_read_uint32(msg_buf);
-			process_stream_untimed_ooo(conn, index, stream);
-			free_buffer(stream);
-			break;
-			
-		case MSG_UPDATE_GAME:
-			update_game();
-			break;
-
-		case MSG_COMMAND:
-			string = (struct string_t*)buffer_read_uint32(msg_buf);
-			process_command(string);
-			free_string(string);
-			break;
-
-		case BUF_EOB:
-			stop = 1;
-			break;
-		}
-	}
-}
-
-
 void cf_go_daemon(char *c)
 {
 	if(!as_daemon)
@@ -333,14 +260,163 @@ void cf_quit(char *c)
 }
 
 
+void process_console()
+{
+	char c;
+	
+	while(1)
+	{
+		if(read(STDIN_FILENO, &c, 1) == -1)
+			break;
+	
+		fcntl(STDIN_FILENO, F_SETFL, 0);
+		
+		struct string_t *string = new_string();
+		
+		while(c != '\n')
+		{
+			string_cat_char(string, c);
+			read(STDIN_FILENO, &c, 1);
+		}
+		
+		process_command(string);
+		free_string(string);
+		
+		fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
+	}
+}
+
+
+void process_network()
+{
+	uint32_t conn;
+	struct buffer_t *stream;
+	uint32_t index;
+	uint64_t stamp;
+
+	while(1)
+	{
+		uint32_t m;
+		if(read(net_out_pipe[0], &m, 4) == -1)
+			break;
+		
+		fcntl(net_out_pipe[0], F_SETFL, 0);
+		
+		switch(m)
+		{
+		case NETMSG_CONNECTION:
+			read(net_out_pipe[0], &conn, 4);
+			process_connection(conn);
+			break;
+
+		case NETMSG_DISCONNECTION:
+			read(net_out_pipe[0], &conn, 4);
+			process_disconnection(conn);
+			break;
+
+		case NETMSG_CONNLOST:
+			read(net_out_pipe[0], &conn, 4);
+			process_conn_lost(conn);
+			break;
+		
+		case NETMSG_STREAM_TIMED:
+			read(net_out_pipe[0], &index, 4);
+			read(net_out_pipe[0], &stamp, 8);
+			read(net_out_pipe[0], &conn, 4);
+			read(net_out_pipe[0], &stream, 4);
+			process_stream_timed(conn, index, &stamp, stream);
+			free_buffer(stream);
+			break;
+
+		case NETMSG_STREAM_UNTIMED:
+			read(net_out_pipe[0], &index, 4);
+			read(net_out_pipe[0], &conn, 4);
+			read(net_out_pipe[0], &stream, 4);
+			process_stream_untimed(conn, index, stream);
+			free_buffer(stream);
+			break;
+
+		case NETMSG_STREAM_TIMED_OOO:
+			read(net_out_pipe[0], &index, 4);
+			read(net_out_pipe[0], &stamp, 8);
+			read(net_out_pipe[0], &conn, 4);
+			read(net_out_pipe[0], &stream, 4);
+			process_stream_timed_ooo(conn, index, &stamp, stream);
+			free_buffer(stream);
+			break;
+
+		case NETMSG_STREAM_UNTIMED_OOO:
+			read(net_out_pipe[0], &index, 4);
+			read(net_out_pipe[0], &conn, 4);
+			read(net_out_pipe[0], &stream, 4);
+			process_stream_untimed_ooo(conn, index, stream);
+			free_buffer(stream);
+			break;
+		}
+
+		fcntl(net_out_pipe[0], F_SETFL, O_NONBLOCK);
+	}
+}
+
+
+void process_game_timer()
+{
+	uint32_t m;
+	while(read(game_timer_fd, &m, 1) != -1);
+		
+	update_game();
+}
+
+
+void main_thread()
+{
+	int epoll_fd = epoll_create(3);
+	
+	struct epoll_event ev = 
+	{
+		.events = EPOLLIN | EPOLLET
+	};
+
+	ev.data.u32 = 0;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &ev);
+
+	ev.data.u32 = 1;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, net_out_pipe[0], &ev);
+
+	ev.data.u32 = 2;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, game_timer_fd, &ev);
+
+	while(1)
+	{
+		epoll_wait(epoll_fd, &ev, 1, -1);
+		
+		switch(ev.data.u32)
+		{
+		case 0:
+			process_console();
+			break;
+		
+		case 1:
+			process_network();
+			break;
+		
+		case 2:
+			process_game_timer();
+			break;
+		}
+	}
+}
+
+
 void init()
 {
+	init_user();
 	init_network();
-	init_timer();
 	init_game();
+	init_timer();
+	
+	game_timer_fd = create_timer_listener();
 
 	create_cvar_command("daemonize", cf_go_daemon);
 	create_cvar_command("quit", cf_quit);
-	
-	init_network_sig();
 }

@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "../common/types.h"
 #include "../shared/cvar.h"
@@ -21,6 +22,8 @@
 
 #define CONSOLE_LL_GRAN 200
 #define CONSOLE_INPUT_LENGTH 40
+
+pthread_mutex_t console_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 int console_inputting = 0;
 char *console_input = NULL;
@@ -77,8 +80,10 @@ struct cmdhistll_t
 
 void render_console()
 {
+	pthread_mutex_lock(&console_mutex);
+	
 	if(!r_DrawConsole)
-		return;
+		goto end;
 
 	int consoleheight = r_ConsoleHeight;
 
@@ -145,6 +150,9 @@ void render_console()
 
 	draw_alpha_rect();
 */
+	
+	end:
+	pthread_mutex_unlock(&console_mutex);
 }
 
 
@@ -167,6 +175,8 @@ void add_cmd_hist(char *cmd)
 
 void console_print(const char *fmt, ...)
 {
+	pthread_mutex_lock(&console_mutex);
+	
 	char *msg;
 	
 	va_list ap;
@@ -260,13 +270,16 @@ void console_print(const char *fmt, ...)
 	}
 	
 	free(temp);
+	pthread_mutex_unlock(&console_mutex);
 }
 
 
 void console_toggle(int state)
 {
+	pthread_mutex_lock(&console_mutex);
+	
 	if(!state)
-		return;
+		goto end;
 
 	r_DrawConsole = !r_DrawConsole;
 
@@ -275,16 +288,21 @@ void console_toggle(int state)
 		console_inputting = 0;
 		console_input[0] = '\0';
 	}
+	
+	end:
+	pthread_mutex_unlock(&console_mutex);
 }
 
 
 void prev_command(int state)
 {
+	pthread_mutex_lock(&console_mutex);
+
 	if(!state)
-		return;
+		goto end;
 
 	if(!r_DrawConsole)
-		return;
+		goto end;
 
 	if(!ccmdhist)
 	{
@@ -308,16 +326,21 @@ void prev_command(int state)
 
 		console_inputting = 1;
 	}
+
+	end:
+	pthread_mutex_unlock(&console_mutex);
 }
 
 
 void next_command(int state)
 {
+	pthread_mutex_lock(&console_mutex);
+	
 	if(!state)
-		return;
+		goto end;
 
 	if(!r_DrawConsole)
-		return;
+		goto end;
 
 	if(!ccmdhist)
 	{
@@ -349,16 +372,21 @@ void next_command(int state)
 
 		console_inputting = 1;
 	}
+
+	end:
+	pthread_mutex_unlock(&console_mutex);
 }
 
 
 void console_tab(int state)
 {
+	pthread_mutex_lock(&console_mutex);
+	
 	if(!state)
-		return;
+		goto end;
 
 	if(!r_DrawConsole)
-		return;
+		goto end;
 
 	if(tabbed)
 	{
@@ -374,16 +402,21 @@ void console_tab(int state)
 
 		tabbed = 1;
 	}
+
+	end:
+	pthread_mutex_unlock(&console_mutex);
 }
 
 
 void console_backspace(int state)
 {
+	pthread_mutex_lock(&console_mutex);
+
 	if(!state)
-		return;
+		goto end;
 
 	if(!r_DrawConsole)
-		return;
+		goto end;
 
 	int l = strlen(console_input);
 
@@ -391,16 +424,21 @@ void console_backspace(int state)
 		console_input[l - 1] = '\0';
 
 	tabbed = 0;
+
+	end:
+	pthread_mutex_unlock(&console_mutex);
 }
 
 
 void console_enter(int state)
 {
-	if(!state)
-		return;
+	pthread_mutex_lock(&console_mutex);
 
+	if(!state)
+		goto end;
+	
 	if(!r_DrawConsole)
-		return;
+		goto end;
 
 	int l = strlen(console_input);
 
@@ -423,17 +461,22 @@ void console_enter(int state)
 
 		free_string(s);
 
-		return;
+		goto end;
 	}
 
 	console_inputting = 0;
 
 	tabbed = 0;
+
+	end:
+	pthread_mutex_unlock(&console_mutex);
 }
 
 
 void console_keypress(char c)
 {
+	pthread_mutex_lock(&console_mutex);
+	
 	if(!r_DrawConsole)
 		return;
 
@@ -448,6 +491,8 @@ void console_keypress(char c)
 	}
 
 	tabbed = 0;
+
+	pthread_mutex_unlock(&console_mutex);
 }
 
 

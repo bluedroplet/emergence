@@ -17,4 +17,3 @@
 
 #include "game.h"
 #include "tick.h"
-#include "network.h"

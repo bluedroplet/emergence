@@ -8,9 +8,12 @@ void game_process_stream_untimed_ooo(uint32_t index, struct buffer_t *stream);
 void game_resolution_change();
 
 
-void game_process_conn_lost();
-void game_process_connection();
-void game_process_disconnection();
+void game_process_cookie_echoed();
+void game_process_connecting();
+void game_process_conn_lost(uint32_t conn);
+void game_process_connection(uint32_t conn);
+void game_process_connection_failed();
+void game_process_disconnection(uint32_t conn);
 void render_game();
 void init_game();
 void kill_game();
@@ -56,6 +59,8 @@ void explosion(struct entity_t *entity);
 extern double viewx, viewy;
 
 void update_game();
+
+extern uint32_t game_conn;
 
 
 #define ROTATIONS 80

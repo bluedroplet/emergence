@@ -9,6 +9,10 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include <sys/epoll.h>
 
 #include "../common/types.h"
 #include "../common/stringbuf.h"
@@ -17,8 +21,8 @@
 #include "../shared/config.h"
 #include "../shared/user.h"
 #include "../shared/timer.h"
+#include "../shared/network.h"
 #include "render.h"
-#include "network.h"
 #include "console.h"
 #include "control.h"
 #include "input.h"
@@ -29,6 +33,7 @@
 #include "ping.h"
 #include "sound.h"
 #include "main.h"
+#include "x.h"
 
 #ifdef LINUX
 #include "entry.h"
@@ -105,99 +110,87 @@ void client_libc_error(const char *fmt, ...)
 }
 
 
-void process_messages(struct buffer_t *msg_buf)
+void process_network()
 {
-	int stop = 0;
-	int render = 0;
-
+	uint32_t conn;
 	struct buffer_t *stream;
 	uint32_t index;
 	uint64_t stamp;
-	struct string_t *string;
-	char c;
-	int key, state;
-	double ping;
-	
-	while(!stop)
+
+	while(1)
 	{
-		switch(buffer_read_int(msg_buf))
+		uint32_t m;
+		if(read(net_out_pipe[0], &m, 4) == -1)
+			break;
+		
+		fcntl(net_out_pipe[0], F_SETFL, 0);
+		
+		switch(m)
 		{
-		case MSG_CONNECTION:
-			game_process_connection();
+		case NETMSG_CONNECTING:
+			game_process_connecting();
+			break;
+		
+		case NETMSG_COOKIE_ECHOED:
+			game_process_cookie_echoed();
+			break;
+		
+		case NETMSG_CONNECTION:
+			read(net_out_pipe[0], &conn, 4);
+			game_process_connection(conn);
 			break;
 
-		case MSG_DISCONNECTION:
-			game_process_disconnection();
+		case NETMSG_CONNECTION_FAILED:
+			game_process_connection_failed(conn);
+			break;
+		
+		case NETMSG_DISCONNECTION:
+			read(net_out_pipe[0], &conn, 4);
+			game_process_disconnection(conn);
 			break;
 
-		case MSG_CONNLOST:
-			game_process_conn_lost();
+		case NETMSG_CONNLOST:
+			read(net_out_pipe[0], &conn, 4);
+			game_process_conn_lost(conn);
 			break;
-
-		case MSG_STREAM_TIMED:
-			index = buffer_read_uint32(msg_buf);
-			stamp = buffer_read_uint64(msg_buf);
-			stream = (struct buffer_t*)buffer_read_uint32(msg_buf);
+		
+		case NETMSG_STREAM_TIMED:
+			read(net_out_pipe[0], &index, 4);
+			read(net_out_pipe[0], &stamp, 8);
+			read(net_out_pipe[0], &conn, 4);
+			read(net_out_pipe[0], &stream, 4);
 			game_process_stream_timed(index, &stamp, stream);
 			free_buffer(stream);
 			break;
-		
-		case MSG_STREAM_UNTIMED:
-			index = buffer_read_uint32(msg_buf);
-			stream = (struct buffer_t*)buffer_read_uint32(msg_buf);
+
+		case NETMSG_STREAM_UNTIMED:
+			read(net_out_pipe[0], &index, 4);
+			read(net_out_pipe[0], &conn, 4);
+			read(net_out_pipe[0], &stream, 4);
 			game_process_stream_untimed(index, stream);
 			free_buffer(stream);
 			break;
-		
-		case MSG_STREAM_TIMED_OOO:
-			index = buffer_read_uint32(msg_buf);
-			stamp = buffer_read_uint64(msg_buf);
-			stream = (struct buffer_t*)buffer_read_uint32(msg_buf);
+
+		case NETMSG_STREAM_TIMED_OOO:
+			read(net_out_pipe[0], &index, 4);
+			read(net_out_pipe[0], &stamp, 8);
+			read(net_out_pipe[0], &conn, 4);
+			read(net_out_pipe[0], &stream, 4);
 			game_process_stream_timed_ooo(index, &stamp, stream);
 			free_buffer(stream);
 			break;
-		
-		case MSG_STREAM_UNTIMED_OOO:
-			index = buffer_read_uint32(msg_buf);
-			stream = (struct buffer_t*)buffer_read_uint32(msg_buf);
+
+		case NETMSG_STREAM_UNTIMED_OOO:
+			read(net_out_pipe[0], &index, 4);
+			read(net_out_pipe[0], &conn, 4);
+			read(net_out_pipe[0], &stream, 4);
 			game_process_stream_untimed_ooo(index, stream);
 			free_buffer(stream);
 			break;
-		
-		case MSG_KEYPRESS:
-			c = buffer_read_char(msg_buf);
-			console_keypress(c);
-			break;
-		
-		case MSG_UIFUNC:
-			key = buffer_read_int(msg_buf);
-			state = buffer_read_int(msg_buf);
-			uifunc(key, state);
-			break;
-
-		case MSG_TEXT:
-			string = (struct string_t*)buffer_read_uint32(msg_buf);
-			console_print(string->text);
-			free_string(string);
-			break;
-
-		case MSG_PING:
-			ping = buffer_read_double(msg_buf);
-		//	add_latency(ping);
-			break;
-		
-		case MSG_RENDER:
-			render = 1;
-			break;
-
-		case BUF_EOB:
-			stop = 1;
-			break;
 		}
+
+		fcntl(net_out_pipe[0], F_SETFL, O_NONBLOCK);
 	}
-	
-	if(render)
-		render_frame();
 }
 
 
@@ -205,8 +198,8 @@ void init()
 {
 	console_print("Emergence Client " VERSION "\n");
 	
-	init_network();
 	init_timer();
+	init_network();
 
 	init_user();
 
@@ -216,8 +209,6 @@ void init()
 	init_map_cvars();
 	create_input_cvars();
 	init_tick_cvars();
-
-
 
 	init_console();
 	
@@ -251,4 +242,45 @@ void init()
 	
 	free_string(string);
 */
+}
+
+
+void process_x_render_pipe()
+{
+	char c;
+	while(read(x_render_pipe[0], &c, 1) != -1);
+		
+	render_frame();
+}
+
+
+void main_thread()
+{
+	int epoll_fd = epoll_create(2);
+	
+	struct epoll_event ev;
+	
+	ev.events = EPOLLIN | EPOLLET;
+	ev.data.u32 = 0;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, x_render_pipe[0], &ev);
+
+	ev.events = EPOLLIN | EPOLLET;
+	ev.data.u32 = 1;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, net_out_pipe[0], &ev);
+
+	while(1)
+	{
+		epoll_wait(epoll_fd, &ev, 1, -1);
+		
+		switch(ev.data.u32)
+		{
+		case 0:
+			process_x_render_pipe();
+			break;
+		
+		case 1:
+			process_network();
+			break;
+		}
+	}
 }

@@ -1,9 +1,9 @@
 AM_CPPFLAGS = -DLINUX -DEMCLIENT -Wall
 
 noinst_LIBRARIES = libshared.a
-libshared_a_SOURCES = bsp.c config.h network.h parse.h sgame.c timer.h \
+libshared_a_SOURCES = bsp.c config.h parse.h sgame.c timer.h \
 	bsp.h cvar.c objects.h rdtsc.h sgame.h config.c cvar.h \
-	parse.c rdtsc.S timer.c user.c user.h
+	parse.c rdtsc.S timer.c user.c user.h network.c network.h
 
 BUILT_SOURCES = $(libshared_a_SOURCES)
 CLEANFILES = $(libshared_a_SOURCES)

@@ -4,10 +4,14 @@
 
 #include <stdint.h>
 #include <signal.h>
+#include <math.h>
+#include <stdlib.h>
+#include <pthread.h>
+
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <sys/epoll.h>
 
-#include <math.h>
 
 #define __USE_X_SHAREDMEMORY__
 
@@ -43,6 +47,8 @@ XImage *image;
 GC gc;
 
 int x_fd;
+int x_render_pipe[2];
+int x_kill_pipe[2];
 
 XRRScreenConfiguration *screen_config;
 int original_mode;
@@ -59,9 +65,13 @@ struct vid_mode_t
 
 int vid_mode;
 
+pthread_mutex_t x_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+pthread_t x_thread_id;
+
+
 void update_frame_buffer()
 {
-	sigio_process &= ~SIGIO_PROCESS_X;
+	pthread_mutex_lock(&x_mutex);	
 	
 //	float time1 = get_double_time();
 	
@@ -73,7 +83,7 @@ void update_frame_buffer()
 	
 //	printf("%f %f %f\n", time1, time2, time3);
 	
-	sigio_process |= SIGIO_PROCESS_X;
+	pthread_mutex_unlock(&x_mutex);	
 }
 
 
@@ -109,7 +119,10 @@ void process_x()
 	default:
 	
 		if(report.type == CompletionType)
-			buffer_cat_uint32(msg_buf, (uint32_t)MSG_RENDER);
+		{
+			char c;
+			write(x_render_pipe[1], &c, 1);
+		}
 		
 		break;
 	}
@@ -225,7 +238,7 @@ void query_vid_modes()
 
 		double d;
 		if(modf((double)width / 8, &d) != 0.0)	// make sure 200x200 blocks scale to integer
-									//(change this to integer)
+									// (change this to integer)
 			continue;
 			
 		modes++;
@@ -280,8 +293,6 @@ void set_vid_mode(int mode)
 			return;
 	}
 	
-	int old_sigio_process = sigio_process;	
-	sigio_process &= ~SIGIO_PROCESS_X;
 
 	XRRSetScreenConfig (xdisplay, screen_config,
 			   RootWindow(xdisplay, xscreen),
@@ -355,8 +366,6 @@ void set_vid_mode(int mode)
 	
 	XShmAttach(xdisplay, shmseginfo);
 
-	sigio_process |= SIGIO_PROCESS_X;
-
 }
 
 
@@ -371,6 +380,40 @@ void vid_mode_qc(int mode)
 void create_x_cvars()
 {
 	create_cvar_int("vid_mode", &vid_mode, 0);
+}
+
+
+void *x_thread(void *a)
+{
+	int epoll_fd = epoll_create(2);
+	
+	struct epoll_event ev;
+
+	ev.events = EPOLLIN;
+	ev.data.u32 = 0;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, x_fd, &ev);
+
+	ev.events = EPOLLIN | EPOLLET;
+	ev.data.u32 = 1;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, x_kill_pipe[0], &ev);
+
+	while(1)
+	{
+		epoll_wait(epoll_fd, &ev, 1, -1);
+		
+		switch(ev.data.u32)
+		{
+		case 0:
+			pthread_mutex_lock(&x_mutex);
+			process_x();
+			pthread_mutex_unlock(&x_mutex);
+			break;
+		
+		case 2:
+			pthread_exit(NULL);
+			break;
+		}
+	}
 }
 
 
@@ -400,11 +443,7 @@ void init_x()
 
 	console_print("Getting x to generate signals: ");
 	
-	if(fcntl(x_fd, F_SETOWN, getpid()) == -1)
-		goto error;
-	
-	if(fcntl(x_fd, F_SETFL, O_ASYNC) == -1)
-		goto error;
+	fcntl(x_fd, F_SETFL, O_NONBLOCK);
 	
 	
 	console_print("ok\n");
@@ -412,6 +451,13 @@ void init_x()
 	query_vid_modes();
 	set_int_cvar_qc_function("vid_mode", vid_mode_qc);
 	set_vid_mode(vid_mode);
+
+	pipe(x_render_pipe);
+	fcntl(x_render_pipe[0], F_SETFL, O_NONBLOCK);
+	
+	pipe(x_kill_pipe);
+	
+	pthread_create(&x_thread_id, NULL, x_thread, NULL);
 
 	
 	return;
@@ -424,7 +470,9 @@ error:
 
 void kill_x()
 {
-	sigio_process &= ~SIGIO_PROCESS_X;
+	char c;
+	write(x_kill_pipe[1], &c, 1);
+	pthread_join(x_thread_id, NULL);
 	
 	XRRSetScreenConfig (xdisplay, screen_config,
 			   xwindow,

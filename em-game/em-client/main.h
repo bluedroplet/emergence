@@ -2,6 +2,7 @@ void init();
 void client_shutdown();
 void client_error(const char *fmt, ...);
 void client_libc_error(const char *fmt, ...);
+void main_thread();
 
 #ifdef _INC_NFBUFFER
 void process_messages(struct buffer_t *msg_buf);

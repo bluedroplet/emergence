@@ -8,6 +8,10 @@
 #include <string.h>
 #include <stdint.h>
 #include <math.h>
+#include <pthread.h>
+#include <unistd.h>
+
+#include <sys/epoll.h>
 
 #include "../common/types.h"
 #include "../common/stringbuf.h"
@@ -18,11 +22,18 @@
 #include "../shared/sgame.h"
 #include "main.h"
 #include "console.h"
-#include "network.h"
 #include "game.h"
 #include "control.h"
 #include "entry.h"
 #include "render.h"
+#include "input.h"
+
+
+int control_timer_fd;
+int control_kill_pipe[2];
+
+pthread_mutex_t control_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+pthread_t control_thread_id;
 
 struct
 {
@@ -393,8 +404,8 @@ void fire_rail(uint32_t state)
 	if(!state)
 		return;
 
-	net_emit_uint8(EMMSG_FIRERAIL);
-	net_emit_end_of_stream();
+	net_emit_uint8(game_conn, EMMSG_FIRERAIL);
+	net_emit_end_of_stream(game_conn);
 }
 
 
@@ -403,9 +414,9 @@ void fire_left(uint32_t state)
 //	if(game_state != GAMESTATE_ALIVE)
 //		return;
 
-	net_emit_uint8(EMMSG_FIRELEFT);
-	net_emit_uint32(state);
-	net_emit_end_of_stream();
+	net_emit_uint8(game_conn, EMMSG_FIRELEFT);
+	net_emit_uint32(game_conn, state);
+	net_emit_end_of_stream(game_conn);
 }
 
 
@@ -414,9 +425,9 @@ void fire_right(uint32_t state)
 //	if(game_state != GAMESTATE_ALIVE)
 //		return;
 
-	net_emit_uint8(EMMSG_FIRERIGHT);
-	net_emit_uint32(state);
-	net_emit_end_of_stream();
+	net_emit_uint8(game_conn, EMMSG_FIRERIGHT);
+	net_emit_uint32(game_conn, state);
+	net_emit_end_of_stream(game_conn);
 }
 
 
@@ -473,28 +484,30 @@ double next_control_tick;
 
 void process_control_alarm()
 {
+	char c;
+	while(read(control_timer_fd, &c, 1) != -1);
+		
 	double time = get_double_time();
 		
 	if(time > next_control_tick)
 	{
+		pthread_mutex_lock(&control_mutex);
+		
 		if(control_changed)
 		{
-			if(net_in_use)
-			{
-				net_fire_alarm = 1;
-				return;
-			}
-			
-			net_emit_uint8(EMMSG_CTRLCNGE);
-			net_emit_float(thrust);
-			net_emit_float(roll);
-			net_emit_end_of_stream();
+			net_emit_uint8(game_conn, EMMSG_CTRLCNGE);
+			net_emit_float(game_conn, thrust);
+			net_emit_float(game_conn, roll);
+			net_emit_end_of_stream(game_conn);
 			control_changed = 0;
 			roll = 0.0;
 			thrust = 0.0;
 		}
 	
-		next_control_tick = ((int)(time / CONTROL_TICK_INTERVAL) + 1) * (double)CONTROL_TICK_INTERVAL;
+		pthread_mutex_unlock(&control_mutex);
+		
+		next_control_tick = ((int)(time / CONTROL_TICK_INTERVAL) + 1) * 
+			(double)CONTROL_TICK_INTERVAL;
 	}
 }
 
@@ -634,27 +647,23 @@ char get_ascii(int key)
 
 void process_keypress(int key, int state)
 {
+	pthread_mutex_lock(&control_mutex);		// called from x thread
+	
 	if(key >= 256)
-		return;
+		goto end;
 	
 	void (*func)(int);
 
 	func = controls[key].uifunc;
-
 	if(func)
-	{
-		buffer_cat_uint32(msg_buf, MSG_UIFUNC);
-		buffer_cat_int(msg_buf, key);
-		buffer_cat_int(msg_buf, state);
-	}
-
+		func(state);
+	
 	func = controls[key].func;
-
 	if(func)
 		func(state);
 	
 	if(!state)
-		return;
+		goto end;
 
 	if(key == 42 || key == 54)
 	{
@@ -671,22 +680,13 @@ void process_keypress(int key, int state)
 
 			if(c)
 			{
-				buffer_cat_uint32(msg_buf, MSG_KEYPRESS);
-				buffer_cat_char(msg_buf, c);
+				console_keypress(c);
 			}
 		}
 	}
-}
 
-
-void uifunc(int key, int state)
-{
-	void (*func)(int);
-
-	func = controls[key].uifunc;
-
-	if(func)
-		func(state);
+	end:
+	pthread_mutex_unlock(&control_mutex);
 }
 
 
@@ -764,6 +764,8 @@ void process_axis(int axis, float val)
 
 void cf_controls(char *params)
 {
+	pthread_mutex_lock(&control_mutex);
+
 	int c;
 
 	for(c = 0; c < 320; c++)
@@ -774,11 +776,15 @@ void cf_controls(char *params)
 			console_print("\n");
 		}
 	}
-}	
+
+	pthread_mutex_unlock(&control_mutex);
+}
 
 
 void cf_actions(char *params)
 {
+	pthread_mutex_lock(&control_mutex);
+
 	int a;
 
 	for(a = 0; a < numactions; a++)
@@ -789,17 +795,21 @@ void cf_actions(char *params)
 			console_print("\n");
 		}
 	}
+
+	pthread_mutex_unlock(&control_mutex);
 }	
 
 
 void cf_bind(char *params)
 {
+	pthread_mutex_lock(&control_mutex);
+	
 	char *token = strtok(params, " ");
 	
 	if(!token)
 	{
 		console_print("usage: bind <control> <action>\n");
-		return;
+		goto end;
 	}
 
 	int c;
@@ -820,7 +830,7 @@ void cf_bind(char *params)
 		
 		free_string(s);
 		
-		return;
+		goto end;
 	}
 
 	token = strtok(NULL, " ");
@@ -828,7 +838,7 @@ void cf_bind(char *params)
 	if(!token)
 	{
 		controls[c].func = NULL;
-		return;
+		goto end;
 	}
 
 	int a;
@@ -849,27 +859,32 @@ void cf_bind(char *params)
 		
 		free_string(s);
 		
-		return;
+		goto end;
 	}
 	
 	if(c < 288 && actions[a].type != ACTIONTYPE_BOOL)
 	{
 		console_print("Boolean controls must be bound to boolean actions.\n");
-		return;
+		goto end;
 	}
 
 	if(c >= 288 && actions[a].type != ACTIONTYPE_CONT)
 	{
 		console_print("Continuous controls must be bound to continuous actions.\n");
-		return;
+		goto end;
 	}
 
 	controls[c].func = actions[a].func;
+	
+	end:
+	pthread_mutex_unlock(&control_mutex);
 }
 
 
 void dump_bindings(FILE *file)
 {
+	pthread_mutex_lock(&control_mutex);
+	
 	int c, a;
 
 	for(c = 0; c < 320; c++)
@@ -896,6 +911,54 @@ void dump_bindings(FILE *file)
 			free_string(s);
 		}
 	}
+
+	pthread_mutex_unlock(&control_mutex);
+}
+
+
+void *control_thread(void *a)
+{
+	int epoll_fd = epoll_create(3);
+	
+	struct epoll_event ev;
+	
+	ev.events = EPOLLIN | EPOLLET;
+	ev.data.u32 = 0;
+	if(epoll_ctl(epoll_fd, EPOLL_CTL_ADD, input_fd, &ev) == -1)
+		printf("err\n");
+
+	ev.events = EPOLLIN | EPOLLET;
+	ev.data.u32 = 1;
+	if(epoll_ctl(epoll_fd, EPOLL_CTL_ADD, control_timer_fd, &ev) == -1)
+		printf("err2\n");
+
+	ev.events = EPOLLIN | EPOLLET;
+	ev.data.u32 = 2;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, control_kill_pipe[0], &ev);
+
+	while(1)
+	{
+		epoll_wait(epoll_fd, &ev, 1, -1);
+		
+		switch(ev.data.u32)
+		{
+		case 0:
+			printf("a\n");
+			pthread_mutex_lock(&control_mutex);
+			process_input();
+			pthread_mutex_unlock(&control_mutex);
+			break;
+		
+		case 1:
+			process_input();
+			process_control_alarm();
+			break;
+		
+		case 2:
+			pthread_exit(NULL);
+			break;
+		}
+	}
 }
 
 
@@ -903,8 +966,6 @@ void init_control()
 {
 	double time = get_double_time();
 	next_control_tick = ((int)(time / CONTROL_TICK_INTERVAL) + 1) * (double)CONTROL_TICK_INTERVAL;
-	
-	sigalrm_process |= SIGALRM_PROCESS_CONTROL;
 	
 	create_cvar_command("bind", cf_bind);
 	create_cvar_command("controls", cf_controls);
@@ -915,4 +976,16 @@ void init_control()
 	{
 		axis_calib[a].set = 0;
 	}
+	
+	control_timer_fd = create_timer_listener();
+	pipe(control_kill_pipe);
+	pthread_create(&control_thread_id, NULL, control_thread, NULL);
+}
+
+
+void kill_control()
+{
+	char c;
+	write(control_kill_pipe[1], &c, 1);
+	pthread_join(control_thread_id, NULL);
 }

@@ -12,33 +12,38 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include <pthread.h>
 
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/epoll.h>
 
 #include <arpa/inet.h>
 
-#include "../common/types.h"
-#include "../common/llist.h"
-#include "../common/stringbuf.h"
-#include "../common/buffer.h"
-#include "../shared/cvar.h"
-#include "../shared/rdtsc.h"
-#include "../shared/timer.h"
-#include "../shared/network.h"
+#include "../../common/types.h"
+#include "../../common/llist.h"
+#include "../../common/stringbuf.h"
+#include "../../common/buffer.h"
+#include "cvar.h"
+#include "rdtsc.h"
+#include "timer.h"
 #include "network.h"
-#include "game.h"
-#include "main.h"
-#include "console.h"
-#include "entry.h"
 
+#include "../console.h"
+#include "../main.h"
+
+#ifdef EMSERVER
+#include "../game.h"
+#include "../entry.h"
+#endif
 
 struct in_packet_ll_t
 {
 	struct packet_t packet;
 	int payload_size;
-	int stream_delivered;		// set on the first packet of a stream once that stream has been delivered ooo
+	int stream_delivered;		// set on the first packet of a stream once that 
+								// stream has been delivered ooo
 		
 	struct in_packet_ll_t *next;
 };
@@ -60,6 +65,7 @@ struct conn_cookie_t
 	uint32_t cookie;
 	uint32_t ip;
 	uint16_t port;
+	
 	struct conn_cookie_t *next;
 		
 } *conn_cookie0 = NULL;
@@ -68,9 +74,12 @@ struct conn_cookie_t
 struct conn_t
 {
 	int state;
+	
+	#ifdef EMSERVER
 	int begun;
+	#endif
 
-	struct sockaddr_in sockaddr;	// address of client
+	struct sockaddr_in sockaddr;	// address of the other end
 
 	uint32_t next_read_index;		// index of the next packet to be read
 	uint32_t next_process_index;	// index of the next packet to be processed
@@ -91,18 +100,26 @@ struct conn_t
 } *conn0 = NULL;
 
 
-#define NETSTATE_CONNECTED		0	// the server has acknowledged the connection
-#define NETSTATE_DISCONNECTING	1	// the server has requested a disconnection
-#define NETSTATE_DISCONNECTED	2	// the client has requested a disconnection
+#define NETSTATE_CONNECTING		0	// we are trying to connect from this end (client only)
+#define NETSTATE_CONNECTED		1
+#define NETSTATE_DISCONNECTING	2	// the connection has been terminated this end
+#define NETSTATE_DISCONNECTED	3	// we keep the conn info for a while so we can resend acks
 
 #define OUT_OF_ORDER_RECV_AHEAD		10
 #define CONNECTION_COOKIE_TIMEOUT	4.0
 #define CONNECTION_TIMEOUT			5.0
 #define CONNECTION_MAX_OUT_PACKETS	400
+#define CONNECT_RESEND_DELAY		0.5
 #define STREAM_RESEND_DELAY			0.1
 
+pthread_t network_thread_id;
+pthread_mutex_t net_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int udp_socket = -1;
+int udp_fd = -1;
+int net_timer_fd = -1;
+
+int net_kill_pipe[2];
+int net_out_pipe[2];
 
 
 struct conn_t *new_conn()
@@ -262,6 +279,14 @@ int output_cpacket(struct conn_t *conn)
 		return 0;
 
 
+	// send packet
+	
+	int size = conn->cpacket_payload_size + EMNETHEADER_SIZE;
+	
+	sendto(udp_fd, (char*)&conn->cpacket, size, 0, 
+		&conn->sockaddr, sizeof(struct sockaddr_in));
+			
+
 	// get time
 		
 	double time = get_double_time();
@@ -270,65 +295,68 @@ int output_cpacket(struct conn_t *conn)
 		conn->last_time = time;
 
 	
-	// send packet
-	
-	int size = conn->cpacket_payload_size + EMNETHEADER_SIZE;
-	
-	sendto(udp_socket, (char*)&conn->cpacket, size, 0, 
-		&conn->sockaddr, sizeof(struct sockaddr_in));
-			
-
-	// create new packet at end of list
+	// create new packet at end of conn->out_packet0
 	
 	switch(conn->cpacket.header & EMNETCLASS_MASK)
 	{
 	case EMNETCLASS_CONTROL:
-		time += STREAM_RESEND_DELAY;
+		switch(conn->cpacket.header & EMNETFLAG_MASK)
+		{
+		case EMNETFLAG_CONNECT:
+			time += CONNECT_RESEND_DELAY;
+			break;
+		
+		case EMNETFLAG_DISCONNECT:
+			time += STREAM_RESEND_DELAY;
+			break;
+		}
+		
 		break;
-	
+			
 	case EMNETCLASS_STREAM:
 		time += STREAM_RESEND_DELAY;
 		conn->cpacket.header |= EMNETFLAG_STREAMRESNT;
 		break;
 	}
 
-	*packet = calloc(1, sizeof(struct out_packet_ll_t));
+	*packet = malloc(sizeof(struct out_packet_ll_t));
 	memcpy(*packet, &conn->cpacket, size);
 	(*packet)->next_resend_time = time;
 	(*packet)->size = size;
+	(*packet)->next = NULL;
 	return 1;
 }
 
 
+#ifdef EMSERVER
 void send_conn_cookie(struct sockaddr_in *sockaddr)
 {
 	struct conn_cookie_t *cookie = malloc(sizeof(struct conn_cookie_t));
-	cookie->expire_time = get_double_time() + CONNECTION_COOKIE_TIMEOUT;
 	cookie->cookie = mrand48() & EMNETCOOKIE_MASK;
+	
+	uint32_t header = EMNETFLAG_COOKIE | cookie->cookie;
+	sendto(udp_fd, (char*)&header, EMNETHEADER_SIZE, 0, sockaddr, sizeof(struct sockaddr_in));
+	
+	cookie->expire_time = get_double_time() + CONNECTION_COOKIE_TIMEOUT;
 	cookie->ip = sockaddr->sin_addr.s_addr;
 	cookie->port = sockaddr->sin_port;
 	cookie->next = conn_cookie0;
 	conn_cookie0 = cookie;
-	
-	uint32_t header = EMNETFLAG_COOKIE | cookie->cookie;
-	sendto(udp_socket, (char*)&header, EMNETHEADER_SIZE, 0, sockaddr, sizeof(struct sockaddr_in));
 }
 
 
-int query_conn_cookie(uint32_t cookie, struct sockaddr_in *sockaddr)
+int query_conn_cookie(struct sockaddr_in *sockaddr, uint32_t cookie)
 {
 	struct conn_cookie_t *ccookie = conn_cookie0;
 		
 	while(ccookie)
 	{
-		if(ccookie->cookie == cookie)
+		if(ccookie->ip == sockaddr->sin_addr.s_addr && 
+			ccookie->port == sockaddr->sin_port && 
+			ccookie->cookie == cookie)
 		{
-			if(ccookie->ip == sockaddr->sin_addr.s_addr &&
-				ccookie->port == sockaddr->sin_port)
-			{
-				LL_REMOVE(struct conn_cookie_t, &conn_cookie0, ccookie);	// optimize me away
-				return 1;
-			}
+			LL_REMOVE(struct conn_cookie_t, &conn_cookie0, ccookie);	// optimize me away?
+			return 1;
 		}
 		
 		ccookie = ccookie->next;
@@ -336,20 +364,20 @@ int query_conn_cookie(uint32_t cookie, struct sockaddr_in *sockaddr)
 	
 	return 0;
 }
+#endif // EMSERVER
 
 
-void send_connect(struct conn_t *conn)
+void send_connect(struct sockaddr_in *addr, uint32_t index)
 {
-	uint32_t header = EMNETFLAG_CONNECT | conn->next_read_index;
-	sendto(udp_socket, (char*)&header, EMNETHEADER_SIZE, 0, (struct sockaddr*)&conn->sockaddr, 
-		sizeof(struct sockaddr_in));
+	uint32_t header = EMNETFLAG_CONNECT | index;
+	sendto(udp_fd, (char*)&header, EMNETHEADER_SIZE, 0, addr, sizeof(struct sockaddr_in));
 }
 
 
 void send_ack(struct sockaddr_in *addr, uint32_t index)
 {
 	uint32_t header = EMNETFLAG_ACKWLDGEMNT | index;
-	sendto(udp_socket, (char*)&header, EMNETHEADER_SIZE, 0, addr, sizeof(struct sockaddr_in));
+	sendto(udp_fd, (char*)&header, EMNETHEADER_SIZE, 0, addr, sizeof(struct sockaddr_in));
 }
 
 
@@ -360,7 +388,8 @@ void process_ack(struct conn_t *conn, uint32_t index)
 	if(!conn->out_packet0)
 		return;
 
-	if((conn->out_packet0->packet.header & EMNETINDEX_MASK) == index)	// the packet is the first on the list
+	if((conn->out_packet0->packet.header & EMNETINDEX_MASK) 
+		== index)	// the packet is the first on the list
 	{
 		temp = conn->out_packet0->next;
 		free(conn->out_packet0);
@@ -399,24 +428,62 @@ void process_ack(struct conn_t *conn, uint32_t index)
 }
 
 
+void emit_process_connecting()
+{
+	uint32_t msg = NETMSG_CONNECTING;
+	write(net_out_pipe[1], &msg, 4);
+}
+
+
+void emit_process_cookie_echoed()
+{
+	uint32_t msg = NETMSG_COOKIE_ECHOED;
+	write(net_out_pipe[1], &msg, 4);
+}
+
+
 void emit_process_connection(struct conn_t *conn)
 {
-	buffer_cat_uint32(msg_buf, (uint32_t)MSG_CONNECTION);
-	buffer_cat_uint32(msg_buf, (uint32_t)conn);
+	uint32_t msg = NETMSG_CONNECTION;
+	write(net_out_pipe[1], &msg, 4);
+	write(net_out_pipe[1], &conn, 4);
+}
+
+
+void emit_process_connection_failed(struct conn_t *conn)
+{
+	uint32_t msg = NETMSG_CONNECTION_FAILED;
+	write(net_out_pipe[1], &msg, 4);
+	write(net_out_pipe[1], &conn, 4);
 }
 
 
 void emit_process_disconnection(struct conn_t *conn)
 {
-	buffer_cat_uint32(msg_buf, (uint32_t)MSG_DISCONNECTION);
-	buffer_cat_uint32(msg_buf, (uint32_t)conn);
+	uint32_t msg = NETMSG_DISCONNECTION;
+	write(net_out_pipe[1], &msg, 4);
+	write(net_out_pipe[1], &conn, 4);
 }
 
 
 void emit_process_conn_lost(struct conn_t *conn)
 {
-	buffer_cat_uint32(msg_buf, (uint32_t)MSG_CONNLOST);
-	buffer_cat_uint32(msg_buf, (uint32_t)conn);
+	uint32_t msg = NETMSG_CONNLOST;
+	write(net_out_pipe[1], &msg, 4);
+	write(net_out_pipe[1], &conn, 4);
+}
+
+
+void init_new_conn(struct conn_t *conn, uint32_t index)
+{
+	conn->next_read_index = conn->next_process_index = 
+		conn->next_write_index = index;
+
+	conn->cpacket.header = EMNETCLASS_STREAM | EMNETFLAG_STREAMFIRST | 
+		conn->next_write_index++;
+	conn->next_write_index %= EMNETINDEX_MAX + 1;
+	
+	emit_process_connection(conn);
 }
 
 
@@ -436,7 +503,8 @@ void process_in_order_stream(struct conn_t *conn, struct in_packet_ll_t *end)
 		if(conn->in_packet0->packet.header & EMNETFLAG_STREAMRESNT)
 			untimed = 1;
 			
-		buffer_cat_buf(buf, (char*)&conn->in_packet0->packet.payload, conn->in_packet0->payload_size);
+		buffer_cat_buf(buf, (char*)&conn->in_packet0->packet.payload, 
+			conn->in_packet0->payload_size);
 
 		temp = conn->in_packet0;
 		conn->in_packet0 = conn->in_packet0->next;
@@ -452,24 +520,31 @@ void process_in_order_stream(struct conn_t *conn, struct in_packet_ll_t *end)
 	conn->in_packet0 = conn->in_packet0->next;
 	free(temp);
 
+	uint32_t msg;
+	uint64_t tsc;
+	
 	if(untimed)
 	{
-		buffer_cat_uint32(msg_buf, (uint32_t)MSG_STREAM_UNTIMED);
-		buffer_cat_uint32(msg_buf, index);
+		msg = NETMSG_STREAM_UNTIMED;
+		write(net_out_pipe[1], &msg, 4);
+		write(net_out_pipe[1], &index, 4);
 	}
 	else
 	{
-		buffer_cat_uint32(msg_buf, (uint32_t)MSG_STREAM_TIMED);
-		buffer_cat_uint32(msg_buf, index);
-		buffer_cat_uint64(msg_buf, rdtsc());
+		msg = NETMSG_STREAM_TIMED;
+		tsc = rdtsc();
+		write(net_out_pipe[1], &msg, 4);
+		write(net_out_pipe[1], &index, 4);
+		write(net_out_pipe[1], &tsc, 8);
 	}
 	
-	buffer_cat_uint32(msg_buf, (uint32_t)conn);
-	buffer_cat_uint32(msg_buf, (uint32_t)buf);
+	write(net_out_pipe[1], &conn, 4);
+	write(net_out_pipe[1], &buf, 4);
 }
 
 
-void process_out_of_order_stream(struct conn_t *conn, struct in_packet_ll_t *start, struct in_packet_ll_t *end)
+void process_out_of_order_stream(struct conn_t *conn, struct in_packet_ll_t *start, 
+	struct in_packet_ll_t *end)
 {
 	if(start->stream_delivered)
 		return;
@@ -491,20 +566,27 @@ void process_out_of_order_stream(struct conn_t *conn, struct in_packet_ll_t *sta
 	
 	buffer_cat_buf(buf, (char*)&cpacket->packet.payload, cpacket->payload_size);
 
+	uint32_t msg;
+	uint32_t index = start->packet.header & EMNETINDEX_MASK;
+	uint64_t tsc;
+	
 	if(untimed)
 	{
-		buffer_cat_uint32(msg_buf, (uint32_t)MSG_STREAM_UNTIMED_OOO);
-		buffer_cat_uint32(msg_buf, start->packet.header & EMNETINDEX_MASK);
+		msg = NETMSG_STREAM_UNTIMED_OOO;
+		write(net_out_pipe[1], &msg, 4);
+		write(net_out_pipe[1], &index, 4);
 	}
 	else
 	{
-		buffer_cat_uint32(msg_buf, (uint32_t)MSG_STREAM_TIMED_OOO);
-		buffer_cat_uint32(msg_buf, start->packet.header & EMNETINDEX_MASK);
-		buffer_cat_uint64(msg_buf, rdtsc());
+		msg = NETMSG_STREAM_TIMED_OOO;
+		tsc = rdtsc();
+		write(net_out_pipe[1], &msg, 4);
+		write(net_out_pipe[1], &index, 4);
+		write(net_out_pipe[1], &tsc, 8);
 	}
 	
-	buffer_cat_uint32(msg_buf, (uint32_t)conn);
-	buffer_cat_uint32(msg_buf, (uint32_t)buf);
+	write(net_out_pipe[1], &conn, 4);
+	write(net_out_pipe[1], &buf, 4);
 	
 	start->stream_delivered = 1;
 }
@@ -612,209 +694,328 @@ void check_stream(struct conn_t *conn)
 }
 
 
-void udp_data()
+void process_udp_data()
 {
 	struct packet_t packet;
+	size_t addr_size;
 	struct sockaddr_in recv_addr;
+	int size, stop;
+	uint32_t index, rollover_index;
+	struct conn_t *conn;
 	
-
-	// receive packet and address
-	
-	size_t addr_size = sizeof(struct sockaddr_in);
-	int size = recvfrom(udp_socket, (char*)&packet, EMNETPACKET_SIZE, 0, (struct sockaddr*)&recv_addr, &addr_size);
-		
-	
-	// check packet has a header
-	
-	if(size < EMNETHEADER_SIZE)
-		return;
-	
-	uint32_t index = packet.header & EMNETINDEX_MASK;
-	
-
-	// see if the packet is from an address where a connection is established
-	
-	struct conn_t *conn = get_conn(&recv_addr);
-	
-	
-	// process packet
-	
-	switch(packet.header & EMNETCLASS_MASK)
+	while(1)
 	{
-	case EMNETCLASS_CONTROL:
+		// receive packet and address
+	
+		addr_size = sizeof(struct sockaddr_in);
+		size = recvfrom(udp_fd, (char*)&packet, EMNETPACKET_MAXSIZE, 0, 
+			(struct sockaddr*)&recv_addr, &addr_size);
+			
+		if(size == -1)
+			break;
+
 		
-		switch(packet.header & EMNETFLAG_MASK)
+		// check packet has a header
+		
+		if(size < EMNETHEADER_SIZE)
+			continue;
+		
+		index = packet.header & EMNETINDEX_MASK;
+		
+	
+		// see if the packet is from an address where a connection is established
+		
+		conn = get_conn(&recv_addr);
+		
+		
+		// process packet
+		
+		switch(packet.header & EMNETCLASS_MASK)
 		{
-		case EMNETFLAG_CONNECT:
+		case EMNETCLASS_CONTROL:
 			
-			if(size != EMNETHEADER_SIZE)
-				break;
-		
-			if(index != EMNETCONNECT_MAGIC)
-				break;
-			
-			if(conn)
+			switch(packet.header & EMNETFLAG_MASK)
 			{
-				if(!conn->begun)
+			case EMNETFLAG_CONNECT:
+				
+				if(size != EMNETHEADER_SIZE)
+					break;
+				
+				
+				#ifdef EMCLIENT
+				
+				if(!conn)
+					break;
+
+				if(conn->state != NETSTATE_CONNECTING)
+					break;
+				
+				
+				// we know that the server knows we have successfully performed
+				// a cookie exchange, so we start the connection
+
+				conn->state = NETSTATE_CONNECTED;
+				LL_REMOVE_ALL(struct out_packet_ll_t, &conn->out_packet0);
+				init_new_conn(conn, index);
+				
+				#endif // EMCLIENT
+				
+				
+				#ifdef EMSERVER
+				
+				if(index != EMNETCONNECT_MAGIC)
+					break;
+				
+				if(conn)
 				{
-					conn->last_time = get_double_time();
-					send_connect(conn);
+					// we have received a connect packet from the client, 
+					// even though we understand the connection to have 
+					// started
+					
+					if(!conn->begun)
+					{
+						// a) the client never received the connection ack, 
+						//    so send it again
+						
+						// b) the cookie ack got duplicated en-route
+						
+						send_connect(&conn->sockaddr, conn->next_read_index);
+						
+						conn->last_time = get_double_time();	// give the client a little helping
+																// hand in troubled times
+					}
+					else
+					{
+						// c) the client did not disconnect gracefully or the disconnected state
+						//    has not timed out yet and the client is now trying to reconnect 
+						//    from the same ip:port
+						
+						// d) the initial connect packet from the client was
+						//    duplicated on the net and arrived again after conn->begun
+						//    was set (unlikely). the cookie will be ignored by the client
+					
+						send_conn_cookie(&recv_addr);
+					}
 				}
 				else
 				{
 					send_conn_cookie(&recv_addr);
 				}
-			}
-			else
-			{
-				send_conn_cookie(&recv_addr);
-			}
-			
-			break;
-		
-			
-		case EMNETFLAG_COOKIE:
-			
-			if(size != EMNETHEADER_SIZE)
-				break;
-		
-			if(!query_conn_cookie(index, &recv_addr))
-				break;
 				
-			if(conn)
-			{
-				if(conn->state == NETSTATE_CONNECTED)
-					emit_process_disconnection(conn);
+				#endif
 				
-				delete_conn(conn);
-			}
-			
-			conn = new_conn();
-			conn->state = NETSTATE_CONNECTED;
-			memcpy(&conn->sockaddr, &recv_addr, sizeof(struct sockaddr_in));
-			conn->next_process_index = conn->next_read_index = 
-				conn->next_write_index = index;
-			send_connect(conn);
-			conn->cpacket.header = conn->next_write_index++;
-			conn->next_write_index %= EMNETINDEX_MAX + 1;
-			conn->cpacket.header |= EMNETCLASS_STREAM | EMNETFLAG_STREAMFIRST;
-			emit_process_connection(conn);
-			break;
-		
-			
-		case EMNETFLAG_DISCONNECT:
-			
-			// ensure packet is from a client
-			
-			if(!conn)
+				
 				break;
 			
-			if(size != EMNETHEADER_SIZE)
-				break;
-		
-			send_ack(&recv_addr, index);
-			
-			conn->begun = 1;
-			
-			if(conn->state == NETSTATE_DISCONNECTING)
-			{
-				conn->last_time = get_double_time();
-				conn->state = NETSTATE_DISCONNECTED;
-				break;
-			}
-			
-			if(conn->state != NETSTATE_CONNECTED)
-				break;
-		
-			if(index < conn->next_read_index)
-				index += EMNETINDEX_MAX + 1;
-			
-			if(index > conn->next_read_index + OUT_OF_ORDER_RECV_AHEAD)
-				break;
-			
-			if(insert_in_packet(conn, &packet, size))
-				check_stream(conn); // see if this packet has completed a stream
-	
-			break;
-		
-			
-		case EMNETFLAG_ACKWLDGEMNT:
-			
-			if(size != EMNETHEADER_SIZE)
-				break;
-		
-			if(!conn)
-				break;
-			
-			process_ack(conn, index);
-			
-			conn->begun = 1;
-			
-			break;
-		}
-		
-		break;
-
-		
-	case EMNETCLASS_STREAM:
-		
-		// ensure packet is from a client
-		
-		if(!conn)
-			break;
-		
-		if(size == EMNETHEADER_SIZE)
-			break;
-		
-		send_ack(&recv_addr, index);
-		
-		if(conn->state != NETSTATE_CONNECTED)
-			break;
-		
-		conn->begun = 1;
-			
-		if(index < conn->next_read_index)
-			index += EMNETINDEX_MAX + 1;
-		
-		if(index > conn->next_read_index + OUT_OF_ORDER_RECV_AHEAD)
-			break;
-		
-		if(insert_in_packet(conn, &packet, size))
-			check_stream(conn); // see if this packet has completed a stream
-		
-		break;
-		
-		
-	case EMNETCLASS_MISC:
-		
-		switch(packet.header & EMNETFLAG_MASK)
-		{
-		case EMNETFLAG_PING:
-			
-			if(size != EMNETHEADER_SIZE)
-				break;
-		
-			packet.header = EMNETCLASS_MISC | EMNETFLAG_PONG | (packet.header & EMNETCOOKIE_MASK);
-			sendto(udp_socket, (char*)&packet, EMNETHEADER_SIZE, 0, 
-				&recv_addr, sizeof(struct sockaddr_in));
+				
+			case EMNETFLAG_COOKIE:
+				
+				if(size != EMNETHEADER_SIZE)
+					break;
+				
+				
+				#ifdef EMCLIENT
+				
+				if(!conn)
+					break;
+				
+				if(conn->state != NETSTATE_CONNECTING)
+					break;
+				
+				sendto(udp_fd, (char*)&packet, EMNETHEADER_SIZE, 0, 
+					&recv_addr, sizeof(struct sockaddr_in));
+				
+				emit_process_cookie_echoed();
 					
-			break;
-		
+				#endif // EMCLIENT
+					
 				
-		case EMNETFLAG_PONG:
+				#ifdef EMSERVER
 			
-			if(size != EMNETHEADER_SIZE)
+				if(!query_conn_cookie(&recv_addr, index))
+					break;
+					
+				send_connect(&recv_addr, index);
+				
+				if(conn)	// this occurs if condition c (above) has occured previously
+				{
+					if(conn->state == NETSTATE_CONNECTED)
+						emit_process_disconnection(conn);
+					
+					delete_conn(conn);
+				}
+
+				conn = new_conn();
+				conn->state = NETSTATE_CONNECTED;
+				
+				memcpy(&conn->sockaddr, &recv_addr, sizeof(struct sockaddr_in));
+				init_new_conn(conn, index);
+				
+				#endif // EMSERVER
+				
 				break;
 			
-			break;
-		
+				
+			case EMNETFLAG_DISCONNECT:
+				
+				if(size != EMNETHEADER_SIZE)
+					break;
 			
-		case EMNETFLAG_SERVERINFO:
+				if(!conn)
+					break;
+				
+				#ifdef EMSERVER
+				conn->begun = 1;
+				#endif
+				
+				stop = 0;
+				
+				switch(conn->state)
+				{
+				#ifdef EMCLIENT
+				case NETSTATE_CONNECTING:
+					stop = 1;
+					break;
+				#endif
+				
+				case NETSTATE_CONNECTED:
+					break;
+	
+				case NETSTATE_DISCONNECTING:
+					send_ack(&recv_addr, index);
+					conn->last_time = get_double_time();
+					conn->state = NETSTATE_DISCONNECTED;
+					stop = 1;
+					break;
+				
+				case NETSTATE_DISCONNECTED:
+					send_ack(&recv_addr, index);
+					stop = 1;
+					break;
+				}
+				
+				if(stop)
+					break;
+			
+				if(index < conn->next_read_index)
+					rollover_index = index + EMNETINDEX_MAX + 1;
+				else
+					rollover_index = index;
+				
+				if(rollover_index > conn->next_read_index + OUT_OF_ORDER_RECV_AHEAD)
+					break;
+				
+				send_ack(&recv_addr, index);
+				
+				if(insert_in_packet(conn, &packet, size))
+					check_stream(conn);		// see if this packet has completed a stream
+		
+				break;
+			
+				
+			case EMNETFLAG_ACKWLDGEMNT:
+				
+				if(size != EMNETHEADER_SIZE)
+					break;
+			
+				if(!conn)
+					break;
+				
+				#ifdef EMSERVER
+				conn->begun = 1;
+				#endif
+				
+				process_ack(conn, index);
+				
+				break;
+			}
+			
+			break;
+	
+			
+		case EMNETCLASS_STREAM:
+			
+			if(size == EMNETHEADER_SIZE)
+				break;	// the packet is invalid
+			
+			if(!conn)
+				break;
+			
+			#ifdef EMSERVER
+			conn->begun = 1;
+			#endif
+				
+			stop = 0;
+			
+			switch(conn->state)
+			{
+			#ifdef EMCLIENT
+			case NETSTATE_CONNECTING:
+				stop = 1;
+				break;
+			#endif
+			
+			case NETSTATE_CONNECTED:
+				break;
+
+			case NETSTATE_DISCONNECTING:
+			case NETSTATE_DISCONNECTED:
+				send_ack(&recv_addr, index);
+				stop = 1;
+				break;
+			}
+			
+			if(stop)
+				break;
+			
+			if(index < conn->next_read_index)
+				rollover_index = index + EMNETINDEX_MAX + 1;
+			else
+				rollover_index = index;
+			
+			if(rollover_index > conn->next_read_index + OUT_OF_ORDER_RECV_AHEAD)
+				break;
+			
+			send_ack(&recv_addr, index);
+
+			if(insert_in_packet(conn, &packet, size))
+				check_stream(conn);		// see if this packet has completed a stream
+			
+			break;
+			
+			
+		case EMNETCLASS_MISC:
+			
+			switch(packet.header & EMNETFLAG_MASK)
+			{
+			case EMNETFLAG_PING:
+				
+				if(size != EMNETHEADER_SIZE)
+					break;
+			
+				packet.header = EMNETCLASS_MISC | EMNETFLAG_PONG | 
+					(packet.header & EMNETCOOKIE_MASK);
+				sendto(udp_fd, (char*)&packet, EMNETHEADER_SIZE, 0, 
+					&recv_addr, sizeof(struct sockaddr_in));
+						
+				break;
+			
+					
+			case EMNETFLAG_PONG:
+				
+				if(size != EMNETHEADER_SIZE)
+					break;
+				
+				break;
+			
+				
+			case EMNETFLAG_SERVERINFO:
+				break;
+			}
+			
 			break;
 		}
-		
-		break;
-	}	
+	}
 }
 
 
@@ -829,8 +1030,13 @@ struct string_t *get_text_addr(void *conn)
 
 void network_alarm()
 {
+	char c;
+	while(read(net_timer_fd, &c, 1) != -1);
+
 	double time = get_double_time();
 	
+	
+	#ifdef EMSERVER
 	
 	// remove old cookies
 	
@@ -849,6 +1055,8 @@ void network_alarm()
 		cookie = cookie->next;
 	}
 	
+	#endif // EMSERVER
+	
 	
 	struct conn_t *conn = conn0;
 
@@ -858,6 +1066,34 @@ void network_alarm()
 		
 		switch(conn->state)
 		{
+			
+		#ifdef EMCLIENT
+			
+		case NETSTATE_CONNECTING:
+			
+			if(time - conn->last_time > CONNECTION_TIMEOUT)
+			{
+				emit_process_connection_failed(conn);
+				delete_conn(conn);
+				return;
+			}
+			
+			if(time > packet->next_resend_time)
+			{
+				sendto(udp_fd, (char*)(packet), packet->size, 0, 
+					(struct sockaddr*)&conn->sockaddr, sizeof(struct sockaddr_in));
+					
+				packet->next_resend_time += (floor((time - packet->next_resend_time) / 
+					CONNECT_RESEND_DELAY) + 1.0) * CONNECT_RESEND_DELAY;
+					
+				emit_process_connecting();
+			}
+			
+			break;
+			
+		#endif // EMCLIENT
+			
+		
 		case NETSTATE_CONNECTED:
 			
 			// check if conn has timed out
@@ -879,7 +1115,7 @@ void network_alarm()
 			{
 				if(time > packet->next_resend_time)
 				{
-					sendto(udp_socket, (char*)(packet), packet->size, 0, 
+					sendto(udp_fd, (char*)(packet), packet->size, 0, 
 						(struct sockaddr*)&conn->sockaddr, sizeof(struct sockaddr_in));
 						
 					packet->next_resend_time += (floor((time - packet->next_resend_time) / 
@@ -908,7 +1144,7 @@ void network_alarm()
 			{
 				if(time > packet->next_resend_time)
 				{
-					sendto(udp_socket, (char*)(packet), packet->size, 0, 
+					sendto(udp_fd, (char*)(packet), packet->size, 0, 
 						(struct sockaddr*)&conn->sockaddr, sizeof(struct sockaddr_in));
 						
 					packet->next_resend_time += (floor((time - packet->next_resend_time) / 
@@ -940,6 +1176,50 @@ void network_alarm()
 }
 
 
+void *network_thread(void *a)
+{
+	int epoll_fd = epoll_create(3);
+	
+	struct epoll_event ev;
+		
+	ev.events = EPOLLIN | EPOLLET;
+	ev.data.u32 = 0;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, udp_fd, &ev);
+
+	ev.events = EPOLLIN | EPOLLET;
+	ev.data.u32 = 1;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, net_timer_fd, &ev);
+
+	ev.events = EPOLLIN | EPOLLET;
+	ev.data.u32 = 2;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, net_kill_pipe[0], &ev);
+
+	while(1)
+	{
+		epoll_wait(epoll_fd, &ev, 1, -1);
+		
+		switch(ev.data.u32)
+		{
+		case 0:
+			pthread_mutex_lock(&net_mutex);
+			process_udp_data();
+			pthread_mutex_unlock(&net_mutex);
+			break;
+		
+		case 1:
+			pthread_mutex_lock(&net_mutex);
+			network_alarm();
+			pthread_mutex_unlock(&net_mutex);
+			break;
+		
+		case 2:
+			pthread_exit(NULL);
+		}
+		
+	}
+}
+
+
 void send_cpacket(struct conn_t *conn)
 {
 	if(!output_cpacket(conn))
@@ -959,9 +1239,10 @@ void net_emit_uint32(uint32_t temp_conn, uint32_t val)
 	struct conn_t *conn = (struct conn_t*)temp_conn;
 	assert(conn);
 	
-	mask_sigs();
 	
-	// make sure conn was not deleted before sigs masked
+	pthread_mutex_lock(&net_mutex);
+	
+	// make sure conn was not deleted before mutex acquired
 	
 	if(!conn_exist(conn))
 		goto end;
@@ -971,7 +1252,7 @@ void net_emit_uint32(uint32_t temp_conn, uint32_t val)
 	
 	switch(conn->cpacket_payload_size)
 	{
-	case EMNETPAYLOAD_SIZE:
+	case EMNETPAYLOAD_MAXSIZE:
 
 		send_cpacket(conn);
 
@@ -981,10 +1262,10 @@ void net_emit_uint32(uint32_t temp_conn, uint32_t val)
 		break;
 
 
-	case EMNETPAYLOAD_SIZE - 1:
+	case EMNETPAYLOAD_MAXSIZE - 1:
 
 		conn->cpacket.payload[conn->cpacket_payload_size] = ((uint8_t*)&val)[0];
-		conn->cpacket_payload_size = EMNETPAYLOAD_SIZE;
+		conn->cpacket_payload_size = EMNETPAYLOAD_MAXSIZE;
 		send_cpacket(conn);
 
 		*(uint16_t*)&conn->cpacket.payload[0] = *(uint16_t*)&((uint8_t*)&val)[1];
@@ -994,10 +1275,11 @@ void net_emit_uint32(uint32_t temp_conn, uint32_t val)
 		break;
 
 
-	case EMNETPAYLOAD_SIZE - 2:
+	case EMNETPAYLOAD_MAXSIZE - 2:
 
-		*(uint16_t*)&conn->cpacket.payload[conn->cpacket_payload_size] = ((uint16_t*)(void*)&val)[0];
-		conn->cpacket_payload_size = EMNETPAYLOAD_SIZE;
+		*(uint16_t*)&conn->cpacket.payload[conn->cpacket_payload_size] = 
+			((uint16_t*)(void*)&val)[0];
+		conn->cpacket_payload_size = EMNETPAYLOAD_MAXSIZE;
 		send_cpacket(conn);
 
 		*(uint16_t*)&conn->cpacket.payload[0] = ((uint16_t*)(void*)&val)[1];
@@ -1006,11 +1288,12 @@ void net_emit_uint32(uint32_t temp_conn, uint32_t val)
 		break;
 
 
-	case EMNETPAYLOAD_SIZE - 3:
+	case EMNETPAYLOAD_MAXSIZE - 3:
 
-		*(uint16_t*)&conn->cpacket.payload[conn->cpacket_payload_size] = ((uint16_t*)(void*)&val)[0];
+		*(uint16_t*)&conn->cpacket.payload[conn->cpacket_payload_size] = 
+			((uint16_t*)(void*)&val)[0];
 		conn->cpacket.payload[conn->cpacket_payload_size + 2] = ((uint8_t*)&val)[2];
-		conn->cpacket_payload_size = EMNETPAYLOAD_SIZE;
+		conn->cpacket_payload_size = EMNETPAYLOAD_MAXSIZE;
 		send_cpacket(conn);
 
 		conn->cpacket.payload[0] = ((uint8_t*)&val)[3];
@@ -1028,7 +1311,7 @@ void net_emit_uint32(uint32_t temp_conn, uint32_t val)
 	}
 	
 	end:
-	unmask_sigs();
+	pthread_mutex_unlock(&net_mutex);
 }
 
 
@@ -1049,9 +1332,10 @@ void net_emit_uint16(uint32_t temp_conn, uint16_t val)
 	struct conn_t *conn = (struct conn_t*)temp_conn;
 	assert(conn);
 	
-	mask_sigs();
 	
-	// make sure conn was not deleted before sigs masked
+	pthread_mutex_lock(&net_mutex);
+	
+	// make sure conn was not deleted before mutex acquired
 	
 	if(!conn_exist(conn))
 		goto end;
@@ -1061,7 +1345,7 @@ void net_emit_uint16(uint32_t temp_conn, uint16_t val)
 	
 	switch(conn->cpacket_payload_size)
 	{
-	case EMNETPAYLOAD_SIZE:
+	case EMNETPAYLOAD_MAXSIZE:
 
 		send_cpacket(conn);
 
@@ -1071,10 +1355,10 @@ void net_emit_uint16(uint32_t temp_conn, uint16_t val)
 		break;
 
 
-	case EMNETPAYLOAD_SIZE - 1:
+	case EMNETPAYLOAD_MAXSIZE - 1:
 
 		conn->cpacket.payload[conn->cpacket_payload_size] = ((uint8_t*)&val)[0];
-		conn->cpacket_payload_size = EMNETPAYLOAD_SIZE;
+		conn->cpacket_payload_size = EMNETPAYLOAD_MAXSIZE;
 		send_cpacket(conn);
 
 		conn->cpacket.payload[0] = ((uint8_t*)&val)[1];
@@ -1092,7 +1376,7 @@ void net_emit_uint16(uint32_t temp_conn, uint16_t val)
 	}
 	
 	end:
-	unmask_sigs();
+	pthread_mutex_unlock(&net_mutex);
 }
 
 
@@ -1101,9 +1385,10 @@ void net_emit_uint8(uint32_t temp_conn, uint8_t val)
 	struct conn_t *conn = (struct conn_t*)temp_conn;
 	assert(conn);
 	
-	mask_sigs();
 	
-	// make sure conn was not deleted before sigs masked
+	pthread_mutex_lock(&net_mutex);
+	
+	// make sure conn was not deleted before mutex acquired
 	
 	if(!conn_exist(conn))
 		goto end;
@@ -1113,7 +1398,7 @@ void net_emit_uint8(uint32_t temp_conn, uint8_t val)
 	
 	switch(conn->cpacket_payload_size)
 	{
-	case EMNETPAYLOAD_SIZE:
+	case EMNETPAYLOAD_MAXSIZE:
 		send_cpacket(conn);
 		conn->cpacket.payload[0] = val;
 		conn->cpacket_payload_size = 1;
@@ -1126,7 +1411,7 @@ void net_emit_uint8(uint32_t temp_conn, uint8_t val)
 	}
 	
 	end:
-	unmask_sigs();
+	pthread_mutex_unlock(&net_mutex);
 }
 
 
@@ -1136,13 +1421,13 @@ void net_emit_char(uint32_t temp_conn, char c)
 }
 
 
-void net_emit_string(uint32_t temp_conn, char *cc)		// optomize me
+void net_emit_string(uint32_t temp_conn, char *cc)		// optimize me
 {
 	if(!cc)
 		return;
 
 	while(*cc)
-		net_emit_char(temp_conn, *cc++);
+		net_emit_char(temp_conn, *cc++);	// because this is really shit
 
 	net_emit_char(temp_conn, '\0');
 }
@@ -1159,9 +1444,10 @@ void net_emit_end_of_stream(uint32_t temp_conn)
 	struct conn_t *conn = (struct conn_t*)temp_conn;
 	assert(conn);
 
-	mask_sigs();
 	
-	// make sure conn was not deleted before sigs masked
+	pthread_mutex_lock(&net_mutex);
+	
+	// make sure conn was not deleted before mutex acquired
 	
 	if(!conn_exist(conn))
 		goto end;
@@ -1175,60 +1461,118 @@ void net_emit_end_of_stream(uint32_t temp_conn)
 	conn->cpacket_payload_size = 0;
 	
 	end:
-	unmask_sigs();
+	pthread_mutex_unlock(&net_mutex);
 }
 
 
-void disconnect(uint32_t temp_conn)		// server-side disconnection forced
+#ifdef EMCLIENT
+uint32_t em_connect(char *addr)
 {
-/*	
+	uint16_t port = htons(EMNET_PORT);
+	uint32_t ip;
+	
+	if(!addr)
+	{	
+		ip = htonl(INADDR_LOOPBACK);
+	}
+	else
+	{
+		struct hostent *hostent;
+		
+		hostent = gethostbyname(addr);
+		if(!hostent)
+		{
+			console_print("Couldn't get any host info; %s\n", strerror(h_errno));
+			return 0;
+		}
+	
+		ip = *(uint32_t*)hostent->h_addr;
+	}
 	
 	
+	pthread_mutex_lock(&net_mutex);
 	
+	// TODO : check we dont already have a connection to this ip:port, if we do then 
+	// enter a new state to disconnect gracefully from the server and then reconnect
 	
+	struct conn_t *conn = new_conn();
+	conn->state = NETSTATE_CONNECTING;
+
+	conn->sockaddr.sin_family = AF_INET;
+	conn->sockaddr.sin_port = port;
+	conn->sockaddr.sin_addr.s_addr = ip;
+
+	console_print("Connecting to ");
+	console_print(inet_ntoa(conn->sockaddr.sin_addr));
+	console_print("...\n");
+
+	
+	// send connect packet to server and keep sending it until it acknowledges
+
+	conn->cpacket.header = EMNETCLASS_CONTROL | EMNETFLAG_CONNECT | 
+		EMNETCONNECT_MAGIC;
+	conn->cpacket_payload_size = 0;
+	output_cpacket(conn);
+	
+	emit_process_connecting();
+	
+	pthread_mutex_unlock(&net_mutex);
+	
+	return (uint32_t)conn;
+}
+#endif
+
+
+void em_disconnect(uint32_t temp_conn)
+{
 	struct conn_t *conn = (struct conn_t*)temp_conn;
 	assert(conn);
 
-	mask_sigs();
 	
-	conn->begun = 1;
+	pthread_mutex_lock(&net_mutex);
 	
-	// make sure conn was not deleted before sigs masked
+	// make sure conn was not deleted before mutex acquired
 	
 	if(!conn_exist(conn))
 		goto end;
 	
-	if(!conn->active)
-		goto end;
+	#ifdef EMSERVER
+	conn->begun = 1;
+	#endif
 
-	double time = get_double_time() + STREAM_RESEND_DELAY;
+	switch(conn->state)
+	{
+	#ifdef EMCLIENT
+	case NETSTATE_CONNECTING:	// should really enter a new state that will disconnect from 
+		delete_conn(conn);		// the server if it connects, but just timeout otherwise
+		emit_process_connection_failed(conn);
+		goto end;
+	#endif
 	
+	case NETSTATE_CONNECTED:
+		break;
 	
-	// send disconnection packet to client
+	case NETSTATE_DISCONNECTING:
+	case NETSTATE_DISCONNECTED:
+		goto end;
+	}
 	
-	struct packet_t packet = {
-		EMNETFLAG_DISCONNECT | conn->next_write_index
-	};
+	conn->cpacket.header = EMNETCLASS_CONTROL | EMNETFLAG_DISCONNECT | 
+		(conn->cpacket.header & EMNETINDEX_MASK);
 	
-	if(!add_out_packet(conn, &packet, EMNETHEADER_SIZE, &time))
+	if(!output_cpacket(conn))
 	{
 		delete_conn(conn);
 		emit_process_conn_lost(conn);
 		goto end;
 	}
 	
-	sendto(udp_socket, (char*)&packet, EMNETHEADER_SIZE, 0, (struct sockaddr*)&conn->sockaddr, 
-		sizeof(struct sockaddr_in));
-			
-
-	// declare connection inactive (it will be deleted when client acknowledges)
+	conn->state = NETSTATE_DISCONNECTING;
 	
-	conn->active = 0;
+	emit_process_disconnection(conn);
 
-end:
-		
-	unmask_sigs();
-*/
+	end:
+	pthread_mutex_unlock(&net_mutex);
 }
 
 
@@ -1242,7 +1586,12 @@ void init_network()
 		if(errno != ENAMETOOLONG)
 		{
 			free(hostname);
+			#ifdef EMSERVER
 			server_libc_error("gethostname failure");
+			#endif
+			#ifdef EMCLIENT
+			client_libc_error("gethostname failure");
+			#endif
 		}
 
 		size *= 2;
@@ -1250,7 +1599,12 @@ void init_network()
 		if(size > 65536)
 		{
 			free(hostname);
+			#ifdef EMSERVER
 			server_error("Host name far too long!");
+			#endif
+			#ifdef EMCLIENT
+			client_libc_error("Host name far too long!");
+			#endif
 		}
 			
 		hostname = realloc(hostname, size);
@@ -1262,7 +1616,12 @@ void init_network()
 	hostent = gethostbyname(hostname);
 	free(hostname);
 	if(!hostent)
+		#ifdef EMSERVER
 		server_libc_error("gethostbyname failure");
+		#endif
+		#ifdef EMCLIENT
+		client_libc_error("gethostbyname failure");
+		#endif
 
 	struct in_addr **addr = (struct in_addr**)hostent->h_addr_list;
 
@@ -1290,67 +1649,48 @@ void init_network()
 	
 	free_string(addr_list);
 
-	udp_socket = socket(PF_INET, SOCK_DGRAM, 0);
-	if(udp_socket < 0)
+	udp_fd = socket(PF_INET, SOCK_DGRAM, 0);
+	if(udp_fd < 0)
+		#ifdef EMSERVER
 		server_libc_error("socket failure");
+		#endif
+		#ifdef EMCLIENT
+		client_libc_error("socket failure");
+		#endif
 
+	#ifdef EMSERVER	
 	struct sockaddr_in name;
 	name.sin_family = AF_INET;
 	name.sin_port = htons(EMNET_PORT);
 	name.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if(bind(udp_socket, (struct sockaddr *) &name, sizeof (name)) < 0)
+	if(bind(udp_fd, (struct sockaddr *) &name, sizeof (name)) < 0)
 		server_libc_error("bind failure");
+	#endif
 
+	fcntl(udp_fd, F_SETFL, O_NONBLOCK);
 	
 	// seed to rng
 	
 	uint64_t time = rdtsc();
 	
-	seed48((unsigned short int*)(void*)&time);
+	seed48((unsigned short int*)(void*)&time);	// always check this for endianness
+	
+	pipe(net_kill_pipe);
+	pipe(net_out_pipe);
+	
+	net_timer_fd = create_timer_listener();
+	
+	pthread_create(&network_thread_id, NULL, network_thread, NULL);
 }
 
-
-void init_network_sig()
-{
-	if(fcntl(udp_socket, F_SETOWN, getpid()) == -1)
-		server_libc_error("F_SETOWN");
-		
-	if(fcntl(udp_socket, F_SETFL, O_ASYNC) == -1)
-		server_libc_error("F_SETFL");
-}
-
-/*
-void kill_network()
-{
-	if(net_state == NETSTATE_CONNECTED)
-	{
-		console_print("Disconnecting...\n");
-		em_disconnect(NULL);
-		
-		// wait for disconnection
-		
-		sigset_t mask, oldmask;
-		
-		// Set up the mask of signals to temporarily block. 
-		sigemptyset(&mask);
-		sigaddset(&mask, SIGIO);
-		sigaddset(&mask, SIGALRM);
-		sigaddset(&mask, SIGUSR1);
-		
-		// Wait for a signal to arrive. 
-		sigprocmask(SIG_BLOCK, &mask, &oldmask);
-		
-		while(net_state != NETSTATE_DEAD)
-			sigsuspend(&oldmask);
-		
-		sigprocmask(SIG_UNBLOCK, &mask, NULL);
-	}
-}
-*/
 
 void kill_network()		// FIXME
 {
+	char c;
+	write(net_kill_pipe[1], &c, 1);
+	pthread_join(network_thread_id, NULL);
+	
 	delete_all_conns();
-	close(udp_socket);
+	close(udp_fd);
 }

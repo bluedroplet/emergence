@@ -43,17 +43,52 @@ changes to this file must not break backward compatibility
 
 
 
-#define EMNETPACKET_SIZE				512
+#define EMNETPACKET_MAXSIZE				512
 #define EMNETHEADER_SIZE				4
-#define EMNETPAYLOAD_SIZE				508
+#define EMNETPAYLOAD_MAXSIZE			508
 
 
 
 struct packet_t
 {
 	uint32_t header;
-	uint8_t payload[EMNETPAYLOAD_SIZE];
+	uint8_t payload[EMNETPAYLOAD_MAXSIZE];
 };
 
 
 #define EMNET_PORT				45420
+
+void init_network();
+void kill_network();
+
+struct string_t *get_text_addr(void *conn);
+
+
+void net_emit_uint32(uint32_t temp_conn, uint32_t val);
+void net_emit_int(uint32_t temp_conn, int val);
+void net_emit_float(uint32_t temp_conn, float val);
+void net_emit_uint16(uint32_t temp_conn, uint16_t val);
+void net_emit_uint8(uint32_t temp_conn, uint8_t val);
+void net_emit_char(uint32_t temp_conn, char val);
+void net_emit_string(uint32_t temp_conn, char *string);
+void net_emit_buf(uint32_t temp_conn, void *buf, int size);
+void net_emit_end_of_stream(uint32_t temp_conn);
+
+#ifdef EMCLIENT
+uint32_t em_connect(char *addr);
+#endif
+
+void em_disconnect(uint32_t conn);
+#define NETMSG_CONNECTING			0
+#define NETMSG_COOKIE_ECHOED		1
+#define NETMSG_CONNECTION			2
+#define NETMSG_CONNECTION_FAILED	3
+#define NETMSG_DISCONNECTION		4
+#define NETMSG_CONNLOST				5
+#define NETMSG_STREAM_TIMED			6
+#define NETMSG_STREAM_UNTIMED		7
+#define NETMSG_STREAM_TIMED_OOO		8
+#define NETMSG_STREAM_UNTIMED_OOO	9
+
+extern int net_in_pipe[2];
+extern int net_out_pipe[2];

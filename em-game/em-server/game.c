@@ -28,7 +28,6 @@
 #include "../shared/sgame.h"
 #include "../shared/objects.h"
 #include "../shared/bsp.h"
-#include "network.h"
 #include "game.h"
 #include "console.h"
 #include "ping.h"
@@ -562,7 +561,7 @@ void kick(char *args)
 	}
 
 	print_on_player(player, "You have been kicked.\n");
-	disconnect(player->conn);	// unimplemented
+	em_disconnect(player->conn);	// unimplemented
 	remove_player(player->conn);
 	
 	struct string_t *s = new_string_text(args);
@@ -938,7 +937,7 @@ void game_process_join(uint32_t conn, uint32_t index, struct buffer_t *stream)
 		net_emit_uint8(conn, EMNETMSG_PRINT);
 		net_emit_string(conn, "This server is not active. Go Away!\n");
 		net_emit_end_of_stream(conn);
-		disconnect(conn);
+		em_disconnect(conn);
 		return;
 	}
 	
@@ -947,7 +946,7 @@ void game_process_join(uint32_t conn, uint32_t index, struct buffer_t *stream)
 		net_emit_uint8(conn, EMNETMSG_PRINT);
 		net_emit_string(conn, "No room!\n");
 		net_emit_end_of_stream(conn);
-		disconnect(conn);
+		em_disconnect(conn);
 		return;
 	}
 	

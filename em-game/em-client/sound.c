@@ -8,6 +8,10 @@
 #include <stdint.h>
 #include <signal.h>
 #include <math.h>
+#include <pthread.h>
+
+#include <sys/epoll.h>
+
 #include <alsa/asoundlib.h>
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
@@ -45,6 +49,14 @@ struct queued_sample_t
 struct sample_t railgun_sample;
 
 
+int sound_kill_pipe[2];
+
+pthread_mutex_t sound_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+pthread_t sound_thread_id;
+
+int alsa_fd;
+
+
 void add_frames(int32_t *dst, int16_t *src, int c)
 {
 	int i = 0;
@@ -52,8 +64,8 @@ void add_frames(int32_t *dst, int16_t *src, int c)
 	while(c)
 	{
 		dst[i] += src[i];
-		c--;
 		i++;
+		c--;
 	}
 }
 
@@ -65,9 +77,21 @@ void saturate_frames(int32_t *dst, int c)
 	while(c)
 	{
 		((int16_t*)dst)[i] = (int16_t)min(max(dst[i], -32768), 32767);
-		c--;
 		i++;
+		c--;
 	}
+}
+
+
+void sound_mutex_lock()
+{
+	pthread_mutex_lock(&sound_mutex);
+}
+	
+
+void sound_mutex_unlock()
+{
+	pthread_mutex_unlock(&sound_mutex);
 }
 
 
@@ -205,11 +229,44 @@ void start_sample(struct sample_t *sample, uint32_t start_tick)
 	struct queued_sample_t queued_sample = {
 		sample, start_tick, 0};
 		
-	sigio_process &= ~SIGIO_PROCESS_ALSA;
-	
+	sound_mutex_lock();
 	LL_ADD(struct queued_sample_t, &queued_sample0, &queued_sample);
+	sound_mutex_unlock();
+}
+
+
+void *sound_thread(void *a)
+{
+	int epoll_fd = epoll_create(2);
 	
-	sigio_process |= SIGIO_PROCESS_ALSA;
+	struct epoll_event ev = 
+	{
+		.events = EPOLLIN | EPOLLET
+	};
+
+	ev.data.u32 = 0;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, alsa_fd, &ev);
+
+	ev.data.u32 = 1;
+	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, sound_kill_pipe[0], &ev);
+
+	while(1)
+	{
+		epoll_wait(epoll_fd, &ev, 1, -1);
+		
+		switch(ev.data.u32)
+		{
+		case 0:
+			sound_mutex_lock();
+			process_alsa();
+			sound_mutex_unlock();
+			break;
+		
+		case 1:
+			pthread_exit(NULL);
+			break;
+		}
+	}
 }
 
 
@@ -360,14 +417,19 @@ void init_sound()
 		exit (1);
 	}
 	
-	sigio_process |= SIGIO_PROCESS_ALSA;
+	pthread_mutex_init(&sound_mutex, NULL);
+	pipe(sound_kill_pipe);
+	alsa_fd = create_timer_listener();
+	pthread_create(&sound_thread_id, NULL, sound_thread, NULL);
 }
 
 
 void kill_sound()
 {
-	sigio_process &= ~SIGIO_PROCESS_ALSA;
-	
+	char c;
+	write(sound_kill_pipe[1], &c, 1);
+	pthread_join(sound_thread_id, NULL);
+
 	if(playback_handle)
 	{
 		snd_pcm_close(playback_handle);

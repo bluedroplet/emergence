@@ -26,17 +26,21 @@ void process_input()
 {
 	struct input_event event;
 	
-	read(input_fd, &event, sizeof(struct input_event));
-		
-	switch(event.type)
+	while(1)
 	{
-	case EV_KEY:
-		process_button(event.code - BTN_MOUSE, event.value);
-		break;
-	
-	case EV_REL:
-		process_axis(event.code, (float)*(int*)&event.value);
-		break;
+		if(read(input_fd, &event, sizeof(struct input_event)) == -1)
+			break;
+			
+		switch(event.type)
+		{
+		case EV_KEY:
+			process_button(event.code - BTN_MOUSE, event.value);
+			break;
+		
+		case EV_REL:
+			process_axis(event.code, (float)*(int*)&event.value);
+			break;
+		}
 	}
 }
 
@@ -57,15 +61,10 @@ void init_input()
 
 	console_print("ok\nGetting input device to generate signals: ");
 	
-	if(fcntl(input_fd, F_SETOWN, getpid()) == -1)
-		goto error;
-	
-	if(fcntl(input_fd, F_SETFL, O_ASYNC) == -1)
+	if(fcntl(input_fd, F_SETFL, O_NONBLOCK) == -1)
 		goto error;
 	
 	console_print("ok\n");
-	
-	sigio_process |= SIGIO_PROCESS_INPUT;
 	
 	return;
 	
