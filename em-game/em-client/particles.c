@@ -79,8 +79,6 @@ void render_upper_particles()
 {
 	int p;
 	
-	float time = (double)(rdtsc() - start_count) / (double)counts_per_second;
-	
 	struct blit_params_t params;
 		
 	params.dest = s_backbuffer;
@@ -92,7 +90,7 @@ void render_upper_particles()
 
 		if(upper_pinuse[i])
 		{
-			float life = time - upper_particles[i].creation;
+			double life = cgame_time - upper_particles[i].creation;
 			
 			if(life > 1.0f)
 			{
@@ -100,9 +98,9 @@ void render_upper_particles()
 				continue;
 			}
 			
-			float delta_time = time - upper_particles[i].last;
+			double delta_time = cgame_time - upper_particles[i].last;
 			
-			float particle_time = delta_time;
+			double particle_time = delta_time;
 			int particle_ticks = 1;
 			
 		//	while(particle_time > MAX_PARTICLE_TIME)
@@ -114,7 +112,7 @@ void render_upper_particles()
 				upper_particles[i].xvel += (drand48() - 0.5) * 2400 * particle_time;
 				upper_particles[i].yvel += (drand48() - 0.5) * 2400 * particle_time;
 				
-				float dampening = exp(-8.0f * particle_time);
+				double dampening = exp(-8.0f * particle_time);
 				
 				upper_particles[i].xvel *= dampening;
 				upper_particles[i].yvel *= dampening;
@@ -157,7 +155,7 @@ void render_upper_particles()
 			params.dest_y++;
 			alpha_plot_pixel(&params);
 			
-			upper_particles[i].last = time;
+			upper_particles[i].last = cgame_time;
 		}
 	}
 }
@@ -166,8 +164,6 @@ void render_upper_particles()
 void render_lower_particles()
 {
 	int p;
-	
-	float time = (double)(rdtsc() - start_count) / (double)counts_per_second;
 	
 	struct blit_params_t params;
 		
@@ -180,7 +176,7 @@ void render_lower_particles()
 
 		if(lower_pinuse[i])
 		{
-			float life = time - lower_particles[i].creation;
+			double life = cgame_time - lower_particles[i].creation;
 			
 			if(life > 1.0f)
 			{
@@ -188,9 +184,9 @@ void render_lower_particles()
 				continue;
 			}
 			
-			float delta_time = time - lower_particles[i].last;
+			double delta_time = cgame_time - lower_particles[i].last;
 
-			float particle_time = delta_time;
+			double particle_time = delta_time;
 			int particle_ticks = 1;
 			
 		//	while(particle_time > MAX_PARTICLE_TIME)
@@ -202,7 +198,7 @@ void render_lower_particles()
 				lower_particles[i].xvel += (drand48() - 0.5) * 2400 * particle_time;
 				lower_particles[i].yvel += (drand48() - 0.5) * 2400 * particle_time;
 				
-				float dampening = exp(-8.0f * particle_time);
+				double dampening = exp(-8.0f * particle_time);
 				
 				lower_particles[i].xvel *= dampening;
 				lower_particles[i].yvel *= dampening;
@@ -243,7 +239,7 @@ void render_lower_particles()
 			params.dest_y++;
 			alpha_plot_pixel(&params);
 			
-			lower_particles[i].last = time;
+			lower_particles[i].last = cgame_time;
 		}
 	}
 }

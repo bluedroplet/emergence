@@ -1,1 +1,1 @@
-void draw_world_clipped_line(double x1, double y1, double x2, double y2);
+void draw_world_clipped_line(float x1, float y1, float x2, float y2);

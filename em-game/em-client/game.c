@@ -163,6 +163,8 @@ struct string_t *recording_filename;
 gzFile gzrecording;
 
 uint32_t cgame_tick;
+float cgame_time;
+
 struct entity_t *centity0;
 
 double viewx = 0.0, viewy = 0.0;
@@ -295,13 +297,13 @@ void start_moving_view(float x1, float y1, float x2, float y2)
 	moving_view_ya = ((moving_view_y) / 2) / (0.5 * (MOVING_VIEW_TRAVEL_TIME * 0.5) * 
 		(MOVING_VIEW_TRAVEL_TIME * 0.5));
 	
-	moving_view_time = get_double_time();
+	moving_view_time = cgame_time;
 }
 
 
 void add_moving_view()
 {
-	double time = get_double_time();
+	double time = cgame_time;
 	
 	time -= moving_view_time;
 	
@@ -1029,7 +1031,7 @@ void process_railtrail_event(struct event_t *event)
 {
 	struct rail_trail_t rail_trail;
 		
-	rail_trail.start_time = get_double_time();
+	rail_trail.start_time = cgame_time;
 	rail_trail.x1 = event->railtrail_data.x1;
 	rail_trail.y1 = event->railtrail_data.y1;
 	rail_trail.x2 = event->railtrail_data.x2;
@@ -1290,6 +1292,10 @@ int game_demo_process_event()
 	
 	case EMEVENT_RAILTRAIL:
 		add_railtrail_event(&event);
+		break;
+	
+	case EMEVENT_DETACH:
+		add_detach_event(&event);
 		break;
 	}
 	
@@ -1901,23 +1907,11 @@ void explosion(struct entity_t *entity)
 		sincos(drand48() * 2 * M_PI, &sin_theta, &cos_theta);
 		
 		
-		float r = drand48();
+		double r = drand48();
 		
 		particle.xvel = entity->xvel - sin_theta * force * r;
 		particle.yvel = entity->xvel + cos_theta * force * r;
-		
-		switch(game_state)
-		{
-		case GAMESTATE_PLAYING:
-			particle.creation = particle.last = get_time_from_game_tick(cgame_tick + 
-				(float)p / (float)np - 1.0);
-			break;
-		
-		case GAMESTATE_DEMO:
-			particle.creation = particle.last = (double)(demo_last_tick - demo_first_tick) / 200.0;
-			break;
-		}
-		
+		particle.creation = particle.last = cgame_time;
 		create_upper_particle(&particle);
 	}
 }
@@ -1951,22 +1945,22 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis)
 		{
 			sincos(drand48() * 2 * M_PI, &sin_theta, &cos_theta);
 			
-			float r = drand48();
+			double r = drand48();
 			
-			float nxdis = craft->xdis + (xdis - craft->xdis) * (float)p / (float)np;
-			float nydis = craft->ydis + (ydis - craft->ydis) * (float)p / (float)np;
+			double nxdis = craft->xdis + (xdis - craft->xdis) * (double)(p + 1) / (double)np;
+			double nydis = craft->ydis + (ydis - craft->ydis) * (double)(p + 1) / (double)np;
 			
 
 			switch(game_state)
 			{
 			case GAMESTATE_PLAYING:
-				particle.creation = particle.last = get_time_from_game_tick(cgame_tick + 
-					(float)p / (float)np - 1.0);
+				particle.creation = particle.last = get_time_from_game_tick((double)cgame_tick + 
+					(double)(p + 1) / (double)np - 1.0);
 				break;
 			
 			case GAMESTATE_DEMO:
-				particle.creation = particle.last = (double)(demo_last_tick + 
-					(float)p / (float)np - 1.0 - demo_first_tick) / 200.0;
+				particle.creation = particle.last = ((double)cgame_tick + 
+					(double)(p + 1) / (double)np - 1.0) / 200.0;
 				break;
 			}
 			
@@ -1996,23 +1990,23 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis)
 		{
 			sincos(craft->craft_data.theta, &sin_theta, &cos_theta);
 			
-			float r = drand48();
+			double r = drand48();
 			
-			float nxdis = craft->xdis + (xdis - craft->xdis) * (float)p / (float)np;
-			float nydis = craft->ydis + (ydis - craft->ydis) * (float)p / (float)np;
+			double nxdis = craft->xdis + (xdis - craft->xdis) * (double)(p + 1) / (double)np;
+			double nydis = craft->ydis + (ydis - craft->ydis) * (double)(p + 1) / (double)np;
 			
 			
 	
 			switch(game_state)
 			{
 			case GAMESTATE_PLAYING:
-				particle.creation = particle.last = get_time_from_game_tick(cgame_tick + 
-					(float)p / (float)np - 1.0);
+				particle.creation = particle.last = get_time_from_game_tick((double)cgame_tick + 
+					(double)(p + 1) / (double)np - 1.0);
 				break;
 			
 			case GAMESTATE_DEMO:
-				particle.creation = particle.last = (double)(demo_last_tick + 
-					(float)p / (float)np - 1.0 - demo_first_tick) / 200.0;
+				particle.creation = particle.last = ((double)cgame_tick + 
+					(double)(p + 1) / (double)np - 1.0) / 200.0;
 				break;
 			}
 			
@@ -2073,11 +2067,11 @@ void tick_rocket(struct entity_t *rocket, float xdis, float ydis)
 		double sin_theta, cos_theta;
 		sincos(rocket->rocket_data.theta, &sin_theta, &cos_theta);
 		
-		float r = drand48();
+		double r = drand48();
 		
 
-		float nxdis = rocket->xdis + (xdis - rocket->xdis) * (float)p / (float)np;
-		float nydis = rocket->ydis + (ydis - rocket->ydis) * (float)p / (float)np;
+		double nxdis = rocket->xdis + (xdis - rocket->xdis) * (double)(p + 1) / (double)np;
+		double nydis = rocket->ydis + (ydis - rocket->ydis) * (double)(p + 1) / (double)np;
 		
 		
 		struct particle_t particle;
@@ -2085,13 +2079,13 @@ void tick_rocket(struct entity_t *rocket, float xdis, float ydis)
 		switch(game_state)
 		{
 		case GAMESTATE_PLAYING:
-			particle.creation = particle.last = get_time_from_game_tick(cgame_tick + 
-				(float)p / (float)np - 1.0);
+			particle.creation = particle.last = get_time_from_game_tick((double)cgame_tick + 
+				(double)(p + 1) / (double)np - 1.0);
 			break;
 		
 		case GAMESTATE_DEMO:
-				particle.creation = particle.last = (double)(demo_last_tick + 
-					(float)p / (float)np - 1.0 - demo_first_tick) / 200.0;
+			particle.creation = particle.last = ((double)cgame_tick + 
+				(double)(p + 1) / (double)np - 1.0) / 200.0;
 			break;
 		}
 		
@@ -2123,7 +2117,6 @@ void render_entities()
 		{
 		case ENT_CRAFT:
 			
-				
 			params.source = entity->craft_data.surface;
 		
 			params.source_x = 0;
@@ -2372,6 +2365,7 @@ void update_game()
 		cgame_state = &last_known_game_state;
 		centity0 = last_known_game_state.entity0;
 		cgame_tick = last_known_game_state.tick;
+		cgame_time = get_time_from_game_tick(cgame_tick);
 		process_tick_events(last_known_game_state.tick);
 		last_known_game_state.entity0 = centity0;
 		
@@ -2379,6 +2373,7 @@ void update_game()
 		{
 			centity0 = last_known_game_state.entity0;
 			cgame_tick = ++last_known_game_state.tick;
+			cgame_time = get_time_from_game_tick(cgame_tick);
 			s_tick_entities(&centity0);
 			process_tick_events(last_known_game_state.tick);
 			last_known_game_state.entity0 = centity0;
@@ -2417,6 +2412,7 @@ void update_game()
 	cgame_state = game_state;
 	centity0 = game_state->entity0;
 	cgame_tick = game_state->tick;
+	cgame_time = get_time_from_game_tick(cgame_tick);
 	
 	if(process_tick_events_do_not_remove(cgame_tick))
 		game_state->tainted = 1;
@@ -2433,6 +2429,7 @@ void update_game()
 		cgame_state = game_state;
 		centity0 = game_state->entity0;
 		cgame_tick = game_state->tick;
+		cgame_time = get_time_from_game_tick(cgame_tick);
 	
 		s_tick_entities(&centity0);
 		
@@ -2450,7 +2447,7 @@ void update_demo()
 	
 	if(demo_first_tick)		// i.e. not the first event
 	{
-		tick = get_tick() + demo_first_tick;
+		tick = get_tick_from_wall_time() + demo_first_tick;
 	}
 	else
 	{
@@ -2474,7 +2471,7 @@ void update_demo()
 				demo_last_tick = demo_first_tick = 
 					tick = message_reader.event_tick;
 				
-				reset_start_count();	// demo_first_tick is being rendered now
+				reset_tick_from_wall_time();	// demo_first_tick is being rendered now
 			}
 			
 			if(message_reader.event_tick > tick)
@@ -2501,6 +2498,7 @@ void update_demo()
 	
 	while(demo_last_tick <= tick)
 	{
+		cgame_time = (double)cgame_tick / 200.0;
 		s_tick_entities(&centity0);
 		process_tick_events(demo_last_tick);
 		cgame_tick = ++demo_last_tick;		// cgame_tick is presumed to start at 0!!!
@@ -2606,7 +2604,7 @@ void render_rail_trails()
 {
 	struct rail_trail_t *rail_trail = rail_trail0;
 		
-	double time = get_double_time();
+	double time = cgame_time;
 	
 	while(rail_trail)
 	{
@@ -2685,8 +2683,6 @@ void render_recording()
 
 void render_teleporters()
 {
-	float time = get_double_time();
-	
 	struct teleporter_t *cteleporter = teleporter0;
 		
 	while(cteleporter)
@@ -2711,7 +2707,7 @@ void render_teleporters()
 			cteleporter->particles[cteleporter->next_particle].xpos = 0.0;
 			cteleporter->particles[cteleporter->next_particle].ypos = 0.0;
 			
-			float r = drand48();
+			double r = drand48();
 			
 			cteleporter->particles[cteleporter->next_particle].xvel = -sin_theta * 1000.0 * r;
 			cteleporter->particles[cteleporter->next_particle].yvel = cos_theta * 1000.0 * r;
@@ -2720,14 +2716,15 @@ void render_teleporters()
 			{
 			case GAMESTATE_PLAYING:
 				cteleporter->particles[cteleporter->next_particle].creation = 
-					cteleporter->particles[cteleporter->next_particle].last = get_double_time();
-				//	get_time_from_game_tick(cgame_tick + (float)p / (float)100 - 1.0);
+					cteleporter->particles[cteleporter->next_particle].last =
+					get_time_from_game_tick((double)cgame_tick + 
+					(double)(p + 1) / (double)np - 1.0);
 				break;
 			
 			case GAMESTATE_DEMO:
 				cteleporter->particles[cteleporter->next_particle].creation = 
-					cteleporter->particles[cteleporter->next_particle].last = get_double_time();
-				//	(double)(demo_last_tick - demo_first_tick) / 200.0;
+					cteleporter->particles[cteleporter->next_particle].last =
+					((double)cgame_tick + (double)(p + 1) / (double)np - 1.0) / 200.0;
 				break;
 			}
 			
@@ -2738,17 +2735,19 @@ void render_teleporters()
 		
 		for(p = 0; p < 800; p++)
 		{
-			float age = time - cteleporter->particles[p].creation;
+			double age = cgame_time - cteleporter->particles[p].creation;
 			
 			if(age <= 1.0f)
 			{
-				float dampening = exp(-12.0f * frame_time);
+				double particle_time = cgame_time - cteleporter->particles[p].last;
+				
+				double dampening = exp(-12.0f * particle_time);
 				
 				cteleporter->particles[p].xvel *= dampening;
 				cteleporter->particles[p].yvel *= dampening;
 	
-				cteleporter->particles[p].xpos += cteleporter->particles[p].xvel * frame_time;
-				cteleporter->particles[p].ypos += cteleporter->particles[p].yvel * frame_time;
+				cteleporter->particles[p].xpos += cteleporter->particles[p].xvel * particle_time;
+				cteleporter->particles[p].ypos += cteleporter->particles[p].yvel * particle_time;
 				
 				
 				int alpha  = (uint8_t)(255 - floor(age * 255.0f));
@@ -2756,6 +2755,8 @@ void render_teleporters()
 				render_particle(cteleporter->x + cteleporter->particles[p].xpos, 
 					cteleporter->y + cteleporter->particles[p].ypos, 
 					alpha, 0xff, 0xff, 0xff);
+			
+				cteleporter->particles[p].last = cgame_time;
 			}
 		}
 			

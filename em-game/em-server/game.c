@@ -887,7 +887,7 @@ void update_game()
 //	if(!(timer_count % 100))
 	//	ping_all_clients();
 	
-	uint32_t tick = get_tick();
+	uint32_t tick = get_tick_from_wall_time();
 
 	while(game_tick != tick)
 	{

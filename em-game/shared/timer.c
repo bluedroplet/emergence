@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <math.h>
 
 #include "../../common/types.h"
 #include "../../common/llist.h"
@@ -153,15 +154,16 @@ void *timer_thread(void *a)
 }
 
 
-uint32_t get_tick()
+uint32_t get_tick_from_wall_time()
 {
 	uint64_t count = rdtsc();
 	
-	return (uint32_t)(((count - start_count) * 200) / counts_per_second);
+	return (uint32_t)lround((((double)count - (double)start_count) * 200.0) / 
+		(double)counts_per_second);
 }
 
 
-double get_double_time()
+double get_wall_time()
 {
 	uint64_t count = rdtsc();
 	
@@ -171,6 +173,8 @@ double get_double_time()
 
 void init_timer()
 {
+	// TODO: change to integer reading
+	
 	double mhz;
 	FILE *file = popen("grep \"cpu MHz\" /proc/cpuinfo", "r");
 	fscanf(file, "%*s%*s%*s%lf", &mhz);
@@ -196,7 +200,7 @@ void kill_timer()
 }
 
 
-void reset_start_count()
+void reset_tick_from_wall_time()
 {
 	start_count = rdtsc();
 }

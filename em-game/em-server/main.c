@@ -119,7 +119,7 @@ void process_connection(uint32_t conn)
 	net_emit_end_of_stream(conn);
 
 	struct conn_state_t conn_state = 
-		{conn, get_double_time(), CONN_STATE_VIRGIN};
+		{conn, get_wall_time(), CONN_STATE_VIRGIN};
 	LL_ADD(struct conn_state_t, &conn_state0, &conn_state);
 }
 

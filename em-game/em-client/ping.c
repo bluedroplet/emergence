@@ -37,8 +37,7 @@ double latencies[11];
 int clatency = 0;
 int nlatencies = 0;
 
-double latency;
-float cvar_latency;
+float latency;
 
 void add_latency(double new_latency)
 {
@@ -82,12 +81,11 @@ void add_latency(double new_latency)
 	} while(--left);
 	
 	latency /= total_weight;
-	cvar_latency = (float)latency;
 }
 
 
 
 void init_ping()
 {
-	create_cvar_float("latency", &cvar_latency, 0);
+	create_cvar_float("latency", &latency, 0);
 }

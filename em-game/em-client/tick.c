@@ -120,9 +120,18 @@ uint32_t get_game_tick()
 }
 
 
-double get_time_from_game_tick(double tick)
+double get_time_from_game_tick(float tick)
 {
-	return ((tick - tick_a) / tick_b - start_count) / (double)counts_per_second + 
+	if(table_entries_used == 0)
+		return 0.0;
+	
+	if(table_entries_used == 1)
+		return (double)tick_times[0].tsc / (double)counts_per_second;
+	
+	if(!different_ticks)
+		return (double)tick_times[0].tsc / (double)counts_per_second;
+	
+	return ((tick - tick_a) / tick_b) / (double)counts_per_second + 
 		(latency * (tracking - 1.0) - time_shift);
 }
 

@@ -498,7 +498,7 @@ void process_control_alarm()
 	char c;
 	while(read(control_timer_fd, &c, 1) != -1);
 		
-	double time = get_double_time();
+	double time = get_wall_time();
 		
 	if(time > next_control_tick)
 	{
@@ -950,7 +950,7 @@ void *control_thread(void *a)
 
 void init_control()
 {
-	double time = get_double_time();
+	double time = get_wall_time();
 	next_control_tick = ((int)(time / CONTROL_TICK_INTERVAL) + 1) * (double)CONTROL_TICK_INTERVAL;
 	
 	create_cvar_command("bind", cf_bind);

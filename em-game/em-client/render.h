@@ -8,10 +8,10 @@ void render_frame();
 void start_rendering();
 void stop_rendering();
 
-extern double frame_time, last_frame_start_time;
+extern float frame_time, last_frame_start_time;
 
 void screenshot(int state);
 
-extern int vid_width, vid_height;
+extern uint32_t vid_width, vid_height;
 
 extern struct surface_t *s_backbuffer;

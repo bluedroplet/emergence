@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <signal.h>
+#include <math.h>
 
 #include "../common/types.h"
 #include "../shared/timer.h"
@@ -28,21 +29,17 @@ int r_FPSGreen = 0;
 int r_FPSBlue = 0;
 int r_FPSColour = 0x576b;
 
-int rendering = 0;
 
-double fr_update_time, fr_start_time, fr_old_time;
+uint32_t vid_width, vid_height;
+struct surface_t *s_backbuffer;
 
-int frame, fr_old_frame;
+float fr_update_time, fr_start_time, fr_old_time;
+float frame_time, last_frame_start_time;
 
+uint32_t frame, fr_old_frame;
 struct string_t *fr_text;
-
 int screenshot_next_frame;
 
-double frame_time, last_frame_start_time;
-
-int vid_width, vid_height;
-
-struct surface_t *s_backbuffer;
 
 void calc_r_FPSColour()
 {
@@ -74,7 +71,7 @@ void qc_r_FPSBlue(int val)
 void init_fr()
 {
 	fr_old_frame = 0;
-	fr_old_time = fr_start_time = get_double_time();
+	fr_old_time = fr_start_time = last_frame_start_time;
 	fr_update_time = fr_start_time + 1.0;
 	fr_text = new_string();
 }
@@ -82,22 +79,15 @@ void init_fr()
 
 void render_fr()
 {
-	double time = get_double_time();
-	
-	if(time >= fr_update_time)
+	if(last_frame_start_time >= fr_update_time)
 	{
 		string_clear(fr_text);
-		string_cat_double(fr_text, (double)(frame - fr_old_frame) / (time - fr_old_time), 4);
-
-//		_itoa( ftol(( ((float)(LONGLONG)FDTime) / ((float)(LONGLONG)(count - FROldCount)))  * 100.0f),
-//			FDText, 10);
-
-	//	strcat(FDText, "%");
+		string_cat_double(fr_text, (double)(frame - fr_old_frame) / (last_frame_start_time - fr_old_time), 4);
 
 		fr_old_frame = frame;
-		fr_old_time = time;
+		fr_old_time = last_frame_start_time;
 
-		fr_update_time = ((int)(time - fr_start_time) + 1) + fr_start_time;
+		fr_update_time = (floor(last_frame_start_time - fr_start_time) + 1.0) + fr_start_time;
 	}
 
 	blit_text(0, 0, 0xff, 0xff, 0xff, s_backbuffer, fr_text->text);
@@ -127,12 +117,12 @@ void init_render_cvars()
 void init_render()
 {
 	init_gsub();
-	init_fr();
 	init_x();
 	
 	frame = 0;
 	
-	last_frame_start_time = get_double_time();
+	last_frame_start_time = get_wall_time();
+	init_fr();
 }
 
 
@@ -160,8 +150,6 @@ void screenshot(int state)
 }
 
 
-
-
 void render_frame()
 {
 	clear_surface(s_backbuffer);
@@ -181,13 +169,7 @@ void render_frame()
 		screenshot_next_frame = 0;
 	}
 	
-	double time = get_double_time();
+	double time = get_wall_time();
 	frame_time = time - last_frame_start_time;
 	last_frame_start_time = time;
-}
-
-
-void stop_rendering()
-{
-	rendering = 0;
 }

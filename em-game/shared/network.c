@@ -289,7 +289,7 @@ int output_cpacket(struct conn_t *conn)
 
 	// get time
 		
-	double time = get_double_time();
+	double time = get_wall_time();
 	
 	if(num_packets == 0)
 		conn->last_time = time;
@@ -337,7 +337,7 @@ void send_conn_cookie(struct sockaddr_in *sockaddr)
 	uint32_t header = EMNETFLAG_COOKIE | cookie->cookie;
 	sendto(udp_fd, (char*)&header, EMNETHEADER_SIZE, 0, sockaddr, sizeof(struct sockaddr_in));
 	
-	cookie->expire_time = get_double_time() + CONNECTION_COOKIE_TIMEOUT;
+	cookie->expire_time = get_wall_time() + CONNECTION_COOKIE_TIMEOUT;
 	cookie->ip = sockaddr->sin_addr.s_addr;
 	cookie->port = sockaddr->sin_port;
 	cookie->next = conn_cookie0;
@@ -424,7 +424,7 @@ void process_ack(struct conn_t *conn, uint32_t index)
 	
 	// record the time for timeout purposes
 	
-	conn->last_time = get_double_time();
+	conn->last_time = get_wall_time();
 }
 
 
@@ -781,7 +781,7 @@ void process_udp_data()
 						
 						send_connect(&conn->sockaddr, conn->next_read_index);
 						
-						conn->last_time = get_double_time();	// give the client a little helping
+						conn->last_time = get_wall_time();	// give the client a little helping
 																// hand in troubled times
 					}
 					else
@@ -883,7 +883,7 @@ void process_udp_data()
 	
 				case NETSTATE_DISCONNECTING:
 					send_ack(&recv_addr, index);
-					conn->last_time = get_double_time();
+					conn->last_time = get_wall_time();
 					conn->state = NETSTATE_DISCONNECTED;
 					stop = 1;
 					break;
@@ -1033,7 +1033,7 @@ void network_alarm()
 	char c;
 	while(read(net_timer_fd, &c, 1) != -1);
 
-	double time = get_double_time();
+	double time = get_wall_time();
 	
 	
 	#ifdef EMSERVER

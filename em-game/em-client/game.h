@@ -43,6 +43,7 @@ void fire_right();
 void drop_mine();
 
 extern uint32_t cgame_tick;
+extern float cgame_time;
 
 extern int recording;
 extern struct string_t *recording_filename;

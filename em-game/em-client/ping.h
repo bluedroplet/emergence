@@ -3,7 +3,7 @@
 
 void process_ping();
 void process_pang();
-extern double latency;
+extern float latency;
 void init_ping();
 
 #endif
