@@ -188,21 +188,21 @@ void process_virgin_stream(uint32_t conn, uint32_t index, struct buffer_t *strea
 		if(cstate->state != CONN_STATE_VIRGIN)
 			break;
 		
-//		#ifndef NONAUTHENTICATING
+		#ifndef NONAUTHENTICATING
 	
-//		if(cstate->type == CONN_TYPE_PUBLIC)
-//		{
+		if(cstate->type == CONN_TYPE_PUBLIC)
+		{
 			console_print("Requiring authentication\n");
 			
 			net_emit_uint8(conn, EMNETMSG_AUTHENTICATE);
 			net_emit_end_of_stream(conn);
 			cstate->state = CONN_STATE_AUTHENTICATING;
-//		}
-//		else
+		}
+		else
 			
-//		#endif
+		#endif
 		
-/*		{
+		{
 			cstate->state = CONN_STATE_JOINED;
 			
 			net_emit_uint8(conn, EMNETMSG_JOINED);
@@ -210,7 +210,7 @@ void process_virgin_stream(uint32_t conn, uint32_t index, struct buffer_t *strea
 			
 			game_process_joined(conn);
 		}
-*/		
+		
 		break;
 		
 		
@@ -297,7 +297,7 @@ void check_sessions()
 	while(cstate)
 	{
 		if(cstate->state == CONN_STATE_JOINED &&
-		//	cstate->type == CONN_TYPE_PUBLIC &&
+			cstate->type == CONN_TYPE_PUBLIC &&
 			cstate->next_check < time)
 		{
 			key_verify_session(cstate->conn, cstate->session_key);
@@ -515,9 +515,9 @@ void process_game_timer()
 	uint32_t m;
 	while(read(game_timer_fd, &m, 1) != -1);
 		
-//	#ifndef NONAUTHENTICATING
+	#ifndef NONAUTHENTICATING
 	check_sessions();
-//	#endif
+	#endif
 		
 	update_game();
 }
