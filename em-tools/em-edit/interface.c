@@ -1216,13 +1216,13 @@ void key_pressed(uint32_t key)
 
 	case GDK_bracketleft:
 	case GDK_braceleft:
-		decrease_grid_granularity();
+		increase_grid_granularity();
 		update_client_area();
 		break;
 
 	case GDK_bracketright:
 	case GDK_braceright:
-		increase_grid_granularity();
+		decrease_grid_granularity();
 		update_client_area();
 		break;
 
