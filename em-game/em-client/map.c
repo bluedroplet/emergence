@@ -186,17 +186,28 @@ int load_map(char *map_name)
 	console_print(map_name);
 	console_print("\n");
 	
-	struct string_t *map_filename = new_string_string(emergence_home_dir);
-	string_cat_text(map_filename, "/maps/");
+	
+	struct string_t *map_filename = new_string_text(PKGDATADIR "/stock-maps/");
 	string_cat_text(map_filename, map_name);
 	string_cat_text(map_filename, ".cmap");
 
 	gzFile gzfile = gzopen(map_filename->text, "rb");
 	if(!gzfile)
 	{
-		console_print("Could not load map: %s\n", map_name);
-		return 1;
+		free_string(map_filename);
+		map_filename = new_string_string(emergence_home_dir);
+		string_cat_text(map_filename, "/maps/");
+		string_cat_text(map_filename, map_name);
+		string_cat_text(map_filename, ".cmap");
+	
+		gzFile gzfile = gzopen(map_filename->text, "rb");
+		if(!gzfile)
+		{
+			console_print("Could not load map: %s\n", map_name);
+			return 1;
+		}
 	}
+	
 	
 	clear_floating_images();
 	clear_sgame();
@@ -212,7 +223,10 @@ int load_map(char *map_name)
 	}
 	else
 	{
-		struct string_t *cached_filename = new_string_string(map_filename);
+		struct string_t *cached_filename = new_string_string(emergence_home_dir);
+		string_cat_text(cached_filename, "/maps/");
+		string_cat_text(cached_filename, map_name);
+		string_cat_text(cached_filename, ".cmap");
 		string_cat_text(cached_filename, "%s%u", ".cache", vid_width);
 		
 		console_print("Loading BSP tree\n");
