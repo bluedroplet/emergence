@@ -458,6 +458,8 @@ void menu_insert_gravity_well()
 
 void menu_insert_node()
 {
+	stop_working();
+	
 	if(view_state & VIEW_GRID)
 	{
 		float outx, outy;
@@ -468,6 +470,8 @@ void menu_insert_node()
 	{
 		insert_node(right_button_down_worldx, right_button_down_worldy);
 	}
+	
+	start_working();
 
 	generate_hover_nodes();
 	update_client_area();
