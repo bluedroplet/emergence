@@ -181,12 +181,14 @@ int add_object_pointer(struct object_pointer_t **objectp0, struct object_t *obje
 void remove_object_pointer(struct object_pointer_t **objectp0, struct object_t *object);
 int object_in_object_pointer_list(struct object_pointer_t *objectp0, struct object_t *object);
 
+int count_object_floating_images();
 
 
 #ifdef _ZLIB_H
 void gzwrite_objects(gzFile file);
 void gzwrite_objects_compiled(gzFile file);
 int gzread_objects(gzFile file);
+void gzwrite_object_floating_images(gzFile file);
 #endif
 
 void run_object_menu(struct object_t *object);

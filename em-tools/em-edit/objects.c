@@ -222,7 +222,7 @@ void insert_object(int type, double x, double y)
 		object.speedup_ramp_data.height = 64.0;
 		object.speedup_ramp_data.angle = 0.0;
 		object.speedup_ramp_data.activation_width = 128.0;
-		object.speedup_ramp_data.boost = 60.0;
+		object.speedup_ramp_data.boost = 10.0;
 		break;
 	
 	case OBJECTTYPE_TELEPORTER:
@@ -2212,6 +2212,47 @@ void gzwrite_objects_compiled(gzFile file)
 		}		
 		
 		object = object->next;
+	}
+}
+
+
+int count_object_floating_images()
+{
+	struct object_t *cobject = object0;
+	int c = 0;
+		
+	while(cobject)
+	{
+		switch(cobject->type)
+		{
+		case OBJECTTYPE_SPEEDUPRAMP:
+			c++;
+			break;
+		}
+		
+		cobject = cobject->next;
+	}
+	
+	return c;
+}
+
+
+void gzwrite_object_floating_images(gzFile file)
+{
+	struct object_t *cobject = object0;
+		
+	while(cobject)
+	{
+		switch(cobject->type)
+		{
+		case OBJECTTYPE_SPEEDUPRAMP:
+			gzwrite(file, &cobject->x, 8);
+			gzwrite(file, &cobject->y, 8);
+			gzwrite_raw_surface(file, cobject->texture_surface);
+			break;
+		}
+		
+		cobject = cobject->next;
 	}
 }
 

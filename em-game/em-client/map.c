@@ -26,10 +26,11 @@
 #include "bsp.h"
 #include "console.h"
 #include "entry.h"
+#include "floats.h"
 
 struct tile_t
 {
-	int x, y;	// unzoomed pixels from south west origin always multiple of 50
+	int x, y;	// unzoomed pixels from south west origin always multiple of 50 (200?)
 	struct surface_t *surface;
 	struct tile_t *next;
 
@@ -209,6 +210,7 @@ int load_map(char *map_name)
 		bypass_objects(gzfile);
 		console_print("Loading map tiles\n");
 		load_map_tiles(gzfile);
+		gzread_floating_images(gzfile);
 	}
 	else
 	{
@@ -225,6 +227,7 @@ int load_map(char *map_name)
 			
 			bypass_objects(gzfile);
 			load_map_tiles(gzcachedfile);
+			gzread_floating_images(gzcachedfile);
 		}
 		else
 		{
@@ -237,6 +240,9 @@ int load_map(char *map_name)
 			bypass_objects(gzfile);
 			
 			if(!generate_and_write_scaled_tiles(gzfile, gzcachedfile))
+				return 0;
+			
+			if(!generate_and_write_scaled_floating_images(gzfile, gzcachedfile))
 				return 0;
 			
 			gzclose(gzcachedfile);

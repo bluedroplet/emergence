@@ -11,7 +11,8 @@ em_edit_SOURCES = bezier.c conns.h grid.h main_lock.c nodes.h worker.c \
 	em-edit.glade lines.c points.c worker_thread.h \
 	cameron.c fills.c lines.h map.c points.h cameron.h fills.h \
 	main.c map.h tiles.c conns.c grid.c main.h nodes.c tiles.h \
-	glade.c glade.h callbacks.h support.h conic.c conic.h
+	glade.c glade.h callbacks.h support.h conic.c conic.h \
+	floats.c floats.h
 
 BUILT_SOURCES = glade.c glade.h
 

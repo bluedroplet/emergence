@@ -53,6 +53,7 @@
 #include "worker.h"
 #include "glade.h"
 #include "interface.h"
+#include "floats.h"
 
 uint8_t map_active = 0;
 uint8_t map_saved = 1;
@@ -119,6 +120,7 @@ void compile()
 		ctile = ctile->next;
 	}
 
+	gzwrite_floating_images(file);
 	gzclose(file);
 }
 

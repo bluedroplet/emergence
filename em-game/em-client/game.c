@@ -36,6 +36,7 @@
 #include "line.h"
 #include "entry.h"
 #include "sound.h"
+#include "floats.h"
 
 #ifdef LINUX
 #include "../shared/timer.h"
@@ -3160,6 +3161,7 @@ void render_game()
 	add_moving_view();
 	
 	render_stars();
+	render_floating_images();
 	render_lower_particles();
 	render_rail_trails();
 	render_entities();
