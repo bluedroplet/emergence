@@ -398,7 +398,7 @@ void clear_bsp_trees()	// always called when not working
 	if(ui_bsp_tree)
 	{
 		delete_bsp_node(ui_bsp_tree);
-		bsp_tree = NULL;
+		ui_bsp_tree = NULL;
 	}
 	
 	generating_bsp_line0 = &bsp_line0;
@@ -420,6 +420,7 @@ void invalidate_bsp_tree()	// always called when not working
 void finished_generating_bsp_tree()
 {
 	bsp_tree = generating_bsp_tree;
+	generating_bsp_tree = NULL;
 	generate_bsp = 0;
 }
 
@@ -427,6 +428,7 @@ void finished_generating_bsp_tree()
 void finished_generating_ui_bsp_tree()
 {
 	ui_bsp_tree = generating_bsp_tree;
+	generating_bsp_tree = NULL;
 	generate_ui_bsp = 0;
 }
 
@@ -2210,7 +2212,6 @@ void generate_bsp_tree()
 		return;
 	}
 	
-	generating_bsp_tree = NULL;
 	bsp_tline_t *space = NULL;
 	
 	create_space(&space);
@@ -2277,7 +2278,6 @@ void generate_ui_bsp_tree()
 		return;
 	}
 	
-	generating_bsp_tree = NULL;
 	bsp_tline_t *space = NULL;
 	
 	create_space(&space);
