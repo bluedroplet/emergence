@@ -9,6 +9,7 @@ void start_rendering();
 void stop_rendering();
 
 extern float frame_time, last_frame_start_time;
+extern uint32_t frame;
 
 void screenshot(int state);
 

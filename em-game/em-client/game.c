@@ -302,6 +302,9 @@ struct demo_t
 		
 } *demo0, *cdemo;
 
+uint32_t demo_start_frame;
+float demo_start_time;
+
 
 int game_rendering = 1;
 
@@ -3508,6 +3511,8 @@ void update_demo()
 					tick = message_reader.event_tick;
 				
 				reset_tick_from_wall_time();	// demo_first_tick is being rendered now
+				demo_start_frame = frame;
+				demo_start_time = get_wall_time();
 			}
 			
 			if(message_reader.event_tick > tick)
@@ -3531,6 +3536,9 @@ void update_demo()
 		
 		if(!message_reader_new_message())
 		{
+			console_print("%f fps\n", (double)(frame - demo_start_frame) / 
+				(get_wall_time() - demo_start_time));
+			
 			clear_game();
 			game_conn = 0;
 			
