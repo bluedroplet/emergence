@@ -1,7 +1,9 @@
 SUBDIRS = shared share
-LDADD = ../gsub/libgsub.a shared/libshared.a ../common/libcommon.a ../../../stage3s/current-stage3/usr/lib/libssl.a ../../../stage3s/current-stage3/usr/lib/libcrypto.a
+
 AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -DEMCLIENT -Wall -I/usr/X11R6/include/X11/extensions/
-AM_LDFLAGS = -L/usr/X11R6/lib -lvorbisfile -lvorbis -logg -lpthread -lz -lX11 -lXext -lXrandr -lasound -logg -lvorbisfile -lpng
+LDADD = ../gsub/libgsub.a shared/libshared.a ../common/libcommon.a ../../../stage3s/current-stage3/usr/lib/libssl.a ../../../stage3s/current-stage3/usr/lib/libcrypto.a
+AM_LDFLAGS = -L../../../stage3s/current-stage3/lib -L../../../stage3s/current-stage3/usr/lib -L/usr/X11R6/lib -lvorbisfile -lvorbis -logg -lpthread -lz -lpng12 -lX11 -lXext -lXrandr -lasound
+
 bin_PROGRAMS = em-client
 
 em_client_SOURCES = bsp.c entry.c game.c main.c map.h ping.h stars.h \

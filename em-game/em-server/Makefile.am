@@ -1,7 +1,8 @@
 SUBDIRS = shared
-LDADD = shared/libshared.a ../common/libcommon.a -lm -lz -lssl -lcrypto -lpthread
+
 AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -Wall -DEMSERVER
-#AM_LDFLAGS = -static
+LDADD = shared/libshared.a ../common/libcommon.a ../../../stage3s/current-stage3/usr/lib/libssl.a ../../../stage3s/current-stage3/usr/lib/libcrypto.a
+AM_LDFLAGS = -L../../../stage3s/current-stage3/lib -L../../../stage3s/current-stage3/usr/lib -lpthread -lz -lm
 
 bin_PROGRAMS = em-server
 
@@ -9,5 +10,3 @@ em_server_SOURCES = console.c game.h  ping.h \
 	console.h  main.c  \
 	game.c main.h  ping.c entry.c \
 	entry.h
-
-
