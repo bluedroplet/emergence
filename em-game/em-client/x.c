@@ -279,8 +279,8 @@ void query_vid_modes()
 	
 	vid_mode0 = new_vid_mode0;
 	
-	int i;
-	original_mode = XRRConfigCurrentConfiguration(screen_config, &i);
+	Rotation r;
+	original_mode = XRRConfigCurrentConfiguration(screen_config, &r);
 }
 
 
