@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=0.9.4
+Encoding=UTF-8
+Name=Emergence Server
+Comment=Dedicated server for playing Emergence on
+Exec=em-server
+Icon=emergence.png
+Terminal=true
+Categories=Application;Game;ArcadeGame;
+StartupNotify=false

@@ -12,4 +12,5 @@ AC_SUBST(GNOME_LIBS)
 
 AC_OUTPUT(Makefile common/Makefile gsub/Makefile em-edit/Makefile \
 	em-edit/share/Makefile em-skin/Makefile \
-	stock-object-textures/Makefile)
+	stock-object-textures/Makefile \
+	pixmaps/Makefile desktop/Makefile)

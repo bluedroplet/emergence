@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=0.9.4
+Encoding=UTF-8
+Name=Emergence Editor
+Comment=Tool for creating Emergence maps
+Exec=em-edit
+Icon=emergence.png
+Terminal=false
+Categories=GNOME;Application;Game;ArcadeGame;
+StartupNotify=false

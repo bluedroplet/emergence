@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=0.9.4
+Encoding=UTF-8
+Name=Emergence Client
+Comment=Fast paced multiplayer top down arcade game
+Exec=em-client
+Icon=emergence.png
+Terminal=false
+Categories=Application;Game;ArcadeGame;
+StartupNotify=false

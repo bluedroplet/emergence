@@ -258,7 +258,7 @@ void run_about_box()
 	
 	gchar *translator_credits = "translator_credits";
 
-GdkPixbuf*  logo_image = gdk_pixbuf_new_from_file(PKGDATADIR "/em-edit/about.png", NULL);
+GdkPixbuf*  logo_image = gdk_pixbuf_new_from_file(PIXMAPSDIR "/emergence.png", NULL);
 
 	
 	about = gnome_about_new ("Emergence Editor", VERSION,
