@@ -4431,6 +4431,12 @@ void render_match_info()
 }
 
 
+void render_health_and_ammo()
+{
+	;
+}
+
+
 void render_game()
 {
 	if(!game_rendering)
@@ -4488,6 +4494,7 @@ void render_game()
 	render_player_info();
 	render_match_time();
 	render_match_info();
+	render_health_and_ammo();
 	
 //	blit_text(((vid_width * 2) / 3) + (vid_width / 200), 
 //		vid_height / 6, 0xef, 0x6f, 0xff, s_backbuffer, "[virus] where are you?");
