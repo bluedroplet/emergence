@@ -2510,7 +2510,7 @@ void run_node_menu(struct node_t *node)
 	gtk_widget_show(menu_items);
 
 
-	if(node->num_conns > 0)
+/*	if(node->num_conns > 0)
 	{
 		menu_items = gtk_menu_item_new_with_label("Properties");
 		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
@@ -2518,7 +2518,7 @@ void run_node_menu(struct node_t *node)
 		gtk_menu_append(GTK_MENU(menu), menu_items);
 		gtk_widget_show(menu_items);
 	}
-	
+*/	
 	menu_items = gtk_menu_item_new_with_label("Delete");
 	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
 		GTK_SIGNAL_FUNC(menu_delete_node), node);
