@@ -470,6 +470,8 @@ void main_thread()
 
 void init()
 {
+	console_print("Emergence Server " VERSION "\n");
+	
 	init_user();
 	init_network();
 	init_game();
