@@ -53,7 +53,7 @@ int x_kill_pipe[2];
 
 XRRScreenConfiguration *screen_config;
 int original_mode;
-
+int vid_modes;
 struct vid_mode_t
 {
 	int width;
@@ -225,7 +225,7 @@ void query_vid_modes()
 	
 	
 	int n = 0;
-	int modes = 0;
+	vid_modes = 0;
 	while(nsizes)
 	{
 		int width = screens[n].width;
@@ -242,13 +242,13 @@ void query_vid_modes()
 									// (change this to integer)
 			continue;
 			
-		modes++;
+		vid_modes++;
 		
 		struct vid_mode_t vid_mode = {width, height, n-1};
 		LL_ADD(struct vid_mode_t, &vid_mode0, &vid_mode);
 	}
 	
-	console_print("Found %u modes:\n", modes);
+	console_print("Found %u modes:\n", vid_modes);
 	
 	// sort modes
 	
@@ -377,6 +377,9 @@ void set_vid_mode(int mode)	// use goto error crap
 
 void vid_mode_qc(int mode)
 {
+	if(mode >= vid_modes)
+		return;
+	
 	vid_mode = mode;
 	set_vid_mode(mode);
 	
