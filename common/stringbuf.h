@@ -59,7 +59,7 @@ void fwrite_string(struct string_t *string, FILE *file);
 struct string_t *fread_string(FILE *file);
 #endif
 
-#ifdef _ZLIB_H
+#ifdef ZLIB_H
 void gzwrite_string(gzFile file, struct string_t *string);
 struct string_t *gzread_string(gzFile file);
 #endif

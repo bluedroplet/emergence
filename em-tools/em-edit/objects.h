@@ -184,7 +184,7 @@ int object_in_object_pointer_list(struct object_pointer_t *objectp0, struct obje
 int count_object_floating_images();
 
 
-#ifdef _ZLIB_H
+#ifdef ZLIB_H
 void gzwrite_objects(gzFile file);
 void gzwrite_objects_compiled(gzFile file);
 int gzread_objects(gzFile file);

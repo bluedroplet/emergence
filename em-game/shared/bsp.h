@@ -8,7 +8,7 @@ struct bspnode_t
 	struct bspnode_t *front, *back;
 };
 
-#ifdef _ZLIB_H
+#ifdef ZLIB_H
 int load_bsp_tree(gzFile file);
 #endif
 struct bspnode_t *circle_walk_bsp_tree(float xdis, float ydis, float r);

@@ -28,7 +28,7 @@
 void invalidate_bsp_tree();
 void generate_bsp_tree();
 void generate_ui_bsp_tree();
-#ifdef _ZLIB_H
+#ifdef ZLIB_H
 void gzwrite_bsp_tree(gzFile file);
 #endif
 void draw_bsp_tree();

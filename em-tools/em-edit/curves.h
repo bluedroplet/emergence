@@ -84,7 +84,7 @@ struct curve_t *get_curve(struct conn_t *conn);
 void delete_all_curves();
 void remove_conn_from_its_curve(struct conn_t *conn);
 
-#if defined _ZLIB_H
+#if defined ZLIB_H
 void gzwrite_curves(gzFile file);
 int gzread_curves(gzFile file);
 #endif

@@ -112,7 +112,7 @@ void draw_width_sats();
 
 extern struct node_t *node0;
 
-#if defined _ZLIB_H
+#if defined ZLIB_H
 void gzwrite_nodes(gzFile file);
 int gzread_nodes(gzFile file);
 #endif

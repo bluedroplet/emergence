@@ -99,7 +99,7 @@ void generate_fill_verticies();
 void make_sure_all_fills_are_clockwise();
 void run_fill_properties_dialog(void *menu, struct fill_t *fill);
 
-#if defined _ZLIB_H
+#if defined ZLIB_H
 void gzwrite_fills(gzFile file);
 int gzread_fills(gzFile file);
 #endif

@@ -119,7 +119,7 @@ int check_for_unsquished_conns();
 int check_for_unverticied_conns();
 
 
-#if defined _ZLIB_H
+#if defined ZLIB_H
 void gzwrite_conns(gzFile file);
 int gzread_conns(gzFile file);
 void gzwrite_conn_pointer_list(gzFile file, struct conn_pointer_t *connp0);

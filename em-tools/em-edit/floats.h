@@ -21,6 +21,6 @@
 	jbrown@emergence.uk.net
 */
 
-#ifdef _ZLIB_H
+#ifdef ZLIB_H
 void gzwrite_floating_images(gzFile file);
 #endif

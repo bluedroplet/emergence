@@ -131,7 +131,7 @@ int write_png_surface(struct surface_t *surface, char *filename);
 int write_raw_surface(struct surface_t *surface, char *filename);
 
 
-#ifdef _ZLIB_H
+#ifdef ZLIB_H
 struct surface_t *gzread_raw_surface(gzFile file);
 int gzwrite_raw_surface(gzFile file, struct surface_t *surface);
 #endif
