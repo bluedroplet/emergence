@@ -11,6 +11,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/epoll.h>
+#include <sys/poll.h>
 
 
 #define __USE_X_SHAREDMEMORY__
@@ -427,6 +428,41 @@ void create_x_cvars()
 
 void *x_thread(void *a)
 {
+	struct pollfd *fds;
+	int fdcount;
+	
+	fdcount = 2;
+	
+	fds = calloc(sizeof(struct pollfd), fdcount);
+	
+	fds[0].fd = x_fd; fds[0].events |= POLLIN;
+	fds[1].fd = x_kill_pipe[0]; fds[1].events |= POLLIN;
+	
+
+	while(1)
+	{
+		if(poll(fds, fdcount, -1) == -1)
+			return NULL;
+
+		if(fds[0].revents & POLLIN)
+		{			
+			pthread_mutex_lock(&x_mutex);
+			process_x();
+			pthread_mutex_unlock(&x_mutex);
+		}
+		
+		if(fds[1].revents & POLLIN)
+		{
+			free(fds);
+			pthread_exit(NULL);
+		}
+	}
+}
+
+
+/*
+void *x_thread(void *a)
+{
 	int epoll_fd = epoll_create(2);
 	
 	struct epoll_event ev;
@@ -457,6 +493,7 @@ void *x_thread(void *a)
 		}
 	}
 }
+*/
 
 
 void init_x()

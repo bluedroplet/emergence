@@ -11,6 +11,7 @@
 #include <pthread.h>
 
 #include <sys/epoll.h>
+#include <sys/poll.h>
 
 #include <alsa/asoundlib.h>
 #include <vorbis/codec.h>
@@ -251,6 +252,41 @@ void start_sample(struct sample_t *sample, uint32_t start_tick)
 
 void *sound_thread(void *a)
 {
+	struct pollfd *fds;
+	int fdcount;
+	
+	fdcount = 2;
+	
+	fds = calloc(sizeof(struct pollfd), fdcount);
+	
+	fds[0].fd = alsa_fd; fds[0].events |= POLLIN;
+	fds[1].fd = sound_kill_pipe[0]; fds[1].events |= POLLIN;
+	
+
+	while(1)
+	{
+		if(poll(fds, fdcount, -1) == -1)
+			return NULL;
+
+		if(fds[0].revents & POLLIN)
+		{			
+			sound_mutex_lock();
+			process_alsa();
+			sound_mutex_unlock();
+		}
+		
+		if(fds[1].revents & POLLIN)
+		{
+			free(fds);
+			pthread_exit(NULL);
+		}
+	}
+}
+
+
+/*
+void *sound_thread(void *a)
+{
 	int epoll_fd = epoll_create(2);
 	
 	struct epoll_event ev = 
@@ -282,6 +318,7 @@ void *sound_thread(void *a)
 		}
 	}
 }
+*/
 
 
 struct sample_t *load_sample(char *filename)

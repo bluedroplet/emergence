@@ -7,11 +7,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <math.h>
 #include <pthread.h>
 #include <unistd.h>
 
 #include <sys/epoll.h>
+#include <sys/poll.h>
 
 #include "../common/types.h"
 #include "../common/stringbuf.h"
@@ -914,6 +916,45 @@ void dump_bindings(FILE *file)
 
 void *control_thread(void *a)
 {
+	struct pollfd *fds;
+	int fdcount;
+	
+	fdcount = 3;
+	
+	fds = calloc(sizeof(struct pollfd), fdcount);
+	
+	fds[0].fd = input_fd; fds[0].events |= POLLIN;
+	fds[1].fd = control_timer_fd; fds[1].events |= POLLIN;
+	fds[2].fd = control_kill_pipe[0]; fds[2].events |= POLLIN;
+	
+
+	while(1)
+	{
+		if(poll(fds, fdcount, -1) == -1)
+			return NULL;
+
+		if(fds[0].revents & POLLIN)
+		{			
+			pthread_mutex_lock(&control_mutex);
+			process_input();
+			pthread_mutex_unlock(&control_mutex);
+		}
+		
+		if(fds[1].revents & POLLIN)
+			process_control_alarm();
+		
+		if(fds[2].revents & POLLIN)
+		{
+			free(fds);
+			pthread_exit(NULL);
+		}
+	}
+}
+
+
+/*
+void *control_thread(void *a)
+{
 	int epoll_fd = epoll_create(3);
 	
 	struct epoll_event ev;
@@ -954,6 +995,7 @@ void *control_thread(void *a)
 		}
 	}
 }
+*/
 
 
 void create_control_cvars()

@@ -13,6 +13,7 @@
 #include <fcntl.h>
 
 #include <sys/epoll.h>
+#include <sys/poll.h>
 
 #include "../common/prefix.h"
 
@@ -283,6 +284,38 @@ void process_console_pipe()
 
 void main_thread()
 {
+	struct pollfd *fds;
+	int fdcount;
+	
+	fdcount = 3;
+	
+	fds = calloc(sizeof(struct pollfd), fdcount);
+	
+	fds[0].fd = x_render_pipe[0]; fds[0].events |= POLLIN;
+	fds[1].fd = net_out_pipe[0]; fds[1].events |= POLLIN;
+	fds[2].fd = console_pipe[0]; fds[2].events |= POLLIN;
+	
+
+	while(1)
+	{
+		if(poll(fds, fdcount, -1) == -1)
+			return NULL;
+
+		if(fds[0].revents & POLLIN)
+			process_x_render_pipe();
+		
+		if(fds[1].revents & POLLIN)
+			process_network();
+		
+		if(fds[2].revents & POLLIN)
+			process_console_pipe();
+	}
+}
+
+
+/*
+void main_thread()
+{
 	int epoll_fd = epoll_create(3);
 	
 	struct epoll_event ev;
@@ -319,3 +352,4 @@ void main_thread()
 		}
 	}
 }
+*/

@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/epoll.h>
+#include <sys/poll.h>
 
 #include <arpa/inet.h>
 
@@ -1234,6 +1235,52 @@ void network_alarm()
 
 void *network_thread(void *a)
 {
+	struct pollfd *fds;
+	int fdcount;
+	
+	fdcount = 3;
+	
+	fds = calloc(sizeof(struct pollfd), fdcount);
+	
+	fds[0].fd = udp_fd; fds[0].events |= POLLIN;
+	fds[1].fd = net_timer_fd; fds[1].events |= POLLIN;
+	fds[2].fd = net_kill_pipe[0]; fds[2].events |= POLLIN;
+	
+
+	while(1)
+	{
+		if(poll(fds, fdcount, -1) == -1)
+			return NULL;
+
+		if(fds[0].revents & POLLIN)
+		{			
+			pthread_mutex_lock(&net_mutex);
+			process_udp_data();
+			pthread_mutex_unlock(&net_mutex);
+		}
+		
+		if(fds[1].revents & POLLIN)
+		{
+			pthread_mutex_lock(&net_mutex);
+			network_alarm();
+			pthread_mutex_unlock(&net_mutex);
+		}
+		
+		if(fds[2].revents & POLLIN)
+		{
+			if(all_connections_disconnected())
+			{
+				free(fds);
+				pthread_exit(NULL);
+			}
+		}
+	}
+}
+
+
+/*
+void *network_thread(void *a)
+{
 	int epoll_fd = epoll_create(3);
 	
 	struct epoll_event ev;
@@ -1274,6 +1321,7 @@ void *network_thread(void *a)
 		}
 	}
 }
+*/
 
 
 void send_cpacket(struct conn_t *conn)
