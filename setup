@@ -1,0 +1,27 @@
+#!/bin/bash
+
+export CFLAGS="-march=pentium3 -O2 -pipe -fomit-frame-pointer -falign-functions -fprefetch-loop-arrays"
+
+
+cd em-game
+
+aclocal-1.7
+automake-1.7
+autoconf-2.58
+./configure
+
+cd ../em-tools
+
+aclocal-1.7
+automake-1.7
+autoconf-2.58
+./configure
+
+cd ../misc
+
+aclocal-1.7
+automake-1.7
+autoconf-2.58
+./configure
+
+cd ../
