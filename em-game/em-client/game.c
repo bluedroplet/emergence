@@ -1628,6 +1628,9 @@ void process_detach_event(struct event_t *event)
 	if(!weapon->weapon_data.craft)
 		return;
 	
+	weapon->xvel = weapon->weapon_data.craft->xvel;
+	weapon->yvel = weapon->weapon_data.craft->yvel;
+	
 	if(weapon->weapon_data.craft->craft_data.left_weapon == weapon)
 		weapon->weapon_data.craft->craft_data.left_weapon = NULL;
 	else
