@@ -52,6 +52,7 @@ void init_text()
 	{
 		switch(i)
 		{
+		case ';':
 		case ':':
 		case '.':
 		case 'i':

@@ -618,6 +618,12 @@ char get_ascii(int key)
 		else
 			return '-';
 
+	case 0x27:
+		if(shift)
+			return ':';
+		else
+			return ';';
+
 	case 0x1e:
 		return 'a' - shift;
 
