@@ -130,6 +130,11 @@ void craft_telefragged(struct player_t *victim, struct player_t *telefragger);
 void propagate_colours(struct entity_t *entity);
 void respawn_weapon(struct entity_t *weapon);
 
+void update_player_shield_strengths(struct player_t *player);
+void update_player_ammo_levels(struct player_t *player);
+void propagate_weapon_stop_firing(struct entity_t *entity);
+
+
 void emit_teleport_to_all_players();
 void emit_speedup_to_all_players();
 void emit_explosion(float xdis, float ydis, float xvel, float yvel, float size, uint8_t magic, 
