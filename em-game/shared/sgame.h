@@ -331,6 +331,8 @@ extern struct teleporter_t *teleporter0;
 extern struct speedup_ramp_t *speedup_ramp0;
 extern struct gravity_well_t *gravity_well0;
 
+void clear_sgame();
+
 struct entity_t *new_entity(struct entity_t **entity0);
 struct entity_t *get_entity(struct entity_t *entity0, uint32_t index);
 void remove_entity(struct entity_t **entity0, struct entity_t *entity);

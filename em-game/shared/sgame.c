@@ -73,6 +73,16 @@ int nextentity = 0;
 #define ROCKET_THRUST_TIME 400
 
 
+void clear_sgame()
+{
+	LL_REMOVE_ALL(struct spawn_point_t, &spawn_point0);
+	LL_REMOVE_ALL(struct teleporter_t, &teleporter0);
+	LL_REMOVE_ALL(struct speedup_ramp_t, &speedup_ramp0);
+	LL_REMOVE_ALL(struct gravity_well_t, &gravity_well0);
+	nextentity = 0;
+}
+
+
 int read_spawn_point(gzFile file)
 {
 	struct spawn_point_t spawn_point;

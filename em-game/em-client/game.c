@@ -198,7 +198,6 @@ struct surface_t *s_plasma, *s_craft_shield, *s_weapon_shield;
 uint32_t game_conn;
 
 
-
 struct game_state_t
 {
 	uint32_t tick;
@@ -234,6 +233,33 @@ struct rail_trail_t
 	struct rail_trail_t *next;
 		
 } *rail_trail0;
+
+
+
+
+
+void clear_game()
+{
+	LL_REMOVE_ALL(struct event_t, &event0);
+	moving_view = 0;
+	
+	struct game_state_t *cgame_state = game_state0;
+		
+	while(cgame_state)
+	{
+		LL_REMOVE_ALL(struct entity_t, &cgame_state->entity0);
+		cgame_state = cgame_state->next;
+	}
+	
+	LL_REMOVE_ALL(struct entity_t, &last_known_game_state.entity0);
+	
+	LL_REMOVE_ALL(struct game_state_t, &game_state0);
+	
+	clear_sgame();
+	clear_floating_images();
+	clear_ticks();
+	clear_skins();
+}
 
 
 /*
@@ -669,6 +695,22 @@ void game_process_cookie_echoed()
 
 void game_process_connection(uint32_t conn)
 {
+	switch(game_state)
+	{
+	case GAMESTATE_DEAD:
+	case GAMESTATE_DEMO:
+		break;
+	
+	case GAMESTATE_CONNECTING:
+	case GAMESTATE_SPECTATING:
+	case GAMESTATE_PLAYING:
+		em_disconnect(game_conn);
+		break;
+	}
+	
+	clear_game();
+		
+	
 	game_state = GAMESTATE_CONNECTING;
 	game_conn = conn;
 	
@@ -681,16 +723,17 @@ void game_process_connection(uint32_t conn)
 
 void game_process_connection_failed()
 {
-	console_print("\n");
+	console_print("\nFailed to connect!\n");
 }
 
 
 void game_process_disconnection(uint32_t conn)
 {
-	game_state = GAMESTATE_DEAD;
+	if(conn == game_conn)
+		game_state = GAMESTATE_DEAD;
 	
 //	LL_REMOVE_ALL(struct entity_t, &entity0);
-//	game_state = GAMESTATE_DEAD;
+	
 	console_print("Disconnected!\n");
 }
 
@@ -698,7 +741,7 @@ void game_process_disconnection(uint32_t conn)
 void game_process_conn_lost(uint32_t conn)
 {
 	game_state = GAMESTATE_DEAD;
-	console_print("Connection lost.\n");
+	console_print("Connetion lost.\n");
 }
 
 
@@ -1590,8 +1633,12 @@ int game_process_message()
 }
 
 
-void game_process_stream_timed(uint32_t index, uint64_t *stamp, struct buffer_t *stream)
+void game_process_stream_timed(uint32_t conn, uint32_t index, 
+	uint64_t *stamp, struct buffer_t *stream)
 {
+	if(conn != game_conn)
+		return;
+	
 	message_reader.stream = stream;
 	
 	while(message_reader_new_message())
@@ -1616,8 +1663,11 @@ void game_process_stream_timed(uint32_t index, uint64_t *stamp, struct buffer_t 
 }
 
 
-void game_process_stream_untimed(uint32_t index, struct buffer_t *stream)
+void game_process_stream_untimed(uint32_t conn, uint32_t index, struct buffer_t *stream)
 {
+	if(conn != game_conn)
+		return;
+	
 	message_reader.stream = stream;
 	
 	while(message_reader_new_message())
@@ -1642,8 +1692,12 @@ void game_process_stream_untimed(uint32_t index, struct buffer_t *stream)
 }
 
 
-void game_process_stream_timed_ooo(uint32_t index, uint64_t *stamp, struct buffer_t *stream)
+void game_process_stream_timed_ooo(uint32_t conn, uint32_t index, 
+	uint64_t *stamp, struct buffer_t *stream)
 {
+	if(conn != game_conn)
+		return;
+	
 	message_reader.stream = stream;
 	
 	while(message_reader_new_message())
@@ -1662,8 +1716,11 @@ void game_process_stream_timed_ooo(uint32_t index, uint64_t *stamp, struct buffe
 }
 
 
-void game_process_stream_untimed_ooo(uint32_t index, struct buffer_t *stream)
+void game_process_stream_untimed_ooo(uint32_t conn, uint32_t index, struct buffer_t *stream)
 {
+	if(conn != game_conn)
+		return;
+	
 	message_reader.stream = stream;
 	
 	while(message_reader_new_message())

@@ -180,6 +180,32 @@ void reload_skins()
 }
 
 
+void clear_skins()
+{
+	struct skin_t *cskin = skin0;
+		
+	while(cskin)
+	{
+		free_surface(cskin->craft);
+		cskin->craft = NULL;
+		free_surface(cskin->rocket_launcher);
+		cskin->rocket_launcher = NULL;
+		free_surface(cskin->minigun);
+		cskin->minigun = NULL;
+		free_surface(cskin->plasma_cannon);
+		cskin->plasma_cannon = NULL;
+	/*	free_surface(cskin->plasma);
+		cskin->plasma = NULL;
+		free_surface(cskin->rocket);
+		cskin->rocket = NULL;
+	*/	
+		
+		cskin = cskin->next;
+	}
+	
+	LL_REMOVE_ALL(struct skin_t, &skin0);
+}
+
 struct surface_t *skin_get_craft_surface(uint32_t index)
 {
 	struct skin_t *skin = skin0;

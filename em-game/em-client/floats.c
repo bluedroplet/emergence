@@ -114,3 +114,17 @@ void render_floating_images()
 		cfloating_image = cfloating_image->next;
 	}
 }
+
+
+void clear_floating_images()
+{
+	struct floating_image_t *cfloating_image = floating_image0;
+	
+	while(cfloating_image)
+	{
+		free_surface(cfloating_image->surface);
+		cfloating_image = cfloating_image->next;
+	}
+	
+	LL_REMOVE_ALL(struct floating_image_t, &floating_image0);
+}

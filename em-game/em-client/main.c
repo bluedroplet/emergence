@@ -159,7 +159,7 @@ void process_network()
 			read(net_out_pipe[0], &stamp, 8);
 			read(net_out_pipe[0], &conn, 4);
 			read(net_out_pipe[0], &stream, 4);
-			game_process_stream_timed(index, &stamp, stream);
+			game_process_stream_timed(conn, index, &stamp, stream);
 			free_buffer(stream);
 			break;
 
@@ -167,7 +167,7 @@ void process_network()
 			read(net_out_pipe[0], &index, 4);
 			read(net_out_pipe[0], &conn, 4);
 			read(net_out_pipe[0], &stream, 4);
-			game_process_stream_untimed(index, stream);
+			game_process_stream_untimed(conn, index, stream);
 			free_buffer(stream);
 			break;
 
@@ -176,7 +176,7 @@ void process_network()
 			read(net_out_pipe[0], &stamp, 8);
 			read(net_out_pipe[0], &conn, 4);
 			read(net_out_pipe[0], &stream, 4);
-			game_process_stream_timed_ooo(index, &stamp, stream);
+			game_process_stream_timed_ooo(conn, index, &stamp, stream);
 			free_buffer(stream);
 			break;
 
@@ -184,7 +184,7 @@ void process_network()
 			read(net_out_pipe[0], &index, 4);
 			read(net_out_pipe[0], &conn, 4);
 			read(net_out_pipe[0], &stream, 4);
-			game_process_stream_untimed_ooo(index, stream);
+			game_process_stream_untimed_ooo(conn, index, stream);
 			free_buffer(stream);
 			break;
 		}

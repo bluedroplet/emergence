@@ -141,3 +141,11 @@ void init_tick_cvars()
 	create_cvar_float("tracking", &tracking, 0);
 	create_cvar_float("time_shift", &time_shift, 0);
 }
+
+
+void clear_ticks()
+{
+	next_table_entry = 0;
+	table_entries_used = 0;
+	different_ticks = 0;
+}

@@ -1,8 +1,10 @@
 #ifdef _INC_NFBUFFER
-void game_process_stream_timed(uint32_t index, uint64_t *stamp, struct buffer_t *stream);
-void game_process_stream_untimed(uint32_t index, struct buffer_t *stream);
-void game_process_stream_timed_ooo(uint32_t index, uint64_t *stamp, struct buffer_t *stream);
-void game_process_stream_untimed_ooo(uint32_t index, struct buffer_t *stream);
+void game_process_stream_timed(uint32_t conn, uint32_t index, 
+	uint64_t *stamp, struct buffer_t *stream);
+void game_process_stream_untimed(uint32_t conn, uint32_t index, struct buffer_t *stream);
+void game_process_stream_timed_ooo(uint32_t conn, uint32_t index, 
+	uint64_t *stamp, struct buffer_t *stream);
+void game_process_stream_untimed_ooo(uint32_t conn, uint32_t index, struct buffer_t *stream);
 #endif
 
 void game_resolution_change();
