@@ -67,6 +67,8 @@ pthread_mutex_t main_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void server_shutdown()
 {
+	pthread_mutex_unlock(&main_mutex);
+	
 	console_print("Shutting down...\n");
 
 	kill_servers();
