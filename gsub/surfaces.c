@@ -48,9 +48,7 @@
 void convert_alphafloats_to_alpha8bit_array(float *src, uint8_t *dst, int num)
 {
 	while(num--)
-	{
 		*dst++ = (uint8_t)(lround(*src++ * 255.0));
-	}
 }
 
 
@@ -80,11 +78,13 @@ void convert_floats_to_24bit_array(float *src, uint8_t *dst, int num)
 
 void convert_24bit_to_16bit_array(uint8_t *src, uint16_t *dst, int num)
 {
+	int r, d, q;
+	
 	while(num--)
 	{
-		int r = *src++ * 31;
-		int d = r / 255;
-		int q = r % 255;
+		r = *src++ * 31;
+		d = r / 255;
+		q = r % 255;
 
 		uint16_t o;
 
@@ -118,11 +118,13 @@ void convert_24bit_to_16bit_array(uint8_t *src, uint16_t *dst, int num)
 
 void convert_24bitpad8bit_to_16bit_array(uint8_t *src, uint16_t *dst, int num)
 {
+	int r, d, q;
+	
 	while(num--)
 	{
-		int r = *src++ * 31;
-		int d = r / 255;
-		int q = r % 255;
+		r = *src++ * 31;
+		d = r / 255;
+		q = r % 255;
 
 		uint16_t o;
 
@@ -169,11 +171,13 @@ void convert_24bitpad8bit_to_24bit_array(uint8_t *src, uint8_t *dst, int num)
 
 void convert_16bit_to_24bit_array(uint16_t *src, uint8_t *dst, int num)
 {
+	int r, d, q;
+	
 	while(num--)
 	{
-		int r = ((*src) >> 11) * 255;
-		int d = r / 31;
-		int q = r % 31;
+		r = ((*src) >> 11) * 255;
+		d = r / 31;
+		q = r % 31;
 
 		if(q < 16)
 			*dst++ = d;
@@ -215,18 +219,14 @@ void convert_24bit_to_floats_array(uint8_t *src, float *dst, int num)
 void convert_8bit_to_floats_array(uint8_t *src, float *dst, int num)
 {
 	while(num--)
-	{
 		*dst++ = (float)*src++ / 255.0;
-	}
 }
 
 
 void make_8bit_solid_array(uint8_t *dst, int num)
 {
 	while(num--)
-	{
-		*dst++ = 255;
-	}
+		*dst++ = 0xff;
 }
 
 
