@@ -52,7 +52,7 @@ struct in_packet_ll_t
 struct out_packet_ll_t
 {
 	struct packet_t packet;
-	double next_resend_time;
+	float next_resend_time;
 	int size;
 		
 	struct out_packet_ll_t *next;
@@ -61,7 +61,7 @@ struct out_packet_ll_t
 
 struct conn_cookie_t
 {
-	double expire_time;
+	float expire_time;
 	uint32_t cookie;
 	uint32_t ip;
 	uint16_t port;
@@ -88,7 +88,7 @@ struct conn_t
 	struct in_packet_ll_t *in_packet0;		// unprocessed received packets in index order
 	struct out_packet_ll_t *out_packet0;	// unacknowledged sent packets in index order
 	
-	double last_time;	// the time that the last ack was received or 
+	float last_time;	// the time that the last ack was received or 
 						// first packet in out_packet was sent if it was empty or
 						// the time the connection was disconnected
 	
@@ -289,7 +289,7 @@ int output_cpacket(struct conn_t *conn)
 
 	// get time
 		
-	double time = get_wall_time();
+	float time = get_wall_time();
 	
 	if(num_packets == 0)
 		conn->last_time = time;
@@ -1033,7 +1033,7 @@ void network_alarm()
 	char c;
 	while(read(net_timer_fd, &c, 1) != -1);
 
-	double time = get_wall_time();
+	float time = get_wall_time();
 	
 	
 	#ifdef EMSERVER
