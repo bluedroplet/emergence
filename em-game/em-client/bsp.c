@@ -14,8 +14,10 @@
 
 void draw_bsp_node(struct bspnode_t *node)
 {
-	draw_world_clipped_line(node->x1 + node->dtstart * (node->x2 - node->x1), node->y1 + node->dtstart * (node->y2 - node->y1), 
-		node->x1 + node->dtend * (node->x2 - node->x1), node->y1 + node->dtend * (node->y2 - node->y1));
+	draw_world_clipped_line(node->x1 + node->dtstart * (node->x2 - node->x1), 
+		node->y1 + node->dtstart * (node->y2 - node->y1), 
+		node->x1 + node->dtend * (node->x2 - node->x1), 
+		node->y1 + node->dtend * (node->y2 - node->y1));
 
 	if(node->front)
 		draw_bsp_node(node->front);

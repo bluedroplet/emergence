@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <math.h>
+#include <stdio.h>
 
 #include "../common/types.h"
 #include "../gsub/gsub.h"
@@ -28,12 +29,12 @@ void draw_world_clipped_line(float x1, float y1, float x2, float y2)
 	
 	double zoom = ((double)(vid_width) / 1600.0);
 	
-	double left = (-vid_width / 2 + 0.5) / zoom + viewx;
-	double bottom = (-vid_height / 2 + 0.5) / zoom + viewy;
+	double left = (-(int)vid_width / 2 + 0.5) / zoom + viewx;
+	double bottom = (-(int)vid_height / 2 + 0.5) / zoom + viewy;
 	
 	double right = (vid_width / 2 - 0.5) / zoom + viewx;
 	double top = (vid_height / 2 - 0.5) / zoom + viewy;
-
+	
 	if((y2 < bottom) || (y1 > top))
 		return;
 	
