@@ -2890,7 +2890,11 @@ void map(char *args)
 			
 		clear_game();
 		LL_REMOVE_ALL(struct pickup_spawn_point_t, &pickup_spawn_point0);
-	}		
+		LL_REMOVE_ALL(struct spawn_point_t, &spawn_point0);
+		LL_REMOVE_ALL(struct teleporter_t, &teleporter0);
+		LL_REMOVE_ALL(struct speedup_ramp_t, &speedup_ramp0);
+		LL_REMOVE_ALL(struct gravity_well_t, &gravity_well0);
+	}
 	
 	mapname = new_string_text(args);
 	
