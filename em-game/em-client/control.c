@@ -135,13 +135,13 @@ struct
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
+	{"up",			NULL,	prev_command},
 	{"",			NULL,	NULL},
+	{"left",		NULL,	NULL},
 	{"",			NULL,	NULL},
+	{"right",		NULL,	NULL},
 	{"",			NULL,	NULL},
-	{"",			NULL,	NULL},
-	{"",			NULL,	NULL},
-	{"",			NULL,	NULL},
-	{"",			NULL,	NULL},
+	{"down",		NULL,	next_command},
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
@@ -246,15 +246,19 @@ struct
 	{"pause",		NULL,	NULL},
 	{"",			NULL,	NULL},
 	{"home",		NULL,	NULL},
-	{"up",			NULL,	prev_command},
+//	{"up",			NULL,	prev_command},
+	{"",			NULL,	prev_command},
 	{"pgup",		NULL,	NULL},
 	{"",			NULL,	NULL},
-	{"left",		NULL,	NULL},
+//	{"left",		NULL,	NULL},
 	{"",			NULL,	NULL},
-	{"right",		NULL,	NULL},
+	{"",			NULL,	NULL},
+//	{"right",		NULL,	NULL},
+	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
 	{"end",			NULL,	NULL},
-	{"down",		NULL,	next_command},
+//	{"down",		NULL,	next_command},
+	{"",			NULL,	next_command},
 	{"pgdn",		NULL,	NULL},
 	{"insert",		NULL,	NULL},
 	{"delete",		NULL,	NULL},
@@ -700,6 +704,8 @@ void process_keypress(uint32_t key, int state)
 		func = controls[key].func;
 		if(func)
 			func(state);
+	//	else
+	//		console_print("%u\n", key);
 	}
 	
 	if(key == 42 || key == 54)
