@@ -1,4 +1,4 @@
-OBJECTS = smallfont.png default-controls.config
+OBJECTS = smallfont.png default-controls.config default-autoexec
 
 sharedatadir = $(datadir)/emergence/em-client
 
