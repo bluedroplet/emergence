@@ -872,7 +872,7 @@ void draw_nodes()
 		world_to_screen(cnode->x, cnode->y, &x, &y);
 		params.dest_x = x - 3;
 		params.dest_y = y - 3;
-		alpha_surface_blit_surface(&params);
+		blit_surface(&params);
 
 		cnode = cnode->next;
 	}
@@ -888,7 +888,7 @@ void draw_nodes()
 		world_to_screen(cnodep->node->x, cnodep->node->y, &x, &y);
 		params.dest_x = x - 11;
 		params.dest_y = y - 11;
-		alpha_surface_blit_surface(&params);
+		blit_surface(&params);
 		
 		cnodep = cnodep->next;
 	}
@@ -939,7 +939,7 @@ void draw_sats()
 	
 				params.dest_x = x - 3;
 				params.dest_y = y - 3;
-				alpha_surface_blit_surface(&params);
+				blit_surface(&params);
 			}
 		}
 
@@ -979,7 +979,7 @@ void draw_width_sats()
 
 			params.dest_x = x - 3;
 			params.dest_y = y - 3;
-			alpha_surface_blit_surface(&params);
+			blit_surface(&params);
 		}
 	
 		cnode = cnode->next;
@@ -989,9 +989,9 @@ void draw_width_sats()
 
 void init_nodes()
 {
-	s_node = read_png_surface_as_16bitalpha8bit(PKGDATADIR "/em-edit/node.png");
-	s_vectsat = read_png_surface_as_16bitalpha8bit(PKGDATADIR "/em-edit/vect-sat.png");
-	s_widthsat = read_png_surface_as_16bitalpha8bit(PKGDATADIR "/em-edit/width-sat.png");
+	s_node = read_png_surface(PKGDATADIR "/em-edit/node.png");
+	s_vectsat = read_png_surface(PKGDATADIR "/em-edit/vect-sat.png");
+	s_widthsat = read_png_surface(PKGDATADIR "/em-edit/width-sat.png");
 }
 
 

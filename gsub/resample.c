@@ -45,11 +45,8 @@
 #endif
 
 
-struct surface_t *resizea(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+struct surface_t *resize_a8(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
 {
-	if(src_texture->flags != SURFACE_ALPHA8BIT)
-		return NULL;
-
 	struct surface_t *dst_texture = new_surface(SURFACE_ALPHA8BIT, dst_width, dst_height);
 	if(!dst_texture)
 		return NULL;
@@ -113,7 +110,7 @@ struct surface_t *resizea(struct surface_t *src_texture, int dst_width, int dst_
 			int min_src_x = min_src_xs[dst_x];
 			int max_src_x = max_src_xs[dst_x];
 			
-			uint8_t *src = &((uint8_t*)src_texture->alpha_buf)[min_src_y * src_texture->width + min_src_x];
+			uint8_t *src = get_pixel_addr(src_texture, min_src_x, min_src_y);
 			int addon = src_texture->width - (max_src_x - min_src_x + 1);
 			
 			for(src_y = min_src_y; src_y <= max_src_y; src_y++)
@@ -157,11 +154,120 @@ struct surface_t *resizea(struct surface_t *src_texture, int dst_width, int dst_
 }
 
 
-struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+struct surface_t *resize_888(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
 {
-	if(src_texture->flags != SURFACE_16BIT)
+	struct surface_t *dst_texture = new_surface(SURFACE_24BIT, dst_width, dst_height);
+	if(!dst_texture)
 		return NULL;
 
+	int dst_y, dst_x, src_y, src_x;
+	
+	double height_ratio = (double)dst_height / (double)src_texture->height;
+	
+	double *src_ys = malloc(sizeof(double) * (src_texture->height + 1));
+	
+	for(src_y = 0; src_y <= src_texture->height; src_y++)
+		src_ys[src_y] = (double)src_y * height_ratio;
+		
+
+	double width_ratio = (double)dst_width / (double)src_texture->width;
+	
+	double *src_xs = malloc(sizeof(double) * (src_texture->width + 1));
+	
+	for(src_x = 0; src_x <= src_texture->width; src_x++)
+		src_xs[src_x] = (double)src_x * width_ratio;
+	
+	
+	int *min_src_xs = malloc(sizeof(int) * dst_width);
+	int *max_src_xs = malloc(sizeof(int) * dst_width);
+	
+	for(dst_x = 0; dst_x < dst_width; dst_x++)
+	{
+		min_src_xs[dst_x] = (dst_x * src_texture->width) / dst_width;
+		
+		int w = (dst_x + 1) * src_texture->width;
+		
+		if(w % dst_width)
+			max_src_xs[dst_x] = w / dst_width;
+		else
+			max_src_xs[dst_x] = w / dst_width - 1;
+	}
+	
+	uint8_t *dst = dst_texture->buf;
+
+	
+	for(dst_y = 0; dst_y < dst_height; dst_y++)
+	{
+		double dy1 = (double)dst_y;
+		double dy2 = (double)(dst_y + 1);
+		
+		int min_src_y = (dst_y * src_texture->height) / dst_height;
+		int max_src_y;
+		int w = (dst_y + 1) * src_texture->height;
+		if(w % dst_height)
+			max_src_y = w / dst_height;
+		else
+			max_src_y = w / dst_height - 1;
+		
+		for(dst_x = 0; dst_x < dst_width; dst_x++)
+		{
+			double red = 0.0, green = 0.0, blue = 0.0;
+			
+			double dx1 = (double)dst_x;
+			double dx2 = (double)(dst_x + 1);
+			
+			int min_src_x = min_src_xs[dst_x];
+			int max_src_x = max_src_xs[dst_x];
+			
+			uint8_t *src = get_pixel_addr(src_texture, min_src_x, min_src_y);
+			int addon = src_texture->pitch - (max_src_x - min_src_x + 1) * 3;
+			
+			for(src_y = min_src_y; src_y <= max_src_y; src_y++)
+			{
+				for(src_x = min_src_x; src_x <= max_src_x; src_x++)
+				{
+					double area = (max(dx1, src_xs[src_x]) - min(dx2, src_xs[src_x + 1])) * (max(dy1, src_ys[src_y]) - min(dy2, src_ys[src_y + 1]));
+					
+					red += area * get_double_from_8(src[0]);
+					green += area * get_double_from_8(src[1]);
+					blue += area * get_double_from_8(src[2]);
+					
+					src += 3;
+				}
+				
+				src += addon;
+			}
+			
+			*dst++ = convert_double_to_8bit(red);
+			*dst++ = convert_double_to_8bit(green);
+			*dst++ = convert_double_to_8bit(blue);
+		}
+		
+		if(callback)
+		{
+			if(callback())
+			{
+				free(src_ys);
+				free(src_xs);
+				free(min_src_xs);
+				free(max_src_xs);
+				free_surface(dst_texture);
+				return NULL;
+			}
+		}
+	}
+	
+	free(src_ys);
+	free(src_xs);
+	free(min_src_xs);
+	free(max_src_xs);
+	
+	return dst_texture;
+}
+
+
+struct surface_t *resize_565(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+{
 	struct surface_t *dst_texture = new_surface(SURFACE_16BIT, dst_width, dst_height);
 	if(!dst_texture)
 		return NULL;
@@ -225,7 +331,7 @@ struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_h
 			int min_src_x = min_src_xs[dst_x];
 			int max_src_x = max_src_xs[dst_x];
 			
-			uint16_t *src = &((uint16_t*)src_texture->buf)[min_src_y * src_texture->width + min_src_x];
+			uint16_t *src = get_pixel_addr(src_texture, min_src_x, min_src_y);
 			int addon = src_texture->width - (max_src_x - min_src_x + 1);
 			
 			for(src_y = min_src_y; src_y <= max_src_y; src_y++)
@@ -270,14 +376,140 @@ struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_h
 }
 
 
-struct surface_t *resize_16bitalpha8bit(struct surface_t *src_texture, int dst_width, int dst_height)
+struct surface_t *resize_888a8(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
 {
-	if(!src_texture)
-		return NULL;
-	
-	if(src_texture->flags != SURFACE_16BITALPHA8BIT)
+	struct surface_t *dst_texture = new_surface(SURFACE_24BITALPHA8BIT, dst_width, dst_height);
+	if(!dst_texture)
 		return NULL;
 
+	int dst_y, dst_x, src_y, src_x;
+	
+	double height_ratio = (double)dst_height / (double)src_texture->height;
+	
+	double *src_ys = malloc(sizeof(double) * (src_texture->height + 1));
+	
+	for(src_y = 0; src_y <= src_texture->height; src_y++)
+		src_ys[src_y] = (double)src_y * height_ratio;
+		
+
+	double width_ratio = (double)dst_width / (double)src_texture->width;
+	
+	double *src_xs = malloc(sizeof(double) * (src_texture->width + 1));
+	
+	for(src_x = 0; src_x <= src_texture->width; src_x++)
+		src_xs[src_x] = (double)src_x * width_ratio;
+	
+	
+	int *min_src_xs = malloc(sizeof(int) * dst_width);
+	int *max_src_xs = malloc(sizeof(int) * dst_width);
+	
+	for(dst_x = 0; dst_x < dst_width; dst_x++)
+	{
+		min_src_xs[dst_x] = (dst_x * src_texture->width) / dst_width;
+		
+		int w = (dst_x + 1) * src_texture->width;
+		
+		if(w % dst_width)
+			max_src_xs[dst_x] = w / dst_width;
+		else
+			max_src_xs[dst_x] = w / dst_width - 1;
+	}
+	
+	if(gsub_callback)
+	{
+		if(gsub_callback())
+		{
+			free(src_ys);
+			free(src_xs);
+			free(min_src_xs);
+			free(max_src_xs);
+			free_surface(dst_texture);
+			return NULL;
+		}
+	}
+	
+	uint8_t *dst = dst_texture->buf;
+	uint8_t *alpha_dst = dst_texture->alpha_buf;
+
+	
+	for(dst_y = 0; dst_y < dst_height; dst_y++)
+	{
+		double dy1 = (double)dst_y;
+		double dy2 = (double)(dst_y + 1);
+		
+		int min_src_y = (dst_y * src_texture->height) / dst_height;
+		int max_src_y;
+		int w = (dst_y + 1) * src_texture->height;
+		if(w % dst_height)
+			max_src_y = w / dst_height;
+		else
+			max_src_y = w / dst_height - 1;
+		
+		for(dst_x = 0; dst_x < dst_width; dst_x++)
+		{
+			double red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0;
+			
+			double dx1 = (double)dst_x;
+			double dx2 = (double)(dst_x + 1);
+			
+			int min_src_x = min_src_xs[dst_x];
+			int max_src_x = max_src_xs[dst_x];
+			
+			uint8_t *src = get_pixel_addr(src_texture, min_src_x, min_src_y);
+			uint8_t *alpha_src = get_alpha_pixel_addr(src_texture, min_src_x, min_src_y);
+			int addon = src_texture->pitch - (max_src_x - min_src_x + 1) * 3;
+			int alpha_addon = src_texture->alpha_pitch - (max_src_x - min_src_x + 1);
+			
+			for(src_y = min_src_y; src_y <= max_src_y; src_y++)
+			{
+				for(src_x = min_src_x; src_x <= max_src_x; src_x++)
+				{
+					double area = (max(dx1, src_xs[src_x]) - min(dx2, src_xs[src_x + 1])) * (max(dy1, src_ys[src_y]) - min(dy2, src_ys[src_y + 1]));
+					
+					red += area * get_double_from_8(src[0]) * get_double_from_8(*alpha_src);
+					green += area * get_double_from_8(src[1]) * get_double_from_8(*alpha_src);
+					blue += area * get_double_from_8(src[2]) * get_double_from_8(*alpha_src);
+					alpha += area * get_double_from_8(*alpha_src);
+					
+					src += 3;
+					alpha_src++;
+				}
+				
+				src += addon;
+				alpha_src += alpha_addon;
+			}
+			
+			*dst++ = convert_double_to_8bit(red / alpha);
+			*dst++ = convert_double_to_8bit(green / alpha);
+			*dst++ = convert_double_to_8bit(blue / alpha);
+			*alpha_dst++ = convert_double_to_8bit(alpha);
+		}
+		
+		if(gsub_callback)
+		{
+			if(gsub_callback())
+			{
+				free(src_ys);
+				free(src_xs);
+				free(min_src_xs);
+				free(max_src_xs);
+				free_surface(dst_texture);
+				return NULL;
+			}
+		}
+	}
+	
+	free(src_ys);
+	free(src_xs);
+	free(min_src_xs);
+	free(max_src_xs);
+	
+	return dst_texture;
+}
+
+
+struct surface_t *resize_565a8(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+{
 	struct surface_t *dst_texture = new_surface(SURFACE_16BITALPHA8BIT, dst_width, dst_height);
 	if(!dst_texture)
 		return NULL;
@@ -355,8 +587,8 @@ struct surface_t *resize_16bitalpha8bit(struct surface_t *src_texture, int dst_w
 			int min_src_x = min_src_xs[dst_x];
 			int max_src_x = max_src_xs[dst_x];
 			
-			uint16_t *src = &((uint16_t*)src_texture->buf)[min_src_y * src_texture->width + min_src_x];
-			uint8_t *alpha_src = &((uint8_t*)src_texture->alpha_buf)[min_src_y * src_texture->width + min_src_x];
+			uint16_t *src = get_pixel_addr(src_texture, min_src_x, min_src_y);
+			uint8_t *alpha_src = get_alpha_pixel_addr(src_texture, min_src_x, min_src_y);
 			int addon = src_texture->width - (max_src_x - min_src_x + 1);
 			
 			for(src_y = min_src_y; src_y <= max_src_y; src_y++)
@@ -486,6 +718,33 @@ struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_h
 	return dst_texture;
 }
 */
+
+
+struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+{
+	if(!src_texture)
+		return NULL;
+	
+	if(src_texture->width == dst_width && src_texture->height == dst_height)
+		return duplicate_surface(src_texture);
+	
+	switch(src_texture->flags)
+	{
+	case SURFACE_24BIT:
+		return resize_888(src_texture, dst_width, dst_height, callback);
+	
+	case SURFACE_24BITALPHA8BIT:
+		return resize_888a8(src_texture, dst_width, dst_height, callback);
+	
+	case SURFACE_16BIT:
+		return resize_565(src_texture, dst_width, dst_height, callback);
+		
+	case SURFACE_16BITALPHA8BIT:
+		return resize_565a8(src_texture, dst_width, dst_height, callback);
+	}
+	
+	return duplicate_surface(src_texture);
+}
 
 
 struct surface_t *crap_resize(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())

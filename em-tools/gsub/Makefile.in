@@ -108,7 +108,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-AM_CPPFLAGS = -DLINUX  -DPKGDATADIR=\""$(datadir)/emergence/"\"
+AM_CPPFLAGS = -DLINUX  -Wall -DPKGDATADIR=\""$(datadir)/emergence/"\"
 
 noinst_LIBRARIES = libgsub.a
 libgsub_a_SOURCES = alpha_pixel_plot_x86.S convert_16bit_to_32bit_mmx.S \

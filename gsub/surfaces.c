@@ -725,7 +725,7 @@ void convert_surface_to_floatsalphafloats(struct surface_t* surface)
 }
 
 
-struct surface_t *duplicate_surface(struct surface_t *in)
+struct surface_t *duplicate_surface(struct surface_t *in)	// doesn't take account of pitch
 {
 	if(!in)
 		return NULL;

@@ -62,17 +62,7 @@ struct surface_t
 
 struct blit_params_t
 {
-	union
-	{
-		struct
-		{
-			uint8_t red, green, blue;
-			
-		} colour24;
-		
-		uint16_t colour16;
-	};
-	
+	uint8_t red, green, blue;
 	uint8_t alpha;
 	
 	struct surface_t *source;
@@ -172,20 +162,18 @@ extern uint16_t *vid_bluealphalookup;
 
 
 void plot_pixel(struct blit_params_t *params);
-void draw_rect(struct blit_params_t *params);
 void plot_alpha_pixel(struct blit_params_t *params);
-void blit_partial_surface(struct blit_params_t *params);
-void blit_surface(struct blit_params_t *params);
+void draw_rect(struct blit_params_t *params);
+void draw_alpha_rect(struct blit_params_t *params);
+void alpha_surface_blit(struct blit_params_t *params);
 void blit_partial_alpha_surface(struct blit_params_t *params);
 void blit_alpha_surface(struct blit_params_t *params);
-void alpha_blit_partial_alpha_surface(struct blit_params_t *params);
-void alpha_blit_alpha_surface(struct blit_params_t *params);
+void surface_alpha_blit(struct blit_params_t *params);
 void alpha_blit_partial_surface(struct blit_params_t *params);
 void alpha_blit_surface(struct blit_params_t *params);
-void alpha_surface_blit_partial_surface(struct blit_params_t *params);
-void alpha_surface_blit_surface(struct blit_params_t *params);
-
-
+void surface_blit(struct blit_params_t *params);
+void blit_partial_surface(struct blit_params_t *params);
+void blit_surface(struct blit_params_t *params);
 
 
 // text.cpp
@@ -204,9 +192,6 @@ void draw_line(struct blit_params_t *params);
 
 
 struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)());
-struct surface_t *resizea(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)());
-struct surface_t *crap_resize(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)());
-struct surface_t *resize_16bitalpha8bit(struct surface_t *src_texture, int dst_width, int dst_height);
 struct surface_t *rotate_surface(struct surface_t *in_surface, int scale_width, int scale_height, double theta);
 
 

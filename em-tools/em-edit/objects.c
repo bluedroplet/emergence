@@ -1792,7 +1792,7 @@ void draw_objects()
 					params.source = s_spawn_point_placeholder;
 					params.dest_x = x - s_spawn_point_placeholder->width / 2;
 					params.dest_y = y - s_spawn_point_placeholder->height / 2;
-					alpha_surface_blit_surface(&params);
+					blit_surface(&params);
 				}
 				break;
 			
@@ -1805,7 +1805,7 @@ void draw_objects()
 					params.source = s_teleporter_placeholder;
 					params.dest_x = x - s_teleporter_placeholder->width / 2;
 					params.dest_y = y - s_teleporter_placeholder->height / 2;
-					alpha_surface_blit_surface(&params);
+					blit_surface(&params);
 				}
 				break;
 			
@@ -1818,7 +1818,7 @@ void draw_objects()
 					params.source = s_gravity_well_placeholder;
 					params.dest_x = x - s_gravity_well_placeholder->width / 2;
 					params.dest_y = y - s_gravity_well_placeholder->height / 2;
-					alpha_surface_blit_surface(&params);
+					blit_surface(&params);
 				}
 				break;
 			
@@ -1829,7 +1829,7 @@ void draw_objects()
 					params.source = object->texture_surface;
 					params.dest_x = x - object->texture_surface->width / 2;
 					params.dest_y = y - object->texture_surface->height / 2;
-					alpha_surface_blit_surface(&params);
+					blit_surface(&params);
 				}
 				break;
 			}
@@ -1847,7 +1847,7 @@ void draw_objects()
 					params.source = s_scaled_spawn_point_placeholder;
 					params.dest_x = x - s_scaled_spawn_point_placeholder->width / 2;
 					params.dest_y = y - s_scaled_spawn_point_placeholder->height / 2;
-					alpha_surface_blit_surface(&params);
+					blit_surface(&params);
 				}
 				break;
 			
@@ -1860,7 +1860,7 @@ void draw_objects()
 					params.source = s_scaled_teleporter_placeholder;
 					params.dest_x = x - s_scaled_teleporter_placeholder->width / 2;
 					params.dest_y = y - s_scaled_teleporter_placeholder->height / 2;
-					alpha_surface_blit_surface(&params);
+					blit_surface(&params);
 				}
 				break;
 			
@@ -1873,7 +1873,7 @@ void draw_objects()
 					params.source = s_scaled_gravity_well_placeholder;
 					params.dest_x = x - s_scaled_gravity_well_placeholder->width / 2;
 					params.dest_y = y - s_scaled_gravity_well_placeholder->height / 2;
-					alpha_surface_blit_surface(&params);
+					blit_surface(&params);
 				}
 				break;
 			
@@ -1884,7 +1884,7 @@ void draw_objects()
 					params.source = object->scaled_texture_surface;
 					params.dest_x = x - object->scaled_texture_surface->width / 2;
 					params.dest_y = y - object->scaled_texture_surface->height / 2;
-					alpha_surface_blit_surface(&params);
+					blit_surface(&params);
 				}
 				break;
 			}
@@ -1902,7 +1902,7 @@ void draw_objects()
 		world_to_screen(cobjectp->object->x, cobjectp->object->y, &x, &y);
 		params.dest_x = x - 11;
 		params.dest_y = y - 11;
-		alpha_surface_blit_surface(&params);
+		blit_surface(&params);
 		
 		cobjectp = cobjectp->next;
 	}
@@ -2395,23 +2395,23 @@ void delete_all_objects()
 
 void init_objects()
 {
-	s_unowned_plasma_cannon = read_png_surface_as_24bitalpha8bit(PKGDATADIR 
+	s_unowned_plasma_cannon = read_png_surface(PKGDATADIR 
 		"/stock-object-textures/unowned-plasma-cannon.png");
-	s_unowned_minigun = read_png_surface_as_24bitalpha8bit(PKGDATADIR 
+	s_unowned_minigun = read_png_surface(PKGDATADIR 
 		"/stock-object-textures/unowned-minigun.png");
-	s_unowned_rocket_launcher = read_png_surface_as_24bitalpha8bit(PKGDATADIR 
+	s_unowned_rocket_launcher = read_png_surface(PKGDATADIR 
 		"/stock-object-textures/unowned-rocket-launcher.png");
 		
-	s_rails = read_png_surface_as_24bitalpha8bit(PKGDATADIR 
+	s_rails = read_png_surface(PKGDATADIR 
 		"/stock-object-textures/rails.png");
 	s_shield_energy = read_png_surface(PKGDATADIR 
 		"/stock-object-textures/shield.png");
 	
-	s_spawn_point_placeholder = read_png_surface_as_16bitalpha8bit(PKGDATADIR 
+	s_spawn_point_placeholder = read_png_surface(PKGDATADIR 
 		"/em-edit/spawn-point-placeholder.png");
-	s_teleporter_placeholder = read_png_surface_as_16bitalpha8bit(PKGDATADIR 
+	s_teleporter_placeholder = read_png_surface(PKGDATADIR 
 		"/em-edit/teleporter-placeholder.png");
-	s_gravity_well_placeholder = read_png_surface_as_16bitalpha8bit(PKGDATADIR 
+	s_gravity_well_placeholder = read_png_surface(PKGDATADIR 
 		"/em-edit/gravity-well-placeholder.png");
 		
 	s_stock_speedup_ramp = read_png_surface(PKGDATADIR "/stock-speedup-ramp.png");
@@ -2593,6 +2593,7 @@ void resample_object()
 		}
 		break;
 	
+		
 	case OBJECTTYPE_MINIGUN:
 		
 		if(dynamic_objects[OBJECTTYPE_MINIGUN].non_default && dynamic_objects[OBJECTTYPE_MINIGUN].texture)
@@ -2607,6 +2608,7 @@ void resample_object()
 		}
 		break;
 	
+		
 	case OBJECTTYPE_ROCKETLAUNCHER:
 		
 		if(dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].non_default && dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture)
@@ -2621,6 +2623,7 @@ void resample_object()
 		}
 		break;
 	
+		
 	case OBJECTTYPE_RAILS:
 		
 		if(dynamic_objects[OBJECTTYPE_RAILS].non_default && dynamic_objects[OBJECTTYPE_RAILS].texture)
@@ -2635,6 +2638,7 @@ void resample_object()
 		}
 		break;
 	
+		
 	case OBJECTTYPE_SHIELDENERGY:
 		
 		if(dynamic_objects[OBJECTTYPE_SHIELDENERGY].non_default && dynamic_objects[OBJECTTYPE_SHIELDENERGY].texture)
@@ -2649,12 +2653,14 @@ void resample_object()
 		}
 		break;
 	
+		
 	case OBJECTTYPE_SPAWNPOINT:
 		working_object_surface = rotate_surface(working_object->spawn_point_data.texture_pre_surface, 
 			working_object->spawn_point_data.width, 
 			working_object->spawn_point_data.height,
 			working_object->spawn_point_data.angle);
 		break;
+	
 	
 	case OBJECTTYPE_SPEEDUPRAMP:
 	
@@ -2674,12 +2680,14 @@ void resample_object()
 		}
 		break;
 	
+		
 	case OBJECTTYPE_TELEPORTER:
 		working_object_surface = rotate_surface(working_object->teleporter_data.texture_pre_surface, 
 			working_object->teleporter_data.width, 
 			working_object->teleporter_data.height,
 			working_object->teleporter_data.angle);
 		break;
+	
 	
 	case OBJECTTYPE_GRAVITYWELL:
 		working_object_surface = rotate_surface(working_object->gravity_well_data.texture_pre_surface, 
@@ -2688,8 +2696,6 @@ void resample_object()
 			working_object->gravity_well_data.angle);
 		break;
 	}
-	
-	convert_surface_to_16bitalpha8bit(working_object_surface);
 }
 
 
@@ -2698,27 +2704,27 @@ void scale_object()
 	switch(object_scale_job)
 	{
 	case OBJECT_SCALE_JOB_SPAWN_POINT:
-		working_object_surface = resize_16bitalpha8bit(s_spawn_point_placeholder, 
+		working_object_surface = resize(s_spawn_point_placeholder, 
 			lround((double)s_spawn_point_placeholder->width * zoom), 
-			lround((double)s_spawn_point_placeholder->height * zoom));
+			lround((double)s_spawn_point_placeholder->height * zoom), NULL);
 		break;
 	
 	case OBJECT_SCALE_JOB_TELEPORTER:
-		working_object_surface = resize_16bitalpha8bit(s_teleporter_placeholder, 
+		working_object_surface = resize(s_teleporter_placeholder, 
 			lround((double)s_teleporter_placeholder->width * zoom), 
-			lround((double)s_teleporter_placeholder->height * zoom));
+			lround((double)s_teleporter_placeholder->height * zoom), NULL);
 		break;
 	
 	case OBJECT_SCALE_JOB_GRAVITY_WELL:
-		working_object_surface = resize_16bitalpha8bit(s_gravity_well_placeholder, 
+		working_object_surface = resize(s_gravity_well_placeholder, 
 			lround((double)s_gravity_well_placeholder->width * zoom), 
-			lround((double)s_gravity_well_placeholder->height * zoom));
+			lround((double)s_gravity_well_placeholder->height * zoom), NULL);
 		break;
 	
 	case OBJECT_SCALE_JOB_SPECIFIC:
-		working_object_surface = resize_16bitalpha8bit(working_object->texture_surface, 
+		working_object_surface = resize(working_object->texture_surface, 
 			lround(working_object->texture_surface->width * zoom), 
-			lround(working_object->texture_surface->height * zoom));
+			lround(working_object->texture_surface->height * zoom), NULL);
 		break;
 	}
 }

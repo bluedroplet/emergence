@@ -34,13 +34,339 @@
 #include "gsub.h"
 
 
-void draw_horiz_run(struct blit_params_t *params, uint16_t **dest, int xadvance, int runlength)
+void draw_horiz_run_888P8(struct blit_params_t *params, uint8_t **dest, int xadvance, int runlength)
+{
+	uint8_t *cdest = *dest;
+
+	while(runlength)
+	{
+		cdest[0] = params->blue;
+		cdest[1] = params->green;
+		cdest[2] = params->red;
+		cdest += xadvance;
+		runlength--;
+	}
+
+	*dest = cdest + params->dest->pitch;
+}
+
+
+void draw_vert_run_888P8(struct blit_params_t *params, uint8_t **dest, int xadvance, int runlength)
+{
+	uint8_t *cdest = *dest;
+
+	while(runlength)
+	{
+		cdest[0] = params->blue;
+		cdest[1] = params->green;
+		cdest[2] = params->red;
+		cdest += params->dest->pitch;
+		runlength--;
+	}
+	
+	*dest = cdest + xadvance;
+}
+
+
+void draw_line_888P8(struct blit_params_t *params)
+{
+	int i, adjup, adjdown, errorterm, xadvance, xdelta, ydelta, 
+		wholestep, initialpixelcount, finalpixelcount, runlength;
+
+	uint8_t *dest = get_pixel_addr(params->dest, params->x1, params->y1);
+
+	if((xdelta = params->x2 - params->x1) < 0)
+	{
+		xadvance = -4;
+		xdelta = -xdelta;
+	}
+	else
+	{
+		xadvance = 4;
+	}
+
+	ydelta = params->y2 - params->y1;
+
+	if(xdelta == 0)
+	{
+		for(i = 0; i <= ydelta; i++)
+		{
+			dest[0] = params->red;
+			dest[1] = params->green;
+			dest[2] = params->blue;
+			dest += params->dest->pitch;
+		}
+
+		return;
+	}
+
+	if(ydelta == 0)
+	{
+		for(i = 0; i <= xdelta; i++)
+		{
+			dest[0] = params->red;
+			dest[1] = params->green;
+			dest[2] = params->blue;
+			dest += xadvance;
+		}
+
+		return;
+	}
+
+	if(xdelta == ydelta)
+	{
+		for(i = 0; i <= xdelta; i++)
+		{
+			dest[0] = params->red;
+			dest[1] = params->green;
+			dest[2] = params->blue;
+			dest += xadvance + params->dest->pitch;
+		}
+
+		return;
+	}
+
+	if(xdelta >= ydelta)
+	{
+		wholestep = xdelta / ydelta;
+		adjup = (xdelta % ydelta) * 2;
+		adjdown = ydelta * 2;
+		errorterm = (xdelta % ydelta) - (ydelta * 2);
+		initialpixelcount = (wholestep / 2) + 1;
+		finalpixelcount = initialpixelcount;
+
+		if((adjup == 0) && ((wholestep & 1) == 0))
+			initialpixelcount--;
+
+		if((wholestep & 0x01) != 0)
+			errorterm += ydelta;
+
+		draw_horiz_run_888P8(params, &dest, xadvance, initialpixelcount);
+
+		for(i = 0; i < (ydelta - 1); i++)
+		{
+			runlength = wholestep;
+
+			if((errorterm += adjup) > 0)
+			{
+				runlength++;
+				errorterm -= adjdown;
+			}
+
+			draw_horiz_run_888P8(params, &dest, xadvance, runlength);
+		}
+
+		draw_horiz_run_888P8(params, &dest, xadvance, finalpixelcount);
+
+		return;
+	}
+	else
+	{
+		wholestep = ydelta / xdelta;
+		adjup = (ydelta % xdelta) * 2;
+		adjdown = xdelta * 2;
+		errorterm = (ydelta % xdelta) - (xdelta * 2);
+		initialpixelcount = (wholestep / 2) + 1;
+		finalpixelcount = initialpixelcount;
+
+		if((adjup == 0) && ((wholestep & 1) == 0))
+			initialpixelcount--;
+
+		if((wholestep & 0x01) != 0)
+			errorterm += xdelta;
+
+		draw_vert_run_888P8(params, &dest, xadvance, initialpixelcount);
+
+		for(i = 0; i < (xdelta - 1); i++)
+		{
+			runlength = wholestep;
+
+			if((errorterm += adjup) > 0)
+			{
+				runlength++;
+				errorterm -= adjdown;
+			}
+
+			draw_vert_run_888P8(params, &dest, xadvance, runlength);
+		}
+
+		draw_vert_run_888P8(params, &dest, xadvance, finalpixelcount);			
+
+		return;
+	}
+}
+
+
+void draw_horiz_run_888(struct blit_params_t *params, uint8_t **dest, int xadvance, int runlength)
+{
+	uint8_t *cdest = *dest;
+
+	while(runlength)
+	{
+		cdest[0] = params->red;
+		cdest[1] = params->green;
+		cdest[2] = params->blue;
+		cdest += xadvance;
+		runlength--;
+	}
+
+	*dest = cdest + params->dest->pitch;
+}
+
+
+void draw_vert_run_888(struct blit_params_t *params, uint8_t **dest, int xadvance, int runlength)
+{
+	uint8_t *cdest = *dest;
+
+	while(runlength)
+	{
+		cdest[0] = params->red;
+		cdest[1] = params->green;
+		cdest[2] = params->blue;
+		cdest += params->dest->pitch;
+		runlength--;
+	}
+	
+	*dest = cdest + xadvance;
+}
+
+
+void draw_line_888(struct blit_params_t *params)
+{
+	int i, adjup, adjdown, errorterm, xadvance, xdelta, ydelta, 
+		wholestep, initialpixelcount, finalpixelcount, runlength;
+
+	uint8_t *dest = get_pixel_addr(params->dest, params->x1, params->y1);
+
+	if((xdelta = params->x2 - params->x1) < 0)
+	{
+		xadvance = -3;
+		xdelta = -xdelta;
+	}
+	else
+	{
+		xadvance = 3;
+	}
+
+	ydelta = params->y2 - params->y1;
+
+	if(xdelta == 0)
+	{
+		for(i = 0; i <= ydelta; i++)
+		{
+			dest[0] = params->red;
+			dest[1] = params->green;
+			dest[2] = params->blue;
+			dest += params->dest->pitch;
+		}
+
+		return;
+	}
+
+	if(ydelta == 0)
+	{
+		for(i = 0; i <= xdelta; i++)
+		{
+			dest[0] = params->red;
+			dest[1] = params->green;
+			dest[2] = params->blue;
+			dest += xadvance;
+		}
+
+		return;
+	}
+
+	if(xdelta == ydelta)
+	{
+		for(i = 0; i <= xdelta; i++)
+		{
+			dest[0] = params->red;
+			dest[1] = params->green;
+			dest[2] = params->blue;
+			dest += xadvance + params->dest->pitch;
+		}
+
+		return;
+	}
+
+	if(xdelta >= ydelta)
+	{
+		wholestep = xdelta / ydelta;
+		adjup = (xdelta % ydelta) * 2;
+		adjdown = ydelta * 2;
+		errorterm = (xdelta % ydelta) - (ydelta * 2);
+		initialpixelcount = (wholestep / 2) + 1;
+		finalpixelcount = initialpixelcount;
+
+		if((adjup == 0) && ((wholestep & 1) == 0))
+			initialpixelcount--;
+
+		if((wholestep & 0x01) != 0)
+			errorterm += ydelta;
+
+		draw_horiz_run_888(params, &dest, xadvance, initialpixelcount);
+
+		for(i = 0; i < (ydelta - 1); i++)
+		{
+			runlength = wholestep;
+
+			if((errorterm += adjup) > 0)
+			{
+				runlength++;
+				errorterm -= adjdown;
+			}
+
+			draw_horiz_run_888(params, &dest, xadvance, runlength);
+		}
+
+		draw_horiz_run_888(params, &dest, xadvance, finalpixelcount);
+
+		return;
+	}
+	else
+	{
+		wholestep = ydelta / xdelta;
+		adjup = (ydelta % xdelta) * 2;
+		adjdown = xdelta * 2;
+		errorterm = (ydelta % xdelta) - (xdelta * 2);
+		initialpixelcount = (wholestep / 2) + 1;
+		finalpixelcount = initialpixelcount;
+
+		if((adjup == 0) && ((wholestep & 1) == 0))
+			initialpixelcount--;
+
+		if((wholestep & 0x01) != 0)
+			errorterm += xdelta;
+
+		draw_vert_run_888(params, &dest, xadvance, initialpixelcount);
+
+		for(i = 0; i < (xdelta - 1); i++)
+		{
+			runlength = wholestep;
+
+			if((errorterm += adjup) > 0)
+			{
+				runlength++;
+				errorterm -= adjdown;
+			}
+
+			draw_vert_run_888(params, &dest, xadvance, runlength);
+		}
+
+		draw_vert_run_888(params, &dest, xadvance, finalpixelcount);			
+
+		return;
+	}
+}
+
+
+void draw_horiz_run_565(struct blit_params_t *params, uint16_t **dest, int xadvance, int runlength)
 {
 	uint16_t *cdest = *dest;
 
 	while(runlength)
 	{
-		*cdest = params->colour16;
+//		*cdest = params->colour16;
 		cdest += xadvance;
 		runlength--;
 	}
@@ -49,13 +375,13 @@ void draw_horiz_run(struct blit_params_t *params, uint16_t **dest, int xadvance,
 }
 
 
-void draw_vert_run(struct blit_params_t *params, uint16_t **dest, int xadvance, int runlength)
+void draw_vert_run_565(struct blit_params_t *params, uint16_t **dest, int xadvance, int runlength)
 {
 	uint16_t *cdest = *dest;
 
 	while(runlength)
 	{
-		*cdest = params->colour16;
+//		*cdest = params->colour16;
 		(uint8_t*)cdest += params->dest->pitch;
 		runlength--;
 	}
@@ -64,10 +390,132 @@ void draw_vert_run(struct blit_params_t *params, uint16_t **dest, int xadvance, 
 }
 
 
+void draw_line_565(struct blit_params_t *params)
+{
+	int i, adjup, adjdown, errorterm, xadvance, xdelta, ydelta, 
+		wholestep, initialpixelcount, finalpixelcount, runlength;
+
+	uint16_t *dest = get_pixel_addr(params->dest, params->x1, params->y1);
+
+	if((xdelta = params->x2 - params->x1) < 0)
+	{
+		xadvance = -1;
+		xdelta = -xdelta;
+	}
+	else
+	{
+		xadvance = 1;
+	}
+
+	ydelta = params->y2 - params->y1;
+
+	if(xdelta == 0)
+	{
+		for(i = 0; i <= ydelta; i++)
+		{
+	//		*dest = params->colour16;
+			(uint8_t*)dest += params->dest->pitch;
+		}
+
+		return;
+	}
+
+	if(ydelta == 0)
+	{
+		for(i = 0; i <= xdelta; i++)
+		{
+	//		*dest = params->colour16;
+			dest += xadvance;
+		}
+
+		return;
+	}
+
+	if(xdelta == ydelta)
+	{
+		for(i = 0; i <= xdelta; i++)
+		{
+	//		*dest = params->colour16;
+			(uint8_t*)dest += xadvance * 2 + params->dest->pitch;
+		}
+
+		return;
+	}
+
+	if(xdelta >= ydelta)
+	{
+		wholestep = xdelta / ydelta;
+		adjup = (xdelta % ydelta) * 2;
+		adjdown = ydelta * 2;
+		errorterm = (xdelta % ydelta) - (ydelta * 2);
+		initialpixelcount = (wholestep / 2) + 1;
+		finalpixelcount = initialpixelcount;
+
+		if((adjup == 0) && ((wholestep & 1) == 0))
+			initialpixelcount--;
+
+		if((wholestep & 0x01) != 0)
+			errorterm += ydelta;
+
+		draw_horiz_run_565(params, &dest, xadvance, initialpixelcount);
+
+		for(i = 0; i < (ydelta - 1); i++)
+		{
+			runlength = wholestep;
+
+			if((errorterm += adjup) > 0)
+			{
+				runlength++;
+				errorterm -= adjdown;
+			}
+
+			draw_horiz_run_565(params, &dest, xadvance, runlength);
+		}
+
+		draw_horiz_run_565(params, &dest, xadvance, finalpixelcount);
+
+		return;
+	}
+	else
+	{
+		wholestep = ydelta / xdelta;
+		adjup = (ydelta % xdelta) * 2;
+		adjdown = xdelta * 2;
+		errorterm = (ydelta % xdelta) - (xdelta * 2);
+		initialpixelcount = (wholestep / 2) + 1;
+		finalpixelcount = initialpixelcount;
+
+		if((adjup == 0) && ((wholestep & 1) == 0))
+			initialpixelcount--;
+
+		if((wholestep & 0x01) != 0)
+			errorterm += xdelta;
+
+		draw_vert_run_565(params, &dest, xadvance, initialpixelcount);
+
+		for(i = 0; i < (xdelta - 1); i++)
+		{
+			runlength = wholestep;
+
+			if((errorterm += adjup) > 0)
+			{
+				runlength++;
+				errorterm -= adjdown;
+			}
+
+			draw_vert_run_565(params, &dest, xadvance, runlength);
+		}
+
+		draw_vert_run_565(params, &dest, xadvance, finalpixelcount);			
+
+		return;
+	}
+}
+
+
 void draw_line(struct blit_params_t *params)
 {
-	int temp, i, adjup, adjdown, errorterm, xadvance, xdelta, ydelta, 
-		wholestep, initialpixelcount, finalpixelcount, runlength;
+	int temp;
 
 	if(params->y1 > params->y2)
 	{
@@ -130,120 +578,17 @@ void draw_line(struct blit_params_t *params)
 		}
 	}
 
-	uint16_t *dest = get_pixel_addr(params->dest, params->x1, params->y1);
-
-	if((xdelta = params->x2 - params->x1) < 0)
+	switch(params->dest->flags)
 	{
-		xadvance = -1;
-		xdelta = -xdelta;
-	}
-	else
-	{
-		xadvance = 1;
-	}
+	case SURFACE_24BITPADDING8BIT:
+		return draw_line_888P8(params);
+		
+	case SURFACE_24BIT:
+	case SURFACE_24BITALPHA8BIT:
+		return draw_line_888(params);
 
-	ydelta = params->y2 - params->y1;
-
-	if(xdelta == 0)
-	{
-		for(i = 0; i <= ydelta; i++)
-		{
-			*dest = params->colour16;
-			(uint8_t*)dest += params->dest->pitch;
-		}
-
-		return;
-	}
-
-	if(ydelta == 0)
-	{
-		for(i = 0; i <= xdelta; i++)
-		{
-			*dest = params->colour16;
-			dest += xadvance;
-		}
-
-		return;
-	}
-
-	if(xdelta == ydelta)
-	{
-		for(i = 0; i <= xdelta; i++)
-		{
-			*dest = params->colour16;
-			(uint8_t*)dest += xadvance * 2 + params->dest->pitch;
-		}
-
-		return;
-	}
-
-	if(xdelta >= ydelta)
-	{
-		wholestep = xdelta / ydelta;
-		adjup = (xdelta % ydelta) * 2;
-		adjdown = ydelta * 2;
-		errorterm = (xdelta % ydelta) - (ydelta * 2);
-		initialpixelcount = (wholestep / 2) + 1;
-		finalpixelcount = initialpixelcount;
-
-		if((adjup == 0) && ((wholestep & 1) == 0))
-			initialpixelcount--;
-
-		if((wholestep & 0x01) != 0)
-			errorterm += ydelta;
-
-		draw_horiz_run(params, &dest, xadvance, initialpixelcount);
-
-		for(i = 0; i < (ydelta - 1); i++)
-		{
-			runlength = wholestep;
-
-			if((errorterm += adjup) > 0)
-			{
-				runlength++;
-				errorterm -= adjdown;
-			}
-
-			draw_horiz_run(params, &dest, xadvance, runlength);
-		}
-
-		draw_horiz_run(params, &dest, xadvance, finalpixelcount);
-
-		return;
-	}
-	else
-	{
-		wholestep = ydelta / xdelta;
-		adjup = (ydelta % xdelta) * 2;
-		adjdown = xdelta * 2;
-		errorterm = (ydelta % xdelta) - (xdelta * 2);
-		initialpixelcount = (wholestep / 2) + 1;
-		finalpixelcount = initialpixelcount;
-
-		if((adjup == 0) && ((wholestep & 1) == 0))
-			initialpixelcount--;
-
-		if((wholestep & 0x01) != 0)
-			errorterm += xdelta;
-
-		draw_vert_run(params, &dest, xadvance, initialpixelcount);
-
-		for(i = 0; i < (xdelta - 1); i++)
-		{
-			runlength = wholestep;
-
-			if((errorterm += adjup) > 0)
-			{
-				runlength++;
-				errorterm -= adjdown;
-			}
-
-			draw_vert_run(params, &dest, xadvance, runlength);
-		}
-
-		draw_vert_run(params, &dest, xadvance, finalpixelcount);			
-
-		return;
+	case SURFACE_16BIT:
+	case SURFACE_16BITALPHA8BIT:
+		return draw_line_565(params);
 	}
 }
-

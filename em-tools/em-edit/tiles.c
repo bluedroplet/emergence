@@ -536,7 +536,7 @@ void draw_tiles()
 			else
 				params.source = tile->scaled_surface;
 			
-			alpha_surface_blit_surface(&params);
+			blit_surface(&params);
 		}
 		
 		tile = tile->next;
@@ -1070,7 +1070,7 @@ void render_tile()
 	
 	if(out_surface != NULL)
 	{
-		convert_surface_to_16bitalpha8bit(out_surface);
+		convert_surface_to_24bitalpha8bit(out_surface);
 		surface_flip_vert(out_surface);
 	}
 
@@ -1127,7 +1127,7 @@ void scale_tiles()		// called from worker thread
 //			if(crap_zoom)
 				;//ctile->scaled_surface = crap_resize(ctile->surface, maxx - minx, maxy - miny, check_stop_callback);
 //			else
-				ctile->scaled_surface = resize_16bitalpha8bit(ctile->surface, maxx - minx, maxy - miny);
+				ctile->scaled_surface = resize(ctile->surface, maxx - minx, maxy - miny, NULL);
 			
 			if(!ctile->scaled_surface)
 				return;

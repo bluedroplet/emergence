@@ -226,7 +226,9 @@ void draw_world_clipped_line(double x1, double y1, double x2, double y2)
 
 	struct blit_params_t params;
 	params.dest = s_backbuffer;
-	params.colour16 = 0xffff;
+	params.red = 0xff;
+	params.green = 0xff;
+	params.blue = 0xff;
 	
 	world_to_screen(x1, y1, &params.x1, &params.y1);
 	world_to_screen(x2, y2, &params.x2, &params.y2);
@@ -2322,7 +2324,7 @@ void finished_defining_fill()
 
 void init_interface()
 {
-	s_select = read_png_surface_as_16bitalpha8bit(PKGDATADIR "/em-edit/select.png");
+	s_select = read_png_surface(PKGDATADIR "/em-edit/select.png");
 	init_nodes();
 	init_points();
 	init_objects();

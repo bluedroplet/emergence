@@ -106,7 +106,7 @@ void draw_cameron()
 
 void init_cameron()
 {
-	s_cameron = read_png_surface_as_16bit(PKGDATADIR "/em-edit/splash.png");
+	s_cameron = read_png_surface(PKGDATADIR "/em-edit/splash.png");
 	cameron_width = s_cameron->width;
 	cameron_height = s_cameron->height;
 }

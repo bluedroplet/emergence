@@ -86,7 +86,7 @@ int blit_text(int x, int y, uint16_t colour, char *text)
 {
 	struct blit_params_t params;
 
-	params.colour16 = colour;
+//	params.colour16 = colour;
 	params.source = smallfont;
 	
 	int w = 0;

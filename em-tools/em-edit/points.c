@@ -682,7 +682,7 @@ void draw_points()
 		world_to_screen(point->x, point->y, &x, &y);
 		params.dest_x = x - 2;
 		params.dest_y = y - 2;
-		alpha_surface_blit_surface(&params);
+		blit_surface(&params);
 
 		point = point->next;
 	}
@@ -691,7 +691,7 @@ void draw_points()
 
 void init_points()
 {
-	s_pointnode = read_png_surface_as_16bitalpha8bit(PKGDATADIR "/em-edit/point.png");
+	s_pointnode = read_png_surface(PKGDATADIR "/em-edit/point.png");
 }
 
 

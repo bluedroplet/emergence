@@ -71,7 +71,7 @@ void draw()
 
 	if(visual->depth == 24)
 	{
-		convert_16bit_to_32bit_mmx(image->mem, s_backbuffer->buf, vid_width * vid_height / 32);
+//		convert_16bit_to_32bit_mmx(image->mem, s_backbuffer->buf, vid_width * vid_height / 32);
 	}
 }	
 
@@ -253,7 +253,8 @@ gint on_configure(GtkWidget *widget, GdkEventConfigure *event, gpointer callback
 
 	if(visual->depth == 24)
 	{
-		s_backbuffer = new_surface(SURFACE_16BIT, vid_width, vid_height);
+		s_backbuffer = new_surface_no_buf(SURFACE_24BITPADDING8BIT, vid_width, vid_height);
+		s_backbuffer->buf = image->mem;
 	}
 	else
 	{
