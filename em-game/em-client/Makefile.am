@@ -1,7 +1,7 @@
 SUBDIRS = shared
 
 AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -DEMCLIENT -Wall -I../../../stage3s/current-stage3/usr/include/ -I../../../stage3s/current-stage3/usr/X11R6/include/X11/extensions/
-LDADD = ../gsub/libgsub.a shared/libshared.a ../common/libcommon.a ../../../stage3s/current-stage3/usr/lib/libssl.a ../../../stage3s/current-stage3/usr/lib/libcrypto.a /var/tmp/portage/libsdl-1.2.7-r2/image/usr/lib/libSDL.a /var/tmp/portage/alsa-lib-1.0.5-r3/image/usr/lib/libasound.a
+LDADD = ../gsub/libgsub.a shared/libshared.a ../common/libcommon.a ../../../stage3s/current-stage3/usr/lib/libssl.a ../../../stage3s/current-stage3/usr/lib/libcrypto.a /var/tmp/portage/alsa-lib-1.0.5-r3/image/usr/lib/libasound.a #/var/tmp/portage/libsdl-1.2.7-r2/image/usr/lib/libSDL.a
 AM_LDFLAGS = -L../../../stage3s/current-stage3/lib -L../../../stage3s/current-stage3/usr/lib -L/usr/X11R6/lib -lvorbisfile -lvorbis -logg -lpthread -lz -lpng12 -lX11 -lXext -lXrandr
 
 bin_PROGRAMS = em-client
