@@ -1113,20 +1113,83 @@ int process_tick_events_do_not_remove(uint32_t tick)
 }
 
 
-void remove_event(uint32_t index)
+int get_event_by_ooo_index(uint32_t index)
 {
 	struct event_t *event = event0;
 		
 	while(event)
 	{
-		if(event->index == index)
+		if(event->ooo && event->index == index)
 		{
-			LL_REMOVE(struct event_t, &event0, event);
-			return;
+			console_print("ooo neutralized\n");
+			
+			event->ooo = 0;
+			return 1;
 		}
 		
 		event = event->next;
 	}
+	
+	return 0;
+}
+
+
+void insert_event_in_order(struct event_t *event)
+{
+	struct event_t *cevent, *temp;
+
+
+	// if event0 is NULL, then create new event here
+
+	if(!event0)
+	{
+		event0 = malloc(sizeof(struct event_t));
+		memcpy(event0, event, sizeof(struct event_t));
+		event0->next = NULL;
+		return;
+	}
+
+	
+	if(event0->index > event->index)
+	{
+		temp = event0;
+		event0 = malloc(sizeof(struct event_t));
+		memcpy(event0, event, sizeof(struct event_t));
+		event0->next = temp;
+		return;
+	}
+
+
+	// search through the rest of the list
+	// to find the event before the first
+	// event to have a index greater
+	// than event->index
+	
+	cevent = event0;
+	
+	while(cevent->next)
+	{
+		if(cevent->next->index > event->index)
+		{
+			temp = cevent->next;
+			cevent->next = malloc(sizeof(struct event_t));
+			cevent = cevent->next;
+			memcpy(cevent, event, sizeof(struct event_t));
+			cevent->next = temp;
+			return;
+		}
+
+		cevent = cevent->next;
+	}
+
+
+	// we have reached the end of the list and not found
+	// an event that has a index greater than or equal to event->index
+
+	cevent->next = malloc(sizeof(struct event_t));
+	cevent = cevent->next;
+	memcpy(cevent, event, sizeof(struct event_t));
+	cevent->next = NULL;
 }
 
 
@@ -1169,7 +1232,8 @@ int game_demo_process_event()
 		break;
 	}
 	
-	LL_ADD_TAIL(struct event_t, &event0, &event);	// keep in order for tick processing
+	insert_event_in_order(&event);
+	
 	
 	return 1;
 }
@@ -1178,12 +1242,14 @@ int game_demo_process_event()
 int game_process_event_timed(uint32_t index, uint64_t *stamp)
 {
 	struct event_t event;
+	int ooon = 0;
 	
 	event.tick = message_reader.event_tick;
 	
 	add_game_tick(event.tick, stamp);
 	
-	remove_event(index);	// in case it has already arrived ooo
+	if(get_event_by_ooo_index(index))
+		ooon = 1;
 	
 	event.type = message_reader.message_type;
 	event.ooo = 0;
@@ -1215,7 +1281,8 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp)
 		break;
 	}
 	
-	LL_ADD_TAIL(struct event_t, &event0, &event);	// keep in order for tick processing
+	if(!ooon)
+		insert_event_in_order(&event);
 	
 	
 	return 1;
@@ -1225,11 +1292,13 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp)
 int game_process_event_untimed(uint32_t index)
 {
 	struct event_t event;
+	int ooon = 0;
 	
 	event.tick = message_reader.event_tick;
 	event.type = message_reader.message_type;
 	
-	remove_event(index);	// in case it has already arrived ooo (this is broken)
+	if(get_event_by_ooo_index(index))
+		ooon = 1;
 	
 	event.ooo = 0;
 	
@@ -1260,7 +1329,8 @@ int game_process_event_untimed(uint32_t index)
 		break;
 	}
 	
-	LL_ADD_TAIL(struct event_t, &event0, &event);	// keep in order for tick processing
+	if(!ooon)
+		insert_event_in_order(&event);
 	
 	
 	return 1;
@@ -1304,7 +1374,7 @@ int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp)
 		break;
 	}
 	
-	LL_ADD_TAIL(struct event_t, &event0, &event);	// keep in order for tick processing
+	insert_event_in_order(&event);
 	
 	
 	return 1;
@@ -1347,7 +1417,7 @@ int game_process_event_untimed_ooo(uint32_t index)
 		break;
 	}
 	
-	LL_ADD_TAIL(struct event_t, &event0, &event);	// keep in order for tick processing
+	insert_event_in_order(&event);
 	
 	
 	return 1;
