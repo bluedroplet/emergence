@@ -1,4 +1,4 @@
-SOURCES = railgun.wav teleporter.wav speedup-ramp.wav
+SOURCES = railgun.wav teleporter.wav speedup-ramp.wav explosion.wav
 OBJECTS = $(SOURCES:.wav=.ogg)
 
 OGGENCFLAGS = -q 3

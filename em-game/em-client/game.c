@@ -295,6 +295,7 @@ struct rail_trail_t
 struct sample_t *railgun_sample;
 struct sample_t *teleporter_sample;
 struct sample_t *speedup_ramp_sample;
+struct sample_t *explosion_sample;
 
 
 struct demo_t
@@ -1296,6 +1297,8 @@ void add_explosion_event(struct event_t *event)
 	event->explosion_data.end_red = message_reader_read_uint8();
 	event->explosion_data.end_green = message_reader_read_uint8();
 	event->explosion_data.end_blue = message_reader_read_uint8();
+
+	start_sample(explosion_sample, event->tick);
 }
 
 
@@ -4100,6 +4103,7 @@ void init_game()
 	railgun_sample = load_sample(find_resource("stock-sounds/railgun.ogg"));
 	teleporter_sample = load_sample(find_resource("stock-sounds/teleporter.ogg"));
 	speedup_ramp_sample = load_sample(find_resource("stock-sounds/speedup-ramp.ogg"));
+	explosion_sample = load_sample(find_resource("stock-sounds/explosion.ogg"));
 }
 
 
