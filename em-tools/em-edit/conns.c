@@ -402,8 +402,7 @@ int insert_conic_conn(struct node_t *node1, struct node_t *node2)
 	switch(node1->num_conns)
 	{
 	case 0:
-		sat1 = 0;
-		break;
+		return 0;
 
 	case 1:
 		for(s = 0; node1->sat_conn_type[s] == SAT_CONN_TYPE_UNCONN; s++);
@@ -451,8 +450,7 @@ int insert_conic_conn(struct node_t *node1, struct node_t *node2)
 	switch(node2->num_conns)
 	{
 	case 0:
-		sat2 = 0;
-		break;
+		return 0;
 
 	case 1:
 		for(s = 0; node2->sat_conn_type[s] == SAT_CONN_TYPE_UNCONN; s++);
