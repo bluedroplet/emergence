@@ -580,7 +580,8 @@ void convert_surface_to_16bitalpha8bit(struct surface_t *surface)
 		convert_floats_to_16bit_array((float*)surface->buf, (uint16_t*)new_buf,
 			surface->width * surface->height);
 	
-		uint8_t *new_alpha_buf = malloc(get_alpha_size(SURFACE_16BITALPHA8BIT, surface->width, surface->height));
+		uint8_t *new_alpha_buf = malloc(get_alpha_size(SURFACE_16BITALPHA8BIT, 
+			surface->width, surface->height));
 	
 		convert_alphafloats_to_alpha8bit_array((float*)surface->alpha_buf, new_alpha_buf,
 			surface->width * surface->height);
@@ -607,7 +608,9 @@ void convert_surface_to_24bitalpha8bit(struct surface_t *surface)
 	if(surface->flags == SURFACE_24BITALPHA8BIT)
 		return;
 
-	uint8_t *new_alpha_buf = malloc(get_alpha_size(SURFACE_24BITALPHA8BIT, surface->width, surface->height));
+	uint8_t *new_alpha_buf = malloc(get_alpha_size(SURFACE_24BITALPHA8BIT, 
+		surface->width, surface->height));
+	
 	if(!new_alpha_buf)
 		return;
 	
@@ -615,13 +618,16 @@ void convert_surface_to_24bitalpha8bit(struct surface_t *surface)
 	{
 	case SURFACE_24BIT:
 	
-		make_8bit_solid_array(new_alpha_buf, get_alpha_size(SURFACE_24BITALPHA8BIT, surface->width, surface->height));
+		make_8bit_solid_array(new_alpha_buf, get_alpha_size(SURFACE_24BITALPHA8BIT, 
+			surface->width, surface->height));
 		break;
 	
 	case SURFACE_FLOATSALPHAFLOATS:
 	{	
 	
-		uint8_t *new_buf = malloc(get_size(SURFACE_24BITALPHA8BIT, surface->width, surface->height));
+		uint8_t *new_buf = malloc(get_size(SURFACE_24BITALPHA8BIT, 
+			surface->width, surface->height));
+		
 		if(!new_buf)
 		{
 			free(new_alpha_buf);
@@ -742,7 +748,9 @@ void convert_surface_to_floatsalphafloats(struct surface_t* surface)
 	if(!new_buf)
 		return;
 
-	uint8_t *new_alpha_buf = malloc(get_alpha_size(SURFACE_FLOATSALPHAFLOATS, surface->width, surface->height));
+	uint8_t *new_alpha_buf = malloc(get_alpha_size(SURFACE_FLOATSALPHAFLOATS, 
+		surface->width, surface->height));
+	
 	if(!new_alpha_buf)
 	{
 		free(new_buf);
@@ -855,7 +863,8 @@ void surface_flip_horiz(struct surface_t *surface)
 	case SURFACE_16BITALPHA8BIT:
 	case SURFACE_24BITALPHA8BIT:
 		{
-			uint8_t *alpha_out = malloc(get_alpha_size(surface->flags, surface->width, surface->height));
+			uint8_t *alpha_out = malloc(get_alpha_size(surface->flags, 
+				surface->width, surface->height));
 			uint8_t *dst = alpha_out;
 			
 			for(y = 0; y < surface->height; y++)
@@ -895,8 +904,9 @@ void surface_flip_vert(struct surface_t *surface)
 			
 			for(y = 0; y < surface->height; y++)
 			{
-				memcpy(&((uint16_t*)out)[y * surface->width], &((uint16_t*)surface->buf)[(surface->height - 1 - y) * 
-					surface->width], surface->width * 2);
+				memcpy(&((uint16_t*)out)[y * surface->width], 
+					&((uint16_t*)surface->buf)[(surface->height - 1 - y) * surface->width], 
+					surface->width * 2);
 			}
 		
 			free(surface->buf);
@@ -927,12 +937,14 @@ void surface_flip_vert(struct surface_t *surface)
 	case SURFACE_16BITALPHA8BIT:
 	case SURFACE_24BITALPHA8BIT:
 		{
-			uint8_t *alpha_out = malloc(get_alpha_size(surface->flags, surface->width, surface->height));
+			uint8_t *alpha_out = malloc(get_alpha_size(surface->flags, 
+				surface->width, surface->height));
 			
 			for(y = 0; y < surface->height; y++)
 			{
-				memcpy(&alpha_out[y * surface->width], &(surface->alpha_buf)[(surface->height - 1 - y) * 
-					surface->width], surface->width);
+				memcpy(&alpha_out[y * surface->width], 
+					&(surface->alpha_buf)[(surface->height - 1 - y) * surface->width], 
+					surface->width);
 			}
 		
 			free(surface->alpha_buf);
@@ -967,7 +979,8 @@ void surface_rotate_left(struct surface_t *surface)
 			{
 				for(x = 0; x < surface->width; x++)
 				{
-					*dst++ = ((uint16_t*)surface->buf)[(surface->width - 1 - x) * surface->width + y];
+					*dst++ = ((uint16_t*)surface->buf)[(surface->width - 1 - x) * 
+						surface->width + y];
 				}
 			}
 		
@@ -986,7 +999,8 @@ void surface_rotate_left(struct surface_t *surface)
 			{
 				for(x = 0; x < surface->width; x++)
 				{
-					uint8_t *src = &(surface->buf[((surface->width - 1 - x) * surface->width + y) * 3]);
+					uint8_t *src = &(surface->buf[((surface->width - 1 - x) * 
+						surface->width + y) * 3]);
 					
 					*dst++ = *src++;
 					*dst++ = *src++;
@@ -1006,7 +1020,8 @@ void surface_rotate_left(struct surface_t *surface)
 	case SURFACE_16BITALPHA8BIT:
 	case SURFACE_24BITALPHA8BIT:
 		{
-			uint8_t *alpha_out = malloc(get_alpha_size(surface->flags, surface->width, surface->height));
+			uint8_t *alpha_out = malloc(get_alpha_size(surface->flags, 
+				surface->width, surface->height));
 			uint8_t *dst = alpha_out;
 			
 			for(y = 0; y < surface->height; y++)
@@ -1055,7 +1070,8 @@ void surface_rotate_right(struct surface_t *surface)
 			{
 				for(x = 0; x < surface->width; x++)
 				{
-					*dst++ = ((uint16_t*)surface->buf)[x * surface->width + surface->height - 1 - y];
+					*dst++ = ((uint16_t*)surface->buf)[x * surface->width + 
+						surface->height - 1 - y];
 				}
 			}
 		
@@ -1074,7 +1090,8 @@ void surface_rotate_right(struct surface_t *surface)
 			{
 				for(x = 0; x < surface->width; x++)
 				{
-					uint8_t *src = &surface->buf[(x * surface->width + surface->height - 1 - y) * 3];
+					uint8_t *src = &surface->buf[(x * surface->width + 
+						surface->height - 1 - y) * 3];
 					
 					*dst++ = *src++;
 					*dst++ = *src++;
@@ -1094,7 +1111,8 @@ void surface_rotate_right(struct surface_t *surface)
 	case SURFACE_16BITALPHA8BIT:
 	case SURFACE_24BITALPHA8BIT:
 		{
-			uint8_t *alpha_out = malloc(get_alpha_size(surface->flags, surface->width, surface->height));
+			uint8_t *alpha_out = malloc(get_alpha_size(surface->flags, 
+				surface->width, surface->height));
 			uint8_t *dst = alpha_out;
 			
 			for(y = 0; y < surface->height; y++)
