@@ -2044,14 +2044,13 @@ void cf_record(char *c)
 		msg = EMMSG_LOADMAP;
 		gzwrite(gzrecording, &msg, 1);
 	
-		struct string_t *string = new_string_text("default");
-		gzwrite_string(message_reader.gzdemo, string);
-		free_string(string);
+	
+		gzwrite_string(message_reader.gzdemo, map_name);
 		
 		msg = EMMSG_LOADSKIN;
 		gzwrite(gzrecording, &msg, 1);
 		
-		string = new_string_text("default");
+		struct string_t *string = new_string_text("default");
 		gzwrite_string(message_reader.gzdemo, string);
 		free_string(string);
 		
