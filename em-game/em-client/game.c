@@ -3609,7 +3609,7 @@ void update_demo()
 			if(!gzdemo)
 			{
 				char *filename = br_strcat("demos/", cdemo->filename->text);
-				gzdemo = gzopen(BR_DATADIR(filename), "rb");
+				gzdemo = gzopen(find_resource(filename), "rb");
 				free(filename);
 				
 				if(!gzdemo)

@@ -1,6 +1,6 @@
 #!/bin/bash -v
 
-ver=0.6
+ver=0.6.1
 
 cd ../em-tools
 make distclean
@@ -63,7 +63,7 @@ make prefix=${D}/usr \
 cd ../dist/emergence
 
 strip usr/bin/* || exit
-tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-$ver-$arch-linux.tbz2 * || exit
+#tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-$ver-$arch-linux.tbz2 * || exit
 cd ..
 
 
@@ -112,20 +112,20 @@ cd ../em-game
 
 
 make prefix=${D} \
-		    bindir=${D} \
-		    datadir=${D}/share \
-			pkgdatadir=${D}/share \
-		    install || exit
+		bindir=${D} \
+		datadir=${D} \
+		pkgdatadir=${D} \
+		install || exit
 
 
 
 cd ../em-tools
 
 #make prefix=${D} \
-#		    bindir=${D} \
-#		    datadir=${D}/share \
-#			pkgdatadir=${D}/share \
-#		    install || exit
+#		bindir=${D} \
+#		datadir=${D} \
+#		pkgdatadir=${D} \
+#		install || exit
 
 
 cd ../dist
@@ -161,10 +161,10 @@ D=`pwd`/../dist/emergence/
 ./configure --prefix=/usr --enable-nonauthenticating || exit
 make || exit
 make prefix=${D} \
-		    bindir=${D} \
-		    datadir=${D}/share \
-			pkgdatadir=${D}/share \
-		    install || exit
+		bindir=${D} \
+		datadir=${D} \
+		pkgdatadir=${D} \
+		install || exit
 
 cd ../dist/
 

@@ -226,7 +226,7 @@ void init()
 	
 	if(!exec_config_file(string->text))
 	{
-		exec_config_file(find_resource("em-client/default-controls.config"));
+		exec_config_file(find_resource("default-controls.config"));
 	}
 	else
 	{
@@ -242,6 +242,8 @@ void init()
 			system(command->text);
 			
 			vid_mode = -1;	// find a nice mode
+
+			exec_config_file(find_resource("default-controls.config"));
 		}
 		
 		free(ver);
@@ -272,7 +274,7 @@ void init()
 	
 	string = new_string_text("%s%s", emergence_home_dir->text, "/client.autoexec");
 	if(!exec_config_file(string->text))
-		exec_config_file(find_resource("em-client/default-autoexec"));
+		exec_config_file(find_resource("default-autoexec"));
 	free_string(string);
 }
 

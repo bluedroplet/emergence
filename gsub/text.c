@@ -46,7 +46,7 @@ struct surface_t *smallfont;
 
 void init_text()
 {
-	smallfont = read_png_surface(find_resource("em-client/smallfont.png"));
+	smallfont = read_png_surface(find_resource("smallfont.png"));
 
 	int i;
 

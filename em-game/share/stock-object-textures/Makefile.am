@@ -1,5 +1,6 @@
-SHARED_OBJECTS = rails.png  shield-pickup.png  unowned-minigun.png \
-	unowned-plasma-cannon.png  unowned-rocket-launcher.png
+SHARED_OBJECTS = rails.png  shield-pickup.png 
+
+# unowned-minigun.png unowned-plasma-cannon.png  unowned-rocket-launcher.png
 
 OBJECTS =  rocket.png plasma.png mine.png craft-shield.png weapon-shield.png
 

@@ -1,0 +1,27 @@
+
+2004-07-05 - Emergence 0.6.1
+----------------------------------------
+fixed default demo playback on startup
+more default key controls
+
+
+2004-07-05 - Emergence 0.6
+----------------------------------------
+
+much improved stability and performance
+new weapons in default skin
+more sound effects
+much improved weapon respawning code
+customizable rail trails, smoke, plasmas and shields
+improved attached weapon physics
+some server/client inconsistency issues resolved
+home package structure much cleaner
+choose nice vid_mode on first run
+the console is now coloured
+fps now outputted on demo completion
+up/down/left/right now work again as controls
+up/down now work again as command history
+key-based rolling
+clearer package filenames
+mouse_speed cvar
+minigun fire rate increased

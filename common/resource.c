@@ -32,7 +32,7 @@ char *find_resource(char *resource)
 	
 	free_string(s);
 	s = new_string_text(bindir);
-	string_cat_text(s, "/share/");				// home dir install
+	string_cat_text(s, "/");				// home dir install
 	string_cat_text(s, resource);
 	
 	if(stat(s->text, &buf) == 0)
