@@ -18,6 +18,7 @@
 #include "main.h"
 #include "control.h"
 #include "entry.h"
+#include "x.h"
 
 
 int input_fd = -1;
@@ -93,11 +94,7 @@ void init_input()
 	
 	input_fd = open("/dev/input/mice", O_RDONLY);
 	if(input_fd < 0)
-	{
-		input_fd = open("/dev/psaux", O_RDONLY);
-		if(input_fd < 0)
 			goto error;
-	}
 	
 	if(fcntl(input_fd, F_SETFL, O_NONBLOCK) == -1)
 	{
@@ -111,9 +108,8 @@ void init_input()
 	
 error:
 	
-	console_print("fail\n");
-	perror(NULL);
-	client_shutdown();
+	console_print("fail\nFalling back to X11 mouse support.\n");
+	use_x_mouse = 1;
 }
 
 

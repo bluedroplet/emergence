@@ -52,6 +52,8 @@ int x_fd;
 int x_render_pipe[2];
 int x_kill_pipe[2];
 
+int use_x_mouse;
+
 XRRScreenConfiguration *screen_config;
 int original_mode;
 int vid_modes;
@@ -70,6 +72,8 @@ int depth;
 
 pthread_mutex_t x_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 pthread_t x_thread_id;
+
+int accel_numerator, accel_denominator, threshold;
 
 
 void update_frame_buffer()
@@ -90,46 +94,208 @@ void update_frame_buffer()
 }
 
 
-void process_x()
+static int aaaa(XEvent *event)
 {
-	XEvent report;
-	char c;
-	
-	XNextEvent(xdisplay, &report);
-	
-	int CompletionType = XShmGetEventBase (xdisplay) + ShmCompletion;
+	XEvent peekevent;
+	int repeated;
 
-	switch(report.type)
+	repeated = 0;
+	if ( XPending(xdisplay) ) {
+		XPeekEvent(xdisplay, &peekevent);
+		if ( (peekevent.type == KeyPress) &&
+		     (peekevent.xkey.keycode == event->xkey.keycode) &&
+		     ((peekevent.xkey.time-event->xkey.time) < 2) ) {
+			repeated = 1;
+			XNextEvent(xdisplay, &peekevent);
+		}
+	}
+	return(repeated);
+}
+
+#define MOUSE_FUDGE_FACTOR	8
+
+
+void process_x_motion(int x, int y)
+{
+	if(x)
+		process_axis(0, (float)x);
+
+	if(y)
+		process_axis(1, (float)y);
+}
+
+struct
+{
+	int x, y;
+	
+} mouse_last;
+
+int firsta = 1;
+
+void bbbb(XEvent *xevent)
+{
+	if(firsta)
 	{
-	case Expose:
-		// unless this is the last contiguous expose,
-		// don't draw the window 
-		if (report.xexpose.count != 0)
-			break;
+		firsta = 0;
+		mouse_last.x = xevent->xmotion.x;
+		mouse_last.y = xevent->xmotion.y;
+	}
+	
+	int w, h, i;
+	int deltax, deltay;
 
-	//	write(x_render_pipe[1], &c, 1);
-		
-		break;
-	case KeyPress:
-		//	XKeysymToKeycode(xdisplay, xsym);
+	w = vid_width;
+	h = vid_height;
+	deltax = xevent->xmotion.x - mouse_last.x;
+	deltay = xevent->xmotion.y - mouse_last.y;
+	
+	mouse_last.x = xevent->xmotion.x;
+	mouse_last.y = xevent->xmotion.y;
+	process_x_motion(deltax, deltay);
 
-		process_keypress(report.xkey.keycode - 8, 1);
-		
-//		process_keypress(((XKeyEvent*)&report)->keycode, 1);
-		break;
-	
-	case KeyRelease:
-		process_keypress(report.xkey.keycode - 8, 0);
-		break;
-	
-	default:
-	
-		if(report.type == CompletionType)
+	if ( (xevent->xmotion.x < MOUSE_FUDGE_FACTOR) ||
+	     (xevent->xmotion.x > (w-MOUSE_FUDGE_FACTOR)) ||
+	     (xevent->xmotion.y < MOUSE_FUDGE_FACTOR) ||
+	     (xevent->xmotion.y > (h-MOUSE_FUDGE_FACTOR)) ) 
+	{
+		/* Get the events that have accumulated */
+		while ( XCheckTypedEvent(xdisplay, MotionNotify, xevent) ) 
 		{
-			write(x_render_pipe[1], &c, 1);
+			deltax = xevent->xmotion.x - mouse_last.x;
+			deltay = xevent->xmotion.y - mouse_last.y;
+
+			mouse_last.x = xevent->xmotion.x;
+			mouse_last.y = xevent->xmotion.y;
+			process_x_motion(deltax, deltay);
 		}
 		
-		break;
+		mouse_last.x = w/2;
+		mouse_last.y = h/2;
+		XWarpPointer(xdisplay, None, xwindow, 0, 0, 0, 0,
+					mouse_last.x, mouse_last.y);
+		for ( i=0; i<10; ++i ) 
+		{
+        		XMaskEvent(xdisplay, PointerMotionMask, xevent);
+			if ( (xevent->xmotion.x >
+			          (mouse_last.x-MOUSE_FUDGE_FACTOR)) &&
+			     (xevent->xmotion.x <
+			          (mouse_last.x+MOUSE_FUDGE_FACTOR)) &&
+			     (xevent->xmotion.y >
+			          (mouse_last.y-MOUSE_FUDGE_FACTOR)) &&
+			     (xevent->xmotion.y <
+			          (mouse_last.y+MOUSE_FUDGE_FACTOR)) ) {
+				break;
+			}
+			
+		}
+	}
+}
+
+
+void process_x()
+{
+	while(XPending(xdisplay))
+	{
+		
+		XEvent report;
+		char c;
+		
+		XNextEvent(xdisplay, &report);
+		
+		int CompletionType = XShmGetEventBase (xdisplay) + ShmCompletion;
+	
+		switch(report.type)
+		{
+		case MotionNotify:
+			bbbb(&report);
+			
+			break;
+			
+	    case ButtonPress: {
+			switch(report.xbutton.button)
+			{
+			case Button1:
+				process_button(0, 1);
+				break;
+			
+			case Button2:
+				process_button(2, 1);
+				break;
+			
+			case Button3:
+				process_button(1, 1);
+				break;
+			
+			case Button4:
+				process_button(3, 1);
+				break;
+			
+			case Button5:
+				process_button(4, 1);
+				break;
+			}
+			
+	    }
+	    break;
+
+	    /* Mouse button release? */
+	    case ButtonRelease: {
+			switch(report.xbutton.button)
+			{
+			case Button1:
+				process_button(0, 0);
+				break;
+			
+			case Button2:
+				process_button(2, 0);
+				break;
+			
+			case Button3:
+				process_button(1, 0);
+				break;
+			
+			case Button4:
+				process_button(3, 0);
+				break;
+			
+			case Button5:
+				process_button(4, 0);
+				break;
+			}
+	    }
+	    break;
+
+		case Expose:
+			// unless this is the last contiguous expose,
+			// don't draw the window 
+			if (report.xexpose.count != 0)
+				break;
+	
+		//	write(x_render_pipe[1], &c, 1);
+			
+			break;
+		case KeyPress:
+			//	XKeysymToKeycode(xdisplay, xsym);
+	
+				process_keypress(report.xkey.keycode - 8, 1);
+			
+	//		process_keypress(((XKeyEvent*)&report)->keycode, 1);
+			break;
+		
+		case KeyRelease:
+			if(!aaaa(&report))
+				process_keypress(report.xkey.keycode - 8, 0);
+			break;
+		
+		default:
+		
+			if(report.type == CompletionType)
+			{
+				write(x_render_pipe[1], &c, 1);
+			}
+			
+			break;
+		}
 	}
 }
 
@@ -330,7 +496,11 @@ void set_vid_mode(int mode)	// use goto error crap
 	XMapRaised(xdisplay, xwindow);
 
 		
-	XSelectInput(xdisplay, xwindow, KeyPressMask | KeyReleaseMask);
+	if(use_x_mouse)
+		XSelectInput(xdisplay, xwindow, KeyPressMask | KeyReleaseMask | PointerMotionMask
+			| ButtonPressMask | ButtonReleaseMask);
+	else
+		XSelectInput(xdisplay, xwindow, KeyPressMask | KeyReleaseMask);
    
 	XSetInputFocus(xdisplay, xwindow, RevertToNone, CurrentTime);
 
@@ -342,8 +512,13 @@ void set_vid_mode(int mode)	// use goto error crap
   gc=XCreateGC(xdisplay, xwindow, 0, NULL);	
 	
 
-	XGrabPointer(xdisplay, xwindow, 0, 0, GrabModeAsync, GrabModeAsync,
-		xwindow, xcursor, CurrentTime);
+	if(use_x_mouse)
+		XGrabPointer(xdisplay, xwindow, 0, PointerMotionMask | ButtonPressMask | ButtonReleaseMask, 
+			GrabModeAsync, GrabModeAsync, xwindow, xcursor, CurrentTime);
+	else
+		XGrabPointer(xdisplay, xwindow, 0, 0, GrabModeAsync, GrabModeAsync,
+			xwindow, xcursor, CurrentTime);
+	
 
       int ShmMajor,ShmMinor;
       Bool ShmPixmaps;
@@ -502,6 +677,14 @@ void init_x()
 	if(!(xdisplay = XOpenDisplay(NULL)))
 		client_error("cannot connect to X server %s\n", XDisplayName(NULL));
 	
+	if(use_x_mouse)
+	{
+		XGetPointerControl(xdisplay, &accel_numerator,
+		  &accel_denominator, &threshold);
+
+		XChangePointerControl(xdisplay, 1, 1, 1, 1, 1);
+	}
+	
 	
 	xscreen = DefaultScreen(xdisplay);
 	
@@ -512,11 +695,6 @@ void init_x()
 
 	
 	fcntl(x_fd, F_SETFL, O_NONBLOCK);
-	
-	
-	
-	
-	XAutoRepeatOff(xdisplay);
 	
 	query_vid_modes();
 	set_int_cvar_qc_function("vid_mode", vid_mode_qc);
@@ -556,8 +734,6 @@ void kill_x()
 		xwindow = 0;
 	}
 	
-	XAutoRepeatOn(xdisplay);
-	
 	screen_config = XRRGetScreenInfo(xdisplay, RootWindow(xdisplay, xscreen));
 	XRRSetScreenConfig (xdisplay, screen_config,
 			   RootWindow(xdisplay, xscreen),
@@ -566,6 +742,11 @@ void kill_x()
 			   CurrentTime);
 	
 	XRRFreeScreenConfigInfo(screen_config);
+	
+	if(use_x_mouse)
+	{
+		XChangePointerControl(xdisplay, 1, 1, accel_numerator, accel_denominator, threshold);
+	}
 	
 	XCloseDisplay(xdisplay);
 }

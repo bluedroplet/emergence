@@ -499,6 +499,8 @@ double next_control_tick;
 
 void process_control_alarm()
 {
+	pthread_mutex_lock(&control_mutex);
+	
 	char c;
 	while(read(control_timer_fd, &c, 1) != -1);
 		
@@ -539,6 +541,8 @@ void process_control_alarm()
 		next_control_tick = ((int)(time / CONTROL_TICK_INTERVAL) + 1) * 
 			(double)CONTROL_TICK_INTERVAL;
 	}
+	
+	pthread_mutex_unlock(&control_mutex);
 }
 
 
@@ -726,6 +730,8 @@ void process_keypress(uint32_t key, int state)
 
 void process_button(uint32_t control, int state)
 {
+	pthread_mutex_lock(&control_mutex);
+	
 	if(control >= 32)
 		return;
 
@@ -742,11 +748,15 @@ void process_button(uint32_t control, int state)
 
 	if(func)
 		func(state);
+
+	pthread_mutex_unlock(&control_mutex);
 }
 
 
 void process_axis(uint32_t axis, float val)
 {
+	pthread_mutex_lock(&control_mutex);
+	
 	if(axis >= 32)
 		return;
 
@@ -756,6 +766,8 @@ void process_axis(uint32_t axis, float val)
 	
 	if(func)
 		func(val);
+
+	pthread_mutex_unlock(&control_mutex);
 }
 
 
@@ -934,11 +946,7 @@ void *control_thread(void *a)
 			return NULL;
 
 		if(fds[0].revents & POLLIN)
-		{			
-			pthread_mutex_lock(&control_mutex);
 			process_input();
-			pthread_mutex_unlock(&control_mutex);
-		}
 		
 		if(fds[1].revents & POLLIN)
 			process_control_alarm();
