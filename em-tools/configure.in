@@ -20,7 +20,6 @@ AC_OUTPUT(Makefile common/Makefile gsub/Makefile em-edit/Makefile \
 dnl	em-skin/Makefile \
 
 	share/Makefile \
-	share/em-edit/Makefile \
 	share/stock-object-textures/Makefile \
 
 	pixmaps/Makefile desktop/Makefile)
