@@ -396,7 +396,6 @@ void action_brake(uint32_t state)
 	else
 		net_emit_uint8(game_conn, EMMSG_NOBRAKE);
 	
-	net_emit_uint8(game_conn, (uint8_t)state);
 	net_emit_end_of_stream(game_conn);
 }
 
@@ -674,7 +673,7 @@ char get_ascii(int key)
 }
 
 
-void process_keypress(int key, int state)
+void process_keypress(uint32_t key, int state)
 {
 	pthread_mutex_lock(&control_mutex);		// called from x thread
 	
@@ -720,7 +719,7 @@ void process_keypress(int key, int state)
 }
 
 
-void process_button(int control, int state)
+void process_button(uint32_t control, int state)
 {
 	if(control >= 32)
 		return;
@@ -741,7 +740,7 @@ void process_button(int control, int state)
 }
 
 
-void process_axis(int axis, float val)
+void process_axis(uint32_t axis, float val)
 {
 	if(axis >= 32)
 		return;
@@ -954,14 +953,18 @@ void *control_thread(void *a)
 }
 
 
+void create_control_cvars()
+{
+	create_cvar_command("bind", cf_bind);
+	create_cvar_command("controls", cf_controls);
+	create_cvar_command("actions", cf_actions);
+}
+
+
 void init_control()
 {
 	double time = get_wall_time();
 	next_control_tick = ((int)(time / CONTROL_TICK_INTERVAL) + 1) * (double)CONTROL_TICK_INTERVAL;
-	
-	create_cvar_command("bind", cf_bind);
-	create_cvar_command("controls", cf_controls);
-	create_cvar_command("actions", cf_actions);
 	
 	control_timer_fd = create_timer_listener();
 	pipe(control_kill_pipe);

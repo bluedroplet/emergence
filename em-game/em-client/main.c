@@ -209,13 +209,11 @@ void init()
 	init_console_cvars();
 	init_render_cvars();
 	init_map_cvars();
+	create_control_cvars();
 	create_input_cvars();
 	init_tick_cvars();
 
 	init_console();
-	
-	init_input();
-	init_control();
 	
 	struct string_t *string = new_string_string(emergence_home_dir);
 	string_cat_text(string, "/client.config");
@@ -223,7 +221,10 @@ void init()
 	exec_config_file(string->text);
 	
 	free_string(string);
-
+	
+	init_input();
+	init_control();
+	
 
 	init_render();
 	init_rcon();
