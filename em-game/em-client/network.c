@@ -922,11 +922,11 @@ void net_emit_uint32(uint32_t val)
 
 	case EMNETPAYLOAD_SIZE - 2:
 
-		*(uint16_t*)&cpacket.payload[cpacket_payload_size] = ((uint16_t*)&val)[0];
+		*((uint16_t*)(void*)&cpacket.payload[cpacket_payload_size]) = ((uint16_t*)(void*)&val)[0];
 		cpacket_payload_size = EMNETPAYLOAD_SIZE;
 		send_cpacket();
 
-		*(uint16_t*)&cpacket.payload[0] = ((uint16_t*)&val)[1];
+		*(uint16_t*)(void*)&cpacket.payload[0] = ((uint16_t*)(void*)&val)[1];
 		cpacket_payload_size = 2;
 
 		break;
@@ -934,7 +934,7 @@ void net_emit_uint32(uint32_t val)
 
 	case EMNETPAYLOAD_SIZE - 3:
 
-		*(uint16_t*)&cpacket.payload[cpacket_payload_size] = ((uint16_t*)&val)[0];
+		*(uint16_t*)(void*)&cpacket.payload[cpacket_payload_size] = ((uint16_t*)(void*)&val)[0];
 		cpacket.payload[cpacket_payload_size + 2] = ((uint8_t*)&val)[2];
 		cpacket_payload_size = EMNETPAYLOAD_SIZE;
 		send_cpacket();
@@ -963,7 +963,7 @@ void net_emit_int(int val)
 
 void net_emit_float(float val)
 {
-	net_emit_uint32(*(uint32_t*)&val);
+	net_emit_uint32(*(uint32_t*)(void*)&val);
 }
 
 
@@ -1245,13 +1245,14 @@ void init_network()
 		client_libc_error("Couldn't create socket");
 	
 	fcntl(udp_socket, F_SETOWN, getpid());
+	fcntl(udp_socket, F_SETSIG, SIGRTMIN);
 	fcntl(udp_socket, F_SETFL, O_ASYNC);
 	
 	// seed to rng
 	
 	uint64_t time = rdtsc();
 	
-	seed48((unsigned short int*)&time);
+	seed48((unsigned short int*)(void*)&time);
 
 	sigio_process |= SIGIO_PROCESS_NETWORK;
 	sigalrm_process |= SIGALRM_PROCESS_NETWORK;
@@ -1274,7 +1275,7 @@ void kill_network()
 		
 		/* Set up the mask of signals to temporarily block. */
 		sigemptyset(&mask);
-		sigaddset(&mask, SIGIO);
+		sigaddset(&mask, SIGRTMIN);
 		sigaddset(&mask, SIGALRM);
 		
 		/* Wait for a signal to arrive. */
