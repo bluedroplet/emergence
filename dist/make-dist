@@ -97,7 +97,11 @@ cd ..
 
 rpmbuild -bb emergence.spec
 
-cp ../../redhat/emergence/i386/emergence-$ver-1.i386.rpm emergence-$ver-$arch-linux.rpm
+cp ../../redhat/emergence/i386/emergence-$ver-1.i386.rpm emergence-$ver-$arch.rpm
+
+mkdir emergence/DEBIAN
+cp control emergence/DEBIAN
+dpkg -b emergence emergence-$ver-$arch.deb
 
 
 rm -rf emergence
