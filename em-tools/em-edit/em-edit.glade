@@ -350,7 +350,6 @@
 
 	  <child>
 	    <widget class="GtkFrame" id="frame3">
-	      <property name="visible">True</property>
 	      <property name="label_xalign">0</property>
 	      <property name="label_yalign">0.5</property>
 	      <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
@@ -2961,7 +2960,6 @@
 
 	  <child>
 	    <widget class="GtkHBox" id="hbox50">
-	      <property name="visible">True</property>
 	      <property name="homogeneous">True</property>
 	      <property name="spacing">5</property>
 
@@ -3069,7 +3067,6 @@
 
 	  <child>
 	    <widget class="GtkHBox" id="hbox187">
-	      <property name="visible">True</property>
 	      <property name="homogeneous">True</property>
 	      <property name="spacing">5</property>
 
@@ -3163,7 +3160,6 @@
 
 	      <child>
 		<widget class="GtkHBox" id="hbox186">
-		  <property name="visible">True</property>
 		  <property name="homogeneous">True</property>
 		  <property name="spacing">5</property>
 
@@ -3224,7 +3220,6 @@
 
 	  <child>
 	    <widget class="GtkHBox" id="divider_angle_hbox">
-	      <property name="visible">True</property>
 	      <property name="sensitive">False</property>
 	      <property name="homogeneous">True</property>
 	      <property name="spacing">5</property>
@@ -5537,7 +5532,6 @@
 
 	  <child>
 	    <widget class="GtkHBox" id="hbox81">
-	      <property name="visible">True</property>
 	      <property name="homogeneous">True</property>
 	      <property name="spacing">5</property>
 

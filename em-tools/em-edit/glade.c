@@ -237,7 +237,6 @@ create_speedup_ramp_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (vbox4), 5);
 
   frame3 = gtk_frame_new (NULL);
-  gtk_widget_show (frame3);
   gtk_box_pack_start (GTK_BOX (vbox4), frame3, FALSE, FALSE, 0);
 
   texture_pixmapentry = gnome_pixmap_entry_new (NULL, "Select Texture", TRUE);
@@ -1647,7 +1646,6 @@ create_teleporter_properties_dialog (void)
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (radius_spinbutton), TRUE);
 
   hbox50 = gtk_hbox_new (TRUE, 5);
-  gtk_widget_show (hbox50);
   gtk_box_pack_start (GTK_BOX (vbox21), hbox50, TRUE, TRUE, 0);
 
   label69 = gtk_label_new ("Sparkles (s<sup>-1</sup>)");
@@ -1678,7 +1676,6 @@ create_teleporter_properties_dialog (void)
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spawn_point_index_spinbutton), TRUE);
 
   hbox187 = gtk_hbox_new (TRUE, 5);
-  gtk_widget_show (hbox187);
   gtk_box_pack_start (GTK_BOX (vbox21), hbox187, TRUE, TRUE, 0);
 
   label220 = gtk_label_new ("Rotation Type");
@@ -1708,7 +1705,6 @@ create_teleporter_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (vbox21), hbox52, TRUE, TRUE, 0);
 
   hbox186 = gtk_hbox_new (TRUE, 5);
-  gtk_widget_show (hbox186);
   gtk_box_pack_start (GTK_BOX (hbox52), hbox186, TRUE, TRUE, 0);
 
   label221 = gtk_label_new ("Rotation Angle (\302\272)");
@@ -1724,7 +1720,6 @@ create_teleporter_properties_dialog (void)
   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (rotation_angle_spinbutton), TRUE);
 
   divider_angle_hbox = gtk_hbox_new (TRUE, 5);
-  gtk_widget_show (divider_angle_hbox);
   gtk_box_pack_start (GTK_BOX (vbox21), divider_angle_hbox, TRUE, TRUE, 0);
   gtk_widget_set_sensitive (divider_angle_hbox, FALSE);
 
@@ -2912,7 +2907,6 @@ create_wall_properties_dialog (void)
   solid_radiobutton_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (texture_radiobutton));
 
   hbox81 = gtk_hbox_new (TRUE, 5);
-  gtk_widget_show (hbox81);
   gtk_box_pack_start (GTK_BOX (vbox24), hbox81, TRUE, TRUE, 0);
 
   width_lock_checkbutton = gtk_check_button_new_with_mnemonic ("Width Lock");
