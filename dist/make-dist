@@ -1,6 +1,6 @@
 #!/bin/bash -v
 
-ver=0.7-dev
+ver=0.7
 
 cd ../em-tools
 make distclean
@@ -25,8 +25,8 @@ cd ../em-tools
 cd ../dist
 
 
-#for arch in i386 i686 pentium3 pentium4 athlon-xp
-for arch in pentium3
+for arch in i386 i686 pentium3 pentium4 athlon-xp
+#for arch in pentium3
 do
 
 stage3=i686
@@ -104,8 +104,10 @@ cp control emergence/DEBIAN
 dpkg -b emergence emergence-$ver-$arch.deb
 
 
-rm -rf emergence
-mkdir emergence
+D=`pwd`/emergence-$ver/
+
+rm -rf emergence-$ver
+mkdir emergence-$ver
 
 
 cd ../em-game
@@ -130,10 +132,10 @@ cd ../em-tools
 
 cd ../dist
 
-strip emergence/em-client || exit
-strip emergence/em-server || exit
+strip emergence-$ver/em-client || exit
+strip emergence-$ver/em-server || exit
 
-tar --owner=0 --group=0 --numeric-owner -cjf emergence-$ver-$arch-linux-home.tbz2 emergence || exit
+tar --owner=0 --group=0 --numeric-owner -cjf emergence-$ver-$arch-linux-home.tbz2 emergence-$ver || exit
 
 
 
