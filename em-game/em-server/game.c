@@ -740,7 +740,7 @@ void tick_player(struct player_t *player)
 					break;
 					
 				case WEAPON_MINIGUN:
-					fire = ((game_tick - player->firing_left_start) * 20) / 200 - player->left_fired;
+					fire = ((game_tick - player->firing_left_start) * 50) / 200 - player->left_fired;
 					
 					if(fire > 0)
 					{
@@ -778,7 +778,7 @@ void tick_player(struct player_t *player)
 					break;
 					
 				case WEAPON_MINIGUN:
-					fire = ((game_tick - player->firing_right_start) * 20) / 200 - player->right_fired;
+					fire = ((game_tick - player->firing_right_start) * 50) / 200 - player->right_fired;
 					
 					if(fire > 0)
 					{
