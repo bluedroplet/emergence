@@ -113,5 +113,21 @@ void render_stars()
 		params.dest_y = y;
 		
 		plot_pixel(&params);
+		
+		params.alpha >>= 1;
+		
+		params.dest_x++;
+		plot_pixel(&params);
+		
+		params.dest_x--;
+		params.dest_y++;
+		plot_pixel(&params);
+		
+		params.dest_y -= 2;
+		plot_pixel(&params);
+		
+		params.dest_x--;
+		params.dest_y++;
+		plot_pixel(&params);
 	}
 }
