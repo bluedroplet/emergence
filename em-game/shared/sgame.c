@@ -671,7 +671,7 @@ void craft_force(struct entity_t *craft, double force)
 		if(game_state != GAMESTATE_DEMO)
 		{
 			if(cgame_state->follow_me == craft->index)
-				cgame_state->craft_shield -= force;
+				cgame_state->craft_shield = max(cgame_state->craft_shield - force, 0.0);
 		}
 		
 		craft_flare(craft, force);
@@ -740,9 +740,9 @@ void weapon_force(struct entity_t *weapon, double force)
 			if(cgame_state->follow_me == weapon->weapon_data.craft->index)
 			{
 				if(weapon->weapon_data.craft->craft_data.left_weapon == weapon)
-					cgame_state->left_shield -= force;
+					cgame_state->left_shield = max(cgame_state->left_shield - force, 0.0);
 				else
-					cgame_state->right_shield -= force;
+					cgame_state->right_shield = max(cgame_state->right_shield - force, 0.0);
 			}
 		}
 	}
@@ -2538,9 +2538,15 @@ void s_tick_weapon(struct entity_t *weapon)
 					{
 						if(cgame_state->follow_me == weapon->weapon_data.craft->index && 
 							weapon->weapon_data.craft->craft_data.left_weapon == weapon)
-							cgame_state->left_ammo--;
+						{
+							if(cgame_state->left_ammo > 0)
+								cgame_state->left_ammo--;
+						}
 						else
-							cgame_state->right_ammo--;
+						{
+							if(cgame_state->right_ammo > 0)
+								cgame_state->right_ammo--;
+						}
 					}
 					#endif
 					
@@ -2566,9 +2572,15 @@ void s_tick_weapon(struct entity_t *weapon)
 					{
 						if(cgame_state->follow_me == weapon->weapon_data.craft->index && 
 							weapon->weapon_data.craft->craft_data.left_weapon == weapon)
-							cgame_state->left_ammo--;
+						{
+							if(cgame_state->left_ammo > 0)
+								cgame_state->left_ammo--;
+						}
 						else
-							cgame_state->right_ammo--;
+						{
+							if(cgame_state->right_ammo > 0)
+								cgame_state->right_ammo--;
+						}
 					}
 					#endif
 					
