@@ -1478,6 +1478,15 @@ void game_process_joined(uint32_t conn)
 		return;
 	}
 
+	if(match_begun)
+	{
+		net_emit_uint8(conn, EMNETMSG_PRINT);
+		net_emit_string(conn, "There is already an active match on this server.\n");
+		net_emit_end_of_stream(conn);
+		em_disconnect(conn);
+		return;
+	}
+
 	struct player_t *player = new_player();
 	player->conn = conn;
 }
