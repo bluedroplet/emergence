@@ -1191,11 +1191,9 @@ void plasma_shield_collision(struct entity_t *plasma, struct entity_t *shield)
 }
 
 
-#ifdef EMSERVER
 void bullet_rocket_collision(struct entity_t *bullet, struct entity_t *rocket)
 {
 	bullet->kill_me = 1;
-	remove_entity_from_all_players(rocket);
 	destroy_rocket(rocket);
 }
 
@@ -1203,7 +1201,6 @@ void bullet_rocket_collision(struct entity_t *bullet, struct entity_t *rocket)
 void bullet_mine_collision(struct entity_t *bullet, struct entity_t *mine)
 {
 	bullet->kill_me = 1;
-	remove_entity_from_all_players(mine);
 	destroy_mine(mine);
 }
 
@@ -1216,7 +1213,6 @@ void bullet_rails_collision(struct entity_t *bullet, struct entity_t *rails)
 	rails_force(rails, BULLET_DAMAGE, bullet->bullet_data.owner);
 	#endif
 }
-#endif
 
 
 void rocket_rocket_collision(struct entity_t *rocket1, struct entity_t *rocket2)
@@ -1546,7 +1542,6 @@ int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 			}
 			break;
 			
-		#ifdef EMSERVER
 		case ENT_BULLET:
 			if(point_in_circle(entity->xdis, entity->ydis, 
 				craft->xdis, craft->ydis, CRAFT_RADIUS))
@@ -1554,7 +1549,6 @@ int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 				craft_bullet_collision(craft, entity);
 			}
 			break;
-		#endif
 			
 		case ENT_ROCKET:
 			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, 
@@ -1774,7 +1768,6 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 			}
 			break;
 			
-		#ifdef EMSERVER
 		case ENT_BULLET:
 			if(point_in_circle(entity->xdis, entity->ydis, 
 				weapon->xdis, weapon->ydis, WEAPON_RADIUS))
@@ -1786,7 +1779,6 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 				}
 			}
 			break;
-		#endif
 			
 		case ENT_ROCKET:
 			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, 
@@ -2065,13 +2057,11 @@ void s_tick_craft(struct entity_t *craft)
 						entity->kill_me = 1;
 					break;
 				
-				#ifdef EMSERVER
 				case ENT_BULLET:
 					if(point_in_circle(entity->xdis, entity->ydis, craft->xdis, 
 						craft->ydis, CRAFT_RADIUS))
 						entity->kill_me = 1;
 					break;
-				#endif
 					
 				case ENT_ROCKET:
 					if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, 
@@ -2587,7 +2577,6 @@ void s_tick_weapon(struct entity_t *weapon)
 				}
 				break;
 				
-			#ifdef EMSERVER
 			case ENT_BULLET:
 				if(point_in_circle(entity->xdis, entity->ydis, 
 					xdis, ydis, WEAPON_RADIUS))
@@ -2600,7 +2589,6 @@ void s_tick_weapon(struct entity_t *weapon)
 					}
 				}
 				break;
-			#endif
 				
 			case ENT_ROCKET:
 				if(circles_intersect(xdis, ydis, WEAPON_RADIUS, 
@@ -3046,8 +3034,6 @@ void s_tick_plasma(struct entity_t *plasma)
 }
 
 
-#ifdef EMSERVER
-
 void s_tick_bullet(struct entity_t *bullet)
 {
 	apply_gravity_acceleration(bullet);
@@ -3127,7 +3113,6 @@ void s_tick_bullet(struct entity_t *bullet)
 			if(line_in_circle(bullet->xdis, bullet->ydis, xdis, ydis, 
 				entity->xdis, entity->ydis, SHIELD_RADIUS))
 			{
-				remove_entity_from_all_players(entity);
 				destroy_shield(entity);
 			}
 			break;
@@ -3165,8 +3150,6 @@ void s_tick_bullet(struct entity_t *bullet)
 	bullet->xdis = xdis;
 	bullet->ydis = ydis;
 }
-
-#endif
 
 
 void s_tick_rocket(struct entity_t *rocket)
@@ -3302,7 +3285,6 @@ void s_tick_rocket(struct entity_t *rocket)
 				}
 				break;
 				
-			#ifdef EMSERVER
 			case ENT_BULLET:
 				if(point_in_circle(entity->xdis, entity->ydis, 
 					xdis, ydis, ROCKET_RADIUS))
@@ -3310,7 +3292,6 @@ void s_tick_rocket(struct entity_t *rocket)
 					bullet_rocket_collision(entity, rocket);
 				}
 				break;
-			#endif
 				
 			case ENT_ROCKET:
 				if(circles_intersect(xdis, ydis, ROCKET_RADIUS, 
@@ -3815,7 +3796,6 @@ void s_tick_rails(struct entity_t *rails)
 				}
 				break;
 			
-			#ifdef EMSERVER
 			case ENT_BULLET:
 				if(point_in_circle(entity->xdis, entity->ydis, 
 					rails->xdis, rails->ydis, RAILS_RADIUS))
@@ -3823,7 +3803,6 @@ void s_tick_rails(struct entity_t *rails)
 					bullet_rails_collision(entity, rails);
 				}
 				break;
-			#endif
 				
 			case ENT_ROCKET:
 				if(circles_intersect(xdis, ydis, RAILS_RADIUS, 
@@ -4035,16 +4014,13 @@ void s_tick_shield(struct entity_t *shield)
 				}
 				break;
 			
-			#ifdef EMSERVER
 			case ENT_BULLET:
 				if(point_in_circle(entity->xdis, entity->ydis, 
 					xdis, ydis, SHIELD_RADIUS))
 				{
-					remove_entity_from_all_players(entity);
 					destroy_shield(entity);
 				}
 				break;
-			#endif
 				
 			case ENT_ROCKET:
 				if(circles_intersect(xdis, ydis, SHIELD_RADIUS, 
@@ -4187,11 +4163,9 @@ void s_tick_entities(struct entity_t **entity0)
 			s_tick_rocket(centity);
 			break;
 			
-		#ifdef EMSERVER
 		case ENT_BULLET:
 			s_tick_bullet(centity);
 			break;
-		#endif
 			
 		case ENT_MINE:
 			s_tick_mine(centity);
