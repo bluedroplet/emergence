@@ -67,6 +67,8 @@ void game_process_key_accepted(char temp_key[16]);
 void game_process_key_declined();
 void game_process_key_error();
 
+void toggle_ready(int state);
+
 
 void create_teleporter_sparkles();
 

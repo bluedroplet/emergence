@@ -52,18 +52,25 @@ uint32_t cgame_tick;
 int game_state = GS_DEAD;
 
 int num_players = 0;
-int num_players_active = 0;
-int max_players = 20;
-int max_players_active = 10;
+int num_spectators = 0;
+int max_players = 3;
+int max_spectators = 5;
+
+int match_duration = 10;
 
 struct player_t *player0 = NULL;
 struct entity_t *entity0;
 
+int match_begun = 0;
+uint32_t match_start_tick;
+
+uint32_t next_player_index = 0;
 
 struct player_t *new_player()
 {
 	struct player_t *player;
 	LL_CALLOC(struct player_t, &player0, &player);
+	player->index = next_player_index++;
 	return player;
 }
 
@@ -226,50 +233,54 @@ void propagate_entity(struct entity_t *entity)
 
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMEVENT_UPDATE_ENT);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint32(player->conn, entity->index);
-		net_emit_uint8(player->conn, entity->type);
-		net_emit_float(player->conn, entity->xdis);
-		net_emit_float(player->conn, entity->ydis);
-		net_emit_float(player->conn, entity->xvel);
-		net_emit_float(player->conn, entity->yvel);
-		net_emit_int(player->conn, entity->teleporting);
-		net_emit_uint32(player->conn, entity->teleporting_tick);
-		net_emit_uint32(player->conn, entity->teleport_spawn_index);
-		
-		switch(entity->type)
+		if(player->propagate_events)
 		{
-		case ENT_CRAFT:
-			write_craft_data_to_net(player->conn, entity);
-			break;
+			net_emit_uint8(player->conn, EMEVENT_UPDATE_ENT);
+			net_emit_uint32(player->conn, game_tick);
+			net_emit_uint32(player->conn, entity->index);
+			net_emit_uint8(player->conn, entity->type);
+			net_emit_float(player->conn, entity->xdis);
+			net_emit_float(player->conn, entity->ydis);
+			net_emit_float(player->conn, entity->xvel);
+			net_emit_float(player->conn, entity->yvel);
+			net_emit_int(player->conn, entity->teleporting);
+			net_emit_uint32(player->conn, entity->teleporting_tick);
+			net_emit_uint32(player->conn, entity->teleport_spawn_index);
+			
+			switch(entity->type)
+			{
+			case ENT_CRAFT:
+				write_craft_data_to_net(player->conn, entity);
+				break;
+			
+			case ENT_WEAPON:
+				write_weapon_data_to_net(player->conn, entity);
+				break;
+			
+			case ENT_PLASMA:
+				write_plasma_data_to_net(player->conn, entity);
+				break;
+			
+			case ENT_ROCKET:
+				write_rocket_data_to_net(player->conn, entity);
+				break;
+			
+			case ENT_MINE:
+				write_mine_data_to_net(player->conn, entity);
+				break;
+			
+			case ENT_RAILS:
+				write_rails_data_to_net(player->conn, entity);
+				break;
+			
+			case ENT_SHIELD:
+				write_shield_data_to_net(player->conn, entity);
+				break;
+			}
 		
-		case ENT_WEAPON:
-			write_weapon_data_to_net(player->conn, entity);
-			break;
-		
-		case ENT_PLASMA:
-			write_plasma_data_to_net(player->conn, entity);
-			break;
-		
-		case ENT_ROCKET:
-			write_rocket_data_to_net(player->conn, entity);
-			break;
-		
-		case ENT_MINE:
-			write_mine_data_to_net(player->conn, entity);
-			break;
-		
-		case ENT_RAILS:
-			write_rails_data_to_net(player->conn, entity);
-			break;
-		
-		case ENT_SHIELD:
-			write_shield_data_to_net(player->conn, entity);
-			break;
+			net_emit_end_of_stream(player->conn);
 		}
 		
-		net_emit_end_of_stream(player->conn);
 		player = player->next;
 	}
 }
@@ -394,8 +405,12 @@ void spawn_entity_on_all_players(struct entity_t *entity)
 		
 	while(player)
 	{
-		emit_spawn_entity(player->conn, entity);
-		net_emit_end_of_stream(player->conn);
+		if(player->propagate_events)
+		{
+			emit_spawn_entity(player->conn, entity);
+			net_emit_end_of_stream(player->conn);
+		}
+		
 		player = player->next;
 	}
 }
@@ -407,10 +422,14 @@ void remove_entity_from_all_players(struct entity_t *entity)
 		
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMEVENT_KILL_ENT);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint32(player->conn, entity->index);
-		net_emit_end_of_stream(player->conn);
+		if(player->propagate_events)
+		{
+			net_emit_uint8(player->conn, EMEVENT_KILL_ENT);
+			net_emit_uint32(player->conn, game_tick);
+			net_emit_uint32(player->conn, entity->index);
+			net_emit_end_of_stream(player->conn);
+		}
+		
 		player = player->next;
 	}
 }
@@ -422,10 +441,14 @@ void make_carcass_on_all_players(struct entity_t *craft)
 		
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMEVENT_CARCASS);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint32(player->conn, craft->index);
-		net_emit_end_of_stream(player->conn);
+		if(player->propagate_events)
+		{
+			net_emit_uint8(player->conn, EMEVENT_CARCASS);
+			net_emit_uint32(player->conn, game_tick);
+			net_emit_uint32(player->conn, craft->index);
+			net_emit_end_of_stream(player->conn);
+		}
+		
 		player = player->next;
 	}
 }
@@ -437,9 +460,13 @@ void emit_teleport_to_all_players()
 		
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMEVENT_TELEPORT);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_end_of_stream(player->conn);
+		if(player->propagate_events)
+		{
+			net_emit_uint8(player->conn, EMEVENT_TELEPORT);
+			net_emit_uint32(player->conn, game_tick);
+			net_emit_end_of_stream(player->conn);
+		}
+		
 		player = player->next;
 	}
 }
@@ -451,9 +478,13 @@ void emit_speedup_to_all_players()
 		
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMEVENT_SPEEDUP);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_end_of_stream(player->conn);
+		if(player->propagate_events)
+		{
+			net_emit_uint8(player->conn, EMEVENT_SPEEDUP);
+			net_emit_uint32(player->conn, game_tick);
+			net_emit_end_of_stream(player->conn);
+		}
+		
 		player = player->next;
 	}
 }
@@ -467,43 +498,77 @@ void emit_explosion(float xdis, float ydis, float xvel, float yvel, float size, 
 		
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMEVENT_EXPLOSION);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_float(player->conn, xdis);
-		net_emit_float(player->conn, ydis);
-		net_emit_float(player->conn, xvel);
-		net_emit_float(player->conn, yvel);
-		net_emit_float(player->conn, size);
-		net_emit_uint8(player->conn, magic);
-		net_emit_uint8(player->conn, start_red);
-		net_emit_uint8(player->conn, start_green);
-		net_emit_uint8(player->conn, start_blue);
-		net_emit_uint8(player->conn, end_red);
-		net_emit_uint8(player->conn, end_green);
-		net_emit_uint8(player->conn, end_blue);
-		net_emit_end_of_stream(player->conn);
+		if(player->propagate_events)
+		{
+			net_emit_uint8(player->conn, EMEVENT_EXPLOSION);
+			net_emit_uint32(player->conn, game_tick);
+			net_emit_float(player->conn, xdis);
+			net_emit_float(player->conn, ydis);
+			net_emit_float(player->conn, xvel);
+			net_emit_float(player->conn, yvel);
+			net_emit_float(player->conn, size);
+			net_emit_uint8(player->conn, magic);
+			net_emit_uint8(player->conn, start_red);
+			net_emit_uint8(player->conn, start_green);
+			net_emit_uint8(player->conn, start_blue);
+			net_emit_uint8(player->conn, end_red);
+			net_emit_uint8(player->conn, end_green);
+			net_emit_uint8(player->conn, end_blue);
+			net_emit_end_of_stream(player->conn);
+		}
+		
 		player = player->next;
 	}
 }
 
 
-void propagate_frags()
+void propagate_player_info()
 {
-	struct player_t *player = player0;
+	struct player_t *info_player = player0, *out_player;
 		
-	while(player)
+	while(info_player)
 	{
-		if(player->propagate_frags)
+		if(info_player->propagate_info)
 		{
-			player->propagate_frags = 0;
+			info_player->propagate_info = 0;
+			out_player = player0;
 			
-			net_emit_uint8(player->conn, EMEVENT_FRAGS);
-			net_emit_uint32(player->conn, game_tick);
-			net_emit_int(player->conn, player->frags);
-			net_emit_end_of_stream(player->conn);
+			while(out_player)
+			{
+				net_emit_uint8(out_player->conn, EMNETMSG_PLAYER_INFO);
+				net_emit_uint32(out_player->conn, info_player->index);
+				net_emit_string(out_player->conn, info_player->name->text);
+				
+				net_emit_uint8(out_player->conn, info_player->ready);
+				
+				net_emit_int(out_player->conn, info_player->frags);
+				net_emit_end_of_stream(out_player->conn);
+				
+				out_player = out_player->next;
+			}
 		}
 		
-		player = player->next;
+		info_player = info_player->next;
+	}
+}
+
+
+void remove_player_info(struct player_t *info_player)
+{
+	struct player_t *out_player = player0;
+		
+	while(out_player)
+	{
+		if(out_player->propagate_info)
+		{
+			out_player->propagate_info = 0;
+			
+			net_emit_uint8(out_player->conn, EMNETMSG_REMOVE_PLAYER_INFO);
+			net_emit_uint32(out_player->conn, info_player->index);
+			net_emit_end_of_stream(out_player->conn);
+		}
+		
+		out_player = out_player->next;
 	}
 }
 
@@ -953,7 +1018,7 @@ void respawn_craft(struct entity_t *craft, struct player_t *responsibility)
 	else
 		responsibility->frags++;
 	
-	responsibility->propagate_frags = 1;
+	responsibility->propagate_info = 1;
 	
 	spawn_player(craft->craft_data.owner);
 }
@@ -1068,38 +1133,41 @@ void propagate_colours(struct entity_t *entity)
 		
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMEVENT_COLOURS);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint32(player->conn, entity->index);
-		
-		net_emit_uint8(player->conn, entity->type);
-		
-		switch(entity->type)
+		if(player->propagate_events)
 		{
-		case ENT_CRAFT:
-			net_emit_uint8(player->conn, entity->craft_data.magic_smoke);
-		
-			net_emit_uint8(player->conn, entity->craft_data.smoke_start_red);
-			net_emit_uint8(player->conn, entity->craft_data.smoke_start_green);
-			net_emit_uint8(player->conn, entity->craft_data.smoke_start_blue);
-		
-			net_emit_uint8(player->conn, entity->craft_data.smoke_end_red);
-			net_emit_uint8(player->conn, entity->craft_data.smoke_end_green);
-			net_emit_uint8(player->conn, entity->craft_data.smoke_end_blue);
-		
-			net_emit_uint8(player->conn, entity->craft_data.shield_red);
-			net_emit_uint8(player->conn, entity->craft_data.shield_green);
-			net_emit_uint8(player->conn, entity->craft_data.shield_blue);
-			break;
-		
-		case ENT_WEAPON:
-			net_emit_uint8(player->conn, entity->weapon_data.shield_red);
-			net_emit_uint8(player->conn, entity->weapon_data.shield_green);
-			net_emit_uint8(player->conn, entity->weapon_data.shield_blue);
-			break;
+			net_emit_uint8(player->conn, EMEVENT_COLOURS);
+			net_emit_uint32(player->conn, game_tick);
+			net_emit_uint32(player->conn, entity->index);
+			
+			net_emit_uint8(player->conn, entity->type);
+			
+			switch(entity->type)
+			{
+			case ENT_CRAFT:
+				net_emit_uint8(player->conn, entity->craft_data.magic_smoke);
+			
+				net_emit_uint8(player->conn, entity->craft_data.smoke_start_red);
+				net_emit_uint8(player->conn, entity->craft_data.smoke_start_green);
+				net_emit_uint8(player->conn, entity->craft_data.smoke_start_blue);
+			
+				net_emit_uint8(player->conn, entity->craft_data.smoke_end_red);
+				net_emit_uint8(player->conn, entity->craft_data.smoke_end_green);
+				net_emit_uint8(player->conn, entity->craft_data.smoke_end_blue);
+			
+				net_emit_uint8(player->conn, entity->craft_data.shield_red);
+				net_emit_uint8(player->conn, entity->craft_data.shield_green);
+				net_emit_uint8(player->conn, entity->craft_data.shield_blue);
+				break;
+			
+			case ENT_WEAPON:
+				net_emit_uint8(player->conn, entity->weapon_data.shield_red);
+				net_emit_uint8(player->conn, entity->weapon_data.shield_green);
+				net_emit_uint8(player->conn, entity->weapon_data.shield_blue);
+				break;
+			}
+			
+			net_emit_end_of_stream(player->conn);
 		}
-		
-		net_emit_end_of_stream(player->conn);
 		
 		player = player->next;
 	}
@@ -1134,7 +1202,9 @@ void tick_game()
 	struct player_t *player = player0;
 	while(player)
 	{
-		tick_player(player);
+		if(player->state == PLAYER_STATE_PLAYING)
+			tick_player(player);
+		
 		player = player->next;
 	}
 	
@@ -1160,12 +1230,87 @@ void propagate_entities()
 }
 
 
+void begin_match()
+{
+	match_start_tick = game_tick;
+	
+	struct player_t *cplayer = player0;
+		
+	while(cplayer)
+	{
+		struct entity_t *craft = cplayer->craft;
+		remove_entity_from_all_players(craft);
+		remove_entity(&entity0, craft);
+		cplayer->craft = NULL;
+		cplayer->frags = 0;
+		cplayer->propagate_info = 1;
+		cplayer = cplayer->next;
+	}
+	
+	
+	struct entity_t *centity = entity0;
+		
+	while(centity)
+	{
+		remove_entity_from_all_players(centity);
+		centity = centity->next;
+	}
+	
+	LL_REMOVE_ALL(struct entity_t, &entity0);
+	
+
+	// spawn objects
+	
+	struct pickup_spawn_point_t *pickup_spawn_point = pickup_spawn_point0;
+		
+	while(pickup_spawn_point)
+	{
+		struct entity_t *entity = spawn_pickup(pickup_spawn_point);
+		spawn_entity_on_all_players(entity);
+		pickup_spawn_point = pickup_spawn_point->next;
+	}
+
+
+	cplayer = player0;
+		
+	while(cplayer)
+	{
+		net_emit_uint8(cplayer->conn, EMNETMSG_MATCH_BEGUN);
+		net_emit_uint32(cplayer->conn, match_start_tick);
+		net_emit_end_of_stream(cplayer->conn);
+		cplayer = cplayer->next;
+	}
+
+
+	cplayer = player0;
+		
+	while(cplayer)
+	{
+		spawn_player(cplayer);
+		cplayer = cplayer->next;
+	}
+	
+	match_begun = 1;
+	
+	console_print("The match has begun.\n");
+}
+
+
+void end_match()
+{
+	;
+}
+
+
 void update_game()
 {
 //	if(!(timer_count % 100))
 	//	ping_all_clients();
 	
 	uint32_t tick = get_tick_from_wall_time();
+	
+	if((tick - match_start_tick) / 200 > match_duration * 60)
+		end_match();
 
 	while(game_tick != tick)
 	{
@@ -1175,7 +1320,7 @@ void update_game()
 	}
 	
 	propagate_entities();
-	propagate_frags();
+	propagate_player_info();
 }
 
 
@@ -1234,35 +1379,15 @@ void game_process_joined(uint32_t conn)
 		em_disconnect(conn);
 		return;
 	}
-	
-	if(num_players >= max_players)
-	{
-		net_emit_uint8(conn, EMNETMSG_PRINT);
-		net_emit_string(conn, "No room!\n");
-		net_emit_end_of_stream(conn);
-		em_disconnect(conn);
-		return;
-	}
-	
-	net_emit_uint8(conn, EMNETMSG_JOINED);
-	net_emit_end_of_stream(conn);
-	
-	num_players++;
-		
-	int spec = 0;
-	
-	if(num_players_active >= max_players_active)
-		spec = 1;
 
 	struct player_t *player = new_player();
 	player->conn = conn;
-//	player->last_control_change = index;
-	player->next_pulse_event = game_tick + 200;
 }
 
 
 void destroy_player(struct player_t *player)
 {
+	remove_player_info(player);
 	struct entity_t *craft = player->craft;
 	remove_player(player->conn);
 	remove_entity_from_all_players(craft);
@@ -1270,85 +1395,117 @@ void destroy_player(struct player_t *player)
 }
 
 
-int game_process_play(struct player_t *player, struct buffer_t *stream)
+void game_process_play(struct player_t *player)
 {
-	struct string_t *s = new_string_string(player->name);
-		
-/*	if(spec)
+	switch(player->state)
 	{
-		string_cat_text(s, " joined the spectators\n");
-	}
-	else
-*/	{
-		string_cat_text(s, " joined the game\n");
-		num_players_active++;
-	}
-	
-	console_print(s->text);
-	print_on_all_players(s->text);
-	free_string(s);
-	
-	player->state = PLAYER_STATE_PLAYING;
-	
-	print_on_player(player, "Welcome to this server.\n");
-	
-	load_map_on_player(player);
-	
-/*	if(spec)
-	{
-		player->state = PLAYER_STATE_SPECTATING;
-		print_on_player(player, "You are spectating.\n");
-		net_emit_uint8(player->conn, EMMSG_SPECTATING);
-		net_emit_end_of_stream(player->conn);
-	}
-	else
-*/	{
-		load_all_skins_on_player(player);
+	case PLAYER_STATE_ASLEEP:
+
+		if(num_players >= max_players || match_begun)
+		{
+			if(num_spectators >= max_spectators)
+			{
+				net_emit_uint8(player->conn, EMNETMSG_PRINT);
+				net_emit_string(player->conn, "No room!\n");
+				net_emit_end_of_stream(player->conn);
+				em_disconnect(player->conn);
+				return;
+			}
+			
+			player->state = PLAYER_STATE_SPECTATING;
+			num_spectators++;
+		}
 		
 		player->state = PLAYER_STATE_PLAYING;
-		net_emit_uint8(player->conn, EMMSG_PLAYING);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_end_of_stream(player->conn);
-
-		spawn_all_entities_on_player(player);
+		player->propagate_info = 1;
+		num_players++;
+		break;
+	
+	case PLAYER_STATE_PLAYING:
+		return;
+	
+	case PLAYER_STATE_SPECTATING:
 		
-		spawn_player(player);
+		if(num_players >= max_players)
+		{
+			net_emit_uint8(player->conn, EMNETMSG_PRINT);
+			net_emit_string(player->conn, "No room!\n");
+			net_emit_end_of_stream(player->conn);
+			return;
+		}
+		
+		player->state = PLAYER_STATE_PLAYING;
+		player->propagate_info = 1;
+		num_spectators--;
+		num_players++;
+		break;
 	}
 	
-	
-	/*	if(player->state != PLAYER_STATE_SPECTATING)
-		return 0;
-	
-	if(num_players_active >= max_players_active)
-	{
-		net_emit_string(player->conn, "No room!\n");
-		net_emit_end_of_stream(player->conn);
-		return 1;
-	}
-	
-	num_players_active++;
 	
 	struct string_t *s = new_string_string(player->name);
-	string_cat_text(s, " started playing\n");
-	print_on_all_players(s->text);
+
+	if(player->state == PLAYER_STATE_PLAYING)
+		string_cat_text(s, " joined the game\n");
+	else
+		string_cat_text(s, " joined the spectators\n");
+		
 	console_print(s->text);
+	print_on_all_players(s->text);
 	free_string(s);
 	
-	net_emit_uint8(player->conn, EMMSG_PLAYING);
+	
+//	print_on_player(player, "Welcome to this server.\n");
+	
+	load_map_on_player(player);
+	load_all_skins_on_player(player);
+	
+	if(player->state == PLAYER_STATE_PLAYING)
+		net_emit_uint8(player->conn, EMMSG_PLAYING);
+	else
+		net_emit_uint8(player->conn, EMMSG_SPECTATING);
+	
+	net_emit_uint32(player->conn, game_tick);
 	net_emit_end_of_stream(player->conn);
-	
-	player->state = PLAYER_STATE_ACTIVE;
-	
-*/	return 1;
 }
 
 
-int game_process_spectate(struct player_t *player, struct buffer_t *stream)
+void game_process_spectate(struct player_t *player)
 {
-	if(player->state != PLAYER_STATE_PLAYING)
-		return 0;
+	switch(player->state)
+	{
+	case PLAYER_STATE_ASLEEP:
+		if(num_spectators >= max_spectators)
+		{
+			net_emit_uint8(player->conn, EMNETMSG_PRINT);
+			net_emit_string(player->conn, "No room!\n");
+			net_emit_end_of_stream(player->conn);
+			em_disconnect(player->conn);
+			return;
+		}
+		
+		player->state = PLAYER_STATE_SPECTATING;
+		num_spectators++;
+		break;
 	
-	num_players_active--;
+	case PLAYER_STATE_PLAYING:
+		if(num_spectators >= max_spectators)
+		{
+			net_emit_uint8(player->conn, EMNETMSG_PRINT);
+			net_emit_string(player->conn, "No room!\n");
+			net_emit_end_of_stream(player->conn);
+			return;
+		}
+		
+		destroy_player(player);
+		player->state = PLAYER_STATE_SPECTATING;
+		num_players--;
+		num_spectators++;
+		break;
+	
+	case PLAYER_STATE_SPECTATING:
+		return;
+	}
+	
 	
 	struct string_t *s = new_string_string(player->name);
 	string_cat_text(s, " started spectating\n");
@@ -1356,12 +1513,58 @@ int game_process_spectate(struct player_t *player, struct buffer_t *stream)
 	console_print(s->text);
 	free_string(s);
 	
+	load_map_on_player(player);
+	load_all_skins_on_player(player);
 	net_emit_uint8(player->conn, EMMSG_SPECTATING);
 	net_emit_end_of_stream(player->conn);
+}
+
+
+void game_process_start(struct player_t *player)
+{
+	if(player->state == PLAYER_STATE_ASLEEP)
+		return;
+
+//	player->last_control_change = index;
+	player->next_pulse_event = game_tick + 200;
+
+	spawn_all_entities_on_player(player);
 	
-	player->state = PLAYER_STATE_SPECTATING;
+	player->propagate_events = 1;
+
+	if(player->state == PLAYER_STATE_PLAYING)
+		spawn_player(player);
+}
+
+
+void game_process_ready(struct player_t *player, struct buffer_t *stream)
+{
+	if(match_begun)
+		return;
 	
-	return 1;
+	if(player->state != PLAYER_STATE_PLAYING)
+		return;
+	
+	player->ready = buffer_read_uint8(stream);
+
+	int all_ready = 1;
+	struct player_t *cplayer = player0;
+		
+	while(cplayer)
+	{
+		if(!cplayer->ready)
+		{
+			all_ready = 0;
+			break;
+		}
+		
+		cplayer = cplayer->next;
+	}
+	
+	if(all_ready)
+		begin_match();
+	else
+		player->propagate_info = 1;
 }
 
 
@@ -1371,10 +1574,16 @@ void game_process_disconnection(uint32_t conn)
 	if(!player)
 		return;
 	
-	num_players--;
+	switch(player->state)
+	{
+	case PLAYER_STATE_PLAYING:
+		num_players--;
+		break;
 	
-	if(player->state == PLAYER_STATE_PLAYING)
-		num_players_active--;
+	case PLAYER_STATE_SPECTATING:
+		num_spectators--;
+		break;
+	}
 	
 	struct string_t *s = new_string_string(player->name);
 	string_cat_text(s, " left\n");
@@ -1391,10 +1600,16 @@ void game_process_conn_lost(uint32_t conn)
 	if(!player)
 		return;
 	
-	num_players--;
+	switch(player->state)
+	{
+	case PLAYER_STATE_PLAYING:
+		num_players--;
+		break;
 	
-	if(player->state == PLAYER_STATE_PLAYING)
-		num_players_active--;
+	case PLAYER_STATE_SPECTATING:
+		num_spectators--;
+		break;
+	}
 	
 	struct string_t *s = new_string_string(player->name);
 	string_cat_text(s, " lost connectivity\n");
@@ -1435,6 +1650,8 @@ int game_process_name_change(struct player_t *player, struct buffer_t *stream)
 	console_print(s->text);
 	print_on_all_players(s->text);
 	free_string(s);
+	
+	player->propagate_info = 1;
 	return 1;
 }
 
@@ -1561,21 +1778,25 @@ void propagate_rail_trail(float x1, float y1, float x2, float y2,
 
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMEVENT_RAILTRAIL);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_float(player->conn, x1);
-		net_emit_float(player->conn, y1);
-		net_emit_float(player->conn, x2);
-		net_emit_float(player->conn, y2);
+		if(player->propagate_events)
+		{
+			net_emit_uint8(player->conn, EMEVENT_RAILTRAIL);
+			net_emit_uint32(player->conn, game_tick);
+			net_emit_float(player->conn, x1);
+			net_emit_float(player->conn, y1);
+			net_emit_float(player->conn, x2);
+			net_emit_float(player->conn, y2);
+			
+			net_emit_uint8(player->conn, firer->rail_inner_red);
+			net_emit_uint8(player->conn, firer->rail_inner_green);
+			net_emit_uint8(player->conn, firer->rail_inner_blue);
+			net_emit_uint8(player->conn, firer->rail_outer_red);
+			net_emit_uint8(player->conn, firer->rail_outer_green);
+			net_emit_uint8(player->conn, firer->rail_outer_blue);
+			
+			net_emit_end_of_stream(player->conn);
+		}
 		
-		net_emit_uint8(player->conn, firer->rail_inner_red);
-		net_emit_uint8(player->conn, firer->rail_inner_green);
-		net_emit_uint8(player->conn, firer->rail_inner_blue);
-		net_emit_uint8(player->conn, firer->rail_outer_red);
-		net_emit_uint8(player->conn, firer->rail_outer_green);
-		net_emit_uint8(player->conn, firer->rail_outer_blue);
-		
-		net_emit_end_of_stream(player->conn);
 		player = player->next;
 	}
 }
@@ -1778,7 +1999,9 @@ int game_process_fire_rail(struct player_t *player)
 	else
 		propagate_rail_trail(x1, y1, x2, y2, player);
 	
-	propagate_frags();
+	player->propagate_info = 1;
+	
+	propagate_player_info();
 
 	return 1;
 }
@@ -1812,10 +2035,14 @@ void detach_weapon(struct entity_t *weapon)
 
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMEVENT_DETACH);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint32(player->conn, weapon->index);
-		net_emit_end_of_stream(player->conn);
+		if(player->propagate_events)
+		{
+			net_emit_uint8(player->conn, EMEVENT_DETACH);
+			net_emit_uint32(player->conn, game_tick);
+			net_emit_uint32(player->conn, weapon->index);
+			net_emit_end_of_stream(player->conn);
+		}
+		
 		player = player->next;
 	}
 }
@@ -1983,13 +2210,11 @@ void game_process_stream(uint32_t conn, uint32_t index, struct buffer_t *stream)
 		switch(buffer_read_uint8(stream))
 		{
 		case EMMSG_PLAY:
-			if(!game_process_play(player, stream))
-				return;
+			game_process_play(player);
 			break;
 		
 		case EMMSG_SPECTATE:
-			if(!game_process_spectate(player, stream))
-				return;
+			game_process_spectate(player);
 			break;
 		
 		case EMMSG_STATUS:
@@ -1997,9 +2222,17 @@ void game_process_stream(uint32_t conn, uint32_t index, struct buffer_t *stream)
 				return;
 			break;
 		
+		case EMMSG_START:
+			game_process_start(player);
+			break;
+		
 		case EMMSG_SAY:
 			if(!game_process_say(player, stream))
 				return;
+			break;
+		
+		case EMMSG_READY:
+			game_process_ready(player, stream);
 			break;
 		
 		case EMMSG_THRUST:
@@ -2452,9 +2685,10 @@ void init_game()
 	create_cvar_string("password", "", 0);
 	create_cvar_string("admin_password", "", 0);
 	create_cvar_int("num_players", &num_players, CVAR_PROTECTED);
-	create_cvar_int("num_players_active", &num_players_active, CVAR_PROTECTED);
+	create_cvar_int("num_spectators", &num_spectators, CVAR_PROTECTED);
 	create_cvar_int("max_players", &max_players, 0);
-	create_cvar_int("max_players_active", &max_players_active, 0);
+	create_cvar_int("max_spectators", &max_spectators, 0);
+	create_cvar_int("match_duration", &match_duration, 0);
 	create_cvar_command("status", status);
 	create_cvar_command("map", map);
 	create_cvar_command("leave", leave);

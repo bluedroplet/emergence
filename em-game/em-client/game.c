@@ -188,8 +188,6 @@ struct event_t
 			uint8_t shield_red, shield_green, shield_blue;
 			
 		} colours_data;
-		
-		int frags;
 	};
 	
 	struct event_t *next;
@@ -222,12 +220,16 @@ struct string_t *recording_filename;
 gzFile gzrecording;
 
 uint32_t cgame_tick;
+uint32_t render_tick;
 float cgame_time;
 
 struct entity_t *centity0;
 
 double viewx = 0.0, viewy = 0.0;
 
+uint8_t ready;
+int match_begun;
+uint32_t match_start_tick;
 
 int moving_view;
 float moving_view_time;
@@ -252,8 +254,6 @@ struct ris_t *ris_plasma, *ris_craft_shield, *ris_weapon_shield,
 	*ris_shield_pickup, *ris_mine;
 
 uint32_t game_conn;
-
-int frags = 0;
 
 struct game_state_t
 {
@@ -328,6 +328,18 @@ int plasma_red = 0x32, plasma_green = 0x73, plasma_blue = 0x71;
 int shield_red = 0xff, shield_green = 0xff, shield_blue = 0xff;
 
 
+struct player_t
+{
+	uint32_t index;
+	struct string_t *name;
+	uint8_t ready;
+	int frags;
+	
+	struct player_t *next;
+	
+} *player0 = NULL;
+
+
 void clear_game()
 {
 	LL_REMOVE_ALL(struct event_t, &event0);
@@ -365,7 +377,9 @@ void clear_game()
 	memset(&message_reader, 0, sizeof(message_reader));
 	
 	centity0 = NULL;
-	frags = 0;
+	
+	match_begun = 0;
+	LL_REMOVE_ALL(struct player_t, &player0);
 }
 
 
@@ -919,22 +933,153 @@ int game_process_playing()
 	last_known_game_state.tick = game_state0->tick;
 	
 	
-//	game_tick = 
-//	console_print("start tick: %u\n", game_tick);
-	
 	game_state = GAMESTATE_PLAYING;
 
+	net_emit_uint8(game_conn, EMMSG_START);
+	net_emit_end_of_stream(game_conn);
+	
+	match_begun = 0;
+	ready = 0;
+	
 	return 1;
 }
 
 
 int game_process_spectating()
 {
+	r_DrawConsole = 0;
+	
+	if(game_state == GAMESTATE_DEMO)
+	{
+		message_reader_read_uint32();
+		return 1;
+	}
+	
 	if(game_state == GAMESTATE_DEAD)
 		return 0;
 	
+	if(game_state == GAMESTATE_AWAITING_APPROVAL)
+		console_print("\xab\n");
+	
+	game_state0 = calloc(1, sizeof(struct game_state_t));
+	game_state0->tick = message_reader_read_uint32();		// oh dear
+	
+	last_known_game_state.tick = game_state0->tick;
+	
+	
 	game_state = GAMESTATE_SPECTATING;
 
+	net_emit_uint8(game_conn, EMMSG_START);
+	net_emit_end_of_stream(game_conn);
+	
+	return 1;
+}
+
+
+void toggle_ready(int state)
+{
+	if(!state)
+		return;
+	
+	if(game_state != GAMESTATE_PLAYING || match_begun)
+		return;
+	
+	ready = !ready;
+	
+	net_emit_uint8(game_conn, EMMSG_READY);
+	net_emit_uint8(game_conn, ready);
+	net_emit_end_of_stream(game_conn);
+}
+
+
+int game_process_match_begun()
+{
+	match_begun = 1;
+	match_start_tick = message_reader_read_uint32();
+	
+	return 1;
+}
+
+
+int game_process_player_info()
+{
+	uint32_t index = message_reader_read_uint32();
+	
+	struct player_t *cplayer = player0;
+		
+	while(cplayer)
+	{
+		if(cplayer->index == index)
+		{
+			free_string(cplayer->name);
+			cplayer->name = message_reader_read_string();
+			cplayer->ready = message_reader_read_uint8();
+			cplayer->frags = message_reader_read_int();
+			break;
+		}
+		
+		cplayer = cplayer->next;
+	}
+	
+	if(!cplayer)
+	{
+		struct player_t player;
+		player.index = index;
+		player.name = message_reader_read_string();
+		player.ready = message_reader_read_uint8();
+		player.frags = message_reader_read_int();
+		
+		LL_ADD(struct player_t, &player0, &player);
+	}
+	
+	
+	if(match_begun)
+	{
+		// sort players by frag
+		
+		struct player_t *new_player0 = NULL, *lowest_player;
+			
+		while(player0)
+		{
+			lowest_player = player0;
+			cplayer = player0->next;
+			
+			while(cplayer)
+			{
+				if(cplayer->frags < lowest_player->frags)
+					lowest_player = cplayer;
+				
+				cplayer = cplayer->next;
+			}
+			
+			LL_ADD(struct player_t, &new_player0, lowest_player);
+			LL_REMOVE(struct player_t, &player0, lowest_player);
+		}
+		
+		player0 = new_player0;
+	}
+	
+	return 1;
+}
+
+
+int game_process_remove_player_info()
+{
+	uint32_t index = message_reader_read_uint32();
+	
+	struct player_t *cplayer = player0;
+		
+	while(cplayer)
+	{
+		if(cplayer->index == index)
+		{
+			LL_REMOVE(struct player_t, &player0, cplayer);
+			break;
+		}
+		
+		cplayer = cplayer->next;
+	}
+	
 	return 1;
 }
 
@@ -1328,12 +1473,6 @@ void add_railtrail_event(struct event_t *event)
 }
 
 
-void add_frags_event(struct event_t *event)
-{
-	event->frags = message_reader_read_int();
-}
-
-
 void process_railtrail_event(struct event_t *event)
 {
 	struct rail_trail_t rail_trail;
@@ -1425,12 +1564,6 @@ void process_teleport_event(struct event_t *event)
 void process_speedup_event(struct event_t *event)
 {
 	start_sample(speedup_ramp_sample, event->tick);
-}
-
-
-void process_frags_event(struct event_t *event)
-{
-	frags = event->frags;
 }
 
 
@@ -1554,10 +1687,6 @@ void process_tick_events(uint32_t tick)
 				process_speedup_event(event);
 				break;
 			
-			case EMEVENT_FRAGS:
-				process_frags_event(event);
-				break;
-			
 			case EMEVENT_EXPLOSION:
 				process_explosion_event(event);
 				break;
@@ -1632,10 +1761,6 @@ int process_tick_events_do_not_remove(uint32_t tick)
 			
 			case EMEVENT_SPEEDUP:
 				process_speedup_event(event);
-				break;
-			
-			case EMEVENT_FRAGS:
-			//	process_frags_event(event);		// not ooo
 				break;
 			
 			case EMEVENT_EXPLOSION:
@@ -1779,10 +1904,6 @@ int game_demo_process_event()
 		add_detach_event(&event);
 		break;
 	
-	case EMEVENT_FRAGS:
-		add_frags_event(&event);
-		break;
-	
 	case EMEVENT_EXPLOSION:
 		add_explosion_event(&event);
 		break;
@@ -1843,10 +1964,6 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp)
 	
 	case EMEVENT_DETACH:
 		add_detach_event(&event);
-		break;
-	
-	case EMEVENT_FRAGS:
-		add_frags_event(&event);
 		break;
 	
 	case EMEVENT_EXPLOSION:
@@ -1910,10 +2027,6 @@ int game_process_event_untimed(uint32_t index)
 		add_detach_event(&event);
 		break;
 	
-	case EMEVENT_FRAGS:
-		add_frags_event(&event);
-		break;
-	
 	case EMEVENT_EXPLOSION:
 		add_explosion_event(&event);
 		break;
@@ -1972,10 +2085,6 @@ int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp)
 		add_detach_event(&event);
 		break;
 	
-	case EMEVENT_FRAGS:
-		add_frags_event(&event);
-		break;
-	
 	case EMEVENT_EXPLOSION:
 		add_explosion_event(&event);
 		break;
@@ -2032,10 +2141,6 @@ int game_process_event_untimed_ooo(uint32_t index)
 		add_detach_event(&event);
 		break;
 	
-	case EMEVENT_FRAGS:
-		add_frags_event(&event);
-		break;
-	
 	case EMEVENT_EXPLOSION:
 		add_explosion_event(&event);
 		break;
@@ -2088,6 +2193,15 @@ int game_process_message()
 	
 	case EMNETMSG_NOTINRCON:
 		break;
+	
+	case EMNETMSG_MATCH_BEGUN:
+		return game_process_match_begun();
+	
+	case EMNETMSG_PLAYER_INFO:
+		return game_process_player_info();
+	
+	case EMNETMSG_REMOVE_PLAYER_INFO:
+		return game_process_remove_player_info();
 	}
 	
 	return 0;
@@ -3491,7 +3605,7 @@ void update_game()
 {
 	update_tick_parameters();
 	
-	uint32_t render_tick = get_game_tick();
+	render_tick = get_game_tick();
 	
 	uint32_t new_io_tick = 0, new_ooo_tick = 0;
 	uint32_t first_io_tick = 0, last_io_tick = 0, first_ooo_tick = 0;
@@ -3701,7 +3815,7 @@ void update_demo()
 		{
 			float s = get_wall_time() - demo_start_time;
 			
-			console_print("%u frames in %f seconds; %f fps\n", frame - demo_start_frame, 
+			console_print("%u frames in %.2f seconds; %.2f fps\n", frame - demo_start_frame, 
 				s, (double)(frame - demo_start_frame) / s);
 			
 			clear_game();
@@ -4027,6 +4141,78 @@ void create_teleporter_sparkles()
 }	
 
 
+void render_player_info()
+{
+	int y = vid_height / 6, w;
+	struct blit_params_t params;
+	
+	struct player_t *cplayer = player0;
+	
+	while(cplayer)
+	{
+		w = blit_text_right_aligned(vid_width - 33, y, 0xff, 0x60, 0x0f, s_backbuffer, 
+			cplayer->name->text);
+
+		if(!match_begun)
+		{
+			if(cplayer->ready)
+				blit_text_right_aligned(vid_width - 9, y, 0xff, 0x60, 0x0f, s_backbuffer, 
+					"R");
+		}
+		else
+		{
+			blit_text_right_aligned(vid_width - 1, y, 0xff, 0x60, 0x0f, s_backbuffer, 
+				"%i", cplayer->frags);
+		}
+		
+		
+		
+		y += 14;
+		cplayer = cplayer->next;
+	}
+
+	params.red = 0xff;
+	params.green = 0xff;
+	params.blue = 0;
+	params.alpha = 0x7f;
+	
+	params.dest = s_backbuffer;
+	params.dest_x = vid_width - 27;
+	params.dest_y = vid_height / 6 - 2;
+	params.width = 27;
+	params.height = y - vid_height / 6 - 1;
+
+	alpha_draw_rect(&params);
+
+	
+	params.red = 0xff;
+	params.green = 0x8f;
+	params.blue = 0x00;
+	params.alpha = 0x7f;
+	
+	params.dest = s_backbuffer;
+	params.x1 = vid_width - 31;
+	params.y1 = vid_height / 6 - 2;
+	params.x2 = params.x1;
+	params.y2 = y - 4;
+
+	draw_line(&params);
+}
+
+
+void render_match_time()
+{
+	if(match_begun)
+	{
+		int seconds = (render_tick - match_start_tick) / 200;
+		int minutes = seconds / 60;
+		seconds -= minutes * 60;
+		blit_text_right_aligned(vid_width, 0, 0xef, 0x6f, 0xff, s_backbuffer, 
+			"%u:%02u", minutes, seconds);
+	}
+}
+
+
 void render_game()
 {
 	if(!game_rendering)
@@ -4081,11 +4267,27 @@ void render_game()
 	render_map();
 	render_teleporters();
 	render_recording();
-	
-	blit_text_centered(vid_width / 2, vid_height / 6, 0xff, 0x60, 0x0f, s_backbuffer, "%i", frags);
+	render_player_info();
+	render_match_time();
 	
 //	blit_text(((vid_width * 2) / 3) + (vid_width / 200), 
 //		vid_height / 6, 0xef, 0x6f, 0xff, s_backbuffer, "[virus] where are you?");
+
+	if(!match_begun)
+	{
+		if(!ready)
+		{
+			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
+				s_backbuffer, "The match has not yet started.");
+			blit_text_centered(vid_width / 2, vid_height / 6 + 14, 0xef, 0x6f, 0xff, 
+				s_backbuffer, "Press [Enter] when you are ready.");
+		}
+		else
+		{
+			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
+				s_backbuffer, "The match will start when everyone is ready.");
+		}
+	}
 }
 
 

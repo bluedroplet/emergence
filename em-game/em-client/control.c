@@ -39,6 +39,16 @@ pthread_t control_thread_id;
 
 float mouse_speed = 1.0;
 
+
+void control_enter(int state)
+{
+	if(r_DrawConsole)
+		console_enter(state);
+	else
+		toggle_ready(state);
+}
+
+
 struct
 {
 	char *name;
@@ -75,7 +85,7 @@ struct
 	{"p",			NULL,	NULL},
 	{"[",			NULL,	NULL},
 	{"]",			NULL,	NULL},
-	{"enter",		NULL,	console_enter},
+	{"enter",		NULL,	control_enter},
 	{"lctrl",		NULL,	NULL},
 	{"a",			NULL,	NULL},
 	{"s",			NULL,	NULL},//screenshot},

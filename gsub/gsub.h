@@ -179,7 +179,9 @@ void init_text();
 
 int blit_text(int x, int y, uint8_t red, uint8_t green, uint8_t blue, 
 	struct surface_t *dest, const char *fmt, ...);
-void blit_text_centered(int x, int y, uint8_t red, uint8_t green, uint8_t blue, 
+int blit_text_centered(int x, int y, uint8_t red, uint8_t green, uint8_t blue, 
+	struct surface_t *dest, const char *fmt, ...);
+int blit_text_right_aligned(int x, int y, uint8_t red, uint8_t green, uint8_t blue, 
 	struct surface_t *dest, const char *fmt, ...);
 
 

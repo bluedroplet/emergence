@@ -235,6 +235,10 @@ void process_session_accepted(uint32_t conn)
 	console_print("Authentication succeeded\n");
 	
 	cstate->state = CONN_STATE_JOINED;
+	
+	net_emit_uint8(conn, EMNETMSG_JOINED);
+	net_emit_end_of_stream(conn);
+	
 	game_process_joined(conn);
 }
 

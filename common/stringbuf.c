@@ -257,7 +257,7 @@ void string_cat_double(struct string_t *string, double val, int digits)
 
 	char *newtext;
 
-	asprintf(&newtext, "%f", val);
+	asprintf(&newtext, "%.2f", val);
 
 	string_cat_text(string, newtext);
 

@@ -133,7 +133,7 @@ int blit_text(int x, int y, uint8_t red, uint8_t green, uint8_t blue,
 }
 
 
-void blit_text_centered(int x, int y, uint8_t red, uint8_t green, uint8_t blue, 
+int blit_text_centered(int x, int y, uint8_t red, uint8_t green, uint8_t blue, 
 	struct surface_t *dest, const char *fmt, ...)
 {
 	char *text;
@@ -185,4 +185,63 @@ void blit_text_centered(int x, int y, uint8_t red, uint8_t green, uint8_t blue,
 	}
 	
 	free(text);
+	
+	return w;
+}
+
+
+int blit_text_right_aligned(int x, int y, uint8_t red, uint8_t green, uint8_t blue, 
+	struct surface_t *dest, const char *fmt, ...)
+{
+	char *text;
+	
+	va_list ap;
+	
+	va_start(ap, fmt);
+	vasprintf(&text, fmt, ap);
+	va_end(ap);
+	
+	
+	int w = 0;
+	char *c = text;
+
+	while(*c)
+	{
+		w += charlengths[*((uint8_t*)c)];
+		c++;
+	}
+	
+	x -= w;
+
+	
+	struct blit_params_t params;
+
+	params.red = red;
+	params.green = green;
+	params.blue = blue;
+	params.source = smallfont;
+	params.dest = dest;
+	
+	w = 0;
+	c = text;
+
+	while(*c)
+	{
+		params.source_x = ((int)*((uint8_t*)c)) << 3;
+		params.source_y = 0;
+		params.dest_x = x + w;
+		params.dest_y = y;
+		params.height = 13;
+		params.width = charlengths[*((uint8_t*)c)];
+
+		w += params.width;
+
+		blit_partial_surface(&params);
+		
+		c++;
+	}
+	
+	free(text);
+	
+	return w;
 }

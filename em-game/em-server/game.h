@@ -6,10 +6,13 @@
 
 struct player_t
 {
+	uint32_t index;
 	uint32_t conn;
 	int state;
 	struct string_t *name;
 	int in_rcon;
+	int propagate_events;
+	uint8_t ready;
 
 	uint32_t last_control_change;
 	
@@ -26,7 +29,7 @@ struct player_t
 	uint32_t left_fired, right_fired;
 	
 	int frags;
-	int propagate_frags;
+	int propagate_info;
 	
 	uint8_t rail_inner_red, rail_inner_green, rail_inner_blue;
 	uint8_t rail_outer_red, rail_outer_green, rail_outer_blue;
