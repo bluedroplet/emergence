@@ -207,7 +207,7 @@ struct game_state_t
 {
 	uint32_t tick;
 	struct entity_t *entity0;
-	uint32_t follow_me;			// what is this for?
+	uint32_t follow_me;
 	int tainted;	
 	
 	struct game_state_t *next;
@@ -1806,10 +1806,152 @@ void cf_play(char *c)
 }
 
 
+void write_craft_data_to_demo(struct entity_t *craft)
+{
+	uint32_t msg = NO_ENT_INDEX;
+	
+	gzwrite(gzrecording, &craft->craft_data.acc, 4);
+	gzwrite(gzrecording, &craft->craft_data.theta, 4);
+	gzwrite(gzrecording, &craft->craft_data.braking, 4);
+	
+	if(craft->craft_data.left_weapon)
+		gzwrite(gzrecording, &craft->craft_data.left_weapon->index, 4);
+	else
+		gzwrite(gzrecording, &msg, 4);
+	
+	if(craft->craft_data.right_weapon)
+		gzwrite(gzrecording, &craft->craft_data.right_weapon->index, 4);
+	else
+		gzwrite(gzrecording, &msg, 4);
+	
+	gzwrite(gzrecording, &craft->craft_data.shield_flare, 4);
+}
+
+
+void write_weapon_data_to_demo(struct entity_t *weapon)
+{
+	uint32_t msg = NO_ENT_INDEX;
+	
+	gzwrite(gzrecording, &weapon->weapon_data.type, 4);
+	gzwrite(gzrecording, &weapon->weapon_data.theta, 4);
+	
+	if(weapon->weapon_data.craft)
+		gzwrite(gzrecording, &weapon->weapon_data.craft->index, 4);
+	else
+		gzwrite(gzrecording, &msg, 4);
+		
+	gzwrite(gzrecording, &weapon->weapon_data.shield_flare, 4);
+}
+
+
+void write_plasma_data_to_demo(struct entity_t *plasma)
+{
+	gzwrite(gzrecording, &plasma->plasma_data.weapon_id, 4);
+}
+
+
+void write_rocket_data_to_demo(struct entity_t *rocket)
+{
+	gzwrite(gzrecording, &rocket->rocket_data.theta, 4);
+	gzwrite(gzrecording, &rocket->rocket_data.weapon_id, 4);
+}
+
+
+void write_mine_data_to_demo(struct entity_t *mine)
+{
+	;
+}
+
+
+void write_rails_data_to_demo(struct entity_t *rails)
+{
+	;
+}
+
+
+void write_shield_data_to_demo(struct entity_t *shield)
+{
+	;
+}
+
+
+void write_entity_to_demo(struct entity_t *entity)
+{
+	uint8_t msg = EMEVENT_SPAWN_ENT;
+	uint32_t skin = 0;
+	
+	gzwrite(gzrecording, &msg, 1);
+	gzwrite(gzrecording, &cgame_tick, 4);
+	gzwrite(gzrecording, &entity->index, 4);
+	gzwrite(gzrecording, &entity->type, 1);
+	gzwrite(gzrecording, &skin, 4);		// skin
+	gzwrite(gzrecording, &entity->xdis, 4);
+	gzwrite(gzrecording, &entity->ydis, 4);
+	gzwrite(gzrecording, &entity->xvel, 4);
+	gzwrite(gzrecording, &entity->yvel, 4);
+	gzwrite(gzrecording, &entity->teleporting, 4);
+	gzwrite(gzrecording, &entity->teleporting_tick, 4);
+	gzwrite(gzrecording, &entity->teleport_spawn_index, 4);
+	
+	switch(entity->type)
+	{
+	case ENT_CRAFT:
+		write_craft_data_to_demo(entity);
+		gzwrite(gzrecording, &entity->craft_data.carcass, 1);
+		break;
+	
+	case ENT_WEAPON:
+		write_weapon_data_to_demo(entity);
+		gzwrite(gzrecording, &entity->weapon_data.detached, 1);
+		break;
+	
+	case ENT_PLASMA:
+		write_plasma_data_to_demo(entity);
+		break;
+	
+	case ENT_ROCKET:
+		write_rocket_data_to_demo(entity);
+		break;
+	
+	case ENT_MINE:
+		write_mine_data_to_demo(entity);
+		break;
+	
+	case ENT_RAILS:
+		write_rails_data_to_demo(entity);
+		break;
+	
+	case ENT_SHIELD:
+		write_shield_data_to_demo(entity);
+		break;
+	}
+}
+
+
+void write_all_entities_to_demo()
+{
+	struct entity_t *centity = centity0;
+
+	while(centity)
+	{
+		write_entity_to_demo(centity);
+		centity = centity->next;
+	}
+}
+
+
 void cf_record(char *c)
 {
 	if(recording)
 		;
+	
+	message_reader.type = MESSAGE_READER_STREAM_WRITE_GZDEMO;
+	recording_filename = new_string_text(c);
+	gzrecording = gzopen(c, "wb9");
+	message_reader.gzdemo = gzrecording;
+	
+	uint8_t msg;
+	uint32_t msg_32;
 	
 	switch(game_state)
 	{
@@ -1821,14 +1963,41 @@ void cf_record(char *c)
 	
 	case GAMESTATE_SPECTATING:
 	case GAMESTATE_PLAYING:
+		
+		msg = EMMSG_PROTO_VER;
+		gzwrite(gzrecording, &msg, 1);
+		msg = EM_PROTO_VER;
+		gzwrite(gzrecording, &msg, 1);
+	
+		msg = EMMSG_LOADMAP;
+		gzwrite(gzrecording, &msg, 1);
+	
+		struct string_t *string = new_string_text("default");
+		gzwrite_string(message_reader.gzdemo, string);
+		free_string(string);
+		
+		msg = EMMSG_LOADSKIN;
+		gzwrite(gzrecording, &msg, 1);
+		
+		string = new_string_text("default");
+		gzwrite_string(message_reader.gzdemo, string);
+		free_string(string);
+		
+		msg_32 = 0;
+		gzwrite(gzrecording, &msg_32, 4);
+		
+		write_all_entities_to_demo();
+
+		msg = EMEVENT_FOLLOW_ME;
+		gzwrite(gzrecording, &msg, 1);
+		gzwrite(gzrecording, &cgame_tick, 4);
+		gzwrite(gzrecording, &cgame_state->follow_me, 4);
+		
 		console_print("Recording...\n");
 		break;
 	}
 	
-	message_reader.type = MESSAGE_READER_STREAM_WRITE_GZDEMO;
-	recording_filename = new_string_text(c);
-	gzrecording = gzopen(c, "wb9");
-	message_reader.gzdemo = gzrecording;
+	
 	
 	recording = 1;
 }

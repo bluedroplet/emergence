@@ -28,6 +28,8 @@ struct skin_t *skin0 = NULL;
 
 int load_skin(struct skin_t *skin)
 {
+	console_print("loading skin\n");
+	
 	struct string_t *filename = new_string_string(emergence_home_dir);
 	string_cat_text(filename, "/skins/");	
 	string_cat_string(filename, skin->name);
