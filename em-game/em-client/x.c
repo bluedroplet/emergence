@@ -474,12 +474,10 @@ void init_x()
 
 	x_fd = ConnectionNumber(xdisplay);
 
-	console_print("Getting x to generate signals: ");
 	
 	fcntl(x_fd, F_SETFL, O_NONBLOCK);
 	
 	
-	console_print("ok\n");
 	
 	
 	XAutoRepeatOff(xdisplay);
