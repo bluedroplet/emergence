@@ -61,7 +61,7 @@ void draw_grid()
 	
 	struct blit_params_t params;
 		
-//	params.colour16 = 0xffff;
+	params.red = params.green = params.blue = 0xff;
 	params.dest = s_backbuffer;
 	
 	int x, y;

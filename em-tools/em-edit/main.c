@@ -66,13 +66,7 @@ void destroy_window()
 void draw()
 {
 	clear_surface(s_backbuffer);
-
 	draw_all();
-
-	if(visual->depth == 24)
-	{
-//		convert_16bit_to_32bit_mmx(image->mem, s_backbuffer->buf, vid_width * vid_height / 32);
-	}
 }	
 
 
@@ -254,14 +248,14 @@ gint on_configure(GtkWidget *widget, GdkEventConfigure *event, gpointer callback
 	if(visual->depth == 24)
 	{
 		s_backbuffer = new_surface_no_buf(SURFACE_24BITPADDING8BIT, vid_width, vid_height);
-		s_backbuffer->buf = image->mem;
 	}
 	else
 	{
-	//	vid_backbuffer = (uint16_t*)image->mem;
-	//	vid_pitch = image->bpl / 2;
-		;
+		s_backbuffer = new_surface_no_buf(SURFACE_16BIT, vid_width, vid_height);
 	}
+	
+	s_backbuffer->buf = image->mem;
+	s_backbuffer->pitch = image->bpl;
 	
 	draw();
 
