@@ -98,6 +98,7 @@ struct craft_data_t
 	struct surface_t *surface;
 	float particle;
 	uint32_t last_tick;
+	float spawn_time;
 	#endif
 };
 
@@ -120,6 +121,7 @@ struct weapon_data_t
 	#ifdef EMCLIENT
 	int skin;
 	struct surface_t *surface;
+	float spawn_time;
 	#endif
 };
 

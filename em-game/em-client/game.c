@@ -829,6 +829,7 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->craft_data.skin = event->ent_data.skin;
 		entity->craft_data.surface = skin_get_craft_surface(event->ent_data.skin);
 		entity->craft_data.particle = 0.0;
+		entity->craft_data.spawn_time = cgame_time;
 		break;
 	
 	case ENT_WEAPON:
@@ -852,7 +853,8 @@ void process_spawn_ent_event(struct event_t *event)
 			entity->weapon_data.surface = skin_get_rocket_launcher_surface(event->ent_data.skin);
 			break;
 		}
-	
+		
+		entity->weapon_data.spawn_time = cgame_time;
 		break;
 	
 	case ENT_PLASMA:
@@ -2131,7 +2133,13 @@ void render_entities()
 			params.width = entity->craft_data.surface->width;
 			params.height = entity->craft_data.surface->width;
 		
-			blit_partial_surface(&params);
+			if(cgame_time - entity->craft_data.spawn_time < 1.0)
+			{
+				params.alpha = lround((cgame_time - entity->craft_data.spawn_time) * 255.0);
+				alpha_blit_partial_surface(&params);
+			}
+			else
+				blit_partial_surface(&params);
 		
 		
 			if(!entity->craft_data.carcass)
@@ -2164,7 +2172,13 @@ void render_entities()
 			params.width = entity->weapon_data.surface->width;
 			params.height = entity->weapon_data.surface->width;
 		
-			blit_partial_surface(&params);
+			if(cgame_time - entity->weapon_data.spawn_time < 1.0)
+			{
+				params.alpha = lround((cgame_time - entity->weapon_data.spawn_time) * 255.0);
+				alpha_blit_partial_surface(&params);
+			}
+			else
+				blit_partial_surface(&params);
 		
 			params.source = s_weapon_shield;
 		
