@@ -27,6 +27,7 @@
 #include "tick.h"
 #include "map.h"
 #include "ping.h"
+#include "sound.h"
 #include "main.h"
 
 #ifdef LINUX
@@ -49,6 +50,7 @@ void client_shutdown()
 {
 	console_print("Shutting down...\n");
 	
+	kill_sound();
 	kill_game();
 	kill_network();
 	kill_render();
@@ -237,6 +239,7 @@ void init()
 	create_cvar_command("quit", client_shutdown_char);
 	
 
+	init_sound();
 	init_game();
 	
 	
