@@ -169,7 +169,8 @@ struct event_t
 		
 		struct
 		{
-			float x, y;
+			float xdis, ydis;
+			float xvel, yvel;
 			float size;
 			uint8_t magic;
 			uint8_t start_red, start_green, start_blue;
@@ -1288,8 +1289,10 @@ void process_detach_event(struct event_t *event)
 
 void add_explosion_event(struct event_t *event)
 {
-	event->explosion_data.x = message_reader_read_float();
-	event->explosion_data.y = message_reader_read_float();
+	event->explosion_data.xdis = message_reader_read_float();
+	event->explosion_data.ydis = message_reader_read_float();
+	event->explosion_data.xvel = message_reader_read_float();
+	event->explosion_data.yvel = message_reader_read_float();
 	event->explosion_data.size = message_reader_read_float();
 	
 	event->explosion_data.magic = message_reader_read_uint8();
@@ -1306,7 +1309,8 @@ void add_explosion_event(struct event_t *event)
 
 void process_explosion_event(struct event_t *event)
 {
-	explosion(event->explosion_data.x, event->explosion_data.y, 
+	explosion(event->explosion_data.xdis, event->explosion_data.ydis, 
+		event->explosion_data.xvel, event->explosion_data.yvel, 
 		event->explosion_data.size, event->explosion_data.magic, 
 		event->explosion_data.start_red, event->explosion_data.start_green, 
 		event->explosion_data.start_blue, event->explosion_data.end_red, 
@@ -2665,7 +2669,8 @@ void roll_right(uint32_t state)
 }
 
 
-void explosion(float x, float y, float size, uint8_t magic, 
+void explosion(float xdis, float ydis, float xvel, float yvel, 
+	float size, uint8_t magic, 
 	uint8_t start_red, uint8_t start_green, uint8_t start_blue,
 	uint8_t end_red, uint8_t end_green, uint8_t end_blue)
 {
@@ -2685,8 +2690,10 @@ void explosion(float x, float y, float size, uint8_t magic,
 		particle.end_blue = end_blue;
 	}
 	
-	particle.xpos = x;
-	particle.ypos = y;
+//	printf("xvel: %f; yvel: %f\n", xvel, yvel);
+	
+	particle.xpos = xdis;
+	particle.ypos = ydis;
 	
 	for(p = 0; p < np; p++)
 	{
@@ -2695,8 +2702,8 @@ void explosion(float x, float y, float size, uint8_t magic,
 		
 		double r = drand48();
 		
-		particle.xvel = -sin_theta * size * r;
-		particle.yvel = cos_theta * size * r;
+		particle.xvel = xvel + -sin_theta * size * r;
+		particle.yvel = yvel + cos_theta * size * r;
 		particle.creation = particle.last = cgame_time;
 		create_upper_particle(&particle);
 	}

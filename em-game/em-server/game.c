@@ -459,7 +459,7 @@ void emit_speedup_to_all_players()
 }
 
 
-void emit_explosion(float x, float y, float size, uint8_t magic, 
+void emit_explosion(float xdis, float ydis, float xvel, float yvel, float size, uint8_t magic, 
 	uint8_t start_red, uint8_t start_green, uint8_t start_blue,
 	uint8_t end_red, uint8_t end_green, uint8_t end_blue)
 {
@@ -469,8 +469,10 @@ void emit_explosion(float x, float y, float size, uint8_t magic,
 	{
 		net_emit_uint8(player->conn, EMEVENT_EXPLOSION);
 		net_emit_uint32(player->conn, game_tick);
-		net_emit_float(player->conn, x);
-		net_emit_float(player->conn, y);
+		net_emit_float(player->conn, xdis);
+		net_emit_float(player->conn, ydis);
+		net_emit_float(player->conn, xvel);
+		net_emit_float(player->conn, yvel);
 		net_emit_float(player->conn, size);
 		net_emit_uint8(player->conn, magic);
 		net_emit_uint8(player->conn, start_red);

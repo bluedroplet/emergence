@@ -132,7 +132,7 @@ void respawn_weapon(struct entity_t *weapon);
 
 void emit_teleport_to_all_players();
 void emit_speedup_to_all_players();
-void emit_explosion(float x, float y, float size, uint8_t magic, 
+void emit_explosion(float xdis, float ydis, float xvel, float yvel, float size, uint8_t magic, 
 	uint8_t start_red, uint8_t start_green, uint8_t start_blue,
 	uint8_t end_red, uint8_t end_green, uint8_t end_blue);
 

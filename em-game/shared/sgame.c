@@ -868,12 +868,12 @@ void explode_craft(struct entity_t *craft, struct player_t *responsibility)
 
 	strip_weapons_from_craft(craft);
 	remove_entity_from_all_players(craft);
-	splash_force(craft->xdis, craft->ydis, CRAFT_SPLASH_FORCE, responsibility);
-	emit_explosion(craft->xdis, craft->ydis, CRAFT_EXPLOSION_SIZE, 
-		craft->craft_data.magic_smoke, 
+	emit_explosion(craft->xdis, craft->ydis, craft->xvel, craft->yvel, 
+		CRAFT_EXPLOSION_SIZE, craft->craft_data.magic_smoke, 
 		craft->craft_data.smoke_start_red, craft->craft_data.smoke_start_green, 
 		craft->craft_data.smoke_start_blue, craft->craft_data.smoke_end_red, 
 		craft->craft_data.smoke_end_green, craft->craft_data.smoke_end_blue);
+	splash_force(craft->xdis, craft->ydis, CRAFT_SPLASH_FORCE, responsibility);
 
 	if(!craft->in_tick)
 		remove_entity(sentity0, craft);
@@ -885,12 +885,12 @@ void explode_weapon(struct entity_t *weapon, struct player_t *responsibility)
 	weapon->kill_me = 1;
 	strip_craft_from_weapon(weapon);
 	remove_entity_from_all_players(weapon);
-	splash_force(weapon->xdis, weapon->ydis, WEAPON_SPLASH_FORCE, responsibility);
-	emit_explosion(weapon->xdis, weapon->ydis, WEAPON_EXPLOSION_SIZE, 
-		weapon->weapon_data.magic_smoke, 
+	emit_explosion(weapon->xdis, weapon->ydis, weapon->xvel, weapon->yvel, 
+		WEAPON_EXPLOSION_SIZE, weapon->weapon_data.magic_smoke, 
 		weapon->weapon_data.smoke_start_red, weapon->weapon_data.smoke_start_green, 
 		weapon->weapon_data.smoke_start_blue, weapon->weapon_data.smoke_end_red, 
 		weapon->weapon_data.smoke_end_green, weapon->weapon_data.smoke_end_blue);
+	splash_force(weapon->xdis, weapon->ydis, WEAPON_SPLASH_FORCE, responsibility);
 	
 	respawn_weapon(weapon);
 	
@@ -904,9 +904,9 @@ void explode_rails(struct entity_t *rails, struct player_t *responsibility)
 	rails->kill_me = 1;
 	
 	remove_entity_from_all_players(rails);
+	emit_explosion(rails->xdis, rails->ydis, rails->xvel, rails->yvel, 
+		RAILS_EXPLOSION_SIZE, 0, 0xff, 0, 0, 0xff, 0xff, 0xff);
 	splash_force(rails->xdis, rails->ydis, RAILS_SPLASH_FORCE, responsibility);
-	emit_explosion(rails->xdis, rails->ydis, RAILS_EXPLOSION_SIZE, 0, 
-		0xff, 0, 0, 0xff, 0xff, 0xff);
 	schedule_respawn(rails->rails_data.spawn_point);
 	
 	if(!rails->in_tick)
@@ -920,12 +920,12 @@ void destroy_rocket(struct entity_t *rocket)
 	rocket->kill_me = 1;
 	
 	#ifdef EMSERVER
-	splash_force(rocket->xdis, rocket->ydis, ROCKET_SPLASH_FORCE, rocket->rocket_data.owner);
-	emit_explosion(rocket->xdis, rocket->ydis, ROCKET_EXPLOSION_SIZE, 
-		rocket->rocket_data.magic_smoke, 
+	emit_explosion(rocket->xdis, rocket->ydis, rocket->xvel, rocket->yvel, 
+		ROCKET_EXPLOSION_SIZE, rocket->rocket_data.magic_smoke, 
 		rocket->rocket_data.smoke_start_red, rocket->rocket_data.smoke_start_green, 
 		rocket->rocket_data.smoke_start_blue, rocket->rocket_data.smoke_end_red, 
 		rocket->rocket_data.smoke_end_green, rocket->rocket_data.smoke_end_blue);
+	splash_force(rocket->xdis, rocket->ydis, ROCKET_SPLASH_FORCE, rocket->rocket_data.owner);
 	#endif
 	
 	#ifdef EMCLIENT
@@ -942,12 +942,12 @@ void destroy_mine(struct entity_t *mine)
 	mine->kill_me = 1;
 	
 	#ifdef EMSERVER
-	splash_force(mine->xdis, mine->ydis, MINE_SPLASH_FORCE, mine->mine_data.owner);
-	emit_explosion(mine->xdis, mine->ydis, MINE_EXPLOSION_SIZE, 
-		mine->mine_data.magic_smoke, 
+	emit_explosion(mine->xdis, mine->ydis, mine->xvel, mine->yvel, 
+		MINE_EXPLOSION_SIZE, mine->mine_data.magic_smoke, 
 		mine->mine_data.smoke_start_red, mine->mine_data.smoke_start_green, 
 		mine->mine_data.smoke_start_blue, mine->mine_data.smoke_end_red, 
 		mine->mine_data.smoke_end_green, mine->mine_data.smoke_end_blue);
+	splash_force(mine->xdis, mine->ydis, MINE_SPLASH_FORCE, mine->mine_data.owner);
 	#endif
 	
 	if(!mine->in_tick)
