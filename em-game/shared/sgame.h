@@ -283,8 +283,8 @@ struct entity_t
 
 struct spawn_point_t
 {
-	double x, y;
-	double angle;
+	float x, y;
+	float angle;
 	int teleport_only;
 	int index;
 	int respawn_index;
@@ -296,16 +296,16 @@ struct spawn_point_t
 
 struct teleporter_t
 {
-	double x, y;
-	double radius;
+	float x, y;
+	float radius;
 	uint16_t colour;
 	int sparkles;
 	int spawn_index;
 	
 	int rotation_type;
-	double rotation_angle;
+	float rotation_angle;
 	int divider;
-	double divider_angle;
+	float divider_angle;
 	
 	#ifdef EMCLIENT
 	struct particle_t particles[1000];
@@ -321,10 +321,10 @@ struct teleporter_t
 
 struct speedup_ramp_t
 {
-	double x, y;
-	double theta;
-	double width;
-	double boost;
+	float x, y;
+	float theta;
+	float width;
+	float boost;
 	
 	struct speedup_ramp_t *next;
 };
@@ -332,8 +332,8 @@ struct speedup_ramp_t
 
 struct gravity_well_t
 {
-	double x, y;
-	double strength;
+	float x, y;
+	float strength;
 	int confined;
 	
 	struct gravity_well_t *next;

@@ -44,12 +44,12 @@ struct player_t
 struct pickup_spawn_point_t
 {
 	uint8_t type;
-	double x, y;
+	float x, y;
 	
 	int respawn;
 	uint32_t respawn_tick;
 	
-	double angle;
+	float angle;
 	
 	union
 	{

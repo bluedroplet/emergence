@@ -93,13 +93,13 @@ int read_spawn_point(gzFile file)
 {
 	struct spawn_point_t spawn_point;
 	
-	if(gzread(file, &spawn_point.x, 8) != 8)
+	if(gzread(file, &spawn_point.x, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &spawn_point.y, 8) != 8)
+	if(gzread(file, &spawn_point.y, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &spawn_point.angle, 8) != 8)
+	if(gzread(file, &spawn_point.angle, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &spawn_point.teleport_only, 4) != 4)
@@ -122,19 +122,19 @@ int read_speedup_ramp(gzFile file)
 {
 	struct speedup_ramp_t speedup_ramp;
 		
-	if(gzread(file, &speedup_ramp.x, 8) != 8)
+	if(gzread(file, &speedup_ramp.x, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &speedup_ramp.y, 8) != 8)
+	if(gzread(file, &speedup_ramp.y, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &speedup_ramp.theta, 8) != 8)
+	if(gzread(file, &speedup_ramp.theta, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &speedup_ramp.width, 8) != 8)
+	if(gzread(file, &speedup_ramp.width, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &speedup_ramp.boost, 8) != 8)
+	if(gzread(file, &speedup_ramp.boost, 4) != 4)
 		goto error;
 	
 	LL_ADD(struct speedup_ramp_t, &speedup_ramp0, &speedup_ramp);
@@ -151,13 +151,13 @@ int read_teleporter(gzFile file)
 {
 	struct teleporter_t teleporter;
 		
-	if(gzread(file, &teleporter.x, 8) != 8)
+	if(gzread(file, &teleporter.x, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &teleporter.y, 8) != 8)
+	if(gzread(file, &teleporter.y, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &teleporter.radius, 8) != 8)
+	if(gzread(file, &teleporter.radius, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &teleporter.sparkles, 4) != 4)
@@ -169,13 +169,13 @@ int read_teleporter(gzFile file)
 	if(gzread(file, &teleporter.rotation_type, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &teleporter.rotation_angle, 8) != 8)
+	if(gzread(file, &teleporter.rotation_angle, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &teleporter.divider, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &teleporter.divider_angle, 8) != 8)
+	if(gzread(file, &teleporter.divider_angle, 4) != 4)
 		goto error;
 
 	LL_ADD(struct teleporter_t, &teleporter0, &teleporter);
@@ -192,13 +192,13 @@ int read_gravity_well(gzFile file)
 {
 	struct gravity_well_t gravity_well;
 		
-	if(gzread(file, &gravity_well.x, 8) != 8)
+	if(gzread(file, &gravity_well.x, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &gravity_well.y, 8) != 8)
+	if(gzread(file, &gravity_well.y, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &gravity_well.strength, 8) != 8)
+	if(gzread(file, &gravity_well.strength, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &gravity_well.confined, 4) != 4)

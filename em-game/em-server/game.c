@@ -1849,16 +1849,16 @@ int read_plasma_cannon(gzFile file)
 	
 	pickup_spawn_point.type = OBJECTTYPE_PLASMACANNON;
 	
-	if(gzread(file, &pickup_spawn_point.x, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.x, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.y, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.y, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.plasma_cannon_data.plasmas, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.angle, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.angle, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.respawn_delay, 4) != 4)
@@ -1880,16 +1880,16 @@ int read_minigun(gzFile file)
 	
 	pickup_spawn_point.type = OBJECTTYPE_MINIGUN;
 	
-	if(gzread(file, &pickup_spawn_point.x, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.x, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.y, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.y, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.minigun_data.bullets, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.angle, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.angle, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.respawn_delay, 4) != 4)
@@ -1911,16 +1911,16 @@ int read_rocket_launcher(gzFile file)
 	
 	pickup_spawn_point.type = OBJECTTYPE_ROCKETLAUNCHER;
 	
-	if(gzread(file, &pickup_spawn_point.x, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.x, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.y, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.y, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.rocket_launcher_data.rockets, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.angle, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.angle, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.respawn_delay, 4) != 4)
@@ -1942,16 +1942,16 @@ int read_rails(gzFile file)
 	
 	pickup_spawn_point.type = OBJECTTYPE_RAILS;
 	
-	if(gzread(file, &pickup_spawn_point.x, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.x, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.y, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.y, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.rails_data.quantity, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.angle, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.angle, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.respawn_delay, 4) != 4)
@@ -1973,16 +1973,16 @@ int read_shield_energy(gzFile file)
 	
 	pickup_spawn_point.type = OBJECTTYPE_SHIELDENERGY;
 	
-	if(gzread(file, &pickup_spawn_point.x, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.x, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.y, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.y, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.shield_energy_data.shield_energy, 4) != 4)
 		goto error;
 	
-	if(gzread(file, &pickup_spawn_point.angle, 8) != 8)
+	if(gzread(file, &pickup_spawn_point.angle, 4) != 4)
 		goto error;
 	
 	if(gzread(file, &pickup_spawn_point.respawn_delay, 4) != 4)

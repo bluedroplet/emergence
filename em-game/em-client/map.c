@@ -142,28 +142,23 @@ void bypass_objects(gzFile gzfile)
 		switch(type)
 		{
 		case OBJECTTYPE_PLASMACANNON:
-			gzseek(gzfile, 16, SEEK_CUR);
-			gzseek(gzfile, 16, SEEK_CUR);
+			gzseek(gzfile, 20, SEEK_CUR);
 			break;
 		
 		case OBJECTTYPE_MINIGUN:
-			gzseek(gzfile, 16, SEEK_CUR);
-			gzseek(gzfile, 16, SEEK_CUR);
+			gzseek(gzfile, 20, SEEK_CUR);
 			break;
 		
 		case OBJECTTYPE_ROCKETLAUNCHER:
-			gzseek(gzfile, 16, SEEK_CUR);
-			gzseek(gzfile, 16, SEEK_CUR);
+			gzseek(gzfile, 20, SEEK_CUR);
 			break;
 		
 		case OBJECTTYPE_RAILS:
-			gzseek(gzfile, 16, SEEK_CUR);
-			gzseek(gzfile, 16, SEEK_CUR);
+			gzseek(gzfile, 20, SEEK_CUR);
 			break;
 		
 		case OBJECTTYPE_SHIELDENERGY:
-			gzseek(gzfile, 16, SEEK_CUR);
-			gzseek(gzfile, 16, SEEK_CUR);
+			gzseek(gzfile, 20, SEEK_CUR);
 			break;
 		
 		case OBJECTTYPE_SPAWNPOINT:
