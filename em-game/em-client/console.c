@@ -96,7 +96,9 @@ void render_console()
 		if(console_inputting)
 		{
 			blit_text(1, (vid_height - consoleheight * 14) + consoleline * 14 + 1, 
-				0xff, 0xff, 0xff, s_backbuffer, console_input);
+				r_ConsoleActiveTextRed, r_ConsoleActiveTextGreen, r_ConsoleActiveTextBlue, 
+				s_backbuffer, console_input);
+			
 			consoleline--;
 		}
 
@@ -121,7 +123,9 @@ void render_console()
 			for(cline = console->numlines - 1; cline >= 0; cline--)
 			{
 				blit_text(1, (vid_height - consoleheight * 14) + consoleline * 14 + 1, 
-					0xff, 0xff, 0xff, s_backbuffer, console->line[cline]);
+					r_ConsoleTextRed, r_ConsoleTextGreen, r_ConsoleTextBlue, 
+					s_backbuffer, console->line[cline]);
+				
 				if(consoleline-- == 0)
 				{
 					stop = 1;
@@ -138,14 +142,24 @@ void render_console()
 				break;
 		}
 	}
-
-/*	blit_destx = 0;
-	blit_desty = vid_height - consoleheight * 14;
-	blit_width = vid_width / 2;
-	blit_height = consoleheight * 14;
-	blit_alpha = r_ConsoleAlpha;
 	
-	if(rconing == RCCON_IN)
+	
+	struct blit_params_t params;
+		
+	params.red = r_ConsoleRed;
+	params.green = r_ConsoleRed;
+	params.blue = r_ConsoleRed;
+	params.alpha = r_ConsoleAlpha;
+	
+	params.dest = s_backbuffer;
+	params.dest_x = 0;
+	params.dest_y = vid_height - consoleheight * 14;
+	params.width = vid_width;
+	params.height = consoleheight * 14;
+
+	alpha_draw_rect(&params);
+	
+/*	if(rconing == RCCON_IN)
 		blit_colour = r_RconConsoleColour;
 	else
 		blit_colour = r_ConsoleColour;
