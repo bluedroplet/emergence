@@ -816,6 +816,7 @@ int game_process_playing()
 	
 	game_state = GAMESTATE_PLAYING;
 
+	r_DrawConsole = 0;
 	return 1;
 }
 
