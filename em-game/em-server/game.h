@@ -37,6 +37,60 @@ struct player_t
 	struct player_t *next;
 };
 
+
+struct pickup_spawn_point_t
+{
+	uint8_t type;
+	double x, y;
+	
+	int respawn;
+	uint32_t respawn_tick;
+	
+	union
+	{
+		struct
+		{
+			int plasmas;
+			double angle;
+			
+		} plasma_cannon_data;
+		
+		struct
+		{
+			int bullets;
+			double angle;
+			
+		} minigun_data;
+		
+		struct
+		{
+			int rockets;
+			double angle;
+			
+		} rocket_launcher_data;
+		
+		struct
+		{
+			int quantity;
+			double angle;
+			
+		} rails_data;
+		
+		struct
+		{
+			int shield_energy;
+			double angle;
+			
+		} shield_energy_data;
+	};
+	
+	int respawn_delay;
+	
+	struct pickup_spawn_point_t *next;
+};
+
+
+
 #define GS_DEAD		0
 #define GS_ALIVE	1
 
@@ -59,6 +113,7 @@ void print_on_all_players(char *text);
 void remove_entity_from_all_players(struct entity_t *entity);
 void respawn_craft(struct entity_t *craft);
 void make_carcass_on_all_players(struct entity_t *craft);
+void calculate_respawn_tick(struct pickup_spawn_point_t *spawn_point);
 
 
 extern uint32_t cgame_tick;

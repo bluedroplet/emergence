@@ -650,6 +650,9 @@ void explode_weapon(struct entity_t *weapon)
 	strip_craft_from_weapon(weapon);
 	remove_entity_from_all_players(weapon);
 	splash_force(weapon->xdis, weapon->ydis, WEAPON_SPLASH_FORCE);
+	
+	if(!weapon->weapon_data.spawn_point->respawn)
+		calculate_respawn_tick(weapon->weapon_data.spawn_point);
 }
 
 
@@ -2066,6 +2069,11 @@ void s_tick_weapon(struct entity_t *weapon)
 						entity->craft_data.left_weapon = weapon;
 						weapon->weapon_data.craft = entity;
 						craft = entity;
+						
+						#ifdef EMSERVER
+						if(!weapon->weapon_data.spawn_point->respawn)
+							calculate_respawn_tick(weapon->weapon_data.spawn_point);
+						#endif
 						break;
 					}
 					
@@ -2074,6 +2082,11 @@ void s_tick_weapon(struct entity_t *weapon)
 						entity->craft_data.right_weapon = weapon;
 						weapon->weapon_data.craft = entity;
 						craft = entity;
+						
+						#ifdef EMSERVER
+						if(!weapon->weapon_data.spawn_point->respawn)
+							calculate_respawn_tick(weapon->weapon_data.spawn_point);
+						#endif
 						break;
 					}
 				}

@@ -36,57 +36,7 @@
 
 
 
-struct pickup_spawn_point_t
-{
-	uint8_t type;
-	double x, y;
-	
-	int respawn;
-	uint32_t respawn_tick;
-	
-	union
-	{
-		struct
-		{
-			int plasmas;
-			double angle;
-			
-		} plasma_cannon_data;
-		
-		struct
-		{
-			int bullets;
-			double angle;
-			
-		} minigun_data;
-		
-		struct
-		{
-			int rockets;
-			double angle;
-			
-		} rocket_launcher_data;
-		
-		struct
-		{
-			int quantity;
-			double angle;
-			
-		} rails_data;
-		
-		struct
-		{
-			int shield_energy;
-			double angle;
-			
-		} shield_energy_data;
-	};
-	
-	int respawn_delay;
-	
-	struct pickup_spawn_point_t *next;
-	
-} *pickup_spawn_point0 = NULL;
+struct pickup_spawn_point_t *pickup_spawn_point0 = NULL;
 
 
 struct string_t *map_filename = NULL;
@@ -665,27 +615,6 @@ void tick_player(struct player_t *player)
 }
 
 
-void tick_game()
-{
-	// apply shared tick semantics and associated server-side callbacks
-	s_tick_entities(&entity0);
-		
-	
-	// propagate unpredictable entity changes
-	
-	
-	struct player_t *player = player0;
-	while(player)
-	{
-		tick_player(player);
-		player = player->next;
-	}
-	
-
-//	tick_map();
-}
-
-
 void spawn_player(struct player_t *player)
 {
 	player->rails = 10;
@@ -839,7 +768,61 @@ void respawn_craft(struct entity_t *craft)
 }
 
 
-/*
+
+void calculate_respawn_tick(struct pickup_spawn_point_t *spawn_point)
+{
+	spawn_point->respawn = 1;
+	spawn_point->respawn_tick = cgame_tick + spawn_point->respawn_delay / 5;	// terrible
+}
+
+
+
+struct entity_t *spawn_pickup(struct pickup_spawn_point_t *spawn_point)
+{
+	struct entity_t *entity;
+	
+	switch(spawn_point->type)
+	{
+	case OBJECTTYPE_PLASMACANNON:
+		entity = new_entity(&entity0);
+		entity->type = ENT_WEAPON;
+		entity->xdis = spawn_point->x;
+		entity->ydis = spawn_point->y;
+		entity->weapon_data.type = WEAPON_PLASMA_CANNON;
+		entity->weapon_data.ammo = 400;
+		entity->weapon_data.shield_strength = 1.0;
+		entity->weapon_data.spawn_point = spawn_point;
+		break;
+	
+	case OBJECTTYPE_MINIGUN:
+		entity = new_entity(&entity0);
+		entity->type = ENT_WEAPON;
+		entity->xdis = spawn_point->x;
+		entity->ydis = spawn_point->y;
+		entity->weapon_data.type = WEAPON_MINIGUN;
+		entity->weapon_data.ammo = 400;
+		entity->weapon_data.shield_strength = 1.0;
+		entity->weapon_data.spawn_point = spawn_point;
+		break;
+	
+	case OBJECTTYPE_ROCKETLAUNCHER:
+		entity = new_entity(&entity0);
+		entity->type = ENT_WEAPON;
+		entity->xdis = spawn_point->x;
+		entity->ydis = spawn_point->y;
+		entity->weapon_data.type = WEAPON_ROCKET_LAUNCHER;
+		entity->weapon_data.ammo = 10;
+		entity->weapon_data.shield_strength = 1.0;
+		entity->weapon_data.spawn_point = spawn_point;
+		break;
+	}
+	
+	spawn_point->respawn = 0;
+	
+	return entity;
+}
+
+
 void tick_map()
 {
 	struct pickup_spawn_point_t *spawn_point = pickup_spawn_point0;
@@ -848,51 +831,36 @@ void tick_map()
 	{
 		if(spawn_point->respawn && spawn_point->respawn_tick == game_tick)
 		{
-			struct entity_t *entity = new_entity();
+			struct entity_t *entity = spawn_pickup(spawn_point);
 			
-			entity->xdis = spawn_point->x;
-			entity->ydis = spawn_point->y;
-			entity->xvel = 0.0;
-			entity->yvel = 0.0;
-			
-			switch(spawn_point->type)
-			{
-			case OBJECTTYPE_ROCKETLAUNCHER:
-				entity->type = ENT_WEAPON;
-//				entity->weapon_data.type = WEAPON_ROCKETLAUNCHER;
-				entity->weapon_data.craft = NULL;
-//				entity->weapon_data.shield_flare = NULL;
-//				entity->weapon_data.ammo = spawn_point->rocket_launcher_data.rockets;
-//				entity->weapon_data.shield_strength = 100.0;
-				break;
-			
-			case OBJECTTYPE_MINIGUN:
-				entity->type = ENT_WEAPON;
-//				entity->weapon_data.type = WEAPON_MINIGUN;
-				entity->weapon_data.craft = NULL;
-//				entity->weapon_data.shield_flare = NULL;
-//				entity->weapon_data.ammo = spawn_point->minigun_data.bullets;
-//				entity->weapon_data.shield_strength = 100.0;
-				break;
-			
-			case OBJECTTYPE_RAILS:
-				entity->type = ENT_RAILS;
-//				entity->rails_data.quantity = spawn_point->rails_data.quantity;
-				break;
-			
-			case OBJECTTYPE_SHIELDENERGY:
-				entity->type = ENT_SHIELD;
-//				entity->shield_data.strength = spawn_point->shield_energy_data.shield_energy;
-				break;
-			}
-			
-			spawn_entity_on_all_players(spawn_point);
+			spawn_entity_on_all_players(entity);
 		}
 		
 		spawn_point = spawn_point->next;
 	}
 }
-*/
+
+
+
+void tick_game()
+{
+	// apply shared tick semantics and associated server-side callbacks
+	s_tick_entities(&entity0);
+		
+	
+	// propagate unpredictable entity changes
+	
+	
+	struct player_t *player = player0;
+	while(player)
+	{
+		tick_player(player);
+		player = player->next;
+	}
+	
+
+	tick_map();
+}
 
 
 void propagate_entities()
@@ -1727,40 +1695,7 @@ void map(char *args)
 		
 	while(pickup_spawn_point)
 	{
-		struct entity_t *entity;
-		
-		switch(pickup_spawn_point->type)
-		{
-		case OBJECTTYPE_PLASMACANNON:
-			entity = new_entity(&entity0);
-			entity->type = ENT_WEAPON;
-			entity->xdis = pickup_spawn_point->x;
-			entity->ydis = pickup_spawn_point->y;
-			entity->weapon_data.type = WEAPON_PLASMA_CANNON;
-			entity->weapon_data.ammo = 400;
-			entity->weapon_data.shield_strength = 1.0;
-			break;
-		
-		case OBJECTTYPE_MINIGUN:
-			entity = new_entity(&entity0);
-			entity->type = ENT_WEAPON;
-			entity->xdis = pickup_spawn_point->x;
-			entity->ydis = pickup_spawn_point->y;
-			entity->weapon_data.type = WEAPON_MINIGUN;
-			entity->weapon_data.ammo = 400;
-			entity->weapon_data.shield_strength = 1.0;
-			break;
-		
-		case OBJECTTYPE_ROCKETLAUNCHER:
-			entity = new_entity(&entity0);
-			entity->type = ENT_WEAPON;
-			entity->xdis = pickup_spawn_point->x;
-			entity->ydis = pickup_spawn_point->y;
-			entity->weapon_data.type = WEAPON_ROCKET_LAUNCHER;
-			entity->weapon_data.ammo = 10;
-			entity->weapon_data.shield_strength = 1.0;
-			break;
-		}
+		spawn_pickup(pickup_spawn_point);
 		
 		pickup_spawn_point = pickup_spawn_point->next;
 	}
