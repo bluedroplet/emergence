@@ -14,6 +14,9 @@
 #include <sys/epoll.h>
 #include <sys/poll.h>
 
+#include "../common/prefix.h"
+#include "../common/resource.h"
+
 #include "../common/types.h"
 #include "../common/llist.h"
 #include "shared/cvar.h"
@@ -23,6 +26,7 @@
 #include "shared/sgame.h"
 #include "shared/network.h"
 #include "shared/parse.h"
+#include "shared/config.h"
 #include "../common/user.h"
 #include "game.h"
 #include "ping.h"
@@ -576,4 +580,9 @@ void init()
 
 	create_cvar_command("daemonize", cf_go_daemon);
 	create_cvar_command("quit", cf_quit);
+	
+	struct string_t *string = new_string_text("%s%s", emergence_home_dir->text, "/server.autoexec");
+	if(!exec_config_file(string->text))
+		exec_config_file(find_resource("default-server.autoexec"));
+	free_string(string);
 }

@@ -989,7 +989,7 @@ void toggle_ready(int state)
 	if(!state)
 		return;
 	
-	if(game_state != GAMESTATE_PLAYING || match_begun)
+	if(game_state != GAMESTATE_PLAYING || (match_begun & !match_over))
 		return;
 	
 	ready = !ready;
@@ -1006,6 +1006,8 @@ int game_process_match_begun()
 	match_over = 0;
 	match_start_tick = message_reader_read_uint32();
 	
+	console_print("The match has begun.\n");
+	
 	return 1;
 }
 
@@ -1013,16 +1015,33 @@ int game_process_match_begun()
 int game_process_match_over()
 {
 	match_over = 1;
+	console_print("The match is over.\n");
 	
 	match_end_tick = message_reader_read_uint32();
 	
 	winner_type = message_reader_read_uint8();
 	
 	if(winner_type == WINNER_INDEX)
+	{
 		winner_index = message_reader_read_uint32();
-	
-	console_print("match over\n");
-	
+		
+		struct player_t *cplayer = player0;
+		
+		while(cplayer)
+		{
+			if(cplayer->index == winner_index)
+				break;
+			
+			cplayer = cplayer->next;
+		}
+		
+		console_print("%s has won.\n", cplayer->name->text);
+	}
+	else
+	{
+		console_print("You have won.\n");
+	}
+
 	return 1;
 }
 
@@ -1031,8 +1050,9 @@ int game_process_lobby()
 {
 	match_begun = 0;
 	match_over = 0;
+	ready = 0;
 
-	console_print("lobby\n");
+	console_print("The game has returned to the lobby.\n");
 	
 	return 1;
 }
@@ -4441,7 +4461,7 @@ void render_game()
 		{
 		case WINNER_YOU:
 			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
-				s_backbuffer, "You have won the match.");
+				s_backbuffer, "You have won the match!");
 			break;
 		
 		case WINNER_INDEX:
@@ -4457,7 +4477,7 @@ void render_game()
 			}
 			
 			s = new_string_string(cplayer->name);
-			string_cat_text(s, " has one the match.");
+			string_cat_text(s, " has won the match!");
 			
 			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
 				s_backbuffer, s->text);

@@ -1,7 +1,8 @@
 SUBDIRS = demos stock-maps stock-skins base-maps \
 	stock-object-textures stock-sounds
 
-OBJECTS = smallfont.png default-controls.config default-autoexec
+OBJECTS = smallfont.png default-controls.config \
+	default-client.autoexec default-server.autoexec
 
 sharedatadir = $(pkgdatadir)
 

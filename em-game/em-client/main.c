@@ -278,7 +278,7 @@ void init()
 	
 	string = new_string_text("%s%s", emergence_home_dir->text, "/client.autoexec");
 	if(!exec_config_file(string->text))
-		exec_config_file(find_resource("default-autoexec"));
+		exec_config_file(find_resource("default-client.autoexec"));
 	free_string(string);
 }
 

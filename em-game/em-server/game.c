@@ -64,6 +64,7 @@ struct entity_t *entity0;
 int match_begun = 0;
 int match_over = 0;
 uint32_t match_start_tick;
+uint32_t match_end_tick;
 
 uint32_t next_player_index = 0;
 
@@ -1017,7 +1018,11 @@ void return_to_lobby()
 		
 	while(cplayer)
 	{
+		cplayer->ready = 0;
+		cplayer->propagate_info = 1;
+		
 		net_emit_uint8(cplayer->conn, EMNETMSG_LOBBY);
+		net_emit_end_of_stream(cplayer->conn);
 		
 		if(!cplayer->craft)
 		{
@@ -1030,15 +1035,19 @@ void return_to_lobby()
 				net_emit_uint8(cplayer->conn, EMEVENT_FOLLOW_ME);
 				net_emit_uint32(cplayer->conn, game_tick);
 				net_emit_uint32(cplayer->conn, cplayer->craft->index);
+				net_emit_end_of_stream(cplayer->conn);
 			}
 		}
 		
-		net_emit_end_of_stream(cplayer->conn);
 		cplayer = cplayer->next;
 	}
 	
 	match_begun = 0;
 	match_over = 0;
+
+	propagate_player_info();
+	
+	console_print("The game has returned to the lobby.\n");
 }
 
 
@@ -1046,6 +1055,7 @@ void respawn_craft(struct entity_t *craft, struct player_t *responsibility)
 {
 	if(match_begun && match_over && craft->craft_data.owner == winner)
 	{
+		craft->craft_data.owner->craft = NULL;
 		return_to_lobby();
 		return;
 	}
@@ -1239,7 +1249,6 @@ void tick_map()
 }
 
 
-
 void tick_game()
 {
 	// apply shared tick semantics and associated server-side callbacks
@@ -1406,6 +1415,10 @@ void end_match()
 	}
 	
 	match_over = 1;
+	match_end_tick = game_tick;
+	
+	console_print("The match is over.\n");
+	console_print("%s has won.\n", winner->name->text);
 }
 
 
@@ -1426,11 +1439,11 @@ void update_game()
 	propagate_entities();
 	propagate_player_info();
 
-//	if(!match_over && (tick - match_start_tick) / 200 >= match_duration * 60)
-//		end_match();
-
-	if(match_begun && !match_over && (tick - match_start_tick) / 200 >= match_duration)
+	if(match_begun && !match_over && (tick - match_start_tick) / 200 >= match_duration * 60)
 		end_match();
+	
+	if(match_begun && match_over && (tick - match_end_tick) / 200 >= 10)
+		return_to_lobby();
 }
 
 
@@ -1654,7 +1667,12 @@ void game_process_start(struct player_t *player)
 void game_process_ready(struct player_t *player, struct buffer_t *stream)
 {
 	if(match_begun)
-		return;
+	{
+		if(match_over)
+			return_to_lobby();
+		else
+			return;
+	}
 	
 	if(player->state != PLAYER_STATE_PLAYING)
 		return;
@@ -1705,6 +1723,9 @@ void game_process_disconnection(uint32_t conn)
 	
 	console_print(s->text);
 	print_on_all_players(s->text);
+	
+	if(num_players == 0 && match_begun)
+		return_to_lobby();
 }
 
 
@@ -1731,6 +1752,9 @@ void game_process_conn_lost(uint32_t conn)
 	
 	console_print(s->text);
 	print_on_all_players(s->text);
+	
+	if(num_players == 0 && match_begun)
+		return_to_lobby();
 }
 
 
@@ -1754,16 +1778,23 @@ int game_process_name_change(struct player_t *player, struct buffer_t *stream)
 {
 	struct string_t *s = new_string_string(player->name);
 		
-	free_string(player->name);
-	player->name = buffer_read_string(stream);
+	if(!player->name)
+	{
+		player->name = buffer_read_string(stream);
+	}
+	else
+	{		
+		free_string(player->name);
+		player->name = buffer_read_string(stream);
 	
-	string_cat_text(s, " is now ");
-	string_cat_string(s, player->name);
-	string_cat_text(s, "\n");
-
-	console_print(s->text);
-	print_on_all_players(s->text);
-	free_string(s);
+		string_cat_text(s, " is now ");
+		string_cat_string(s, player->name);
+		string_cat_text(s, "\n");
+	
+		console_print(s->text);
+		print_on_all_players(s->text);
+		free_string(s);
+	}
 	
 	player->propagate_info = 1;
 	return 1;

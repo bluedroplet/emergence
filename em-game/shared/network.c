@@ -1574,6 +1574,9 @@ void net_emit_end_of_stream(uint32_t temp_conn)
 	if(conn->state != NETSTATE_CONNECTED)
 		goto end;
 	
+	if(conn->cpacket_payload_size == 0)
+		goto end;
+	
 	conn->cpacket.header |= EMNETFLAG_STREAMLAST;
 	send_cpacket(conn);
 	conn->cpacket.header |= EMNETFLAG_STREAMFIRST;
