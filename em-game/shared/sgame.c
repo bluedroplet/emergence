@@ -1688,10 +1688,20 @@ int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 				craft->propagate_me = 1;
 				craft->speeding_up = 1;
 				
+				
+				// try to prevent anomalies
+				
+				if(craft->craft_data.left_weapon)
+					craft->craft_data.left_weapon->propagate_me = 1;
+				
+				if(craft->craft_data.right_weapon)
+					craft->craft_data.right_weapon->propagate_me = 1;
+				
+				
 				emit_speedup_to_all_players();
 				break;
 			}
-		}			
+		}
 		
 		speedup_ramp = speedup_ramp->next;
 	}
@@ -1781,7 +1791,7 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 	struct entity_t *entity = *sentity0;
 	while(entity)
 	{
-		if(entity == weapon || entity->teleporting)
+		if(entity == weapon || entity->teleporting || entity->kill_me)
 		{
 			entity = entity->next;
 			continue;
@@ -1914,6 +1924,13 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 				restart = 1;
 				weapon->propagate_me = 1;
 				weapon->speeding_up = 1;
+				
+				
+				// try to prevent anomalies
+				
+				if(weapon->weapon_data.craft)
+					weapon->weapon_data.craft->propagate_me = 1;
+				
 				emit_speedup_to_all_players();
 				break;
 			}
@@ -1951,23 +1968,6 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 		teleporter = teleporter->next;
 	}
 	
-	#endif
-
-	
-	if(weapon->weapon_data.detached)
-		return !restart;
-	
-	struct entity_t *craft = weapon->weapon_data.craft;
-		
-	#ifdef EMSERVER
-//	assert(craft);
-	if(!craft)
-		return !restart;
-	#endif
-	
-	#ifdef EMCLIENT
-	if(!craft)
-		return !restart;	// inconsistency
 	#endif
 
 	return !restart;
@@ -2027,7 +2027,7 @@ void s_tick_craft(struct entity_t *craft)
 			struct entity_t *entity = *sentity0;
 			while(entity)
 			{
-				if(entity == craft || entity->teleporting)
+				if(entity == craft || entity->teleporting || entity->kill_me)
 				{
 					entity = entity->next;
 					continue;
@@ -2320,9 +2320,8 @@ void s_tick_craft(struct entity_t *craft)
 				old_left_weapon_xdis, old_left_weapon_ydis);
 		}
 		
-		if(left_weapon)
-			if(left_weapon->kill_me)
-				left_weapon_advanced = 1;
+		if(craft->kill_me)
+			craft_advanced = 1;
 		
 		if(right_weapon)
 			if(right_weapon->kill_me)
@@ -2334,9 +2333,8 @@ void s_tick_craft(struct entity_t *craft)
 				old_right_weapon_xdis, old_right_weapon_ydis);
 		}
 	
-		if(left_weapon)
-			if(left_weapon->kill_me)
-				left_weapon_advanced = 1;
+		if(craft->kill_me)
+			craft_advanced = 1;
 		
 		if(right_weapon)
 			if(right_weapon->kill_me)
@@ -4368,11 +4366,57 @@ void s_tick_entities(struct entity_t **entity0)
 		case ENT_CRAFT:
 			s_tick_craft(centity);
 			break;
+		}
+		
+		if(centity->kill_me)
+		{
+			struct entity_t *next = centity->next;
+			remove_entity(sentity0, centity);
+			centity = next;
+		}
+		else
+		{
+			centity->in_tick = 0;
+			centity = centity->next;
+		}
+	}
 
+	
+	centity = *sentity0;
+	
+	while(centity)
+	{
+		centity->in_tick = 1;
+		
+		switch(centity->type)
+		{
 		case ENT_WEAPON:
 			s_tick_weapon(centity);
 			break;
+		}
 		
+		if(centity->kill_me)
+		{
+			struct entity_t *next = centity->next;
+			remove_entity(sentity0, centity);
+			centity = next;
+		}
+		else
+		{
+			centity->in_tick = 0;
+			centity = centity->next;
+		}
+	}
+	
+	
+	centity = *sentity0;
+	
+	while(centity)
+	{
+		centity->in_tick = 1;
+		
+		switch(centity->type)
+		{
 		case ENT_PLASMA:
 			s_tick_plasma(centity);
 			break;
