@@ -70,6 +70,9 @@ void read_bsp_node(gzFile file, struct bspnode_t *node)
 	
 error:
 	
+	node->front = NULL;
+	node->back = NULL;
+	
 	return;
 }
 
