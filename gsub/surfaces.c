@@ -981,12 +981,12 @@ void surface_rotate_left(struct surface_t *surface)
 			uint8_t *out = malloc(get_size(surface->flags, surface->width, surface->height));
 			uint16_t *dst = (uint16_t*)out;
 	
-			for(y = 0; y < surface->height; y++)
+			for(y = 0; y < surface->width; y++)
 			{
-				for(x = 0; x < surface->width; x++)
+				for(x = 0; x < surface->height; x++)
 				{
-					*dst++ = ((uint16_t*)surface->buf)[(surface->width - 1 - x) * 
-						surface->width + y];
+					*dst++ = ((uint16_t*)surface->buf)[x * surface->width + 
+						surface->width - 1 - y];
 				}
 			}
 		
@@ -1001,12 +1001,12 @@ void surface_rotate_left(struct surface_t *surface)
 			uint8_t *out = malloc(get_size(surface->flags, surface->width, surface->height));
 			uint8_t *dst = out;
 	
-			for(y = 0; y < surface->height; y++)
+			for(y = 0; y < surface->width; y++)
 			{
-				for(x = 0; x < surface->width; x++)
+				for(x = 0; x < surface->height; x++)
 				{
-					uint8_t *src = &(surface->buf[((surface->width - 1 - x) * 
-						surface->width + y) * 3]);
+					uint8_t *src = &(surface->buf[(x * surface->width + 
+						surface->width - 1 - y) * 3]);
 					
 					*dst++ = *src++;
 					*dst++ = *src++;
@@ -1030,11 +1030,12 @@ void surface_rotate_left(struct surface_t *surface)
 				surface->width, surface->height));
 			uint8_t *dst = alpha_out;
 			
-			for(y = 0; y < surface->height; y++)
+			for(y = 0; y < surface->width; y++)
 			{
-				for(x = 0; x < surface->width; x++)
+				for(x = 0; x < surface->height; x++)
 				{
-					*dst++ = surface->alpha_buf[(surface->width - 1 - x) * surface->width + y];
+					*dst++ = surface->alpha_buf[x * surface->width + 
+						surface->width - 1 - y];
 				}
 			}
 		
@@ -1072,12 +1073,12 @@ void surface_rotate_right(struct surface_t *surface)
 			uint8_t *out = malloc(get_size(surface->flags, surface->width, surface->height));
 			uint16_t *dst = (uint16_t*)out;
 	
-			for(y = 0; y < surface->height; y++)
+			for(y = 0; y < surface->width; y++)
 			{
-				for(x = 0; x < surface->width; x++)
+				for(x = 0; x < surface->height; x++)
 				{
-					*dst++ = ((uint16_t*)surface->buf)[x * surface->width + 
-						surface->height - 1 - y];
+					*dst++ = ((uint16_t*)surface->buf)[(surface->height - 1 - x) * 
+						surface->width + y];
 				}
 			}
 		
@@ -1092,12 +1093,12 @@ void surface_rotate_right(struct surface_t *surface)
 			uint8_t *out = malloc(get_size(surface->flags, surface->width, surface->height));
 			uint8_t *dst = out;
 	
-			for(y = 0; y < surface->height; y++)
+			for(y = 0; y < surface->width; y++)
 			{
-				for(x = 0; x < surface->width; x++)
+				for(x = 0; x < surface->height; x++)
 				{
-					uint8_t *src = &surface->buf[(x * surface->width + 
-						surface->height - 1 - y) * 3];
+					uint8_t *src = &surface->buf[((surface->height - 1 - x) * 
+						surface->width + y) * 3];
 					
 					*dst++ = *src++;
 					*dst++ = *src++;
@@ -1121,11 +1122,12 @@ void surface_rotate_right(struct surface_t *surface)
 				surface->width, surface->height));
 			uint8_t *dst = alpha_out;
 			
-			for(y = 0; y < surface->height; y++)
+			for(y = 0; y < surface->width; y++)
 			{
-				for(x = 0; x < surface->width; x++)
+				for(x = 0; x < surface->height; x++)
 				{
-					*dst++ = surface->alpha_buf[x * surface->width + surface->height - 1 - y];
+					*dst++ = surface->alpha_buf[(surface->height - 1 - x) * 
+						surface->width + y];
 				}
 			}
 		
