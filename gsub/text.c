@@ -82,12 +82,15 @@ void init_text()
 }
 
 
-int blit_text(int x, int y, uint16_t colour, char *text)
+int blit_text(int x, int y, char *text, uint8_t red, uint8_t green, uint8_t blue, struct surface_t *dest)
 {
 	struct blit_params_t params;
 
-//	params.colour16 = colour;
+	params.red = red;
+	params.green = green;
+	params.blue = blue;
 	params.source = smallfont;
+	params.dest = dest;
 	
 	int w = 0;
 
