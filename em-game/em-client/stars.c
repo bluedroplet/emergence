@@ -62,7 +62,7 @@ void init_stars()
 
 void init_stars()
 {
-	numstars = 1000;
+	numstars = 100;
 	
 	stars = malloc(numstars * sizeof(struct star_t));
 
@@ -70,8 +70,8 @@ void init_stars()
 	for(s = 0; s < numstars; s++)
 	{
 		stars[s].z = drand48() * star_zs + 1.0f;
-		stars[s].x = drand48() * 8000;
-		stars[s].y = drand48() * 8000;
+		stars[s].x = drand48() * 1600 * 2;
+		stars[s].y = drand48() * 1200 * 2;
 
 		stars[s].alpha = lround(drand48() * 255.0f);
 	}
@@ -88,11 +88,31 @@ void render_stars()
 	struct blit_params_t params;
 		
 	params.dest = s_backbuffer;
+	
+	double minx = (-1600.0 / star_zs) + viewx;
+	double maxx = (1600.0 / star_zs) + viewx;
+	double miny = (-1200.0 / star_zs) + viewy;
+	double maxy = (1200.0 / star_zs) + viewy;
 
 	for(s = 0; s < numstars; s++)
 	{
-		int x = (int)floor((stars[s].x - viewx) * star_zs / stars[s].z * ((double)(vid_width) / 1600.0)) + vid_width / 2;
-		int y = vid_height / 2 - 1 - (int)floor((stars[s].y - viewy) * star_zs / stars[s].z * ((double)(vid_width) / 1600.0));
+		double sx = stars[s].x;
+		double sy = stars[s].y;
+		
+		while(sx < minx)
+			sx += maxx - minx;
+		
+		while(sx > maxx)
+			sx -= maxx - minx;
+		
+		while(sy < miny)
+			sy += maxy - miny;
+		
+		while(sy > maxy)
+			sy -= maxy - miny;
+		
+		int x = (int)floor((sx - viewx) * star_zs / stars[s].z * ((double)(vid_width) / 1600.0)) + vid_width / 2;
+		int y = vid_height / 2 - 1 - (int)floor((sy - viewy) * star_zs / stars[s].z * ((double)(vid_width) / 1600.0));
 
 		if(y < 0 || y >= vid_height)
 		{
