@@ -351,7 +351,8 @@ void set_vid_mode(int mode)	// use goto error crap
   gc=XCreateGC(xdisplay, xwindow, 0, NULL);	
 	
 
-	
+	XGrabPointer(xdisplay, xwindow, 0, 0, GrabModeAsync, GrabModeAsync,
+		xwindow, xcursor, CurrentTime);
 
       int ShmMajor,ShmMinor;
       Bool ShmPixmaps;
