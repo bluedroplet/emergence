@@ -668,8 +668,11 @@ void craft_force(struct entity_t *craft, double force)
 {
 	if(!craft->craft_data.carcass)
 	{
-		if(cgame_state->follow_me == craft->index)
-			cgame_state->craft_shield -= force;
+		if(game_state != GAMESTATE_DEMO)
+		{
+			if(cgame_state->follow_me == craft->index)
+				cgame_state->craft_shield -= force;
+		}
 		
 		craft_flare(craft, force);
 	}
@@ -730,14 +733,17 @@ void weapon_flare(struct entity_t *weapon, double force)
 #ifdef EMCLIENT
 void weapon_force(struct entity_t *weapon, double force)
 {
-	if(weapon->weapon_data.craft)
+	if(game_state != GAMESTATE_DEMO)
 	{
-		if(cgame_state->follow_me == weapon->weapon_data.craft->index)
+		if(weapon->weapon_data.craft)
 		{
-			if(weapon->weapon_data.craft->craft_data.left_weapon == weapon)
-				cgame_state->left_shield -= force;
-			else
-				cgame_state->right_shield -= force;
+			if(cgame_state->follow_me == weapon->weapon_data.craft->index)
+			{
+				if(weapon->weapon_data.craft->craft_data.left_weapon == weapon)
+					cgame_state->left_shield -= force;
+				else
+					cgame_state->right_shield -= force;
+			}
 		}
 	}
 		
@@ -2528,11 +2534,14 @@ void s_tick_weapon(struct entity_t *weapon)
 					#ifdef EMCLIENT
 					start_sample(plasma_cannon_sample, cgame_tick);
 					
-					if(cgame_state->follow_me == weapon->weapon_data.craft->index && 
-						weapon->weapon_data.craft->craft_data.left_weapon == weapon)
-						cgame_state->left_ammo--;
-					else
-						cgame_state->right_ammo--;
+					if(game_state != GAMESTATE_DEMO)
+					{
+						if(cgame_state->follow_me == weapon->weapon_data.craft->index && 
+							weapon->weapon_data.craft->craft_data.left_weapon == weapon)
+							cgame_state->left_ammo--;
+						else
+							cgame_state->right_ammo--;
+					}
 					#endif
 					
 					spawn_plasma(weapon);
@@ -2553,11 +2562,14 @@ void s_tick_weapon(struct entity_t *weapon)
 					#ifdef EMCLIENT
 					start_sample(plasma_cannon_sample, cgame_tick);
 					
-					if(cgame_state->follow_me == weapon->weapon_data.craft->index && 
-						weapon->weapon_data.craft->craft_data.left_weapon == weapon)
-						cgame_state->left_ammo--;
-					else
-						cgame_state->right_ammo--;
+					if(game_state != GAMESTATE_DEMO)
+					{
+						if(cgame_state->follow_me == weapon->weapon_data.craft->index && 
+							weapon->weapon_data.craft->craft_data.left_weapon == weapon)
+							cgame_state->left_ammo--;
+						else
+							cgame_state->right_ammo--;
+					}
 					#endif
 					
 					spawn_bullet(weapon);

@@ -1796,9 +1796,12 @@ void add_shield_strengths_event(struct event_t *event)
 
 void process_shield_strengths_event(struct event_t *event)
 {
-	cgame_state->craft_shield = event->shield_strengths_data.craft_shield;
-	cgame_state->left_shield = event->shield_strengths_data.left_shield;
-	cgame_state->right_shield = event->shield_strengths_data.right_shield;
+	if(game_state != GAMESTATE_DEMO)
+	{
+		cgame_state->craft_shield = event->shield_strengths_data.craft_shield;
+		cgame_state->left_shield = event->shield_strengths_data.left_shield;
+		cgame_state->right_shield = event->shield_strengths_data.right_shield;
+	}
 }
 
 
@@ -1813,10 +1816,13 @@ void add_ammo_levels_event(struct event_t *event)
 
 void process_ammo_levels_event(struct event_t *event)
 {
-	cgame_state->rails = event->ammo_levels_data.rails;
-	cgame_state->mines = event->ammo_levels_data.mines;
-	cgame_state->left_ammo = event->ammo_levels_data.left;
-	cgame_state->right_ammo = event->ammo_levels_data.right;
+	if(game_state != GAMESTATE_DEMO)
+	{
+		cgame_state->rails = event->ammo_levels_data.rails;
+		cgame_state->mines = event->ammo_levels_data.mines;
+		cgame_state->left_ammo = event->ammo_levels_data.left;
+		cgame_state->right_ammo = event->ammo_levels_data.right;
+	}
 }
 
 
@@ -4467,6 +4473,9 @@ void create_teleporter_sparkles()
 
 void render_player_info()
 {
+	if(!player0)
+		return;
+	
 	int y = vid_height / 6, w;
 	struct blit_params_t params;
 	
@@ -4613,23 +4622,27 @@ void render_health_and_ammo()
 		s_backbuffer, "%u", cgame_state->mines);
 
 	struct entity_t *craft = get_entity(centity0, cgame_state->follow_me);
-
-	if(craft->craft_data.left_weapon)
+		
+	if(craft)
 	{
-		blit_text_centered(vid_width * 8 / 18, vid_height * 5 / 6, 0xff, 0xff, 0xff, 
-			s_backbuffer, "%.0f", round(cgame_state->left_shield * 100.0));
-
-		blit_text_centered(vid_width * 8 / 18, vid_height * 16 / 18, 0xff, 0, 0, 
-			s_backbuffer, "%u", cgame_state->left_ammo);
-	}
-
-	if(craft->craft_data.right_weapon)
-	{
-		blit_text_centered(vid_width * 10 / 18, vid_height * 5 / 6, 0xff, 0xff, 0xff, 
-			s_backbuffer, "%.0f", round(cgame_state->right_shield * 100.0));
-
-		blit_text_centered(vid_width * 10 / 18, vid_height * 16 / 18, 0xff, 0, 0, 
-			s_backbuffer, "%u", cgame_state->right_ammo);
+	
+		if(craft->craft_data.left_weapon)
+		{
+			blit_text_centered(vid_width * 8 / 18, vid_height * 5 / 6, 0xff, 0xff, 0xff, 
+				s_backbuffer, "%.0f", round(cgame_state->left_shield * 100.0));
+	
+			blit_text_centered(vid_width * 8 / 18, vid_height * 16 / 18, 0xff, 0, 0, 
+				s_backbuffer, "%u", cgame_state->left_ammo);
+		}
+	
+		if(craft->craft_data.right_weapon)
+		{
+			blit_text_centered(vid_width * 10 / 18, vid_height * 5 / 6, 0xff, 0xff, 0xff, 
+				s_backbuffer, "%.0f", round(cgame_state->right_shield * 100.0));
+	
+			blit_text_centered(vid_width * 10 / 18, vid_height * 16 / 18, 0xff, 0, 0, 
+				s_backbuffer, "%u", cgame_state->right_ammo);
+		}
 	}
 }
 
@@ -4659,23 +4672,18 @@ void render_game()
 	if(game_state == GAMESTATE_DEAD)
 		return;
 		
-	if(entity)
+	if(!entity)
+		return;
+	
+	if(entity->teleporting)
 	{
-		if(entity->teleporting)
-		{
-			viewx = teleporting_start_x;
-			viewy = teleporting_start_y;
-		}
-		else
-		{
-			viewx = entity->xdis;
-			viewy = entity->ydis;
-		}
+		viewx = teleporting_start_x;
+		viewy = teleporting_start_y;
 	}
 	else
 	{
-		viewx = 0.0;
-		viewy = 0.0;
+		viewx = entity->xdis;
+		viewy = entity->ydis;
 	}
 	
 //	add_offset_view(entity);
@@ -4689,11 +4697,15 @@ void render_game()
 	render_upper_particles();
 	render_map();
 	render_teleporters();
-	render_recording();
-	render_player_info();
-	render_match_time();
-	render_match_info();
-	render_health_and_ammo();
+	
+	if(game_state != GAMESTATE_DEMO)
+	{
+		render_recording();
+		render_player_info();
+		render_match_time();
+		render_match_info();
+		render_health_and_ammo();
+	}
 	
 //	blit_text(((vid_width * 2) / 3) + (vid_width / 200), 
 //		vid_height / 6, 0xef, 0x6f, 0xff, s_backbuffer, "[virus] where are you?");
