@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include <sys/epoll.h>
 #include <sys/poll.h>
@@ -27,6 +28,7 @@
 #include "shared/cvar.h"
 #include "shared/config.h"
 #include "shared/timer.h"
+#include "shared/alarm.h"
 #include "shared/network.h"
 #include "shared/parse.h"
 #include "render.h"
@@ -207,14 +209,20 @@ void process_network()
 
 void init()
 {
+	sigset_t sigmask;
+	sigemptyset(&sigmask);
+	sigaddset(&sigmask, SIGALRM);
+	sigaddset(&sigmask, SIGUSR1);
+	
+	sigprocmask(SIG_BLOCK, &sigmask, NULL);
+
 	console_print("Emergence Client " VERSION "\n");
 	
 //	SDL_Init(SDL_INIT_AUDIO);
 	
-	init_timer();
-	init_network();
-
 	init_user();
+	init_network();
+	init_timer();
 	init_key();
 
 	create_cvars();
@@ -276,6 +284,7 @@ void init()
 	init_sound();
 	init_game();
 	
+	init_alarm();
 	
 	render_frame();
 	
@@ -336,7 +345,12 @@ void main_thread()
 	while(1)
 	{
 		if(poll(fds, fdcount, -1) == -1)
+		{
+			if(errno == EINTR)	// why is this necessary
+				continue;
+			
 			return;
+		}
 
 		if(fds[0].revents & POLLIN)
 			process_x_render_pipe();

@@ -29,6 +29,7 @@
 #include "cvar.h"
 #include "rdtsc.h"
 #include "timer.h"
+#include "alarm.h"
 #include "network.h"
 
 #include "../console.h"
@@ -1252,11 +1253,16 @@ void *network_thread(void *a)
 	fds[1].fd = net_timer_fd; fds[1].events |= POLLIN;
 	fds[2].fd = net_kill_pipe[0]; fds[2].events |= POLLIN;
 	
-
+	
 	while(1)
 	{
 		if(poll(fds, fdcount, -1) == -1)
+		{
+			if(errno == EINTR)	// why is this necessary?
+				continue;
+			
 			return NULL;
+		}
 
 		if(fds[0].revents & POLLIN)
 		{			
@@ -1798,7 +1804,7 @@ void init_network()
 	pipe(net_kill_pipe);
 	pipe(net_out_pipe);
 	
-	net_timer_fd = create_timer_listener();
+	net_timer_fd = create_alarm_listener();
 	
 	pthread_create(&network_thread_id, NULL, network_thread, NULL);
 }

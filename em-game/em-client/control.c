@@ -11,6 +11,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include <sys/epoll.h>
 #include <sys/poll.h>
@@ -21,6 +22,7 @@
 #include "shared/cvar.h"
 #include "shared/network.h"
 #include "shared/timer.h"
+#include "shared/alarm.h"
 #include "shared/sgame.h"
 #include "main.h"
 #include "console.h"
@@ -989,7 +991,12 @@ void *control_thread(void *a)
 	while(1)
 	{
 		if(poll(fds, fdcount, -1) == -1)
+		{
+			if(errno == EINTR)	// why is this necessary?
+				continue;
+			
 			return NULL;
+		}
 
 		if(fds[0].revents & POLLIN)
 			process_input();
@@ -1067,7 +1074,7 @@ void init_control()
 	double time = get_wall_time();
 	next_control_tick = ((int)(time / CONTROL_TICK_INTERVAL) + 1) * (double)CONTROL_TICK_INTERVAL;
 	
-	control_timer_fd = create_timer_listener();
+	control_timer_fd = create_alarm_listener();
 	pipe(control_kill_pipe);
 	pthread_create(&control_thread_id, NULL, control_thread, NULL);
 }

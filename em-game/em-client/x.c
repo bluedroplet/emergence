@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <errno.h>
 
 #include <assert.h>
 
@@ -678,7 +679,12 @@ void *x_thread(void *a)
 	while(1)
 	{
 		if(poll(fds, fdcount, -1) == -1)
+		{
+			if(errno == EINTR)	// why is this necessary
+				continue;
+			
 			return NULL;
+		}
 
 		if(fds[0].revents & POLLIN)
 		{			

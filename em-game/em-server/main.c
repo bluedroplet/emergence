@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include <sys/epoll.h>
 #include <sys/poll.h>
@@ -23,6 +24,7 @@
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "shared/timer.h"
+#include "shared/alarm.h"
 #include "shared/sgame.h"
 #include "shared/network.h"
 #include "shared/parse.h"
@@ -65,7 +67,7 @@ void server_shutdown()
 	kill_key();
 	kill_network();
 	kill_game();
-	kill_timer();
+	kill_alarm();
 
 	terminate_process();
 }
@@ -541,7 +543,12 @@ void main_thread()
 	while(1)
 	{
 		if(poll(fds, fdcount, -1) == -1)
+		{
+			if(errno == EINTR)
+				continue;
+			
 			return;
+		}
 
 		if(fds[0].revents & POLLIN)
 			process_console();
@@ -602,15 +609,24 @@ void main_thread()
 
 void init()
 {
+	sigset_t sigmask;
+	sigemptyset(&sigmask);
+	sigaddset(&sigmask, SIGALRM);
+	sigaddset(&sigmask, SIGUSR1);
+	
+	sigprocmask(SIG_BLOCK, &sigmask, NULL);
+	
+
 	console_print("Emergence Server " VERSION "\n");
 	
 	init_user();
 	init_network();
-	init_game();
 	init_timer();
+	init_alarm();
+	init_game();
 	init_key();
 	
-	game_timer_fd = create_timer_listener();
+	game_timer_fd = create_alarm_listener();
 
 	create_cvar_command("daemonize", cf_go_daemon);
 	create_cvar_command("quit", cf_quit);

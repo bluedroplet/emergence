@@ -20,6 +20,7 @@
 #include "../common/llist.h"
 #include "../common/minmax.h"
 #include "shared/timer.h"
+#include "shared/alarm.h"
 #include "console.h"
 #include "entry.h"
 #include "tick.h"
@@ -292,7 +293,12 @@ void *sound_thread(void *a)
 	while(1)
 	{
 		if(poll(fds, fdcount, -1) == -1)
+		{
+			if(errno == EINTR)	// why is this necessary
+				continue;
+			
 			return NULL;
+		}
 
 		if(fds[0].revents & POLLIN)
 		{			
@@ -512,7 +518,7 @@ void init_sound()
 	
 	pthread_mutex_init(&sound_mutex, NULL);
 	pipe(sound_kill_pipe);
-	alsa_fd = create_timer_listener();
+	alsa_fd = create_alarm_listener();
 	pthread_create(&sound_thread_id, NULL, sound_thread, NULL);
 }
 
