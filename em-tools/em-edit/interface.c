@@ -333,7 +333,8 @@ void menu_insert_rocket_launcher()
 	}
 	else
 	{
-		insert_object(OBJECTTYPE_ROCKETLAUNCHER, right_button_down_worldx, right_button_down_worldy);
+		insert_object(OBJECTTYPE_ROCKETLAUNCHER, 
+			right_button_down_worldx, right_button_down_worldy);
 	}
 
 	update_client_area();
@@ -665,7 +666,8 @@ void quit()
 
 void run_space_menu()
 {
-	GtkWidget *space_menu, *object_menu, *insert_menu, *zoom_menu, *view_menu, *map_menu, *menu_items;
+	GtkWidget *space_menu, *object_menu, *insert_menu, 
+		*zoom_menu, *view_menu, *map_menu, *menu_items;
 	
 	space_menu = gtk_menu_new();
 	
@@ -676,47 +678,56 @@ void run_space_menu()
 		object_menu = gtk_menu_new();
 	
 		menu_items = gtk_menu_item_new_with_label("Plasma Cannon");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_plasma_cannon), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_insert_plasma_cannon), NULL);
 		gtk_menu_append(GTK_MENU(object_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_menu_item_new_with_label("Minigun");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_minigun), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_insert_minigun), NULL);
 		gtk_menu_append(GTK_MENU(object_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_menu_item_new_with_label("Rocket Launcher");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_rocket_launcher), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_insert_rocket_launcher), NULL);
 		gtk_menu_append(GTK_MENU(object_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_menu_item_new_with_label("Rails");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_rails), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_insert_rails), NULL);
 		gtk_menu_append(GTK_MENU(object_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_menu_item_new_with_label("Shield Energy");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_shield_energy), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_insert_shield_energy), NULL);
 		gtk_menu_append(GTK_MENU(object_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_menu_item_new_with_label("Spawn Point");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_spawn_point), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_insert_spawn_point), NULL);
 		gtk_menu_append(GTK_MENU(object_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_menu_item_new_with_label("Speedup Ramp");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_speedup_ramp), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_insert_speedup_ramp), NULL);
 		gtk_menu_append(GTK_MENU(object_menu), menu_items);
 		gtk_widget_show(menu_items);
 	
 		menu_items = gtk_menu_item_new_with_label("Teleporter");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_teleporter), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_insert_teleporter), NULL);
 		gtk_menu_append(GTK_MENU(object_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_menu_item_new_with_label("Gravity Well");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_gravity_well), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_insert_gravity_well), NULL);
 		gtk_menu_append(GTK_MENU(object_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
@@ -727,7 +738,8 @@ void run_space_menu()
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_menu_item_new_with_label("Node");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_node), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_insert_node), NULL);
 		gtk_menu_append(GTK_MENU(insert_menu), menu_items);
 		gtk_widget_show(menu_items);
 	
@@ -741,43 +753,50 @@ void run_space_menu()
 	
 		menu_items = gtk_check_menu_item_new_with_label("Grid");
 		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_items), view_state & VIEW_GRID);
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(invert_view_grid), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(invert_view_grid), NULL);
 		gtk_menu_append(GTK_MENU(view_menu), menu_items);
 		gtk_widget_show(menu_items);
 	
 		menu_items = gtk_check_menu_item_new_with_label("Objects");
 		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_items), view_state & VIEW_OBJECTS);
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(invert_view_objects), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(invert_view_objects), NULL);
 		gtk_menu_append(GTK_MENU(view_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_check_menu_item_new_with_label("Tiles");
 		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_items), view_state & VIEW_TILES);
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(invert_view_tiles), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(invert_view_tiles), NULL);
 		gtk_menu_append(GTK_MENU(view_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_check_menu_item_new_with_label("Boxes");
 		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_items), view_state & VIEW_BOXES);
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(invert_view_boxes), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(invert_view_boxes), NULL);
 		gtk_menu_append(GTK_MENU(view_menu), menu_items);
 		gtk_widget_show(menu_items);
 	
 		menu_items = gtk_check_menu_item_new_with_label("BSP Tree");
 		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_items), view_state & VIEW_BSP_TREE);
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(invert_view_bsp_tree), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(invert_view_bsp_tree), NULL);
 		gtk_menu_append(GTK_MENU(view_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_check_menu_item_new_with_label("Outlines");
 		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_items), view_state & VIEW_OUTLINES);
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(invert_view_outlines), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(invert_view_outlines), NULL);
 		gtk_menu_append(GTK_MENU(view_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_check_menu_item_new_with_label("Nodes");
 		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_items), view_state & VIEW_NODES);
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(invert_view_nodes), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(invert_view_nodes), NULL);
 		gtk_menu_append(GTK_MENU(view_menu), menu_items);
 		gtk_widget_show(menu_items);
 	
@@ -794,10 +813,14 @@ void run_space_menu()
 		gtk_menu_append(GTK_MENU(view_menu), width_radio);
 		gtk_widget_show(width_radio);
 
-		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(vector_radio), view_sats_mode == SATS_VECT);
-		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(width_radio), view_sats_mode == SATS_WIDTH);
-		gtk_signal_connect(GTK_OBJECT(vector_radio), "activate", GTK_SIGNAL_FUNC(view_vect_sats), NULL);
-		gtk_signal_connect(GTK_OBJECT(width_radio), "activate", GTK_SIGNAL_FUNC(view_width_sats), NULL);
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(vector_radio), 
+			view_sats_mode == SATS_VECT);
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(width_radio), 
+			view_sats_mode == SATS_WIDTH);
+		gtk_signal_connect(GTK_OBJECT(vector_radio), "activate", 
+			GTK_SIGNAL_FUNC(view_vect_sats), NULL);
+		gtk_signal_connect(GTK_OBJECT(width_radio), "activate", 
+			GTK_SIGNAL_FUNC(view_width_sats), NULL);
 
 
 		menu_items = gtk_menu_item_new_with_label ("View");
@@ -809,17 +832,20 @@ void run_space_menu()
 		zoom_menu = gtk_menu_new();
 	
 		menu_items = gtk_menu_item_new_with_label("Fit Map");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_fit_map), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_fit_map), NULL);
 		gtk_menu_append(GTK_MENU(zoom_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_menu_item_new_with_label("0.8");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_zoom_fix), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_zoom_fix), NULL);
 		gtk_menu_append(GTK_MENU(zoom_menu), menu_items);
 		gtk_widget_show(menu_items);
 	
 		menu_items = gtk_menu_item_new_with_label("1.0");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_zoom_100), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_zoom_100), NULL);
 		gtk_menu_append(GTK_MENU(zoom_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
@@ -832,12 +858,14 @@ void run_space_menu()
 	if(!map_active)
 	{
 		menu_items = gtk_menu_item_new_with_label ("New Map");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_new_map), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_new_map), NULL);
 		gtk_menu_append(GTK_MENU(space_menu), menu_items);
 		gtk_widget_show(menu_items);
 	
 		menu_items = gtk_menu_item_new_with_label ("Open...");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_open_map), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_open_map), NULL);
 		gtk_menu_append(GTK_MENU(space_menu), menu_items);
 		gtk_widget_show(menu_items);
 	}
@@ -848,35 +876,41 @@ void run_space_menu()
 		map_menu = gtk_menu_new();		
 		
 		menu_items = gtk_menu_item_new_with_label ("Clear...");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_active_new_map), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_active_new_map), NULL);
 		gtk_menu_append(GTK_MENU(map_menu), menu_items);
 		gtk_widget_show(menu_items);
 	
 		menu_items = gtk_menu_item_new_with_label ("Open...");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_active_open_map), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_active_open_map), NULL);
 		gtk_menu_append(GTK_MENU(map_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		if(map_filename->text[0])
 		{
 			menu_items = gtk_menu_item_new_with_label ("Save");
-			gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_active_save), NULL);
+			gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+				GTK_SIGNAL_FUNC(menu_active_save), NULL);
 			gtk_menu_append(GTK_MENU(map_menu), menu_items);
 			gtk_widget_show(menu_items);
 		}
 		
 		menu_items = gtk_menu_item_new_with_label("Save As...");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_active_saveas), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_active_saveas), NULL);
 		gtk_menu_append(GTK_MENU(map_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_menu_item_new_with_label("Properties...");
-//		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_active_saveas), NULL);
+//		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+//			GTK_SIGNAL_FUNC(menu_active_saveas), NULL);
 		gtk_menu_append(GTK_MENU(map_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
 		menu_items = gtk_menu_item_new_with_label("Compile");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_active_compile), NULL);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(menu_active_compile), NULL);
 		gtk_menu_append(GTK_MENU(map_menu), menu_items);
 		gtk_widget_show(menu_items);
 		
@@ -888,21 +922,25 @@ void run_space_menu()
 
 	
 	menu_items = gtk_menu_item_new_with_label("Help...");
-//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_about_box), NULL);
+//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+//		GTK_SIGNAL_FUNC(run_about_box), NULL);
 	gtk_menu_append(GTK_MENU(space_menu), menu_items);
 	gtk_widget_show(menu_items);
 	
 	menu_items = gtk_menu_item_new_with_label("About...");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_about_box), NULL);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(run_about_box), NULL);
 	gtk_menu_append(GTK_MENU(space_menu), menu_items);
 	gtk_widget_show(menu_items);
 	
 	menu_items = gtk_menu_item_new_with_label("Quit");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(quit), NULL);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(quit), NULL);
 	gtk_menu_append(GTK_MENU(space_menu), menu_items);
 	gtk_widget_show(menu_items);
 	
-	gtk_menu_popup(GTK_MENU(space_menu), NULL, NULL, (GtkMenuPositionFunc)(GtkMenuPositionCallback), NULL, 0, 0);
+	gtk_menu_popup(GTK_MENU(space_menu), NULL, NULL, 
+		(GtkMenuPositionFunc)(GtkMenuPositionCallback), NULL, 0, 0);
 }
 
 
@@ -1385,7 +1423,8 @@ void left_button_down(int x, int y)
 				dragging_node = curve->connp0->conn->node1;
 				
 				int node_screenx, node_screeny;
-				world_to_screen(curve->connp0->conn->node1->x, curve->connp0->conn->node1->y, &node_screenx, &node_screeny);
+				world_to_screen(curve->connp0->conn->node1->x, curve->connp0->conn->node1->y, 
+					&node_screenx, &node_screeny);
 				
 				dragging_xoffset = x - node_screenx;
 				dragging_yoffset = y - node_screeny;
@@ -2069,7 +2108,8 @@ int mouse_move(int x, int y)
 			
 			if(node_in_straight_conn(dragging_node))
 			{
-				set_sat_dist(dragging_node, dragging_sat, worldx - dragging_node->x, worldy - dragging_node->y);
+				set_sat_dist(dragging_node, dragging_sat, 
+					worldx - dragging_node->x, worldy - dragging_node->y);
 			}
 			else
 			{
@@ -2090,7 +2130,8 @@ int mouse_move(int x, int y)
 			
 		case SATS_WIDTH:
 		
-			set_width_sat(dragging_node, dragging_sat, worldx - dragging_node->x, worldy - dragging_node->y);
+			set_width_sat(dragging_node, dragging_sat, 
+				worldx - dragging_node->x, worldy - dragging_node->y);
 
 			break;
 		}
@@ -2265,7 +2306,8 @@ void node_deleted(struct node_t *node)
 	}
 	else
 	{
-		if(left_state & (STATE_DEFINING_STRAIGHT_CONN | STATE_DEFINING_CONIC_CONN | STATE_DEFINING_BEZIER_CONN))
+		if(left_state & (STATE_DEFINING_STRAIGHT_CONN | STATE_DEFINING_CONIC_CONN | 
+			STATE_DEFINING_BEZIER_CONN))
 		{
 			if(joining_node == node)
 			{

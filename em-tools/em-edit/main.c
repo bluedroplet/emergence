@@ -299,10 +299,13 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(window), "key-release-event", G_CALLBACK(on_key_press), NULL);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(on_delete), NULL);
  	g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(on_destroy), NULL);
-	g_signal_connect(G_OBJECT(drawing_area), "button-press-event", G_CALLBACK(on_button_press), NULL);
-	g_signal_connect(G_OBJECT(drawing_area), "button-release-event", G_CALLBACK(on_button_release), NULL);
+	g_signal_connect(G_OBJECT(drawing_area), "button-press-event", 
+		G_CALLBACK(on_button_press), NULL);
+	g_signal_connect(G_OBJECT(drawing_area), "button-release-event", 
+		G_CALLBACK(on_button_release), NULL);
 	g_signal_connect(G_OBJECT(drawing_area), "scroll-event", G_CALLBACK(on_scroll), NULL);
-	g_signal_connect(G_OBJECT(drawing_area), "motion-notify-event", G_CALLBACK(on_motion_notify), NULL);
+	g_signal_connect(G_OBJECT(drawing_area), "motion-notify-event", 
+		G_CALLBACK(on_motion_notify), NULL);
 	g_signal_connect(G_OBJECT(drawing_area), "expose-event", G_CALLBACK(on_expose), NULL);
 	g_signal_connect(G_OBJECT(drawing_area), "configure-event", G_CALLBACK(on_configure), NULL);
 

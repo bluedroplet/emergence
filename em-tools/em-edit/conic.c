@@ -53,7 +53,8 @@ int cfuck = 0;
 
 
 
-int conic_t_divide(float cx, float cy, float hyp, float theta1, float theta2, float t1, float t2)
+int conic_t_divide(float cx, float cy, float hyp, 
+	float theta1, float theta2, float t1, float t2)
 {
 	if(++cfuck == 100)
 	{
@@ -241,7 +242,8 @@ int generate_conic_ts(struct conn_t *conn)
 }
 
 
-void conic_bigt_divide(float cx, float cy, float hyp, float theta1, float theta2, float t1, float t2)
+void conic_bigt_divide(float cx, float cy, float hyp, 
+	float theta1, float theta2, float t1, float t2)
 {
 	double x1, y1, x2, y2;
 	double dx1, dy1, dx2, dy2;

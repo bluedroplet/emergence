@@ -694,9 +694,11 @@ int check_for_unrendered_tile()
 				assert(connp->conn->verts);
 				
 				texture_verts.surface = duplicate_surface(connp->conn->squished_texture);
-				texture_verts.verts = malloc(sizeof(struct vertex_t) * (connp->conn->squished_texture->width + 1) * 
+				texture_verts.verts = malloc(sizeof(struct vertex_t) * 
+					(connp->conn->squished_texture->width + 1) * 
 					(connp->conn->squished_texture->height + 1));
-				memcpy(texture_verts.verts, connp->conn->verts, (connp->conn->squished_texture->width + 1) * 
+				memcpy(texture_verts.verts, connp->conn->verts, 
+					(connp->conn->squished_texture->width + 1) * 
 					(connp->conn->squished_texture->height + 1) * sizeof(struct vertex_t));
 				
 				LL_ADD(struct texture_verts_t, &texture_verts0, &texture_verts);
@@ -710,9 +712,11 @@ int check_for_unrendered_tile()
 			while(nodep)
 			{
 				texture_verts.surface = duplicate_surface(nodep->node->texture_surface);
-				texture_verts.verts = malloc(sizeof(struct vertex_t) * (nodep->node->texture_surface->width + 1) * 
+				texture_verts.verts = malloc(sizeof(struct vertex_t) * 
+					(nodep->node->texture_surface->width + 1) * 
 					(nodep->node->texture_surface->height + 1));
-				memcpy(texture_verts.verts, nodep->node->texture_verts, (nodep->node->texture_surface->width + 1) * 
+				memcpy(texture_verts.verts, nodep->node->texture_verts, 
+					(nodep->node->texture_surface->width + 1) * 
 					(nodep->node->texture_surface->height + 1) * sizeof(struct vertex_t));
 				
 				LL_ADD(struct texture_verts_t, &texture_verts0, &texture_verts);
@@ -731,9 +735,11 @@ int check_for_unrendered_tile()
 				{
 					texture_verts.surface = duplicate_surface(ctexture_verts->surface);
 					convert_surface_to_24bitalpha8bit(texture_verts.surface);
-					texture_verts.verts = malloc(sizeof(struct vertex_t) * (ctexture_verts->surface->width + 1) * 
+					texture_verts.verts = malloc(sizeof(struct vertex_t) * 
+						(ctexture_verts->surface->width + 1) * 
 						(ctexture_verts->surface->height + 1));
-					memcpy(texture_verts.verts, ctexture_verts->verts, (ctexture_verts->surface->width + 1) * 
+					memcpy(texture_verts.verts, ctexture_verts->verts, 
+						(ctexture_verts->surface->width + 1) * 
 						(ctexture_verts->surface->height + 1) * sizeof(struct vertex_t));
 							
 					LL_ADD(struct texture_verts_t, &texture_verts0, &texture_verts);
@@ -756,7 +762,8 @@ int check_for_unrendered_tile()
 					struct vertex_ll_t **invertexp = ctexture_polys->polys;
 					struct vertex_ll_t **outvertexp = texture_polys.polys;
 						
-					for(i = ctexture_polys->surface->width * ctexture_polys->surface->height; i > 0; i--)
+					for(i = ctexture_polys->surface->width * ctexture_polys->surface->height; 
+						i > 0; i--)
 					{
 						struct vertex_ll_t *cvertex = *invertexp;
 							
@@ -1066,7 +1073,8 @@ void render_tile()
 	assert(width);
 	assert(height);
 	
-	out_surface = multiple_resample(texture_verts0, texture_polys0, width, height, left, top, check_stop_callback);
+	out_surface = multiple_resample(texture_verts0, texture_polys0, 
+		width, height, left, top, check_stop_callback);
 	
 	if(out_surface != NULL)
 	{
@@ -1125,7 +1133,8 @@ void scale_tiles()		// called from worker thread
 			world_to_screen(ctile->x2, ctile->y2, &maxx, &miny);
 			
 //			if(crap_zoom)
-				;//ctile->scaled_surface = crap_resize(ctile->surface, maxx - minx, maxy - miny, check_stop_callback);
+				;//ctile->scaled_surface = crap_resize(ctile->surface, maxx - minx, maxy - miny, 
+//					check_stop_callback);
 //			else
 				ctile->scaled_surface = resize(ctile->surface, maxx - minx, maxy - miny, NULL);
 			

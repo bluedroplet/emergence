@@ -738,8 +738,8 @@ int insert_bezier_conn(struct node_t *node1, struct node_t *node2)
 					node1->sats[sat1].y *= dist;
 					fix_satellites(node1, sat1);
 
-					if(inout(node1->x, node1->y, node1->x + node1->sats[sat1].x, node1->y + node1->sats[sat1].y, 
-						node2->x, node2->y))
+					if(inout(node1->x, node1->y, node1->x + node1->sats[sat1].x, 
+						node1->y + node1->sats[sat1].y, node2->x, node2->y))
 					{
 						node2->sats[sat2].x = -node1->sats[sat1].y;
 						node2->sats[sat2].y = node1->sats[sat1].x;
@@ -816,8 +816,8 @@ int insert_bezier_conn(struct node_t *node1, struct node_t *node2)
 			{
 			case SAT_CONN_TYPE_UNCONN:
 			{
-					if(inout(node1->x, node1->y, node1->x + node1->sats[sat1].x, node1->y + node1->sats[sat1].y, 
-						node2->x, node2->y))
+					if(inout(node1->x, node1->y, node1->x + node1->sats[sat1].x, 
+						node1->y + node1->sats[sat1].y, node2->x, node2->y))
 					{
 						node2->sats[sat2].x = -node1->sats[sat1].y;
 						node2->sats[sat2].y = node1->sats[sat1].x;
@@ -1247,7 +1247,8 @@ void draw_straight_conn(struct conn_t *conn)
 }
 
 
-void draw_conic_conn_sub_left(struct conn_t *conn, float cx, float cy, float hyp, float theta1, float theta2, float t1, float t2)
+void draw_conic_conn_sub_left(struct conn_t *conn, float cx, float cy, float hyp, 
+	float theta1, float theta2, float t1, float t2)
 {
 	double x1, y1, x2, y2;
 	double dx1, dy1, dx2, dy2;
@@ -1278,12 +1279,14 @@ void draw_conic_conn_sub_left(struct conn_t *conn, float cx, float cy, float hyp
 	int left1, right1, left2, right2;
 	get_width_sats(conn, &left1, &right1, &left2, &right2);
 
-	double leftwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t1 + conn->node1->width[left1];
+	double leftwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t1 + 
+		conn->node1->width[left1];
 
 	x1 += dx1 * leftwidth;
 	y1 += dy1 * leftwidth;
 	
-	leftwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t2 + conn->node1->width[left1];
+	leftwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t2 + 
+		conn->node1->width[left1];
 
 	x2 += dx2 * leftwidth;
 	y2 += dy2 * leftwidth;
@@ -1305,7 +1308,8 @@ void draw_conic_conn_sub_left(struct conn_t *conn, float cx, float cy, float hyp
 }
 
 
-void draw_conic_conn_sub_right(struct conn_t *conn, float cx, float cy, float hyp, float theta1, float theta2, float t1, float t2)
+void draw_conic_conn_sub_right(struct conn_t *conn, float cx, float cy, float hyp, 
+	float theta1, float theta2, float t1, float t2)
 {
 	double x1, y1, x2, y2;
 	double dx1, dy1, dx2, dy2;
@@ -1336,12 +1340,14 @@ void draw_conic_conn_sub_right(struct conn_t *conn, float cx, float cy, float hy
 	int left1, right1, left2, right2;
 	get_width_sats(conn, &left1, &right1, &left2, &right2);
 
-	double rightwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t1 + conn->node1->width[left1];
+	double rightwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t1 + 
+		conn->node1->width[left1];
 
 	x1 -= dx1 * rightwidth;
 	y1 -= dy1 * rightwidth;
 	
-	rightwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t2 + conn->node1->width[left1];
+	rightwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t2 + 
+		conn->node1->width[left1];
 
 	x2 -= dx2 * rightwidth;
 	y2 -= dy2 * rightwidth;
@@ -1445,14 +1451,16 @@ void draw_bezier_conn_sub_left(struct conn_t *conn, struct bezier_t *bezier, dou
 	int left1, right1, left2, right2;
 	get_width_sats(conn, &left1, &right1, &left2, &right2);
 
-	double leftwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t1 + conn->node1->width[left1];
+	double leftwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t1 + 
+		conn->node1->width[left1];
 
 	x1 -= dy1 * leftwidth;
 	y1 += dx1 * leftwidth;
 	
 	world_to_screen(x1, y1, &sx1, &sy1);
 	
-	leftwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t2 + conn->node1->width[left1];
+	leftwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t2 + 
+		conn->node1->width[left1];
 
 	x2 -= dy2 * leftwidth;
 	y2 += dx2 * leftwidth;
@@ -1496,14 +1504,16 @@ void draw_bezier_conn_sub_right(struct conn_t *conn, struct bezier_t *bezier, do
 	int left1, right1, left2, right2;
 	get_width_sats(conn, &left1, &right1, &left2, &right2);
 
-	double rightwidth = (conn->node2->width[right2] - conn->node1->width[right1]) * t1 + conn->node1->width[right1];
+	double rightwidth = (conn->node2->width[right2] - conn->node1->width[right1]) * t1 + 
+		conn->node1->width[right1];
 
 	x1 += dy1 * rightwidth;
 	y1 -= dx1 * rightwidth;
 	
 	world_to_screen(x1, y1, &sx1, &sy1);
 	
-	rightwidth = (conn->node2->width[right2] - conn->node1->width[right1]) * t2 + conn->node1->width[right1];
+	rightwidth = (conn->node2->width[right2] - conn->node1->width[right1]) * t2 + 
+		conn->node1->width[right1];
 
 	x2 += dy2 * rightwidth;
 	y2 -= dx2 * rightwidth;
@@ -1630,8 +1640,10 @@ void get_conn_limits(struct conn_t *conn, float *minx, float *maxx, float *miny,
 		deltax /= length;
 		deltay /= length;
 		
-		double leftwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t + conn->node1->width[left1];
-		double rightwidth = (conn->node2->width[right2] - conn->node1->width[right1]) * t + conn->node1->width[right1];
+		double leftwidth = (conn->node2->width[left2] - conn->node1->width[left1]) * t + 
+			conn->node1->width[left1];
+		double rightwidth = (conn->node2->width[right2] - conn->node1->width[right1]) * t + 
+			conn->node1->width[right1];
 		
 		leftx = deltax * leftwidth;
 		lefty = deltay * leftwidth;
@@ -2264,11 +2276,15 @@ int generate_straight_verticies(struct conn_t *conn)
 	{
 		double t = ((double)s / conn->t_count);
 		
-		double x = node1->effective_x[sat1] + (node2->effective_x[sat2] - node1->effective_x[sat1]) * t;
-		double y = node1->effective_y[sat1] + (node2->effective_y[sat2] - node1->effective_y[sat1]) * t;
+		double x = node1->effective_x[sat1] + 
+			(node2->effective_x[sat2] - node1->effective_x[sat1]) * t;
+		double y = node1->effective_y[sat1] + 
+			(node2->effective_y[sat2] - node1->effective_y[sat1]) * t;
 
-		double rightwidth = (node2->width[right2] - node1->width[right1]) * t + node1->width[right1];
-		double fullwidth = rightwidth + (node2->width[left2] - node1->width[left1]) * t + node1->width[left1];
+		double rightwidth = (node2->width[right2] - node1->width[right1]) * t + 
+			node1->width[right1];
+		double fullwidth = rightwidth + (node2->width[left2] - node1->width[left1]) * t + 
+			node1->width[left1];
 		
 		for(v = 0; v <= height; v++)
 		{
@@ -2386,23 +2402,29 @@ int generate_curved_verticies(struct conn_t *conn)
 
 	for(v = 0; v <= height; v++)
 	{
-		cvert->x = (float)(ct->x1 - ct->deltay1 * (fullwidth * ((double)v / height) - node1->width[right1]));
-		cvert->y = (float)(ct->y1 + ct->deltax1 * (fullwidth * ((double)v / height) - node1->width[right1]));
+		cvert->x = (float)(ct->x1 - 
+			ct->deltay1 * (fullwidth * ((double)v / height) - node1->width[right1]));
+		cvert->y = (float)(ct->y1 + 
+			ct->deltax1 * (fullwidth * ((double)v / height) - node1->width[right1]));
 
 		cvert++;
 	}
 
 	while(ct)
 	{
-		double rightwidth = (node2->width[right2] - node1->width[right1]) * ct->t2 + node1->width[right1];
-		fullwidth = rightwidth + (node2->width[left2] - node1->width[left1]) * ct->t2 + node1->width[left1];
+		double rightwidth = (node2->width[right2] - node1->width[right1]) * ct->t2 + 
+			node1->width[right1];
+		fullwidth = rightwidth + (node2->width[left2] - node1->width[left1]) * ct->t2 + 
+			node1->width[left1];
 
 		int v;
 
 		for(v = 0; v <= height; v++)
 		{
-			cvert->x = (float)(ct->x2 - ct->deltay2 * (fullwidth * ((double)v / height) - rightwidth));
-			cvert->y = (float)(ct->y2 + ct->deltax2 * (fullwidth * ((double)v / height) - rightwidth));
+			cvert->x = (float)(ct->x2 - 
+				ct->deltay2 * (fullwidth * ((double)v / height) - rightwidth));
+			cvert->y = (float)(ct->y2 + 
+				ct->deltax2 * (fullwidth * ((double)v / height) - rightwidth));
 
 			cvert++;
 		}
@@ -2506,7 +2528,8 @@ int generate_curved_squished_texture(struct conn_t *conn, struct curve_t *curve)
 	else
 		pixel_length = curve->texture_length / curve->texture_surface->width;
 
-	struct surface_t *squished_texture = new_surface(SURFACE_16BIT, curve->texture_surface->height, conn->t_count);
+	struct surface_t *squished_texture = new_surface(SURFACE_16BIT, 
+		curve->texture_surface->height, conn->t_count);
 
 	int y, dstx, srcx;
 	
@@ -2543,9 +2566,12 @@ int generate_curved_squished_texture(struct conn_t *conn, struct curve_t *curve)
 				
 				int msrcx = srcx % curve->texture_surface->width;
 
-				red += rel * get_double_red(((uint16_t*)curve->texture_surface->buf)[y * curve->texture_surface->width + msrcx]);
-				green += rel * get_double_green(((uint16_t*)curve->texture_surface->buf)[y * curve->texture_surface->width + msrcx]);
-				blue += rel * get_double_blue(((uint16_t*)curve->texture_surface->buf)[y * curve->texture_surface->width + msrcx]);
+				red += rel * get_double_red(((uint16_t*)curve->texture_surface->buf)
+					[y * curve->texture_surface->width + msrcx]);
+				green += rel * get_double_green(((uint16_t*)curve->texture_surface->buf)
+					[y * curve->texture_surface->width + msrcx]);
+				blue += rel * get_double_blue(((uint16_t*)curve->texture_surface->buf)
+					[y * curve->texture_surface->width + msrcx]);
 			}
 			
 			((uint16_t*)squished_texture->buf)[dstx * curve->texture_surface->height + y] = 
@@ -2599,7 +2625,8 @@ int generate_straight_squished_texture(struct conn_t *conn, struct curve_t *curv
 	else
 		pixel_length = curve->texture_length / curve->texture_surface->width;
 
-	struct surface_t *squished_texture = new_surface(SURFACE_16BIT, conn->t_count, curve->texture_surface->height);
+	struct surface_t *squished_texture = new_surface(SURFACE_16BIT, 
+		conn->t_count, curve->texture_surface->height);
 
 	int y, dstx, srcx;
 	
@@ -2673,7 +2700,8 @@ int generate_curved_squished_texture_with_alpha(struct conn_t *conn, struct curv
 	{
 	case CURVE_SOLID:
 		{
-			struct surface_t *squished_texture = new_surface(SURFACE_24BITALPHA8BIT, 100, conn->t_count);
+			struct surface_t *squished_texture = new_surface(SURFACE_24BITALPHA8BIT, 
+				100, conn->t_count);
 			
 			int i;
 			
@@ -2762,16 +2790,20 @@ int generate_curved_squished_texture_with_alpha(struct conn_t *conn, struct curv
 						alpha += rel * src_alpha;
 					}
 					
-					((uint8_t*)squished_texture->buf)[(dstx * curve->texture_surface->height + y) * 3] = 
+					((uint8_t*)squished_texture->buf)
+						[(dstx * curve->texture_surface->height + y) * 3] = 
 						convert_double_to_8bit(red / alpha);
 					
-					((uint8_t*)squished_texture->buf)[(dstx * curve->texture_surface->height + y) * 3 + 1] = 
+					((uint8_t*)squished_texture->buf)
+						[(dstx * curve->texture_surface->height + y) * 3 + 1] = 
 						convert_double_to_8bit(green / alpha);
 					
-					((uint8_t*)squished_texture->buf)[(dstx * curve->texture_surface->height + y) * 3 + 2] = 
+					((uint8_t*)squished_texture->buf)
+						[(dstx * curve->texture_surface->height + y) * 3 + 2] = 
 						convert_double_to_8bit(blue / alpha);
 					
-					((uint8_t*)squished_texture->alpha_buf)[dstx * curve->texture_surface->height + y] = 
+					((uint8_t*)squished_texture->alpha_buf)
+						[dstx * curve->texture_surface->height + y] = 
 						convert_double_to_8bit(alpha);
 					
 					ct = ct->next;
@@ -2810,7 +2842,8 @@ int generate_straight_squished_texture_with_alpha(struct conn_t *conn, struct cu
 	{
 	case CURVE_SOLID:
 		{
-			struct surface_t *squished_texture = new_surface(SURFACE_24BITALPHA8BIT, 100, conn->t_count);
+			struct surface_t *squished_texture = new_surface(SURFACE_24BITALPHA8BIT, 
+				100, conn->t_count);
 			
 			int i;
 			
@@ -2849,7 +2882,8 @@ int generate_straight_squished_texture_with_alpha(struct conn_t *conn, struct cu
 			else
 				pixel_length = curve->texture_length / curve->texture_surface->width;
 		
-			struct surface_t *squished_texture = new_surface(SURFACE_24BITALPHA8BIT, curve->texture_surface->height, conn->t_count);
+			struct surface_t *squished_texture = new_surface(SURFACE_24BITALPHA8BIT, 
+				curve->texture_surface->height, conn->t_count);
 		
 			int y, dstx, srcx;
 			
@@ -2882,7 +2916,8 @@ int generate_straight_squished_texture_with_alpha(struct conn_t *conn, struct cu
 						
 						int msrcx = srcx % curve->texture_surface->width;
 		
-						double src_alpha = get_double_from_8(((uint8_t*)curve->texture_surface->alpha_buf)
+						double src_alpha = 
+							get_double_from_8(((uint8_t*)curve->texture_surface->alpha_buf)
 							[y * curve->texture_surface->width + msrcx]);
 						
 						red += rel * get_double_from_8(((uint8_t*)curve->texture_surface->buf)
@@ -2894,16 +2929,20 @@ int generate_straight_squished_texture_with_alpha(struct conn_t *conn, struct cu
 						alpha += rel * src_alpha;
 					}
 					
-					((uint8_t*)squished_texture->buf)[(dstx * curve->texture_surface->height + y) * 3] = 
+					((uint8_t*)squished_texture->buf)
+						[(dstx * curve->texture_surface->height + y) * 3] = 
 						convert_double_to_8bit(red / alpha);
 					
-					((uint8_t*)squished_texture->buf)[(dstx * curve->texture_surface->height + y) * 3 + 1] = 
+					((uint8_t*)squished_texture->buf)
+						[(dstx * curve->texture_surface->height + y) * 3 + 1] = 
 						convert_double_to_8bit(green / alpha);
 					
-					((uint8_t*)squished_texture->buf)[(dstx * curve->texture_surface->height + y) * 3 + 2] = 
+					((uint8_t*)squished_texture->buf)
+						[(dstx * curve->texture_surface->height + y) * 3 + 2] = 
 						convert_double_to_8bit(blue / alpha);
 					
-					((uint8_t*)squished_texture->alpha_buf)[dstx * curve->texture_surface->height + y] = 
+					((uint8_t*)squished_texture->alpha_buf)
+						[dstx * curve->texture_surface->height + y] = 
 						convert_double_to_8bit(alpha);
 				}
 		

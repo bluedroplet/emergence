@@ -109,7 +109,7 @@ void draw_cameron()
 
 void init_cameron()
 {
-	s_cameron = read_png_surface(find_resource("em-edit/splash.png"));
+	s_cameron = read_png_surface(find_resource("splash.png"));
 	cameron_width = s_cameron->width;
 	cameron_height = s_cameron->height;
 }

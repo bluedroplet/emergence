@@ -66,7 +66,6 @@ create_rocket_launcher_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (vbox2), 5);
 
   frame2 = gtk_frame_new (NULL);
-  gtk_widget_show (frame2);
   gtk_box_pack_start (GTK_BOX (vbox2), frame2, FALSE, FALSE, 0);
 
   texture_pixmapentry = gnome_pixmap_entry_new (NULL, "Select Rocket Launcher Texture", TRUE);
@@ -456,7 +455,6 @@ create_minigun_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (vbox6), 5);
 
   frame4 = gtk_frame_new (NULL);
-  gtk_widget_show (frame4);
   gtk_box_pack_start (GTK_BOX (vbox6), frame4, FALSE, FALSE, 0);
 
   texture_pixmapentry = gnome_pixmap_entry_new (NULL, "Select Minigun Texture", TRUE);
@@ -620,7 +618,6 @@ create_plasma_cannon_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (vbox8), 5);
 
   frame5 = gtk_frame_new (NULL);
-  gtk_widget_show (frame5);
   gtk_box_pack_start (GTK_BOX (vbox8), frame5, FALSE, FALSE, 0);
 
   texture_pixmapentry = gnome_pixmap_entry_new (NULL, "Select Plasma Cannon Texture", TRUE);
@@ -784,7 +781,6 @@ create_rails_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (vbox10), 5);
 
   frame6 = gtk_frame_new (NULL);
-  gtk_widget_show (frame6);
   gtk_box_pack_start (GTK_BOX (vbox10), frame6, FALSE, FALSE, 0);
 
   texture_pixmapentry = gnome_pixmap_entry_new (NULL, "Select Rails Texture", TRUE);
@@ -1116,7 +1112,6 @@ create_spawn_point_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (vbox16), 5);
 
   frame8 = gtk_frame_new (NULL);
-  gtk_widget_show (frame8);
   gtk_box_pack_start (GTK_BOX (vbox16), frame8, FALSE, FALSE, 0);
 
   texture_vbox = gtk_vbox_new (FALSE, 5);
@@ -1332,7 +1327,6 @@ create_gravity_well_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (vbox18), 5);
 
   frame9 = gtk_frame_new (NULL);
-  gtk_widget_show (frame9);
   gtk_box_pack_start (GTK_BOX (vbox18), frame9, FALSE, FALSE, 0);
 
   texture_vbox = gtk_vbox_new (FALSE, 5);
@@ -1570,7 +1564,6 @@ create_teleporter_properties_dialog (void)
   gtk_container_set_border_width (GTK_CONTAINER (vbox21), 5);
 
   frame10 = gtk_frame_new (NULL);
-  gtk_widget_show (frame10);
   gtk_box_pack_start (GTK_BOX (vbox21), frame10, FALSE, FALSE, 0);
 
   texture_vbox = gtk_vbox_new (FALSE, 5);

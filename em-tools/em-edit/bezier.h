@@ -29,5 +29,7 @@ struct bezier_t
 
 void BRZ(struct bezier_t *bezier, float t, float *x, float *y);
 void deltaBRZ(struct bezier_t *bezier, float t, float *x, float *y);
-int generate_bezier_ts(struct bezier_t *in_bezier, struct t_t **out_t0, int *out_count, float *out_length);
-void generate_bezier_bigts(struct bezier_t *in_bezier, struct t_t **out_t0, int *out_count, float *out_length);
+int generate_bezier_ts(struct bezier_t *in_bezier, 
+	struct t_t **out_t0, int *out_count, float *out_length);
+void generate_bezier_bigts(struct bezier_t *in_bezier, 
+	struct t_t **out_t0, int *out_count, float *out_length);

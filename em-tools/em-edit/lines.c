@@ -155,10 +155,12 @@ struct line_t *get_line(float x, float y)
 	{
 		// check circles at ends of line
 		
-		if(((x - line->point1->x) * (x - line->point1->x) + (y - line->point1->y) * (y - line->point1->y)) < LINE_THRESHOLD_SQUARED)
+		if(((x - line->point1->x) * (x - line->point1->x) + 
+			(y - line->point1->y) * (y - line->point1->y)) < LINE_THRESHOLD_SQUARED)
 			return line;
 		
-		if(((x - line->point2->x) * (x - line->point2->x) + (y - line->point2->y) * (y - line->point2->y)) < LINE_THRESHOLD_SQUARED)
+		if(((x - line->point2->x) * (x - line->point2->x) + 
+			(y - line->point2->y) * (y - line->point2->y)) < LINE_THRESHOLD_SQUARED)
 			return line;
 		
 		
@@ -167,8 +169,10 @@ struct line_t *get_line(float x, float y)
 		double deltax = line->point2->x - line->point1->x;
 		double deltay = line->point2->y - line->point1->y;
 		
-		if(inout(line->point1->x + deltay, line->point1->y - deltax, line->point1->x - deltay, line->point1->y + deltax, x, y) &&
-			inout(line->point2->x - deltay, line->point2->y + deltax, line->point2->x + deltay, line->point2->y - deltax, x, y))
+		if(inout(line->point1->x + deltay, line->point1->y - deltax, 
+			line->point1->x - deltay, line->point1->y + deltax, x, y) &&
+			inout(line->point2->x - deltay, line->point2->y + deltax, 
+			line->point2->x + deltay, line->point2->y - deltax, x, y))
 		{
 			// check point to line distance
 			
@@ -206,20 +210,22 @@ void on_switch_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_
 }
 
 
-void on_door_colorpicker_color_set(GnomeColorPicker *colorpicker, guint red, guint green, guint blue, 
-	guint alpha, gpointer user_data)
+void on_door_colorpicker_color_set(GnomeColorPicker *colorpicker, 
+	guint red, guint green, guint blue, guint alpha, gpointer user_data)
 {
 	;
 }
 
 
-void on_door_initial_state_open_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+void on_door_initial_state_open_radiobutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
 {
 	;
 }
 
 
-void on_door_initial_state_closed_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+void on_door_initial_state_closed_radiobutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
 {
 	;
 }
@@ -249,8 +255,8 @@ void on_door_index_spinbutton_value_changed(GtkEditable *editable, gpointer user
 }
 
 
-void on_switch_colorpicker_color_set(GnomeColorPicker *colorpicker, guint red, guint green, guint blue, 
-	guint alpha, gpointer user_data)
+void on_switch_colorpicker_color_set(GnomeColorPicker *colorpicker, 
+	guint red, guint green, guint blue, guint alpha, gpointer user_data)
 {
 	;
 }
@@ -308,23 +314,28 @@ void on_door_switch_properties_dialog_destroy(GtkObject *dialog, gpointer user_d
 {
 	struct line_t *line = g_object_get_data(G_OBJECT(dialog), "line");
 
-	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "door_checkbutton"))))
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"door_checkbutton"))))
 		line->status |= LINE_STATUS_DOOR;
 	else
 		line->status &= ~LINE_STATUS_DOOR;
 
-	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "switch_checkbutton"))))
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"switch_checkbutton"))))
 		line->status |= LINE_STATUS_SWITCH;
 	else
 		line->status &= ~LINE_STATUS_SWITCH;
 	
-	gnome_color_picker_get_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), "door_colorpicker")), 
+	gnome_color_picker_get_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), 
+		"door_colorpicker")), 
 		&line->door_red, &line->door_green, &line->door_blue, &line->door_alpha);
 	
-	line->door_width = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+	line->door_width = 
+		gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"door_width_spinbutton")));
 	
-	line->door_energy = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+	line->door_energy = 
+		gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"door_energy_spinbutton")));
 	
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
@@ -333,28 +344,34 @@ void on_door_switch_properties_dialog_destroy(GtkObject *dialog, gpointer user_d
 	else
 		line->door_initial_state = DOOR_INITIAL_STATE_CLOSED;
 	
-	line->door_open_timeout = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+	line->door_open_timeout = 
+		gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"door_open_timeout_spinbutton")));
 	
-	line->door_close_timeout = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+	line->door_close_timeout = 
+		gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"door_close_timeout_spinbutton")));
 	
 	line->door_index = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"door_index_spinbutton")));
 	
-	gnome_color_picker_get_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), "switch_colorpicker")), 
+	gnome_color_picker_get_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), 
+		"switch_colorpicker")), 
 		&line->switch_red, &line->switch_green, &line->switch_blue, &line->switch_alpha);
 	
-	line->switch_width = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+	line->switch_width = 
+		gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"switch_width_spinbutton")));
 
 	
 	LL_REMOVE_ALL(struct line_pointer_t, &line->switch_in_door_close_list);
 	
-	struct string_t *string = new_string_text(gtk_entry_get_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), 
+	struct string_t *string = 
+		new_string_text(gtk_entry_get_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), 
 		"switch_on_enter_close_list_entry"))));
 	
-	char *token = strtok(string->text, " qwertyuiopasdfghjklzxcvbnm!\"£$%^&*()-_=+[];'#,./<>?:@~{}\\|");
+	char *token = strtok(string->text, 
+		" qwertyuiopasdfghjklzxcvbnm!\"£$%^&*()-_=+[];'#,./<>?:@~{}\\|");
 	
 	while(token)
 	{
@@ -525,10 +542,12 @@ void run_door_switch_properties_dialog(void *menu, struct line_t *line)
 	
 	if(line->status & LINE_STATUS_DOOR)
 	{
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "door_checkbutton")), TRUE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"door_checkbutton")), TRUE);
 	}
 
-	gnome_color_picker_set_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), "door_colorpicker")), 
+	gnome_color_picker_set_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), 
+		"door_colorpicker")), 
 		line->door_red, line->door_green, line->door_blue, line->door_alpha);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
@@ -561,10 +580,12 @@ void run_door_switch_properties_dialog(void *menu, struct line_t *line)
 	
 	if(line->status & LINE_STATUS_SWITCH)
 	{
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "switch_checkbutton")), TRUE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"switch_checkbutton")), TRUE);
 	}
 	
-	gnome_color_picker_set_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), "switch_colorpicker")), 
+	gnome_color_picker_set_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), 
+		"switch_colorpicker")), 
 		line->switch_red, line->switch_green, line->switch_blue, line->switch_alpha);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
@@ -589,7 +610,8 @@ void run_door_switch_properties_dialog(void *menu, struct line_t *line)
 		linep = linep->next;
 	}
 	
-	gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "switch_on_enter_close_list_entry")), string->text);
+	gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), 
+		"switch_on_enter_close_list_entry")), string->text);
 	
 	string_clear(string);
 	
@@ -608,7 +630,8 @@ void run_door_switch_properties_dialog(void *menu, struct line_t *line)
 		linep = linep->next;
 	}
 	
-	gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "switch_on_enter_open_list_entry")), string->text);
+	gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), 
+		"switch_on_enter_open_list_entry")), string->text);
 	
 	string_clear(string);
 	
@@ -627,7 +650,8 @@ void run_door_switch_properties_dialog(void *menu, struct line_t *line)
 		linep = linep->next;
 	}
 	
-	gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "switch_on_enter_invert_list_entry")), string->text);
+	gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), 
+		"switch_on_enter_invert_list_entry")), string->text);
 	
 	string_clear(string);
 	
@@ -646,7 +670,8 @@ void run_door_switch_properties_dialog(void *menu, struct line_t *line)
 		linep = linep->next;
 	}
 	
-	gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "switch_on_leave_close_list_entry")), string->text);
+	gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), 
+		"switch_on_leave_close_list_entry")), string->text);
 	
 	string_clear(string);
 	
@@ -665,7 +690,8 @@ void run_door_switch_properties_dialog(void *menu, struct line_t *line)
 		linep = linep->next;
 	}
 	
-	gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "switch_on_leave_open_list_entry")), string->text);
+	gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), 
+		"switch_on_leave_open_list_entry")), string->text);
 	
 	string_clear(string);
 	
@@ -684,7 +710,8 @@ void run_door_switch_properties_dialog(void *menu, struct line_t *line)
 		linep = linep->next;
 	}
 	
-	gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "switch_on_leave_invert_list_entry")), string->text);
+	gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), 
+		"switch_on_leave_invert_list_entry")), string->text);
 	
 	free_string(string);
 	
@@ -983,12 +1010,14 @@ void run_line_menu(struct line_t *line)
 	menu = gtk_menu_new();
 
 	menu_items = gtk_menu_item_new_with_label("Door/Switch Properties");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_door_switch_properties_dialog), line);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(run_door_switch_properties_dialog), line);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 	
 	menu_items = gtk_menu_item_new_with_label("Delete Door/Switch");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_delete_line), line);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(menu_delete_line), line);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 

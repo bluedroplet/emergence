@@ -245,8 +245,10 @@ void insert_point(struct curve_t *curve, float x, float y)
 	int left1, right1, left2, right2;
 	get_width_sats(pconn, &left1, &right1, &left2, &right2);
 			
-	point->left_width = (pconn->node2->width[left2] - pconn->node1->width[left1]) * pt + pconn->node1->width[left1];
-	point->right_width = (pconn->node2->width[right2] - pconn->node1->width[right1]) * pt + pconn->node1->width[right1];
+	point->left_width = (pconn->node2->width[left2] - pconn->node1->width[left1]) * pt + 
+		pconn->node1->width[left1];
+	point->right_width = (pconn->node2->width[right2] - pconn->node1->width[right1]) * pt + 
+		pconn->node1->width[right1];
 	
 	point->conn = pconn;
 	point->t = pt;
@@ -539,8 +541,10 @@ void move_point(struct point_t *point, float x, float y)
 	int left1, right1, left2, right2;
 	get_width_sats(pconn, &left1, &right1, &left2, &right2);
 			
-	point->left_width = (pconn->node2->width[left2] - pconn->node1->width[left1]) * pt + pconn->node1->width[left1];
-	point->right_width = (pconn->node2->width[right2] - pconn->node1->width[right1]) * pt + pconn->node1->width[right1];
+	point->left_width = (pconn->node2->width[left2] - pconn->node1->width[left1]) * pt + 
+		pconn->node1->width[left1];
+	point->right_width = (pconn->node2->width[right2] - pconn->node1->width[right1]) * pt + 
+		pconn->node1->width[right1];
 
 	point->conn = pconn;
 	point->t_index = pt_index;
@@ -728,12 +732,14 @@ void run_point_menu(struct point_t *point)
 	menu = gtk_menu_new();
 
 	menu_items = gtk_menu_item_new_with_label("Define Door/Switch");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_join_point), point);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(menu_join_point), point);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 	
 	menu_items = gtk_menu_item_new_with_label("Define Fill");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_define_fill), point);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(menu_define_fill), point);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 	

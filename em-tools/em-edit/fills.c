@@ -651,11 +651,13 @@ void draw_fill_edges(struct fill_edge_t *fill_edge0)
 					switch(last_conn->type)
 					{
 					case CONN_TYPE_STRAIGHT:
-						draw_follow_straight_fill_left_edge_segment(last_conn, fill_edge->point1->t, fill_edge->point2->t);
+						draw_follow_straight_fill_left_edge_segment(last_conn, 
+							fill_edge->point1->t, fill_edge->point2->t);
 						break;
 					
 					case CONN_TYPE_BEZIER:
-						draw_follow_curve_fill_left_edge_segment(last_conn, fill_edge->point1->t, fill_edge->point2->t);
+						draw_follow_curve_fill_left_edge_segment(last_conn, 
+							fill_edge->point1->t, fill_edge->point2->t);
 						break;
 					}
 				}
@@ -664,11 +666,13 @@ void draw_fill_edges(struct fill_edge_t *fill_edge0)
 					switch(first_connp->conn->type)
 					{
 					case CONN_TYPE_STRAIGHT:
-						draw_follow_straight_fill_left_edge_segment(first_connp->conn, first_t, 1.0);
+						draw_follow_straight_fill_left_edge_segment(first_connp->conn, 
+							first_t, 1.0);
 						break;
 					
 					case CONN_TYPE_BEZIER:
-						draw_follow_curve_fill_left_edge_segment(first_connp->conn, first_t, 1.0);
+						draw_follow_curve_fill_left_edge_segment(first_connp->conn, 
+							first_t, 1.0);
 						break;
 					}
 					
@@ -679,11 +683,13 @@ void draw_fill_edges(struct fill_edge_t *fill_edge0)
 						switch(cconnp->conn->type)
 						{
 						case CONN_TYPE_STRAIGHT:
-							draw_follow_straight_fill_left_edge_segment(cconnp->conn, 0.0, 1.0);
+							draw_follow_straight_fill_left_edge_segment(cconnp->conn, 
+								0.0, 1.0);
 							break;
 						
 						case CONN_TYPE_BEZIER:
-							draw_follow_curve_fill_left_edge_segment(cconnp->conn, 0.0, 1.0);
+							draw_follow_curve_fill_left_edge_segment(cconnp->conn, 
+								0.0, 1.0);
 							break;
 						}
 						
@@ -693,11 +699,13 @@ void draw_fill_edges(struct fill_edge_t *fill_edge0)
 					switch(last_conn->type)
 					{
 					case CONN_TYPE_STRAIGHT:
-						draw_follow_straight_fill_left_edge_segment(last_conn, 0.0, last_t);
+						draw_follow_straight_fill_left_edge_segment(last_conn, 
+							0.0, last_t);
 						break;
 					
 					case CONN_TYPE_BEZIER:
-						draw_follow_curve_fill_left_edge_segment(last_conn, 0.0, last_t);
+						draw_follow_curve_fill_left_edge_segment(last_conn, 
+							0.0, last_t);
 						break;
 					}
 				}
@@ -709,11 +717,13 @@ void draw_fill_edges(struct fill_edge_t *fill_edge0)
 					switch(last_conn->type)
 					{
 					case CONN_TYPE_STRAIGHT:
-						draw_follow_straight_fill_right_edge_segment(last_conn, fill_edge->point1->t, fill_edge->point2->t);
+						draw_follow_straight_fill_right_edge_segment(last_conn, 
+							fill_edge->point1->t, fill_edge->point2->t);
 						break;
 					
 					case CONN_TYPE_BEZIER:
-						draw_follow_curve_fill_right_edge_segment(last_conn, fill_edge->point1->t, fill_edge->point2->t);
+						draw_follow_curve_fill_right_edge_segment(last_conn, 
+							fill_edge->point1->t, fill_edge->point2->t);
 						break;
 					}
 				}
@@ -722,11 +732,13 @@ void draw_fill_edges(struct fill_edge_t *fill_edge0)
 					switch(first_connp->conn->type)
 					{
 					case CONN_TYPE_STRAIGHT:
-						draw_follow_straight_fill_right_edge_segment(first_connp->conn, first_t, 1.0);
+						draw_follow_straight_fill_right_edge_segment(first_connp->conn, 
+							first_t, 1.0);
 						break;
 					
 					case CONN_TYPE_BEZIER:
-						draw_follow_curve_fill_right_edge_segment(first_connp->conn, first_t, 1.0);
+						draw_follow_curve_fill_right_edge_segment(first_connp->conn, 
+							first_t, 1.0);
 						break;
 					}
 					
@@ -737,11 +749,13 @@ void draw_fill_edges(struct fill_edge_t *fill_edge0)
 						switch(cconnp->conn->type)
 						{
 						case CONN_TYPE_STRAIGHT:
-							draw_follow_straight_fill_right_edge_segment(cconnp->conn, 0.0, 1.0);
+							draw_follow_straight_fill_right_edge_segment(cconnp->conn, 
+								0.0, 1.0);
 							break;
 						
 						case CONN_TYPE_BEZIER:
-							draw_follow_curve_fill_right_edge_segment(cconnp->conn, 0.0, 1.0);
+							draw_follow_curve_fill_right_edge_segment(cconnp->conn, 
+								0.0, 1.0);
 							break;
 						}
 						
@@ -751,11 +765,13 @@ void draw_fill_edges(struct fill_edge_t *fill_edge0)
 					switch(last_conn->type)
 					{
 					case CONN_TYPE_STRAIGHT:
-						draw_follow_straight_fill_right_edge_segment(last_conn, 0.0, last_t);
+						draw_follow_straight_fill_right_edge_segment(last_conn, 
+							0.0, last_t);
 						break;
 					
 					case CONN_TYPE_BEZIER:
-						draw_follow_curve_fill_right_edge_segment(last_conn, 0.0, last_t);
+						draw_follow_curve_fill_right_edge_segment(last_conn, 
+							0.0, last_t);
 						break;
 					}
 				}
@@ -767,32 +783,40 @@ void draw_fill_edges(struct fill_edge_t *fill_edge0)
 			
 			if(last_fill_edge->point2->pos < last_fill_edge->point1->pos)
 			{
-				x1 = fill_edge->point1->x - fill_edge->point1->deltay * (fill_edge->point1->left_width + 
+				x1 = fill_edge->point1->x - 
+					fill_edge->point1->deltay * (fill_edge->point1->left_width + 
 					FILL_EDGE_DISTANCE / zoom);
-				y1 = fill_edge->point1->y + fill_edge->point1->deltax * (fill_edge->point1->left_width + 
+				y1 = fill_edge->point1->y + 
+					fill_edge->point1->deltax * (fill_edge->point1->left_width + 
 					FILL_EDGE_DISTANCE / zoom);
 			}
 			else
 			{
-				x1 = fill_edge->point1->x + fill_edge->point1->deltay * (fill_edge->point1->right_width + 
+				x1 = fill_edge->point1->x + 
+					fill_edge->point1->deltay * (fill_edge->point1->right_width + 
 					FILL_EDGE_DISTANCE / zoom);
-				y1 = fill_edge->point1->y - fill_edge->point1->deltax * (fill_edge->point1->right_width + 
+				y1 = fill_edge->point1->y - 
+					fill_edge->point1->deltax * (fill_edge->point1->right_width + 
 					FILL_EDGE_DISTANCE / zoom);
 			}
 					
 			
 			if(next_fill_edge->point2->pos < next_fill_edge->point1->pos)
 			{
-				x2 = fill_edge->point2->x - fill_edge->point2->deltay * (fill_edge->point2->left_width + 
+				x2 = fill_edge->point2->x - 
+					fill_edge->point2->deltay * (fill_edge->point2->left_width + 
 					FILL_EDGE_DISTANCE / zoom);
-				y2 = fill_edge->point2->y + fill_edge->point2->deltax * (fill_edge->point2->left_width + 
+				y2 = fill_edge->point2->y + 
+					fill_edge->point2->deltax * (fill_edge->point2->left_width + 
 					FILL_EDGE_DISTANCE / zoom);
 			}
 			else
 			{
-				x2 = fill_edge->point2->x + fill_edge->point2->deltay * (fill_edge->point2->right_width + 
+				x2 = fill_edge->point2->x + 
+					fill_edge->point2->deltay * (fill_edge->point2->right_width + 
 					FILL_EDGE_DISTANCE / zoom);
-				y2 = fill_edge->point2->y - fill_edge->point2->deltax * (fill_edge->point2->right_width + 
+				y2 = fill_edge->point2->y - 
+					fill_edge->point2->deltax * (fill_edge->point2->right_width + 
 					FILL_EDGE_DISTANCE / zoom);
 			}
 					
@@ -856,8 +880,8 @@ void update_fill_surface(struct fill_t *fill)		// always called when not working
 }
 
 
-void on_fill_solid_colorpicker_color_set(GnomeColorPicker *colorpicker, guint red, guint green, guint blue, 
-	guint alpha, gpointer user_data)
+void on_fill_solid_colorpicker_color_set(GnomeColorPicker *colorpicker, 
+	guint red, guint green, guint blue, guint alpha, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(colorpicker));
 	struct fill_t *fill = g_object_get_data(G_OBJECT(dialog), "fill");
@@ -931,8 +955,8 @@ void on_fill_stretch_horiz_spinbutton_value_changed(GtkSpinButton *spinbutton, g
 	struct fill_t *fill = g_object_get_data(G_OBJECT(dialog), "fill");
 
 	stop_working();
-	fill->stretch_horiz = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"stretch_horiz_spinbutton")));
+	fill->stretch_horiz = gtk_spin_button_get_value(
+		GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), "stretch_horiz_spinbutton")));
 	invalidate_fill(fill);
 	update_client_area();
 	start_working();
@@ -945,8 +969,8 @@ void on_fill_stretch_vert_spinbutton_value_changed(GtkSpinButton *spinbutton, gp
 	struct fill_t *fill = g_object_get_data(G_OBJECT(dialog), "fill");
 
 	stop_working();
-	fill->stretch_vert = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"stretch_vert_spinbutton")));
+	fill->stretch_vert = gtk_spin_button_get_value(
+		GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), "stretch_vert_spinbutton")));
 	invalidate_fill(fill);
 	update_client_area();
 	start_working();
@@ -959,8 +983,8 @@ void on_fill_offset_horiz_spinbutton_value_changed(GtkSpinButton *spinbutton, gp
 	struct fill_t *fill = g_object_get_data(G_OBJECT(dialog), "fill");
 
 	stop_working();
-	fill->offset_horiz = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"offset_horiz_spinbutton")));
+	fill->offset_horiz = gtk_spin_button_get_value(
+		GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), "offset_horiz_spinbutton")));
 	invalidate_fill(fill);
 	update_client_area();
 	start_working();
@@ -973,8 +997,8 @@ void on_fill_offset_vert_spinbutton_value_changed(GtkSpinButton *spinbutton, gpo
 	struct fill_t *fill = g_object_get_data(G_OBJECT(dialog), "fill");
 
 	stop_working();
-	fill->offset_vert = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"offset_vert_spinbutton")));
+	fill->offset_vert = gtk_spin_button_get_value(
+		GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), "offset_vert_spinbutton")));
 	invalidate_fill(fill);
 	update_client_area();
 	start_working();
@@ -1060,7 +1084,8 @@ void on_fill_rotate_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer 
 	
 	if(sensitive)
 	{
-		if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_left_radiobutton"))))
+		if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_left_radiobutton"))))
 		{
 			fill->rotate_left = 1;
 			fill->rotate_right = 0;
@@ -1122,49 +1147,57 @@ void on_fill_rotate_right_radiobutton_toggled(GtkToggleButton *togglebutton, gpo
 }
 
 
-gboolean on_fill_stretch_horiz_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+gboolean on_fill_stretch_horiz_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	return FALSE;
 }
 
 
-gboolean on_fill_stretch_horiz_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+gboolean on_fill_stretch_horiz_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	return FALSE;
 }
 
 
-gboolean on_fill_stretch_vert_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+gboolean on_fill_stretch_vert_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	return FALSE;
 }
 
 
-gboolean on_fill_stretch_vert_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+gboolean on_fill_stretch_vert_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	return FALSE;
 }
 
 
-gboolean on_fill_offset_horiz_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+gboolean on_fill_offset_horiz_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	return FALSE;
 }
 
 
-gboolean on_fill_offset_horiz_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+gboolean on_fill_offset_horiz_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	return FALSE;
 }
 
 
-gboolean on_fill_offset_vert_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+gboolean on_fill_offset_vert_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	return FALSE;
 }
 
 
-gboolean on_fill_offset_vert_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+gboolean on_fill_offset_vert_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	return FALSE;
 }
@@ -1186,12 +1219,14 @@ void run_fill_properties_dialog(void *menu, struct fill_t *fill)
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 	
 	if(fill->type == FILL_TYPE_SOLID)
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "solid_radiobutton")), TRUE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"solid_radiobutton")), TRUE);
 	else
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "texture_radiobutton")), TRUE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"texture_radiobutton")), TRUE);
 
-	gnome_color_picker_set_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), "solid_colorpicker")), 
-		fill->red, fill->green, fill->blue, fill->alpha);
+	gnome_color_picker_set_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), 
+		"solid_colorpicker")), fill->red, fill->green, fill->blue, fill->alpha);
 	
 	if(fill->texture_filename)
 	{
@@ -1199,31 +1234,37 @@ void run_fill_properties_dialog(void *menu, struct fill_t *fill)
 			"texture_entry")), fill->texture_filename->text);
 	}
 	
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "flip_horiz_checkbutton")), fill->flip_horiz);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "flip_vert_checkbutton")), fill->flip_vert);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"flip_horiz_checkbutton")), fill->flip_horiz);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"flip_vert_checkbutton")), fill->flip_vert);
 	
 	if(fill->rotate_left)
 	{
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_checkbutton")), 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_left_radiobutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_checkbutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_left_radiobutton")), 1);
 	}
 
 	if(fill->rotate_right)
 	{
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_checkbutton")), 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_right_radiobutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_checkbutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_right_radiobutton")), 1);
 	}
 
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), "stretch_horiz_spinbutton")), 
-		(gfloat)fill->stretch_horiz);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), "stretch_vert_spinbutton")), 
-		(gfloat)fill->stretch_vert);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), "offset_horiz_spinbutton")), 
-		(gfloat)fill->offset_horiz);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), "offset_vert_spinbutton")), 
-		(gfloat)fill->offset_vert);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), "friction_spinbutton")), 
-		(gfloat)fill->friction);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"stretch_horiz_spinbutton")), (gfloat)fill->stretch_horiz);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"stretch_vert_spinbutton")), (gfloat)fill->stretch_vert);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"offset_horiz_spinbutton")), (gfloat)fill->offset_horiz);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"offset_vert_spinbutton")), (gfloat)fill->offset_vert);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"friction_spinbutton")), (gfloat)fill->friction);
 	
 	gtk_widget_show(dialog);
 	gtk_main();
@@ -1270,7 +1311,8 @@ int check_for_untiled_fills()
 			break;
 		
 		case FILL_TYPE_TEXTURE:
-			if(cfill->texture && (cfill->texture_verts0 || cfill->texture_polys0) && !cfill->texture_tiled)
+			if(cfill->texture && (cfill->texture_verts0 || cfill->texture_polys0) && 
+				!cfill->texture_tiled)
 				return 1;
 			break;
 		}
@@ -1501,7 +1543,8 @@ void delete_all_fills()		// always called when not working
 //
 
 
-void generate_quad_verticies(struct fill_t *fill, double minx, double miny, double maxx, double maxy)
+void generate_quad_verticies(struct fill_t *fill, 
+	double minx, double miny, double maxx, double maxy)
 {
 //	maxx -= fill->stretch_horiz;
 //	maxy -= fill->stretch_vert;
@@ -1685,8 +1728,8 @@ int lines_intersect(double ax1, double ay1, double ax2, double ay2,
 }
 
 
-int process_quad(struct fill_t *fill, double minx, double miny, double maxx, double maxy, int center_inside, 
-	struct fill_line_t *fill_line0)
+int process_quad(struct fill_t *fill, double minx, double miny, double maxx, double maxy, 
+	int center_inside, struct fill_line_t *fill_line0)
 {
 	if(in_lock_check_stop_callback())
 		return 0;
@@ -1880,7 +1923,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 					fill_line.x1 = cfill_line->x1;
 					fill_line.y1 = cfill_line->y1;
 					fill_line.x2 = midx;
-					fill_line.y2 = cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+					fill_line.y2 = cfill_line->y1 + 
+						(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 						(cfill_line->x2 - cfill_line->x1);
 					LL_ADD(struct fill_line_t, &fill_line0A, &fill_line);
 						
@@ -1894,7 +1938,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 				case QUAD_C:
 					fill_line.x1 = cfill_line->x1;
 					fill_line.y1 = cfill_line->y1;
-					fill_line.x2 = cfill_line->x1 + (cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
+					fill_line.x2 = cfill_line->x1 + 
+						(cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
 						(cfill_line->y2 - cfill_line->y1);
 					fill_line.y2 = midy;
 					LL_ADD(struct fill_line_t, &fill_line0A, &fill_line);
@@ -1909,13 +1954,15 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 				case QUAD_D:
 					// see if it goes through C or B
 
-					if(cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+					if(cfill_line->y1 + 
+						(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 						(cfill_line->x2 - cfill_line->x1) < midy)
 					{
 						// goes through C
 						fill_line.x1 = cfill_line->x1;
 						fill_line.y1 = cfill_line->y1;
-						fill_line.x2 = cfill_line->x1 + (cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
+						fill_line.x2 = cfill_line->x1 + 
+							(cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
 							(cfill_line->y2 - cfill_line->y1);
 						fill_line.y2 = midy;
 						LL_ADD(struct fill_line_t, &fill_line0A, &fill_line);
@@ -1923,7 +1970,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 						fill_line.x1 = fill_line.x2;
 						fill_line.y1 = midy;
 						fill_line.x2 = midx;
-						fill_line.y2 = cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+						fill_line.y2 = cfill_line->y1 + 
+							(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 							(cfill_line->x2 - cfill_line->x1);
 						LL_ADD(struct fill_line_t, &fill_line0C, &fill_line);
 							
@@ -1939,13 +1987,15 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 						fill_line.x1 = cfill_line->x1;
 						fill_line.y1 = cfill_line->y1;
 						fill_line.x2 = midx;
-						fill_line.y2 = cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+						fill_line.y2 = cfill_line->y1 + 
+							(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 							(cfill_line->x2 - cfill_line->x1);
 						LL_ADD(struct fill_line_t, &fill_line0A, &fill_line);
 						
 						fill_line.x1 = midx;
 						fill_line.y1 = fill_line.y2;
-						fill_line.x2 = cfill_line->x1 + (cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
+						fill_line.x2 = cfill_line->x1 + 
+							(cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
 							(cfill_line->y2 - cfill_line->y1);
 						fill_line.y2 = midy;
 						LL_ADD(struct fill_line_t, &fill_line0B, &fill_line);
@@ -1970,7 +2020,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 					fill_line.x1 = cfill_line->x1;
 					fill_line.y1 = cfill_line->y1;
 					fill_line.x2 = midx;
-					fill_line.y2 = cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+					fill_line.y2 = cfill_line->y1 + 
+						(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 						(cfill_line->x2 - cfill_line->x1);
 					LL_ADD(struct fill_line_t, &fill_line0B, &fill_line);
 						
@@ -1989,13 +2040,15 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 				case QUAD_C:
 					// see if it goes through D or A
 				
-					if(cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+					if(cfill_line->y1 + 
+						(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 						(cfill_line->x2 - cfill_line->x1) < midy)
 					{
 						// goes through D
 						fill_line.x1 = cfill_line->x1;
 						fill_line.y1 = cfill_line->y1;
-						fill_line.x2 = cfill_line->x1 + (cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
+						fill_line.x2 = cfill_line->x1 + 
+							(cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
 							(cfill_line->y2 - cfill_line->y1);
 						fill_line.y2 = midy;
 						LL_ADD(struct fill_line_t, &fill_line0B, &fill_line);
@@ -2003,7 +2056,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 						fill_line.x1 = fill_line.x2;
 						fill_line.y1 = midy;
 						fill_line.x2 = midx;
-						fill_line.y2 = cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+						fill_line.y2 = cfill_line->y1 + 
+							(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 							(cfill_line->x2 - cfill_line->x1);
 						LL_ADD(struct fill_line_t, &fill_line0D, &fill_line);
 							
@@ -2019,13 +2073,15 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 						fill_line.x1 = cfill_line->x1;
 						fill_line.y1 = cfill_line->y1;
 						fill_line.x2 = midx;
-						fill_line.y2 = cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+						fill_line.y2 = cfill_line->y1 + 
+							(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 							(cfill_line->x2 - cfill_line->x1);
 						LL_ADD(struct fill_line_t, &fill_line0B, &fill_line);
 						
 						fill_line.x1 = midx;
 						fill_line.y1 = fill_line.y2;
-						fill_line.x2 = cfill_line->x1 + (cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
+						fill_line.x2 = cfill_line->x1 + 
+							(cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
 							(cfill_line->y2 - cfill_line->y1);
 						fill_line.y2 = midy;
 						LL_ADD(struct fill_line_t, &fill_line0A, &fill_line);
@@ -2042,7 +2098,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 				case QUAD_D:
 					fill_line.x1 = cfill_line->x1;
 					fill_line.y1 = cfill_line->y1;
-					fill_line.x2 = cfill_line->x1 + (cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
+					fill_line.x2 = cfill_line->x1 + 
+						(cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
 						(cfill_line->y2 - cfill_line->y1);
 					fill_line.y2 = midy;
 					LL_ADD(struct fill_line_t, &fill_line0B, &fill_line);
@@ -2064,7 +2121,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 				case QUAD_A:
 					fill_line.x1 = cfill_line->x1;
 					fill_line.y1 = cfill_line->y1;
-					fill_line.x2 = cfill_line->x1 + (cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
+					fill_line.x2 = cfill_line->x1 + 
+						(cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
 						(cfill_line->y2 - cfill_line->y1);
 					fill_line.y2 = midy;
 					LL_ADD(struct fill_line_t, &fill_line0C, &fill_line);
@@ -2079,20 +2137,23 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 				case QUAD_B:
 					// see if it goes through D or A
 				
-					if(cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+					if(cfill_line->y1 + 
+						(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 						(cfill_line->x2 - cfill_line->x1) < midy)
 					{
 						// goes through D
 						fill_line.x1 = cfill_line->x1;
 						fill_line.y1 = cfill_line->y1;
 						fill_line.x2 = midx;
-						fill_line.y2 = cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+						fill_line.y2 = cfill_line->y1 + 
+							(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 							(cfill_line->x2 - cfill_line->x1);
 						LL_ADD(struct fill_line_t, &fill_line0C, &fill_line);
 						
 						fill_line.x1 = midx;
 						fill_line.y1 = fill_line.y2;
-						fill_line.x2 = cfill_line->x1 + (cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
+						fill_line.x2 = cfill_line->x1 + 
+							(cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
 							(cfill_line->y2 - cfill_line->y1);
 						fill_line.y2 = midy;
 						LL_ADD(struct fill_line_t, &fill_line0D, &fill_line);
@@ -2108,7 +2169,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 						// goes through A
 						fill_line.x1 = cfill_line->x1;
 						fill_line.y1 = cfill_line->y1;
-						fill_line.x2 = cfill_line->x1 + (cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
+						fill_line.x2 = cfill_line->x1 + 
+							(cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
 							(cfill_line->y2 - cfill_line->y1);
 						fill_line.y2 = midy;
 						LL_ADD(struct fill_line_t, &fill_line0C, &fill_line);
@@ -2116,7 +2178,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 						fill_line.x1 = fill_line.x2;
 						fill_line.y1 = midy;
 						fill_line.x2 = midx;
-						fill_line.y2 = cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+						fill_line.y2 = cfill_line->y1 + 
+							(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 							(cfill_line->x2 - cfill_line->x1);
 						LL_ADD(struct fill_line_t, &fill_line0A, &fill_line);
 							
@@ -2137,7 +2200,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 					fill_line.x1 = cfill_line->x1;
 					fill_line.y1 = cfill_line->y1;
 					fill_line.x2 = midx;
-					fill_line.y2 = cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+					fill_line.y2 = cfill_line->y1 + 
+						(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 						(cfill_line->x2 - cfill_line->x1);
 					LL_ADD(struct fill_line_t, &fill_line0C, &fill_line);
 						
@@ -2158,20 +2222,23 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 				case QUAD_A:
 					// see if it goes through C or B
 				
-					if(cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+					if(cfill_line->y1 + 
+						(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 						(cfill_line->x2 - cfill_line->x1) < midy)
 					{
 						// goes through C
 						fill_line.x1 = cfill_line->x1;
 						fill_line.y1 = cfill_line->y1;
 						fill_line.x2 = midx;
-						fill_line.y2 = cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+						fill_line.y2 = cfill_line->y1 + 
+							(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 							(cfill_line->x2 - cfill_line->x1);
 						LL_ADD(struct fill_line_t, &fill_line0D, &fill_line);
 						
 						fill_line.x1 = midx;
 						fill_line.y1 = fill_line.y2;
-						fill_line.x2 = cfill_line->x1 + (cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
+						fill_line.x2 = cfill_line->x1 + 
+							(cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
 							(cfill_line->y2 - cfill_line->y1);
 						fill_line.y2 = midy;
 						LL_ADD(struct fill_line_t, &fill_line0C, &fill_line);
@@ -2187,7 +2254,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 						// goes through B
 						fill_line.x1 = cfill_line->x1;
 						fill_line.y1 = cfill_line->y1;
-						fill_line.x2 = cfill_line->x1 + (cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
+						fill_line.x2 = cfill_line->x1 + 
+							(cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
 							(cfill_line->y2 - cfill_line->y1);
 						fill_line.y2 = midy;
 						LL_ADD(struct fill_line_t, &fill_line0D, &fill_line);
@@ -2195,7 +2263,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 						fill_line.x1 = fill_line.x2;
 						fill_line.y1 = midy;
 						fill_line.x2 = midx;
-						fill_line.y2 = cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+						fill_line.y2 = cfill_line->y1 + 
+							(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 							(cfill_line->x2 - cfill_line->x1);
 						LL_ADD(struct fill_line_t, &fill_line0B, &fill_line);
 							
@@ -2211,7 +2280,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 				case QUAD_B:
 					fill_line.x1 = cfill_line->x1;
 					fill_line.y1 = cfill_line->y1;
-					fill_line.x2 = cfill_line->x1 + (cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
+					fill_line.x2 = cfill_line->x1 + 
+						(cfill_line->x2 - cfill_line->x1) * (midy - cfill_line->y1) /
 						(cfill_line->y2 - cfill_line->y1);
 					fill_line.y2 = midy;
 					LL_ADD(struct fill_line_t, &fill_line0D, &fill_line);
@@ -2227,7 +2297,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 					fill_line.x1 = cfill_line->x1;
 					fill_line.y1 = cfill_line->y1;
 					fill_line.x2 = midx;
-					fill_line.y2 = cfill_line->y1 + (cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
+					fill_line.y2 = cfill_line->y1 + 
+						(cfill_line->y2 - cfill_line->y1) * (midx - cfill_line->x1) /
 						(cfill_line->x2 - cfill_line->x1);
 					LL_ADD(struct fill_line_t, &fill_line0D, &fill_line);
 						
@@ -2271,7 +2342,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 			
 			while(cfill_line)
 			{
-				if(lines_intersect(midx, midy, new_midx, new_midy, cfill_line->x1, cfill_line->y1, cfill_line->x2, cfill_line->y2))
+				if(lines_intersect(midx, midy, new_midx, new_midy, 
+					cfill_line->x1, cfill_line->y1, cfill_line->x2, cfill_line->y2))
 					new_inside = !new_inside;
 
 				cfill_line = cfill_line->next;
@@ -2311,7 +2383,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 			
 			while(cfill_line)
 			{
-				if(lines_intersect(midx, midy, new_midx, new_midy, cfill_line->x1, cfill_line->y1, cfill_line->x2, cfill_line->y2))
+				if(lines_intersect(midx, midy, new_midx, new_midy, 
+					cfill_line->x1, cfill_line->y1, cfill_line->x2, cfill_line->y2))
 					new_inside = !new_inside;
 
 				cfill_line = cfill_line->next;
@@ -2350,7 +2423,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 			
 			while(cfill_line)
 			{
-				if(lines_intersect(midx, midy, new_midx, new_midy, cfill_line->x1, cfill_line->y1, cfill_line->x2, cfill_line->y2))
+				if(lines_intersect(midx, midy, new_midx, new_midy, 
+					cfill_line->x1, cfill_line->y1, cfill_line->x2, cfill_line->y2))
 					new_inside = !new_inside;
 
 				cfill_line = cfill_line->next;
@@ -2388,7 +2462,8 @@ int process_quad(struct fill_t *fill, double minx, double miny, double maxx, dou
 			
 			while(cfill_line)
 			{
-				if(lines_intersect(midx, midy, new_midx, new_midy, cfill_line->x1, cfill_line->y1, cfill_line->x2, cfill_line->y2))
+				if(lines_intersect(midx, midy, new_midx, new_midy, 
+					cfill_line->x1, cfill_line->y1, cfill_line->x2, cfill_line->y2))
 					new_inside = !new_inside;
 
 				cfill_line = cfill_line->next;
@@ -2805,11 +2880,13 @@ int quad_tree_fill(struct fill_t *fill)
 					switch(fill_edge->point1->conn->type)
 					{
 					case CONN_TYPE_STRAIGHT:
-						add_follow_straight_fill_right_edge_segment(fill_edge->point1->conn, fill_edge->point1->t, 1.0);
+						add_follow_straight_fill_right_edge_segment(fill_edge->point1->conn, 
+							fill_edge->point1->t, 1.0);
 						break;
 					
 					case CONN_TYPE_BEZIER:
-						add_follow_curve_fill_right_edge_segment(fill_edge->point1->conn, fill_edge->point1->t, 1.0);
+						add_follow_curve_fill_right_edge_segment(fill_edge->point1->conn, 
+							fill_edge->point1->t, 1.0);
 						break;
 					}
 					
@@ -2825,11 +2902,13 @@ int quad_tree_fill(struct fill_t *fill)
 						switch(cconnp->conn->type)
 						{
 						case CONN_TYPE_STRAIGHT:
-							add_follow_straight_fill_right_edge_segment(cconnp->conn, 0.0, 1.0);
+							add_follow_straight_fill_right_edge_segment(cconnp->conn, 
+								0.0, 1.0);
 							break;
 						
 						case CONN_TYPE_BEZIER:
-							add_follow_curve_fill_right_edge_segment(cconnp->conn, 0.0, 1.0);
+							add_follow_curve_fill_right_edge_segment(cconnp->conn, 
+								0.0, 1.0);
 							break;
 						}
 						
@@ -2839,11 +2918,13 @@ int quad_tree_fill(struct fill_t *fill)
 					switch(fill_edge->point2->conn->type)
 					{
 					case CONN_TYPE_STRAIGHT:
-						add_follow_straight_fill_right_edge_segment(fill_edge->point2->conn, 0.0, fill_edge->point2->t);
+						add_follow_straight_fill_right_edge_segment(fill_edge->point2->conn, 
+							0.0, fill_edge->point2->t);
 						break;
 					
 					case CONN_TYPE_BEZIER:
-						add_follow_curve_fill_right_edge_segment(fill_edge->point2->conn, 0.0, fill_edge->point2->t);
+						add_follow_curve_fill_right_edge_segment(fill_edge->point2->conn, 
+							0.0, fill_edge->point2->t);
 						break;
 					}
 				}
@@ -2870,11 +2951,13 @@ int quad_tree_fill(struct fill_t *fill)
 					switch(fill_edge->point1->conn->type)
 					{
 					case CONN_TYPE_STRAIGHT:
-						add_follow_straight_fill_left_edge_segment(fill_edge->point1->conn, fill_edge->point1->t, 1.0);
+						add_follow_straight_fill_left_edge_segment(fill_edge->point1->conn, 
+							fill_edge->point1->t, 1.0);
 						break;
 					
 					case CONN_TYPE_BEZIER:
-						add_follow_curve_fill_left_edge_segment(fill_edge->point1->conn, fill_edge->point1->t, 1.0);
+						add_follow_curve_fill_left_edge_segment(fill_edge->point1->conn, 
+							fill_edge->point1->t, 1.0);
 						break;
 					}
 					
@@ -2904,11 +2987,13 @@ int quad_tree_fill(struct fill_t *fill)
 					switch(fill_edge->point2->conn->type)
 					{
 					case CONN_TYPE_STRAIGHT:
-						add_follow_straight_fill_left_edge_segment(fill_edge->point2->conn, 0.0, fill_edge->point2->t);
+						add_follow_straight_fill_left_edge_segment(fill_edge->point2->conn, 
+							0.0, fill_edge->point2->t);
 						break;
 					
 					case CONN_TYPE_BEZIER:
-						add_follow_curve_fill_left_edge_segment(fill_edge->point2->conn, 0.0, fill_edge->point2->t);
+						add_follow_curve_fill_left_edge_segment(fill_edge->point2->conn, 
+							0.0, fill_edge->point2->t);
 						break;
 					}
 				}
@@ -2920,25 +3005,33 @@ int quad_tree_fill(struct fill_t *fill)
 			
 			if(last_fill_edge->point2->pos < last_fill_edge->point1->pos)
 			{
-				x1 = fill_edge->point1->x - fill_edge->point1->deltay * fill_edge->point1->left_width;
-				y1 = fill_edge->point1->y + fill_edge->point1->deltax * fill_edge->point1->left_width;
+				x1 = fill_edge->point1->x - 
+					fill_edge->point1->deltay * fill_edge->point1->left_width;
+				y1 = fill_edge->point1->y + 
+					fill_edge->point1->deltax * fill_edge->point1->left_width;
 			}
 			else
 			{
-				x1 = fill_edge->point1->x + fill_edge->point1->deltay * fill_edge->point1->right_width;
-				y1 = fill_edge->point1->y - fill_edge->point1->deltax * fill_edge->point1->right_width;
+				x1 = fill_edge->point1->x + 
+					fill_edge->point1->deltay * fill_edge->point1->right_width;
+				y1 = fill_edge->point1->y - 
+					fill_edge->point1->deltax * fill_edge->point1->right_width;
 			}
 					
 			
 			if(next_fill_edge->point2->pos < next_fill_edge->point1->pos)
 			{
-				x2 = fill_edge->point2->x - fill_edge->point2->deltay * fill_edge->point2->left_width;
-				y2 = fill_edge->point2->y + fill_edge->point2->deltax * fill_edge->point2->left_width;
+				x2 = fill_edge->point2->x - 
+					fill_edge->point2->deltay * fill_edge->point2->left_width;
+				y2 = fill_edge->point2->y + 
+					fill_edge->point2->deltax * fill_edge->point2->left_width;
 			}
 			else
 			{
-				x2 = fill_edge->point2->x + fill_edge->point2->deltay * fill_edge->point2->right_width;
-				y2 = fill_edge->point2->y - fill_edge->point2->deltax * fill_edge->point2->right_width;
+				x2 = fill_edge->point2->x + 
+					fill_edge->point2->deltay * fill_edge->point2->right_width;
+				y2 = fill_edge->point2->y - 
+					fill_edge->point2->deltax * fill_edge->point2->right_width;
 			}
 					
 			add_quad_tree_fill_line(&x1, &y1, &x2, &y2);
@@ -2949,7 +3042,8 @@ int quad_tree_fill(struct fill_t *fill)
 	}
 
 
-	if(!process_quad(fill, quad_minx, quad_miny, quad_maxx, quad_maxy, 1, quad_fill_line0))	// presume center is inside
+	if(!process_quad(fill, quad_minx, quad_miny, quad_maxx, quad_maxy, 
+		1, quad_fill_line0))	// presume center is inside
 	{
 		LL_REMOVE_ALL(struct fill_line_t, &quad_fill_line0);
 		return 0;
@@ -3030,22 +3124,26 @@ void run_fill_menu(struct fill_t *fill)
 	menu = gtk_menu_new();
 
 	menu_items = gtk_menu_item_new_with_label("Fill Properties");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_fill_properties_dialog), fill);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(run_fill_properties_dialog), fill);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 
 	menu_items = gtk_menu_item_new_with_label("Add Line");
-//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_point), curve);
+//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+//		GTK_SIGNAL_FUNC(menu_insert_point), curve);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 	
 	menu_items = gtk_menu_item_new_with_label("Remove Line");
-//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_point), curve);
+//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+//		GTK_SIGNAL_FUNC(menu_insert_point), curve);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 	
 	menu_items = gtk_menu_item_new_with_label("Remove Fill");
-//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_point), curve);
+//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+//		GTK_SIGNAL_FUNC(menu_insert_point), curve);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 	

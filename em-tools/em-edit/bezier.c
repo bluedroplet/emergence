@@ -133,7 +133,8 @@ int bezier_t_divide(struct t_t *t)
 }
 
 
-int generate_bezier_ts(struct bezier_t *in_bezier, struct t_t **out_t0, int *out_count, float *out_length)
+int generate_bezier_ts(struct bezier_t *in_bezier, 
+	struct t_t **out_t0, int *out_count, float *out_length)
 {
 	struct t_t *t0 = NULL;
 	ct0 = &t0;
@@ -212,7 +213,8 @@ void bezier_bigt_divide(struct t_t *t)
 }
 
 
-void generate_bezier_bigts(struct bezier_t *in_bezier, struct t_t **out_t0, int *out_count, float *out_length)
+void generate_bezier_bigts(struct bezier_t *in_bezier, 
+	struct t_t **out_t0, int *out_count, float *out_length)
 {
 	struct t_t *t0 = NULL;
 	ct0 = &t0;

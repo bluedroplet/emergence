@@ -56,8 +56,10 @@
 #include "worker.h"
 
 
-int job_pending = 0;			// start_working has been called, but job_complete_callback has not been reached yet
-int stopping = 0;				// stop_working has been called, but job_complete_callback has not been reached yet
+int job_pending = 0;			// start_working has been called, 
+								// but job_complete_callback has not been reached yet
+int stopping = 0;				// stop_working has been called, 
+								// but job_complete_callback has not been reached yet
 int restarting = 0;				// when job_complete_callback is reached, start another job
 int job_type = JOB_TYPE_SLEEP;	// the job to be / being done in worker thread
 int compiled = 1;				// map compilation waits until necessary all work has been done

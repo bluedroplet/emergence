@@ -437,7 +437,8 @@ int generate_hover_nodes()
 			if(cnode->sat_conn_type[n] == SAT_CONN_TYPE_BEZIER)
 			{
 				int sat_screenx, sat_screeny;
-				world_to_screen(cnode->x + cnode->sats[n].x, cnode->y + cnode->sats[n].y, &sat_screenx, &sat_screeny);
+				world_to_screen(cnode->x + cnode->sats[n].x, cnode->y + cnode->sats[n].y, 
+					&sat_screenx, &sat_screeny);
 	
 				int deltax = mouse_screenx - sat_screenx;
 				int deltay = mouse_screeny - sat_screeny;
@@ -531,7 +532,8 @@ void get_satellite(int x, int y, struct node_t **node, uint8_t *sat, int *xoffse
 			if(cnode->sat_conn_type[n] == SAT_CONN_TYPE_BEZIER)
 			{
 				int sat_screenx, sat_screeny;
-				world_to_screen(cnode->x + cnode->sats[n].x, cnode->y + cnode->sats[n].y, &sat_screenx, &sat_screeny);
+				world_to_screen(cnode->x + cnode->sats[n].x, cnode->y + cnode->sats[n].y, 
+					&sat_screenx, &sat_screeny);
 	
 				int deltax = x - sat_screenx;
 				int deltay = y - sat_screeny;
@@ -912,7 +914,8 @@ void draw_sat_lines()
 			if(cnodep->node->sat_conn_type[s] == SAT_CONN_TYPE_BEZIER)
 			{
 				draw_world_clipped_line(cnodep->node->x, cnodep->node->y, 
-					cnodep->node->x + cnodep->node->sats[s].x, cnodep->node->y + cnodep->node->sats[s].y);
+					cnodep->node->x + cnodep->node->sats[s].x, 
+					cnodep->node->y + cnodep->node->sats[s].y);
 			}
 		}
 
@@ -1044,7 +1047,8 @@ void update_node_surface(struct node_t *node)		// always called when not working
 }
 
 
-void set_node_sats(struct node_t *node, double angle, double axis1_magnitude, double axis2_magnitude)
+void set_node_sats(struct node_t *node, double angle, 
+	double axis1_magnitude, double axis2_magnitude)
 {
 	double sin_theta, cos_theta;
 	sincos((double)angle / (180.0 / M_PI), &sin_theta, &cos_theta);
@@ -1143,8 +1147,8 @@ void on_end_node_left_width_spinbutton_value_changed(GtkSpinButton *spinbutton, 
 }
 
 
-gboolean on_end_node_left_width_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_end_node_left_width_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1152,8 +1156,8 @@ gboolean on_end_node_left_width_spinbutton_button_press_event(GtkWidget *widget,
 }
 
 
-gboolean on_end_node_left_width_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_end_node_left_width_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1199,8 +1203,8 @@ void on_end_node_right_width_spinbutton_value_changed(GtkSpinButton *spinbutton,
 }
 
 
-gboolean on_end_node_right_width_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_end_node_right_width_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1208,8 +1212,8 @@ gboolean on_end_node_right_width_spinbutton_button_press_event(GtkWidget *widget
 }
 
 
-gboolean on_end_node_right_width_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton  *event, 
-	gpointer user_data)
+gboolean on_end_node_right_width_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton  *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1281,8 +1285,8 @@ void on_end_node_magnitude_spinbutton_value_changed(GtkSpinButton *spinbutton, g
 }
 
 
-gboolean on_end_node_magnitude_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_end_node_magnitude_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1290,8 +1294,8 @@ gboolean on_end_node_magnitude_spinbutton_button_press_event(GtkWidget *widget, 
 }
 
 
-gboolean on_end_node_magnitude_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_end_node_magnitude_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(widget);
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1318,7 +1322,8 @@ gboolean on_end_node_magnitude_spinbutton_button_release_event(GtkWidget *widget
 }
 
 
-void on_end_node_wall_left_width_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_end_node_wall_left_width_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -1328,8 +1333,8 @@ void on_end_node_wall_left_width_spinbutton_value_changed(GtkSpinButton *spinbut
 }
 
 
-gboolean on_end_node_wall_left_width_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_end_node_wall_left_width_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1337,8 +1342,8 @@ gboolean on_end_node_wall_left_width_spinbutton_button_press_event(GtkWidget *wi
 }
 
 
-gboolean on_end_node_wall_left_width_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event,
-	gpointer user_data)
+gboolean on_end_node_wall_left_width_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1346,7 +1351,8 @@ gboolean on_end_node_wall_left_width_spinbutton_button_release_event(GtkWidget *
 }
 
 
-void on_end_node_wall_right_width_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_end_node_wall_right_width_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -1356,8 +1362,8 @@ void on_end_node_wall_right_width_spinbutton_value_changed(GtkSpinButton *spinbu
 }
 
 
-gboolean on_end_node_wall_right_width_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_end_node_wall_right_width_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1365,8 +1371,8 @@ gboolean on_end_node_wall_right_width_spinbutton_button_press_event(GtkWidget *w
 }
 
 
-gboolean on_end_node_wall_right_width_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_end_node_wall_right_width_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1384,7 +1390,8 @@ void on_end_node_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpoin
 }
 
 
-gboolean on_end_node_angle_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+gboolean on_end_node_angle_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1392,8 +1399,8 @@ gboolean on_end_node_angle_spinbutton_button_press_event(GtkWidget *widget, GdkE
 }
 
 
-gboolean on_end_node_angle_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton  *event, 
-	gpointer user_data)
+gboolean on_end_node_angle_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton  *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1417,7 +1424,8 @@ void run_end_node_properties_dialog(struct node_t *node)
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 	
 	if(node->fill_type == NODE_TEXTURE)
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "texture_radiobutton")), TRUE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"texture_radiobutton")), TRUE);
 
 	if(node->texture_filename)
 	{
@@ -1425,21 +1433,25 @@ void run_end_node_properties_dialog(struct node_t *node)
 			"texture_entry")), node->texture_filename->text);
 	}
 	
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "flip_horiz_checkbutton")), 
-		node->texture_flip_horiz);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "flip_vert_checkbutton")), 
-		node->texture_flip_vert);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"flip_horiz_checkbutton")), node->texture_flip_horiz);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"flip_vert_checkbutton")), node->texture_flip_vert);
 	
 	if(node->texture_rotate_left)
 	{
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_checkbutton")), 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_left_radiobutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_checkbutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_left_radiobutton")), 1);
 	}
 
 	if(node->texture_rotate_right)
 	{
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_checkbutton")), 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_right_radiobutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_checkbutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_right_radiobutton")), 1);
 	}
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
@@ -1466,7 +1478,8 @@ void run_end_node_properties_dialog(struct node_t *node)
 
 
 
-void on_straight_through_node_magnitude_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_straight_through_node_magnitude_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -1493,8 +1506,8 @@ void on_straight_through_node_magnitude_spinbutton_value_changed(GtkSpinButton *
 }
 
 
-gboolean on_straight_through_node_magnitude_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_straight_through_node_magnitude_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1502,8 +1515,8 @@ gboolean on_straight_through_node_magnitude_spinbutton_button_press_event(GtkWid
 }
 
 
-gboolean on_straight_through_node_magnitude_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_straight_through_node_magnitude_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1530,7 +1543,8 @@ gboolean on_straight_through_node_magnitude_spinbutton_button_release_event(GtkW
 }
 
 
-void on_straight_through_node_wall_left_width_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_straight_through_node_wall_left_width_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -1553,8 +1567,8 @@ void on_straight_through_node_wall_left_width_spinbutton_value_changed(GtkSpinBu
 }
 
 
-gboolean on_straight_through_node_wall_left_width_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_straight_through_node_wall_left_width_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1562,8 +1576,8 @@ gboolean on_straight_through_node_wall_left_width_spinbutton_button_press_event(
 }
 
 
-gboolean on_straight_through_node_wall_left_width_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_straight_through_node_wall_left_width_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1586,8 +1600,8 @@ gboolean on_straight_through_node_wall_left_width_spinbutton_button_release_even
 }
 
 
-gboolean on_straight_through_node_wall_right_width_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_straight_through_node_wall_right_width_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1595,8 +1609,8 @@ gboolean on_straight_through_node_wall_right_width_spinbutton_button_press_event
 }
 
 
-gboolean on_straight_through_node_wall_right_width_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_straight_through_node_wall_right_width_spinbutton_button_release_event(
+	GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1619,7 +1633,8 @@ gboolean on_straight_through_node_wall_right_width_spinbutton_button_release_eve
 }
 
 
-void on_straight_through_node_wall_right_width_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_straight_through_node_wall_right_width_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -1642,7 +1657,8 @@ void on_straight_through_node_wall_right_width_spinbutton_value_changed(GtkSpinB
 }
 
 
-void on_straight_through_node_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_straight_through_node_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -1686,8 +1702,8 @@ void on_straight_through_node_angle_spinbutton_value_changed(GtkSpinButton *spin
 }
 
 
-gboolean on_straight_through_node_angle_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_straight_through_node_angle_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1695,8 +1711,8 @@ gboolean on_straight_through_node_angle_spinbutton_button_press_event(GtkWidget 
 }
 
 
-gboolean on_straight_through_node_angle_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_straight_through_node_angle_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1773,8 +1789,8 @@ void run_straight_through_node_properties_dialog(struct node_t *node)
 }
 
 
-gboolean on_crossover_node_axis1_mag_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_crossover_node_axis1_mag_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1782,8 +1798,8 @@ gboolean on_crossover_node_axis1_mag_spinbutton_button_press_event(GtkWidget *wi
 }
 
 
-gboolean on_crossover_node_axis1_mag_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_crossover_node_axis1_mag_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1810,8 +1826,8 @@ gboolean on_crossover_node_axis1_mag_spinbutton_button_release_event(GtkWidget *
 }
 
 
-gboolean on_crossover_node_axis1_left_width_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_crossover_node_axis1_left_width_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1819,8 +1835,8 @@ gboolean on_crossover_node_axis1_left_width_spinbutton_button_press_event(GtkWid
 }
 
 
-gboolean on_crossover_node_axis1_left_width_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event,
-	gpointer user_data)
+gboolean on_crossover_node_axis1_left_width_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1843,8 +1859,8 @@ gboolean on_crossover_node_axis1_left_width_spinbutton_button_release_event(GtkW
 }
 
 
-gboolean on_crossover_node_axis1_right_width_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_crossover_node_axis1_right_width_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1852,8 +1868,8 @@ gboolean on_crossover_node_axis1_right_width_spinbutton_button_press_event(GtkWi
 }
 
 
-gboolean on_crossover_node_axis1_right_width_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event,
-	gpointer user_data)
+gboolean on_crossover_node_axis1_right_width_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(widget);
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1876,8 +1892,8 @@ gboolean on_crossover_node_axis1_right_width_spinbutton_button_release_event(Gtk
 }
 
 
-gboolean on_crossover_node_axis2_mag_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_crossover_node_axis2_mag_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1885,8 +1901,8 @@ gboolean on_crossover_node_axis2_mag_spinbutton_button_press_event(GtkWidget *wi
 }
 
 
-gboolean on_crossover_node_axis2_mag_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_crossover_node_axis2_mag_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1913,8 +1929,8 @@ gboolean on_crossover_node_axis2_mag_spinbutton_button_release_event(GtkWidget *
 }
 
 
-gboolean on_crossover_node_axis2_left_width_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_crossover_node_axis2_left_width_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1922,8 +1938,8 @@ gboolean on_crossover_node_axis2_left_width_spinbutton_button_press_event(GtkWid
 }
 
 
-gboolean on_crossover_node_axis2_left_width_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_crossover_node_axis2_left_width_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1931,8 +1947,8 @@ gboolean on_crossover_node_axis2_left_width_spinbutton_button_release_event(GtkW
 }
 
 
-gboolean on_crossover_node_axis2_right_width_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_crossover_node_axis2_right_width_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1940,8 +1956,8 @@ gboolean on_crossover_node_axis2_right_width_spinbutton_button_press_event(GtkWi
 }
 
 
-gboolean on_crossover_node_axis2_right_width_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_crossover_node_axis2_right_width_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -1949,8 +1965,8 @@ gboolean on_crossover_node_axis2_right_width_spinbutton_button_release_event(Gtk
 }
 
 
-gboolean on_crossover_node_angle_spinbutton_button_press_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_crossover_node_angle_spinbutton_button_press_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)1);
@@ -1958,8 +1974,8 @@ gboolean on_crossover_node_angle_spinbutton_button_press_event(GtkWidget *widget
 }
 
 
-gboolean on_crossover_node_angle_spinbutton_button_release_event(GtkWidget *widget, GdkEventButton *event, 
-	gpointer user_data)
+gboolean on_crossover_node_angle_spinbutton_button_release_event(GtkWidget *widget, 
+	GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(widget));
 	g_object_set_data(G_OBJECT(dialog), "pressed", (gpointer)0);
@@ -2029,7 +2045,8 @@ void on_crossover_node_texture_entry_changed(GtkEditable *editable, gpointer use
 }
 
 
-void on_crossover_node_flip_horiz_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+void on_crossover_node_flip_horiz_checkbutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(togglebutton));
 	struct node_t *node = g_object_get_data(G_OBJECT(dialog), "node");
@@ -2050,7 +2067,8 @@ void on_crossover_node_flip_horiz_checkbutton_toggled(GtkToggleButton *togglebut
 }
 
 
-void on_crossover_node_flip_vert_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+void on_crossover_node_flip_vert_checkbutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(togglebutton));
 	struct node_t *node = g_object_get_data(G_OBJECT(dialog), "node");
@@ -2071,7 +2089,8 @@ void on_crossover_node_flip_vert_checkbutton_toggled(GtkToggleButton *togglebutt
 }
 
 
-void on_crossover_node_rotate_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+void on_crossover_node_rotate_checkbutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
 {
 	gboolean sensitive = gtk_toggle_button_get_active(togglebutton);
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(togglebutton));
@@ -2084,7 +2103,8 @@ void on_crossover_node_rotate_checkbutton_toggled(GtkToggleButton *togglebutton,
 	
 	if(sensitive)
 	{
-		if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_left_radiobutton"))))
+		if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_left_radiobutton"))))
 		{
 			node->texture_rotate_left = 1;
 			node->texture_rotate_right = 0;
@@ -2113,7 +2133,8 @@ void on_crossover_node_rotate_checkbutton_toggled(GtkToggleButton *togglebutton,
 }
 
 
-void on_crossover_node_rotate_left_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+void on_crossover_node_rotate_left_radiobutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
 {
 	gboolean on = gtk_toggle_button_get_active(togglebutton);
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(togglebutton));
@@ -2138,7 +2159,8 @@ void on_crossover_node_rotate_left_radiobutton_toggled(GtkToggleButton *togglebu
 }
 
 
-void on_crossover_node_rotate_right_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+void on_crossover_node_rotate_right_radiobutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
 {
 	gboolean on = gtk_toggle_button_get_active(togglebutton);
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(togglebutton));
@@ -2164,7 +2186,8 @@ void on_crossover_node_rotate_right_radiobutton_toggled(GtkToggleButton *toggleb
 }
 
 
-void on_crossover_node_texture_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+void on_crossover_node_texture_radiobutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
 {
 	gboolean sensitive = gtk_toggle_button_get_active(togglebutton);
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(togglebutton));
@@ -2189,7 +2212,8 @@ void on_crossover_node_texture_radiobutton_toggled(GtkToggleButton *togglebutton
 }
 
 
-void on_crossover_node_axis1_mag_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_crossover_node_axis1_mag_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -2216,7 +2240,8 @@ void on_crossover_node_axis1_mag_spinbutton_value_changed(GtkSpinButton *spinbut
 }
 
 
-void on_crossover_node_axis1_left_width_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_crossover_node_axis1_left_width_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -2239,7 +2264,8 @@ void on_crossover_node_axis1_left_width_spinbutton_value_changed(GtkSpinButton *
 }
 
 
-void on_crossover_node_axis1_right_width_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_crossover_node_axis1_right_width_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -2262,7 +2288,8 @@ void on_crossover_node_axis1_right_width_spinbutton_value_changed(GtkSpinButton 
 }
 
 
-void on_crossover_node_axis2_mag_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_crossover_node_axis2_mag_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -2289,7 +2316,8 @@ void on_crossover_node_axis2_mag_spinbutton_value_changed(GtkSpinButton *spinbut
 }
 
 
-void on_crossover_node_axis2_left_width_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_crossover_node_axis2_left_width_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -2299,7 +2327,8 @@ void on_crossover_node_axis2_left_width_spinbutton_value_changed(GtkSpinButton *
 }
 
 
-void on_crossover_node_axis2_right_width_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_crossover_node_axis2_right_width_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -2309,7 +2338,8 @@ void on_crossover_node_axis2_right_width_spinbutton_value_changed(GtkSpinButton 
 }
 
 
-void on_crossover_node_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_crossover_node_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	
@@ -2328,7 +2358,8 @@ void run_crossover_node_properties_dialog(struct node_t *node)
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(window));
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 	
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "texture_radiobutton")), TRUE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"texture_radiobutton")), TRUE);
 
 	if(node->texture_filename)
 	{
@@ -2336,21 +2367,25 @@ void run_crossover_node_properties_dialog(struct node_t *node)
 			"texture_entry")), node->texture_filename->text);
 	}
 	
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "flip_horiz_checkbutton")), 
-		node->texture_flip_horiz);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "flip_vert_checkbutton")), 
-		node->texture_flip_vert);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"flip_horiz_checkbutton")), node->texture_flip_horiz);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"flip_vert_checkbutton")), node->texture_flip_vert);
 	
 	if(node->texture_rotate_left)
 	{
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_checkbutton")), 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_left_radiobutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_checkbutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_left_radiobutton")), 1);
 	}
 
 	if(node->texture_rotate_right)
 	{
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_checkbutton")), 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_right_radiobutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_checkbutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_right_radiobutton")), 1);
 	}
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
@@ -2440,7 +2475,8 @@ void run_node_menu(struct node_t *node)
 		assert(curve);
 
 		menu_items = gtk_menu_item_new_with_label("Wall Properties");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_wall_properties_dialog), curve);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(run_wall_properties_dialog), curve);
 		gtk_menu_append(GTK_MENU(menu), menu_items);
 		gtk_widget_show(menu_items);
 
@@ -2449,23 +2485,27 @@ void run_node_menu(struct node_t *node)
 //		gtk_menu_append(GTK_MENU(menu), menu_items);
 //		gtk_widget_show(menu_items);
 
-		// TODO : if curve is complete then have "Start Texture Here Clockwise" and "Start Texture Here Anticlockwise"
-		// should "Start Texture Here" only appear if the texture doesn't start here ??
+		// TODO : if curve is complete then have "Start Texture Here Clockwise" and 
+		// "Start Texture Here Anticlockwise" should "Start Texture Here" only appear 
+		// if the texture doesn't start here ??
 	}
 */
 
 	menu_items = gtk_menu_item_new_with_label("Straight Connect");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(node_menu_connect_straight), node);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(node_menu_connect_straight), node);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 	
 	menu_items = gtk_menu_item_new_with_label("Conic Connect");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(node_menu_connect_conic), node);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(node_menu_connect_conic), node);
 	gtk_menu_append(GTK_MENU (menu), menu_items);
 	gtk_widget_show(menu_items);
 
 	menu_items = gtk_menu_item_new_with_label("Bezier Connect");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(node_menu_connect_bezier), node);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(node_menu_connect_bezier), node);
 	gtk_menu_append(GTK_MENU (menu), menu_items);
 	gtk_widget_show(menu_items);
 
@@ -2473,13 +2513,15 @@ void run_node_menu(struct node_t *node)
 	if(node->num_conns > 0)
 	{
 		menu_items = gtk_menu_item_new_with_label("Properties");
-		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_node_properties_dialog), node);
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(run_node_properties_dialog), node);
 		gtk_menu_append(GTK_MENU(menu), menu_items);
 		gtk_widget_show(menu_items);
 	}
 	
 	menu_items = gtk_menu_item_new_with_label("Delete");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_delete_node), node);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(menu_delete_node), node);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 
@@ -2498,12 +2540,16 @@ int generate_verticies_for_node(struct node_t *node)
 		(node->texture_surface->width + 1) * (node->texture_surface->height + 1));
 	
 	double length = hypot(node->sats[2].x, node->sats[2].y);
-	double right_x = node->sats[2].x / length * (node->width[1] + node->width[3]) / node->texture_surface->width;
-	double right_y = node->sats[2].y / length * (node->width[1] + node->width[3]) / node->texture_surface->width;
+	double right_x = node->sats[2].x / length * 
+		(node->width[1] + node->width[3]) / node->texture_surface->width;
+	double right_y = node->sats[2].y / length * 
+		(node->width[1] + node->width[3]) / node->texture_surface->width;
 	
 	length = hypot(node->sats[1].x, node->sats[1].y);
-	double down_x = node->sats[1].x / length * (node->width[2] + node->width[0]) / node->texture_surface->height;
-	double down_y = node->sats[1].y / length * (node->width[2] + node->width[0]) / node->texture_surface->height;
+	double down_x = node->sats[1].x / length * 
+		(node->width[2] + node->width[0]) / node->texture_surface->height;
+	double down_y = node->sats[1].y / length * 
+		(node->width[2] + node->width[0]) / node->texture_surface->height;
 	
 	double top_left_x = node->x - (right_x * node->texture_surface->width / 2.0) - 
 		(down_x * node->texture_surface->height / 2.0);

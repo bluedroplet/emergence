@@ -401,8 +401,10 @@ void on_plasma_cannon_texture_entry_changed(GtkEditable *editable, gpointer user
 	
 	g_free(strval);
 	
-	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_PLASMACANNON].filename->text, map_path->text);
-	dynamic_objects[OBJECTTYPE_PLASMACANNON].texture = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_PLASMACANNON].filename->text, 
+		map_path->text);
+	dynamic_objects[OBJECTTYPE_PLASMACANNON].texture = 
+		read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object_type(OBJECTTYPE_PLASMACANNON);
@@ -412,7 +414,8 @@ void on_plasma_cannon_texture_entry_changed(GtkEditable *editable, gpointer user
 }
 
 
-void on_plasma_cannon_plasmas_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_plasma_cannon_plasmas_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
@@ -454,7 +457,8 @@ on_plasma_cannon_angle_spinbutton_button_release_event
 /*
 
 
-//void on_plasma_cannon_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+//void on_plasma_cannon_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(entry));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
@@ -470,7 +474,8 @@ on_plasma_cannon_angle_spinbutton_button_release_event
 }
 
 */
-void on_plasma_cannon_respawn_delay_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_plasma_cannon_respawn_delay_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
@@ -594,7 +599,8 @@ void on_minigun_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpoint
 }
 
 
-void on_minigun_respawn_delay_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_minigun_respawn_delay_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
@@ -643,7 +649,8 @@ void run_minigun_properties_dialog(void *menu, struct object_t *object)
 
 
 
-void on_rocket_launcher_texture_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+void on_rocket_launcher_texture_checkbutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
 {
 	gboolean sensitive = gtk_toggle_button_get_active(togglebutton);
 	
@@ -682,8 +689,10 @@ void on_rocket_launcher_texture_entry_changed(GtkEditable *editable, gpointer us
 	
 	g_free(strval);
 	
-	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].filename->text, map_path->text);
-	dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+	struct string_t *string = arb_rel2abs(
+		dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].filename->text, map_path->text);
+	dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture = 
+		read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object_type(OBJECTTYPE_ROCKETLAUNCHER);
@@ -693,7 +702,8 @@ void on_rocket_launcher_texture_entry_changed(GtkEditable *editable, gpointer us
 }
 
 
-void on_rocket_launcher_rockets_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_rocket_launcher_rockets_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
@@ -702,7 +712,8 @@ void on_rocket_launcher_rockets_spinbutton_value_changed(GtkSpinButton *spinbutt
 }
 
 
-void on_rocket_launcher_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_rocket_launcher_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
@@ -726,7 +737,8 @@ void on_rocket_launcher_angle_spinbutton_value_changed(GtkSpinButton *spinbutton
 }
 
 
-void on_rocket_launcher_respawn_delay_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_rocket_launcher_respawn_delay_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
@@ -813,8 +825,10 @@ void on_rails_texture_pixmapentry_changed(GtkEditable *editable, gpointer user_d
 	
 	g_free(strval);
 	
-	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_RAILS].filename->text, map_path->text);
-	dynamic_objects[OBJECTTYPE_RAILS].texture = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_RAILS].filename->text, 
+		map_path->text);
+	dynamic_objects[OBJECTTYPE_RAILS].texture = 
+		read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object_type(OBJECTTYPE_RAILS);
@@ -936,8 +950,10 @@ void on_shield_energy_texture_entry_changed(GtkEditable *editable, gpointer user
 	
 	g_free(strval);
 	
-	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_SHIELDENERGY].filename->text, map_path->text);
-	dynamic_objects[OBJECTTYPE_SHIELDENERGY].texture = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_SHIELDENERGY].filename->text, 
+		map_path->text);
+	dynamic_objects[OBJECTTYPE_SHIELDENERGY].texture = 
+		read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object_type(OBJECTTYPE_SHIELDENERGY);
@@ -972,7 +988,8 @@ void on_shield_energy_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, 
 }
 
 
-void on_shield_energy_respawn_delay_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_shield_energy_respawn_delay_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
@@ -1064,8 +1081,10 @@ void on_spawn_point_texture_entry_changed(GtkEditable *editable, gpointer user_d
 	
 	g_free(strval);
 	
-	struct string_t *string = arb_rel2abs(object->spawn_point_data.texture_filename->text, map_path->text);
-	object->spawn_point_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+	struct string_t *string = arb_rel2abs(object->spawn_point_data.texture_filename->text, 
+		map_path->text);
+	object->spawn_point_data.texture_pre_surface = 
+		read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object(object);
@@ -1123,7 +1142,8 @@ void on_spawn_point_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gp
 }
 
 
-void on_spawn_point_teleport_only_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+void on_spawn_point_teleport_only_checkbutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(togglebutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
@@ -1230,8 +1250,10 @@ void on_speedup_ramp_texture_entry_changed(GtkEditable *editable, gpointer user_
 	
 	g_free(strval);
 	
-	struct string_t *string = arb_rel2abs(object->speedup_ramp_data.texture_filename->text, map_path->text);
-	object->speedup_ramp_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+	struct string_t *string = arb_rel2abs(object->speedup_ramp_data.texture_filename->text, 
+		map_path->text);
+	object->speedup_ramp_data.texture_pre_surface = 
+		read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object(object);
@@ -1289,7 +1311,8 @@ void on_speedup_ramp_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, g
 }
 
 
-void on_speedup_ramp_activation_width_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_speedup_ramp_activation_width_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
@@ -1397,8 +1420,10 @@ void on_teleporter_texture_entry_changed(GtkEditable *editable, gpointer user_da
 	
 	g_free(strval);
 	
-	struct string_t *string = arb_rel2abs(object->teleporter_data.texture_filename->text, map_path->text);
-	object->teleporter_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+	struct string_t *string = arb_rel2abs(object->teleporter_data.texture_filename->text, 
+		map_path->text);
+	object->teleporter_data.texture_pre_surface = 
+		read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object(object);
@@ -1474,7 +1499,8 @@ void on_teleporter_sparkles_spinbutton_value_changed(GtkSpinButton *spinbutton, 
 }
 
 
-void on_teleporter_spawn_point_index_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_teleporter_spawn_point_index_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
@@ -1658,8 +1684,10 @@ void on_gravity_well_texture_entry_changed(GtkEditable *editable, gpointer user_
 	
 	g_free(strval);
 
-	struct string_t *string = arb_rel2abs(object->gravity_well_data.texture_filename->text, map_path->text);
-	object->gravity_well_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+	struct string_t *string = arb_rel2abs(object->gravity_well_data.texture_filename->text, 
+		map_path->text);
+	object->gravity_well_data.texture_pre_surface = 
+		read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object(object);
@@ -1717,7 +1745,8 @@ void on_gravity_well_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, g
 }
 
 
-void on_gravity_well_strength_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_gravity_well_strength_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
@@ -1799,47 +1828,56 @@ void run_object_menu(struct object_t *object)
 	{
 	case OBJECTTYPE_PLASMACANNON:
 		menu_items = gtk_menu_item_new_with_label("Plasma Cannon Properties");
-		g_signal_connect(G_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_plasma_cannon_properties_dialog), object);
+		g_signal_connect(G_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(run_plasma_cannon_properties_dialog), object);
 		break;
 	
 	case OBJECTTYPE_MINIGUN:
 		menu_items = gtk_menu_item_new_with_label("Minigun Properties");
-		g_signal_connect(G_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_minigun_properties_dialog), object);
+		g_signal_connect(G_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(run_minigun_properties_dialog), object);
 		break;
 	
 	case OBJECTTYPE_ROCKETLAUNCHER:
 		menu_items = gtk_menu_item_new_with_label("Rocket Launcher Properties");
-		g_signal_connect(G_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_rocket_launcher_properties_dialog), object);
+		g_signal_connect(G_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(run_rocket_launcher_properties_dialog), object);
 		break;
 	
 	case OBJECTTYPE_RAILS:
 		menu_items = gtk_menu_item_new_with_label("Rails Properties");
-		g_signal_connect(G_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_rails_properties_dialog), object);
+		g_signal_connect(G_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(run_rails_properties_dialog), object);
 		break;
 	
 	case OBJECTTYPE_SHIELDENERGY:
 		menu_items = gtk_menu_item_new_with_label("Shield Energy Properties");
-		g_signal_connect(G_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_shield_energy_properties_dialog), object);
+		g_signal_connect(G_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(run_shield_energy_properties_dialog), object);
 		break;
 	
 	case OBJECTTYPE_SPAWNPOINT:
 		menu_items = gtk_menu_item_new_with_label("Spawn Point Properties");
-		g_signal_connect(G_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_spawn_point_properties_dialog), object);
+		g_signal_connect(G_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(run_spawn_point_properties_dialog), object);
 		break;
 	
 	case OBJECTTYPE_SPEEDUPRAMP:
 		menu_items = gtk_menu_item_new_with_label("Speedup Ramp Properties");
-		g_signal_connect(G_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_speedup_ramp_properties_dialog), object);
+		g_signal_connect(G_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(run_speedup_ramp_properties_dialog), object);
 		break;
 	
 	case OBJECTTYPE_TELEPORTER:
 		menu_items = gtk_menu_item_new_with_label("Teleporter Properties");
-		g_signal_connect(G_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_teleporter_properties_dialog), object);
+		g_signal_connect(G_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(run_teleporter_properties_dialog), object);
 		break;
 	
 	case OBJECTTYPE_GRAVITYWELL:
 		menu_items = gtk_menu_item_new_with_label("Gravity Well Properties");
-		g_signal_connect(G_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_gravity_well_properties_dialog), object);
+		g_signal_connect(G_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(run_gravity_well_properties_dialog), object);
 		break;
 	}
 	
@@ -1910,7 +1948,8 @@ void draw_objects()
 			switch(object->type)
 			{
 			case OBJECTTYPE_SPAWNPOINT:
-				if(object->texture_surface || (object->spawn_point_data.non_default_texture && object->spawn_point_data.texture_pre_surface))
+				if(object->texture_surface || (object->spawn_point_data.non_default_texture && 
+					object->spawn_point_data.texture_pre_surface))
 					goto normal;
 				
 				if(s_spawn_point_placeholder)
@@ -1923,7 +1962,8 @@ void draw_objects()
 				break;
 			
 			case OBJECTTYPE_TELEPORTER:
-				if(object->texture_surface || (object->teleporter_data.non_default_texture && object->teleporter_data.texture_pre_surface))
+				if(object->texture_surface || (object->teleporter_data.non_default_texture && 
+					object->teleporter_data.texture_pre_surface))
 					goto normal;
 				
 				if(s_teleporter_placeholder)
@@ -1936,7 +1976,8 @@ void draw_objects()
 				break;
 			
 			case OBJECTTYPE_GRAVITYWELL:
-				if(object->texture_surface || (object->gravity_well_data.non_default_texture && object->gravity_well_data.texture_pre_surface))
+				if(object->texture_surface || (object->gravity_well_data.non_default_texture && 
+					object->gravity_well_data.texture_pre_surface))
 					goto normal;
 				
 				if(s_gravity_well_placeholder)
@@ -2445,7 +2486,8 @@ int gzread_objects(gzFile file)
 				goto error;
 			
 			string = arb_rel2abs(object.spawn_point_data.texture_filename->text, map_path->text);
-			object.spawn_point_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+			object.spawn_point_data.texture_pre_surface = 
+				read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 			
 			if(gzread(file, &object.spawn_point_data.width, 4) != 4)
@@ -2474,7 +2516,8 @@ int gzread_objects(gzFile file)
 				goto error;
 			
 			string = arb_rel2abs(object.speedup_ramp_data.texture_filename->text, map_path->text);
-			object.speedup_ramp_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+			object.speedup_ramp_data.texture_pre_surface = 
+				read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 
 			if(gzread(file, &object.speedup_ramp_data.width, 4) != 4)
@@ -2503,7 +2546,8 @@ int gzread_objects(gzFile file)
 				goto error;
 			
 			string = arb_rel2abs(object.teleporter_data.texture_filename->text, map_path->text);
-			object.teleporter_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+			object.teleporter_data.texture_pre_surface = 
+				read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 			
 			if(gzread(file, &object.teleporter_data.width, 4) != 4)
@@ -2547,7 +2591,8 @@ int gzread_objects(gzFile file)
 				goto error;
 			
 			string = arb_rel2abs(object.gravity_well_data.texture_filename->text, map_path->text);
-			object.gravity_well_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+			object.gravity_well_data.texture_pre_surface = 
+				read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 			
 			if(gzread(file, &object.gravity_well_data.width, 4) != 4)
@@ -2793,9 +2838,11 @@ void resample_object()
 	{
 	case OBJECTTYPE_PLASMACANNON:
 		
-		if(dynamic_objects[OBJECTTYPE_PLASMACANNON].non_default && dynamic_objects[OBJECTTYPE_PLASMACANNON].texture)
+		if(dynamic_objects[OBJECTTYPE_PLASMACANNON].non_default && 
+			dynamic_objects[OBJECTTYPE_PLASMACANNON].texture)
 		{
-			working_object_surface = rotate_surface(dynamic_objects[OBJECTTYPE_PLASMACANNON].texture, 
+			working_object_surface = 
+				rotate_surface(dynamic_objects[OBJECTTYPE_PLASMACANNON].texture, 
 				64, 64, working_object->plasma_cannon_data.angle);
 		}
 		else
@@ -2808,7 +2855,8 @@ void resample_object()
 		
 	case OBJECTTYPE_MINIGUN:
 		
-		if(dynamic_objects[OBJECTTYPE_MINIGUN].non_default && dynamic_objects[OBJECTTYPE_MINIGUN].texture)
+		if(dynamic_objects[OBJECTTYPE_MINIGUN].non_default && 
+			dynamic_objects[OBJECTTYPE_MINIGUN].texture)
 		{
 			working_object_surface = rotate_surface(dynamic_objects[OBJECTTYPE_MINIGUN].texture, 
 				64, 64, working_object->minigun_data.angle);
@@ -2823,9 +2871,11 @@ void resample_object()
 		
 	case OBJECTTYPE_ROCKETLAUNCHER:
 		
-		if(dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].non_default && dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture)
+		if(dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].non_default && 
+			dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture)
 		{
-			working_object_surface = rotate_surface(dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture, 
+			working_object_surface = 
+				rotate_surface(dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture, 
 				64, 64, working_object->rocket_launcher_data.angle);
 		}
 		else
@@ -2838,7 +2888,8 @@ void resample_object()
 		
 	case OBJECTTYPE_RAILS:
 		
-		if(dynamic_objects[OBJECTTYPE_RAILS].non_default && dynamic_objects[OBJECTTYPE_RAILS].texture)
+		if(dynamic_objects[OBJECTTYPE_RAILS].non_default && 
+			dynamic_objects[OBJECTTYPE_RAILS].texture)
 		{
 			working_object_surface = rotate_surface(dynamic_objects[OBJECTTYPE_RAILS].texture, 
 				64, 64, working_object->rails_data.angle);
@@ -2852,7 +2903,8 @@ void resample_object()
 	
 		
 	case OBJECTTYPE_SPAWNPOINT:
-		working_object_surface = rotate_surface(working_object->spawn_point_data.texture_pre_surface, 
+		working_object_surface = 
+			rotate_surface(working_object->spawn_point_data.texture_pre_surface, 
 			working_object->spawn_point_data.width, 
 			working_object->spawn_point_data.height,
 			working_object->spawn_point_data.angle);
@@ -2861,9 +2913,11 @@ void resample_object()
 	
 	case OBJECTTYPE_SPEEDUPRAMP:
 	
-		if(working_object->speedup_ramp_data.texture_pre_surface && working_object->speedup_ramp_data.non_default_texture)
+		if(working_object->speedup_ramp_data.texture_pre_surface && 
+			working_object->speedup_ramp_data.non_default_texture)
 		{
-			working_object_surface = rotate_surface(working_object->speedup_ramp_data.texture_pre_surface, 
+			working_object_surface = 
+				rotate_surface(working_object->speedup_ramp_data.texture_pre_surface, 
 				working_object->speedup_ramp_data.width, 
 				working_object->speedup_ramp_data.height,
 				working_object->speedup_ramp_data.angle);
@@ -2879,7 +2933,8 @@ void resample_object()
 	
 		
 	case OBJECTTYPE_TELEPORTER:
-		working_object_surface = rotate_surface(working_object->teleporter_data.texture_pre_surface, 
+		working_object_surface = 
+			rotate_surface(working_object->teleporter_data.texture_pre_surface, 
 			working_object->teleporter_data.width, 
 			working_object->teleporter_data.height,
 			working_object->teleporter_data.angle);
@@ -2887,7 +2942,8 @@ void resample_object()
 	
 	
 	case OBJECTTYPE_GRAVITYWELL:
-		working_object_surface = rotate_surface(working_object->gravity_well_data.texture_pre_surface, 
+		working_object_surface = 
+			rotate_surface(working_object->gravity_well_data.texture_pre_surface, 
 			working_object->gravity_well_data.width, 
 			working_object->gravity_well_data.height,
 			working_object->gravity_well_data.angle);

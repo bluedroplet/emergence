@@ -70,7 +70,8 @@ void draw_grid()
 	for(x = startx; x != endx; x++)
 		for(y = starty; y != endy; y++)
 		{
-			world_to_screen(x * this_grid_spacing, y * this_grid_spacing, &params.dest_x, &params.dest_y);
+			world_to_screen(x * this_grid_spacing, y * this_grid_spacing, 
+				&params.dest_x, &params.dest_y);
 			plot_pixel(&params);
 		}
 }
@@ -78,7 +79,8 @@ void draw_grid()
 
 void snap_to_grid(float inx, float iny, float *outx, float *outy)
 {
-	double this_grid_spacing = exp2(floor(log(1 / zoom) / log(2))) * grid_spacing * exp2(grid_granularity);
+	double this_grid_spacing = exp2(floor(log(1 / zoom) / log(2))) * 
+		grid_spacing * exp2(grid_granularity);
 	
 	if(view_state & VIEW_GRID)
 	{

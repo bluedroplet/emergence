@@ -432,10 +432,12 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 				struct conn_pointer_t *lconnp, *temp, *cconnp;
 				int connecting_node = 0;
 				
-				if(!ccurve->connp0->conn->orientation && ccurve->connp0->conn->node1 == new_exposed_node)
+				if(!ccurve->connp0->conn->orientation && 
+					ccurve->connp0->conn->node1 == new_exposed_node)
 					connecting_node = 1;
 				
-				if(ccurve->connp0->conn->orientation && ccurve->connp0->conn->node2 == new_exposed_node)
+				if(ccurve->connp0->conn->orientation && 
+					ccurve->connp0->conn->node2 == new_exposed_node)
 					connecting_node = 2;
 				
 				if(connecting_node)
@@ -446,8 +448,10 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 					{
 						if(ccurve->connp0->conn->sat1 == 0 || ccurve->connp0->conn->sat1 == 1)
 						{
-							if((new_exposed_node == conn->node1 && conn->sat1 != 0 && conn->sat1 != 1) ||
-								(new_exposed_node == conn->node2 && conn->sat2 != 0 && conn->sat2 != 1))
+							if((new_exposed_node == conn->node1 && 
+								conn->sat1 != 0 && conn->sat1 != 1) ||
+								(new_exposed_node == conn->node2 && 
+								conn->sat2 != 0 && conn->sat2 != 1))
 							{
 								ccurve = ccurve->next;
 								continue;
@@ -455,8 +459,10 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 						}
 						else
 						{
-							if((new_exposed_node == conn->node1 && conn->sat1 != 2 && conn->sat1 != 3) ||
-								(new_exposed_node == conn->node2 && conn->sat2 != 2 && conn->sat2 != 3))
+							if((new_exposed_node == conn->node1 && 
+								conn->sat1 != 2 && conn->sat1 != 3) ||
+								(new_exposed_node == conn->node2 && 
+								conn->sat2 != 2 && conn->sat2 != 3))
 							{
 								ccurve = ccurve->next;
 								continue;
@@ -467,8 +473,10 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 					{
 						if(ccurve->connp0->conn->sat2 == 0 || ccurve->connp0->conn->sat2 == 1)
 						{
-							if((new_exposed_node == conn->node1 && conn->sat1 != 0 && conn->sat1 != 1) ||
-								(new_exposed_node == conn->node2 && conn->sat2 != 0 && conn->sat2 != 1))
+							if((new_exposed_node == conn->node1 && 
+								conn->sat1 != 0 && conn->sat1 != 1) ||
+								(new_exposed_node == conn->node2 && 
+								conn->sat2 != 0 && conn->sat2 != 1))
 							{
 								ccurve = ccurve->next;
 								continue;
@@ -476,8 +484,10 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 						}
 						else
 						{
-							if((new_exposed_node == conn->node1 && conn->sat1 != 2 && conn->sat1 != 3) ||
-								(new_exposed_node == conn->node2 && conn->sat2 != 2 && conn->sat2 != 3))
+							if((new_exposed_node == conn->node1 && 
+								conn->sat1 != 2 && conn->sat1 != 3) ||
+								(new_exposed_node == conn->node2 && 
+								conn->sat2 != 2 && conn->sat2 != 3))
 							{
 								ccurve = ccurve->next;
 								continue;
@@ -486,7 +496,8 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 					}
 					
 					
-					// delete the verticies in all the conns in this curve, as it may be getting a new texture
+					// delete the verticies in all the conns in this curve, 
+					// as it may be getting a new texture
 
 					delete_all_verticies_in_curve(ccurve);
 
@@ -506,7 +517,8 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 							memcpy(attached_curve->connp0, cconnp, sizeof(struct conn_pointer_t));
 							attached_curve->connp0->next = temp;
 
-							attached_curve->connp0->conn->orientation = !attached_curve->connp0->conn->orientation;
+							attached_curve->connp0->conn->orientation = 
+								!attached_curve->connp0->conn->orientation;
 
 							cconnp = cconnp->next;
 						}
@@ -542,8 +554,10 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 					{
 						if(lconnp->conn->sat2 == 0 || lconnp->conn->sat2 == 1)
 						{
-							if((new_exposed_node == conn->node1 && conn->sat1 != 0 && conn->sat1 != 1) ||
-								(new_exposed_node == conn->node2 && conn->sat2 != 0 && conn->sat2 != 1))
+							if((new_exposed_node == conn->node1 && 
+								conn->sat1 != 0 && conn->sat1 != 1) ||
+								(new_exposed_node == conn->node2 && 
+								conn->sat2 != 0 && conn->sat2 != 1))
 							{
 								ccurve = ccurve->next;
 								continue;
@@ -551,8 +565,10 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 						}
 						else
 						{
-							if((new_exposed_node == conn->node1 && conn->sat1 != 2 && conn->sat1 != 3) ||
-								(new_exposed_node == conn->node2 && conn->sat2 != 2 && conn->sat2 != 3))
+							if((new_exposed_node == conn->node1 && 
+								conn->sat1 != 2 && conn->sat1 != 3) ||
+								(new_exposed_node == conn->node2 && 
+								conn->sat2 != 2 && conn->sat2 != 3))
 							{
 								ccurve = ccurve->next;
 								continue;
@@ -563,8 +579,10 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 					{
 						if(lconnp->conn->sat1 == 0 || lconnp->conn->sat1 == 1)
 						{
-							if((new_exposed_node == conn->node1 && conn->sat1 != 0 && conn->sat1 != 1) ||
-								(new_exposed_node == conn->node2 && conn->sat2 != 0 && conn->sat2 != 1))
+							if((new_exposed_node == conn->node1 && 
+								conn->sat1 != 0 && conn->sat1 != 1) ||
+								(new_exposed_node == conn->node2 && 
+								conn->sat2 != 0 && conn->sat2 != 1))
 							{
 								ccurve = ccurve->next;
 								continue;
@@ -572,8 +590,10 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 						}
 						else
 						{
-							if((new_exposed_node == conn->node1 && conn->sat1 != 2 && conn->sat1 != 3) ||
-								(new_exposed_node == conn->node2 && conn->sat2 != 2 && conn->sat2 != 3))
+							if((new_exposed_node == conn->node1 && 
+								conn->sat1 != 2 && conn->sat1 != 3) ||
+								(new_exposed_node == conn->node2 && 
+								conn->sat2 != 2 && conn->sat2 != 3))
 							{
 								ccurve = ccurve->next;
 								continue;
@@ -582,7 +602,8 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 					}
 					
 					
-					// delete the verticies in all the conns in this curve, as it may be getting a new texture
+					// delete the verticies in all the conns in this curve, 
+					// as it may be getting a new texture
 
 					delete_all_verticies_in_curve(ccurve);
 
@@ -1322,7 +1343,8 @@ void on_wall_rotate_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer 
 	
 	if(sensitive)
 	{
-		if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_left_radiobutton"))))
+		if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_left_radiobutton"))))
 		{
 			curve->texture_rotate_left = 1;
 			curve->texture_rotate_right = 0;
@@ -1619,12 +1641,14 @@ void run_wall_properties_dialog(void *menu, struct curve_t *curve)
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 	
 	if(curve->fill_type == CURVE_SOLID)
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "solid_radiobutton")), TRUE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"solid_radiobutton")), TRUE);
 	else
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "texture_radiobutton")), TRUE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"texture_radiobutton")), TRUE);
 
-	gnome_color_picker_set_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), "solid_colorpicker")), 
-		curve->red, curve->green, curve->blue, curve->alpha);
+	gnome_color_picker_set_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), 
+		"solid_colorpicker")), curve->red, curve->green, curve->blue, curve->alpha);
 	
 	if(curve->texture_filename)
 	{
@@ -1632,21 +1656,25 @@ void run_wall_properties_dialog(void *menu, struct curve_t *curve)
 			"texture_entry")), curve->texture_filename->text);
 	}
 	
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "flip_horiz_checkbutton")), 
-		curve->texture_flip_horiz);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "flip_vert_checkbutton")), 
-		curve->texture_flip_vert);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"flip_horiz_checkbutton")), curve->texture_flip_horiz);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"flip_vert_checkbutton")), curve->texture_flip_vert);
 	
 	if(curve->texture_rotate_left)
 	{
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_checkbutton")), 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_left_radiobutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_checkbutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_left_radiobutton")), 1);
 	}
 
 	if(curve->texture_rotate_right)
 	{
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_checkbutton")), 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "rotate_right_radiobutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_checkbutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_right_radiobutton")), 1);
 	}
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
@@ -1656,9 +1684,11 @@ void run_wall_properties_dialog(void *menu, struct curve_t *curve)
 		"offset_vert_spinbutton")), curve->pixel_offset_vert);
 	
 	if(curve->fixed_reps)
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "fixed_reps_radiobutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"fixed_reps_radiobutton")), 1);
 	else
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "fixed_width_radiobutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"fixed_width_radiobutton")), 1);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"fixed_reps_spinbutton")), curve->reps);
@@ -1667,7 +1697,8 @@ void run_wall_properties_dialog(void *menu, struct curve_t *curve)
 		"fixed_width_spinbutton")), curve->texture_length);
 	
 	if(curve->width_lock_on)
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), "width_lock_checkbutton")), 1);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"width_lock_checkbutton")), 1);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"width_lock_spinbutton")), curve->width_lock);
@@ -1816,19 +1847,22 @@ void run_curve_menu(struct curve_t *curve)
 	menu = gtk_menu_new();
 
 	menu_items = gtk_menu_item_new_with_label("Wall Properties");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(run_wall_properties_dialog), curve);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(run_wall_properties_dialog), curve);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 
 /*	menu_items = gtk_menu_item_new_with_label("Insert Point");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_point), curve);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(menu_insert_point), curve);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 */
 	
 	menu_items = gtk_menu_item_new_with_label("Remove Wall");
-//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_point), curve);
-	gtk_menu_append(GTK_MENU(menu), menu_items);
+/*	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(menu_insert_point), curve);
+*/	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 	
 	gtk_menu_popup (GTK_MENU(menu), NULL, NULL, (GtkMenuPositionFunc)(NULL), NULL, 0, 0);
