@@ -1193,12 +1193,12 @@ void key_pressed(uint32_t key)
 		
 	case GDK_s:
 	case GDK_S:
-		view_vect_sats();
+//		view_vect_sats();
 		break;
 		
 	case GDK_w:
 	case GDK_W:
-		view_width_sats();
+//		view_width_sats();
 		break;
 
 	case GDK_bracketleft:
