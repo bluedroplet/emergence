@@ -1245,7 +1245,6 @@ void init_network()
 		client_libc_error("Couldn't create socket");
 	
 	fcntl(udp_socket, F_SETOWN, getpid());
-	fcntl(udp_socket, F_SETSIG, SIGRTMIN);
 	fcntl(udp_socket, F_SETFL, O_ASYNC);
 	
 	// seed to rng
@@ -1275,8 +1274,9 @@ void kill_network()
 		
 		/* Set up the mask of signals to temporarily block. */
 		sigemptyset(&mask);
-		sigaddset(&mask, SIGRTMIN);
+		sigaddset(&mask, SIGIO);
 		sigaddset(&mask, SIGALRM);
+		sigaddset(&mask, SIGFPE);
 		
 		/* Wait for a signal to arrive. */
 		sigprocmask(SIG_BLOCK, &mask, &oldmask);

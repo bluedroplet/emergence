@@ -403,8 +403,6 @@ void init_x()
 	if(fcntl(x_fd, F_SETOWN, getpid()) == -1)
 		goto error;
 	
-	fcntl(x_fd, F_SETSIG, SIGRTMIN);
-
 	if(fcntl(x_fd, F_SETFL, O_ASYNC) == -1)
 		goto error;
 	
