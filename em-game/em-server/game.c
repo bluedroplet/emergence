@@ -2884,10 +2884,13 @@ void map(char *args)
 	
 	free_string(filename);
 	
-//	uint16_t format_id;
+	uint16_t format_id;
 	
-//	if(gzread(file, &format_id, 2) != 2)
-//		goto error;
+	if(gzread(file, &format_id, 2) != 2)
+		goto error;
+	
+	if(format_id != EMERGENCE_COMPILEDFORMATID)
+		goto error;
 	
 	if(!load_bsp_tree(file))
 		goto error;

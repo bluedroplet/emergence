@@ -234,6 +234,14 @@ int load_map(char *map_name)
 	clear_floating_images();
 	clear_sgame();
 	
+	uint16_t format_id;
+	
+	if(gzread(gzfile, &format_id, 2) != 2)
+		return 0;
+	
+	if(format_id != EMERGENCE_COMPILEDFORMATID)
+		return 0;
+	
 	if(vid_width == 1600)
 	{
 		console_print("Loading BSP tree\n");

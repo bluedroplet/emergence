@@ -451,6 +451,7 @@ int point_in_circle(double px, double py, double cx, double cy, double cr);
 #define WEAPON_MASS	75.0
 #define RAILS_MASS	15.0
 
+#define EMERGENCE_COMPILEDFORMATID	0
 
 
 #endif // _INC_SGAME

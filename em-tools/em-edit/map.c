@@ -116,9 +116,9 @@ void compile()
 
 	gzFile file = gzopen(compile_filename->text, "wb9");
 
-//	uint16_t format_id = EMERGENCE_COMPILEDFORMATID;
+	uint16_t format_id = EMERGENCE_COMPILEDFORMATID;
 	
-//	gzwrite(file, &format_id, 2);
+	gzwrite(file, &format_id, 2);
 	
 	gzwrite_bsp_tree(file);
 	gzwrite_objects_compiled(file);
