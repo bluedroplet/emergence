@@ -776,6 +776,14 @@ void splash_force(double x, double y, double force, struct player_t *responsibil
 
 void explode_craft(struct entity_t *craft, struct player_t *responsibility)
 {
+	if(responsibility)
+	{
+		if(responsibility == craft->craft_data.owner)
+			responsibility->frags--;
+		else
+			responsibility->frags++;
+	}
+	
 	craft->kill_me = 1;
 	strip_weapons_from_craft(craft);
 	remove_entity_from_all_players(craft);

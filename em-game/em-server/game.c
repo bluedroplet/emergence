@@ -1429,32 +1429,42 @@ int game_process_fire_rail(struct player_t *player)
 	}
 	
 	struct rail_entity_t *crail_entity = rail_entity0;
-		
+	int kills = 0;
+	
 	while(crail_entity)
 	{
 		int destroyed;
 		
 		switch(crail_entity->entity->type)
 		{
-		case ENT_CRAFT:		destroyed = craft_force(crail_entity->entity, RAIL_DAMAGE, player);
+		case ENT_CRAFT:
+			destroyed = craft_force(crail_entity->entity, RAIL_DAMAGE, player);
+			if(destroyed)
+				kills++;
 			break;
 		
-		case ENT_WEAPON:	destroyed = weapon_force(crail_entity->entity, RAIL_DAMAGE, player);
+		case ENT_WEAPON:
+			destroyed = weapon_force(crail_entity->entity, RAIL_DAMAGE, player);
 			break;
 		
-	//	case ENT_PLASMA:	destroyed = plasma_force(crail_entity->entity, RAIL_DAMAGE);
+	//	case ENT_PLASMA:
+			destroyed = plasma_force(crail_entity->entity, RAIL_DAMAGE);
 			break;
 		
-		case ENT_ROCKET:	destroyed = rocket_force(crail_entity->entity, RAIL_DAMAGE);
+		case ENT_ROCKET:
+			destroyed = rocket_force(crail_entity->entity, RAIL_DAMAGE);
 			break;
 		
-		case ENT_MINE:		destroyed = mine_force(crail_entity->entity, RAIL_DAMAGE);
+		case ENT_MINE:
+			destroyed = mine_force(crail_entity->entity, RAIL_DAMAGE);
 			break;
 		
-		case ENT_RAILS:		destroyed = rails_force(crail_entity->entity, RAIL_DAMAGE, player);
+		case ENT_RAILS:
+			destroyed = rails_force(crail_entity->entity, RAIL_DAMAGE, player);
 			break;
 		
-		case ENT_SHIELD:	destroyed = shield_force(crail_entity->entity, RAIL_DAMAGE);
+		case ENT_SHIELD:
+			destroyed = shield_force(crail_entity->entity, RAIL_DAMAGE);
 			break;
 		}
 		
@@ -1465,8 +1475,19 @@ int game_process_fire_rail(struct player_t *player)
 	}
 	
 	LL_REMOVE_ALL(struct rail_entity_t, &rail_entity0);
+		
 	
+	// calculate extra frags for multiple kills
+	// bear in mind that we have already got one frag per kill
+	
+	int extra_kill_frags = 0;
+	
+	while(kills--)
+		extra_kill_frags += kills;
+	
+	player->frags += extra_kill_frags;
 
+	
 	if(crail_entity)
 		propagate_rail_trail(x1, y1, crail_entity->x, crail_entity->y);
 	else
