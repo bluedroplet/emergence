@@ -150,6 +150,18 @@ int read_teleporter(gzFile file)
 	if(gzread(file, &teleporter.spawn_index, 4) != 4)
 		goto error;
 	
+	if(gzread(file, &teleporter.rotation_type, 4) != 4)
+		goto error;
+	
+	if(gzread(file, &teleporter.rotation_angle, 8) != 8)
+		goto error;
+	
+	if(gzread(file, &teleporter.divider, 4) != 4)
+		goto error;
+	
+	if(gzread(file, &teleporter.divider_angle, 8) != 8)
+		goto error;
+
 	LL_ADD(struct teleporter_t, &teleporter0, &teleporter);
 	
 	return 1;

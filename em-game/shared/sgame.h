@@ -268,6 +268,11 @@ struct teleporter_t
 	uint16_t colour;
 	int spawn_index;
 	
+	int rotation_type;
+	double rotation_angle;
+	int divider;
+	double divider_angle;
+	
 	#ifdef EMCLIENT
 	struct particle_t particles[800];
 	float particle_power;

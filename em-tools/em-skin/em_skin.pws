@@ -1,6 +1,6 @@
 
 [filenumbers]
-0=97
+0=38
 1=1252
 2=79
 3=78
@@ -23,7 +23,14 @@ filter.dir.ignore.hidden=0
 ShowLocals=true
 
 [filelist]
-0=/home/jonny/emergence/emergence/common/stringbuf.c
-1=/home/jonny/emergence/emergence/gsub/surfaces.c
-2=/home/jonny/emergence/emergence/gsub/gsub.h
-3=/home/jonny/emergence/emergence/em-tools/em-skin/main.c
+0=/home/jonny/emergence/work/emergence/em-tools/em-skin/main.c
+
+[Project Tree]
+0=0
+1=0:1
+
+[File Tree]
+0=0
+
+[Project State]
+clean before build=false

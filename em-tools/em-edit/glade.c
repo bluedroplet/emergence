@@ -1537,10 +1537,21 @@ create_teleporter_properties_dialog (void)
   GtkWidget *label70;
   GtkObject *spawn_point_index_spinbutton_adj;
   GtkWidget *spawn_point_index_spinbutton;
+  GtkWidget *hbox187;
+  GtkWidget *label220;
+  GtkWidget *rotate_type_hbox;
+  GtkWidget *rotate_type_abs_radiobutton;
+  GSList *rotate_type_abs_radiobutton_group = NULL;
+  GtkWidget *rotate_type_rel_radiobutton;
   GtkWidget *hbox52;
-  GtkWidget *label71;
-  GtkObject *rotate_entity_spinbutton_adj;
-  GtkWidget *rotate_entity_spinbutton;
+  GtkWidget *hbox186;
+  GtkWidget *label221;
+  GtkObject *rotation_angle_spinbutton_adj;
+  GtkWidget *rotation_angle_spinbutton;
+  GtkWidget *divider_angle_hbox;
+  GtkWidget *divider_angle_checkbutton;
+  GtkObject *divider_angle_spinbutton_adj;
+  GtkWidget *divider_angle_spinbutton;
   GtkWidget *hbuttonbox8;
   GtkWidget *close_button;
 
@@ -1673,21 +1684,68 @@ create_teleporter_properties_dialog (void)
   gtk_box_pack_start (GTK_BOX (hbox51), spawn_point_index_spinbutton, TRUE, TRUE, 0);
   gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spawn_point_index_spinbutton), TRUE);
 
+  hbox187 = gtk_hbox_new (TRUE, 5);
+  gtk_widget_show (hbox187);
+  gtk_box_pack_start (GTK_BOX (vbox21), hbox187, TRUE, TRUE, 0);
+
+  label220 = gtk_label_new ("Rotation Type");
+  gtk_widget_show (label220);
+  gtk_box_pack_start (GTK_BOX (hbox187), label220, TRUE, TRUE, 0);
+  gtk_misc_set_alignment (GTK_MISC (label220), 0, 0.5);
+
+  rotate_type_hbox = gtk_hbox_new (FALSE, 5);
+  gtk_widget_show (rotate_type_hbox);
+  gtk_box_pack_start (GTK_BOX (hbox187), rotate_type_hbox, FALSE, TRUE, 0);
+
+  rotate_type_abs_radiobutton = gtk_radio_button_new_with_mnemonic (NULL, "Abs");
+  gtk_widget_show (rotate_type_abs_radiobutton);
+  gtk_box_pack_start (GTK_BOX (rotate_type_hbox), rotate_type_abs_radiobutton, TRUE, TRUE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (rotate_type_abs_radiobutton), rotate_type_abs_radiobutton_group);
+  rotate_type_abs_radiobutton_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (rotate_type_abs_radiobutton));
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (rotate_type_abs_radiobutton), TRUE);
+
+  rotate_type_rel_radiobutton = gtk_radio_button_new_with_mnemonic (NULL, "Rel");
+  gtk_widget_show (rotate_type_rel_radiobutton);
+  gtk_box_pack_start (GTK_BOX (rotate_type_hbox), rotate_type_rel_radiobutton, TRUE, TRUE, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (rotate_type_rel_radiobutton), rotate_type_abs_radiobutton_group);
+  rotate_type_abs_radiobutton_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (rotate_type_rel_radiobutton));
+
   hbox52 = gtk_hbox_new (TRUE, 5);
   gtk_widget_show (hbox52);
   gtk_box_pack_start (GTK_BOX (vbox21), hbox52, TRUE, TRUE, 0);
 
-  label71 = gtk_label_new ("Rotate (\302\272)");
-  gtk_widget_show (label71);
-  gtk_box_pack_start (GTK_BOX (hbox52), label71, TRUE, TRUE, 0);
-  gtk_misc_set_alignment (GTK_MISC (label71), 0, 0.5);
+  hbox186 = gtk_hbox_new (TRUE, 5);
+  gtk_widget_show (hbox186);
+  gtk_box_pack_start (GTK_BOX (hbox52), hbox186, TRUE, TRUE, 0);
 
-  rotate_entity_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
-  rotate_entity_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (rotate_entity_spinbutton_adj), 1, 0);
-  gtk_widget_show (rotate_entity_spinbutton);
-  gtk_box_pack_start (GTK_BOX (hbox52), rotate_entity_spinbutton, TRUE, TRUE, 0);
-  gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (rotate_entity_spinbutton), TRUE);
-  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (rotate_entity_spinbutton), TRUE);
+  label221 = gtk_label_new ("Rotation Angle (\302\272)");
+  gtk_widget_show (label221);
+  gtk_box_pack_start (GTK_BOX (hbox186), label221, TRUE, TRUE, 0);
+  gtk_misc_set_alignment (GTK_MISC (label221), 0, 0.5);
+
+  rotation_angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  rotation_angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (rotation_angle_spinbutton_adj), 1, 0);
+  gtk_widget_show (rotation_angle_spinbutton);
+  gtk_box_pack_start (GTK_BOX (hbox186), rotation_angle_spinbutton, TRUE, TRUE, 0);
+  gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (rotation_angle_spinbutton), TRUE);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (rotation_angle_spinbutton), TRUE);
+
+  divider_angle_hbox = gtk_hbox_new (TRUE, 5);
+  gtk_widget_show (divider_angle_hbox);
+  gtk_box_pack_start (GTK_BOX (vbox21), divider_angle_hbox, TRUE, TRUE, 0);
+  gtk_widget_set_sensitive (divider_angle_hbox, FALSE);
+
+  divider_angle_checkbutton = gtk_check_button_new_with_mnemonic ("Divider Angle (\302\272)");
+  gtk_widget_show (divider_angle_checkbutton);
+  gtk_box_pack_start (GTK_BOX (divider_angle_hbox), divider_angle_checkbutton, TRUE, TRUE, 0);
+
+  divider_angle_spinbutton_adj = gtk_adjustment_new (0, -180, 180, 1, 45, 0);
+  divider_angle_spinbutton = gtk_spin_button_new (GTK_ADJUSTMENT (divider_angle_spinbutton_adj), 1, 0);
+  gtk_widget_show (divider_angle_spinbutton);
+  gtk_box_pack_start (GTK_BOX (divider_angle_hbox), divider_angle_spinbutton, TRUE, TRUE, 0);
+  gtk_widget_set_sensitive (divider_angle_spinbutton, FALSE);
+  gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (divider_angle_spinbutton), TRUE);
+  gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (divider_angle_spinbutton), TRUE);
 
   hbuttonbox8 = GTK_DIALOG (teleporter_properties_dialog)->action_area;
   gtk_widget_show (hbuttonbox8);
@@ -1746,8 +1804,20 @@ create_teleporter_properties_dialog (void)
   g_signal_connect ((gpointer) spawn_point_index_spinbutton, "value_changed",
                     G_CALLBACK (on_teleporter_spawn_point_index_spinbutton_value_changed),
                     NULL);
-  g_signal_connect ((gpointer) rotate_entity_spinbutton, "value_changed",
-                    G_CALLBACK (on_teleporter_rotate_entity_spinbutton_value_changed),
+  g_signal_connect ((gpointer) rotate_type_abs_radiobutton, "toggled",
+                    G_CALLBACK (on_teleporter_rotate_type_abs_radiobutton_toggled),
+                    NULL);
+  g_signal_connect ((gpointer) rotate_type_rel_radiobutton, "toggled",
+                    G_CALLBACK (on_teleporter_rotate_type_rel_radiobutton_toggled),
+                    NULL);
+  g_signal_connect ((gpointer) rotation_angle_spinbutton, "value_changed",
+                    G_CALLBACK (on_teleporter_rotation_angle_spinbutton_value_changed),
+                    NULL);
+  g_signal_connect ((gpointer) divider_angle_checkbutton, "toggled",
+                    G_CALLBACK (on_teleporter_divider_angle_checkbutton_toggled),
+                    NULL);
+  g_signal_connect ((gpointer) divider_angle_spinbutton, "value_changed",
+                    G_CALLBACK (on_teleporter_divider_angle_spinbutton_value_changed),
                     NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
@@ -1777,9 +1847,18 @@ create_teleporter_properties_dialog (void)
   GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, hbox51, "hbox51");
   GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, label70, "label70");
   GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, spawn_point_index_spinbutton, "spawn_point_index_spinbutton");
+  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, hbox187, "hbox187");
+  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, label220, "label220");
+  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, rotate_type_hbox, "rotate_type_hbox");
+  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, rotate_type_abs_radiobutton, "rotate_type_abs_radiobutton");
+  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, rotate_type_rel_radiobutton, "rotate_type_rel_radiobutton");
   GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, hbox52, "hbox52");
-  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, label71, "label71");
-  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, rotate_entity_spinbutton, "rotate_entity_spinbutton");
+  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, hbox186, "hbox186");
+  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, label221, "label221");
+  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, rotation_angle_spinbutton, "rotation_angle_spinbutton");
+  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, divider_angle_hbox, "divider_angle_hbox");
+  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, divider_angle_checkbutton, "divider_angle_checkbutton");
+  GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, divider_angle_spinbutton, "divider_angle_spinbutton");
   GLADE_HOOKUP_OBJECT_NO_REF (teleporter_properties_dialog, hbuttonbox8, "hbuttonbox8");
   GLADE_HOOKUP_OBJECT (teleporter_properties_dialog, close_button, "close_button");
 

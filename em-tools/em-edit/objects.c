@@ -235,7 +235,10 @@ void insert_object(int type, double x, double y)
 		object.teleporter_data.radius = 20.0;
 		object.teleporter_data.sparkles = 0;
 		object.teleporter_data.spawn_point_index = 0;
-		object.teleporter_data.rotate = 0.0;
+		object.teleporter_data.rotation_type = TELEPORTER_ROTATION_TYPE_ABS;
+		object.teleporter_data.rotation_angle = 0.0;
+		object.teleporter_data.divider = 0;
+		object.teleporter_data.divider_angle = 0.0;
 		break;
 	
 	case OBJECTTYPE_GRAVITYWELL:
@@ -1439,12 +1442,67 @@ void on_teleporter_spawn_point_index_spinbutton_value_changed(GtkSpinButton *spi
 }
 
 
-void on_teleporter_rotate_entity_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
+void on_teleporter_rotate_type_abs_radiobutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
+{
+	gboolean on = gtk_toggle_button_get_active(togglebutton);
+	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(togglebutton));
+	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
+
+	if(on)
+		object->teleporter_data.rotation_type = TELEPORTER_ROTATION_TYPE_ABS;
+}
+
+
+void on_teleporter_rotate_type_rel_radiobutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
+{
+	gboolean on = gtk_toggle_button_get_active(togglebutton);
+	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(togglebutton));
+
+	gtk_widget_set_sensitive(GTK_WIDGET(g_object_get_data(G_OBJECT(dialog), 
+		"divider_angle_hbox")), on);
+
+	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
+
+	if(on)
+		object->teleporter_data.rotation_type = TELEPORTER_ROTATION_TYPE_REL;
+}
+
+
+void on_teleporter_rotation_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
 {
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
 
-	object->teleporter_data.rotate = gtk_spin_button_get_value(spinbutton);
+	object->teleporter_data.rotation_angle = gtk_spin_button_get_value(spinbutton) / 
+		(180.0 / M_PI);
+}
+
+
+void on_teleporter_divider_angle_checkbutton_toggled(GtkToggleButton *togglebutton, 
+	gpointer user_data)
+{
+	gboolean sensitive = gtk_toggle_button_get_active(togglebutton);
+	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(togglebutton));
+
+	gtk_widget_set_sensitive(GTK_WIDGET(g_object_get_data(G_OBJECT(dialog), 
+		"divider_angle_spinbutton")), sensitive);
+	
+	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
+
+	object->teleporter_data.divider = gtk_toggle_button_get_active(togglebutton);
+}
+
+
+void on_teleporter_divider_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, 
+	gpointer user_data)
+{
+	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
+	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
+
+	object->teleporter_data.divider_angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI);
 }
 
 
@@ -1462,10 +1520,9 @@ void run_teleporter_properties_dialog(void *menu, struct object_t *object)
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(window));
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 
-	GtkWidget *texture_checkbutton = g_object_get_data(G_OBJECT(dialog), "texture_checkbutton");
-	
 	if(object->teleporter_data.non_default_texture)
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(texture_checkbutton), TRUE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"texture_checkbutton")), TRUE);
 	
 	if(object->teleporter_data.texture_filename)
 	{
@@ -1491,8 +1548,24 @@ void run_teleporter_properties_dialog(void *menu, struct object_t *object)
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"spawn_point_index_spinbutton")), (gfloat)object->teleporter_data.spawn_point_index);
 	
+	if(object->teleporter_data.rotation_type == TELEPORTER_ROTATION_TYPE_ABS)
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_type_abs_radiobutton")), TRUE);
+	else
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"rotate_type_rel_radiobutton")), TRUE);
+
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"rotate_entity_spinbutton")), (gfloat)object->teleporter_data.rotate);
+		"rotation_angle_spinbutton")), (gfloat)object->teleporter_data.rotation_angle * 
+		(180.0 / M_PI));
+	
+	if(object->teleporter_data.divider)
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+			"divider_angle_checkbutton")), TRUE);
+	
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
+		"divider_angle_spinbutton")), (gfloat)object->teleporter_data.divider_angle * 
+		(180.0 / M_PI));
 	
 	
 	gtk_widget_show(dialog);
@@ -2043,7 +2116,10 @@ void gzwrite_objects(gzFile file)
 			gzwrite(file, &object->teleporter_data.radius, 8);
 			gzwrite(file, &object->teleporter_data.sparkles, 4);
 			gzwrite(file, &object->teleporter_data.spawn_point_index, 4);
-			gzwrite(file, &object->teleporter_data.rotate, 8);
+			gzwrite(file, &object->teleporter_data.rotation_type, 4);
+			gzwrite(file, &object->teleporter_data.rotation_angle, 8);
+			gzwrite(file, &object->teleporter_data.divider, 4);
+			gzwrite(file, &object->teleporter_data.divider_angle, 8);
 			break;
 		
 		case OBJECTTYPE_GRAVITYWELL:
@@ -2123,7 +2199,10 @@ void gzwrite_objects_compiled(gzFile file)
 			gzwrite(file, &object->teleporter_data.radius, 8);
 		//	gzwrite(file, &object->teleporter_data.sparkles, 4);
 			gzwrite(file, &object->teleporter_data.spawn_point_index, 4);
-		//	gzwrite(file, &object->teleporter_data.rotate, 8);
+			gzwrite(file, &object->teleporter_data.rotation_type, 4);
+			gzwrite(file, &object->teleporter_data.rotation_angle, 8);
+			gzwrite(file, &object->teleporter_data.divider, 4);
+			gzwrite(file, &object->teleporter_data.divider_angle, 8);
 			break;
 		
 		case OBJECTTYPE_GRAVITYWELL:
@@ -2332,10 +2411,18 @@ int gzread_objects(gzFile file)
 			if(gzread(file, &object.teleporter_data.spawn_point_index, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.teleporter_data.rotate, 8) != 8)
+			if(gzread(file, &object.teleporter_data.rotation_type, 4) != 4)
 				goto error;
 			
-
+			if(gzread(file, &object.teleporter_data.rotation_angle, 8) != 8)
+				goto error;
+			
+			if(gzread(file, &object.teleporter_data.divider, 4) != 4)
+				goto error;
+			
+			if(gzread(file, &object.teleporter_data.divider_angle, 8) != 8)
+				goto error;
+			
 			break;
 		
 		case OBJECTTYPE_GRAVITYWELL:

@@ -1256,3 +1256,41 @@ on_straight_through_node_angle_spinbutton_button_release_event
                                         (GtkWidget       *widget,
                                         GdkEventButton  *event,
                                         gpointer         user_data);
+
+void
+on_wall_rotate_abs_radiobutton_toggled (GtkToggleButton *togglebutton,
+                                        gpointer         user_data);
+
+void
+on_wall_rotate_rel_radiobutton_toggled (GtkToggleButton *togglebutton,
+                                        gpointer         user_data);
+
+void
+on_teleporter_rotation_angle_spinbutton_value_changed
+                                        (GtkSpinButton   *spinbutton,
+                                        gpointer         user_data);
+
+void
+on_divider_angle_spinbutton_value_changed
+                                        (GtkSpinButton   *spinbutton,
+                                        gpointer         user_data);
+
+void
+on_teleporter_rotate_type_abs_radiobutton_toggled
+                                        (GtkToggleButton *togglebutton,
+                                        gpointer         user_data);
+
+void
+on_teleporter_rotate_type_rel_radiobutton_toggled
+                                        (GtkToggleButton *togglebutton,
+                                        gpointer         user_data);
+
+void
+on_teleporter_divider_angle_checkbutton_toggled
+                                        (GtkToggleButton *togglebutton,
+                                        gpointer         user_data);
+
+void
+on_teleporter_divider_angle_spinbutton_value_changed
+                                        (GtkSpinButton   *spinbutton,
+                                        gpointer         user_data);

@@ -111,7 +111,10 @@ struct object_t
 			double radius;
 			int sparkles;
 			int spawn_point_index;
-			double rotate;
+			int rotation_type;
+			double rotation_angle;
+			int divider;
+			double divider_angle;
 			
 		} teleporter_data;
 	
@@ -149,6 +152,8 @@ struct object_pointer_t
 #define OBJECTTYPE_TELEPORTER 		7
 #define OBJECTTYPE_GRAVITYWELL		8
 
+#define TELEPORTER_ROTATION_TYPE_ABS	0
+#define TELEPORTER_ROTATION_TYPE_REL	1
 
 extern struct object_t *object0;
 
