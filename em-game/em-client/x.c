@@ -315,7 +315,7 @@ void set_vid_mode(int mode)	// use goto error crap
 			   RR_Rotate_0,
 			   CurrentTime);
 	
-	system("killall gnome-panel > /dev/null  2> /dev/null");
+//	system("killall gnome-panel > /dev/null  2> /dev/null");
 	
 	
 
@@ -534,5 +534,5 @@ void kill_x()
 	
 	XCloseDisplay(xdisplay);
 	
-	system("killall gnome-panel > /dev/null  2> /dev/null");
+//	system("killall gnome-panel > /dev/null  2> /dev/null");
 }
