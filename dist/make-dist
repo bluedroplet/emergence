@@ -17,11 +17,11 @@ cd ../em-tools
 ./configure || exit
 
 make distcheck || exit
-                                                                                                                               
-cp em-tools-0.5.3-dev.tar.bz2 ../dist
+
+cp em-tools-0.5.3-dev.tar.bz2 ../dist/em-tools-0.5.3-dev.tbz2
 
 cd ../dist
-                                                                                                                               
+
 
 for arch in pentiumpro pentium2 pentium3 pentium4 athlon athlon-tbird athlon-xp athlon-mp
 #for arch in pentium4
@@ -60,7 +60,7 @@ make prefix=${D}/usr \
 cd ../dist/root
 
 strip usr/bin/* || exit
-tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-0.5.3-dev.bin.$arch.tar.bz2 * || exit
+tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-0.5.3-dev.bin.$arch.tbz2 * || exit
 cd ..
 
 
@@ -82,7 +82,7 @@ cd ../dist/root
 
 strip usr/bin/* || exit
 
-tar --owner=0 --group=0 --numeric-owner -cjf ../emergence-0.5.3-dev.bin.$arch.tar.bz2 * || exit
+tar --owner=0 --group=0 --numeric-owner -cjf ../emergence-0.5.3-dev.bin.$arch.tbz2 * || exit
 
 find * -type f -printf "/%h/%f\n">../tree
 
