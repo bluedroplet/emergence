@@ -24,6 +24,7 @@
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../gsub/gsub.h"
+#include "shared/timer.h"
 #include "console.h"
 #include "main.h"
 #include "entry.h"
@@ -60,9 +61,19 @@ int vid_mode;
 
 void update_frame_buffer()
 {
+	sigio_process &= ~SIGIO_PROCESS_X;
+	
+//	float time1 = get_double_time();
+	
 	XShmPutImage(xdisplay, xwindow, gc, image, 
 		0, 0, 0, 0, vid_width, vid_height, True);
+//	float time2 = get_double_time();
 	XFlush(xdisplay);
+//	float time3 = get_double_time();
+	
+//	printf("%f %f %f\n", time1, time2, time3);
+	
+	sigio_process |= SIGIO_PROCESS_X;
 }
 
 
@@ -385,13 +396,15 @@ void init_x()
                       xinerama_x, xinerama_y, real_w, real_h);
 					  */
 
-	x_fd = ConnectionNumber(xdisplay);		// fuck x from behind
+	x_fd = ConnectionNumber(xdisplay);
 
 	console_print("Getting x to generate signals: ");
 	
 	if(fcntl(x_fd, F_SETOWN, getpid()) == -1)
 		goto error;
 	
+	fcntl(x_fd, F_SETSIG, SIGRTMIN);
+
 	if(fcntl(x_fd, F_SETFL, O_ASYNC) == -1)
 		goto error;
 	
