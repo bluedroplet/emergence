@@ -1,5 +1,7 @@
 #!/bin/bash -v
 
+export CC="/home/jonny/Desktop/apbuild-1.5/apgcc"
+export APBUILD_NO_STATIC_X=1
 ver=0.8-dev
 
 cd ../em-tools
@@ -26,7 +28,7 @@ cd ../dist
 
 
 #for arch in i386 i686 pentium3 pentium4 athlon-xp
-for arch in pentium3
+for arch in i686
 do
 
 stage3=i686
