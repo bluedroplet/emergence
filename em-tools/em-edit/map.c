@@ -93,7 +93,7 @@ void compile()
 	while(*cc && *cc != '.')
 		string_cat_char(compile_filename, *cc++);
 
-	string_cat_text(compile_filename, ".cm");
+	string_cat_text(compile_filename, ".cmap");
 
 	gzFile file = gzopen(compile_filename->text, "wb9");
 

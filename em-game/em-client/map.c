@@ -173,7 +173,7 @@ int game_process_load_map(struct buffer_t *stream)
 	map_filename = new_string_string(emergence_home_dir);
 	string_cat_text(map_filename, "/maps/");	
 	string_cat_string(map_filename, map_name);
-	string_cat_text(map_filename, ".cm");
+	string_cat_text(map_filename, ".cmap");
 
 
 	load_map(map_filename->text);
@@ -251,7 +251,7 @@ int count_tiles()
 int generate_scaled_map(char *name)
 {
 	struct string_t *filename = new_string_text(name);
-	string_cat_text(filename, ".cm");
+	string_cat_text(filename, ".cmap");
 	if(!load_map_tiles(filename->text))
 		return 0;
 
@@ -272,7 +272,7 @@ int generate_scaled_map(char *name)
 	string_cat_text(filename, name);
 	string_cat_char(filename, '.');
 	string_cat_int(filename, vid_width);
-	string_cat_text(filename, ".cm");
+	string_cat_text(filename, ".cmap");
 
 	FILE *file = fopen(filename->text, "wb");
 	free_string(filename);
@@ -309,7 +309,7 @@ int load_map(char *name)
 	switch(vid_width)
 	{
 	case 640:
-		string_cat_text(filename, ".640.cm");
+		string_cat_text(filename, ".640.cmap");
 		if(!load_map_tiles(filename->text))
 		{
 			if(!generate_scaled_map(name))
@@ -319,7 +319,7 @@ int load_map(char *name)
 		break;
 
 	case 800:
-		string_cat_text(filename, ".800.cm");
+		string_cat_text(filename, ".800.cmap");
 		if(!load_map_tiles(filename->text))
 		{
 			if(!generate_scaled_map(name))
@@ -329,7 +329,7 @@ int load_map(char *name)
 		break;
 
 	case 1024:
-		string_cat_text(filename, ".1024.cm");
+		string_cat_text(filename, ".1024.cmap");
 		if(!load_map_tiles(filename->text))
 		{
 			if(!generate_scaled_map(name))
@@ -339,7 +339,7 @@ int load_map(char *name)
 		break;
 
 	case 1152:
-		string_cat_text(filename, ".1152.cm");
+		string_cat_text(filename, ".1152.cmap");
 		if(!load_map_tiles(filename->text))
 		{
 			if(!generate_scaled_map(name))
@@ -349,7 +349,7 @@ int load_map(char *name)
 		break;
 
 	case 1280:
-		string_cat_text(filename, ".1280.cm");
+		string_cat_text(filename, ".1280.cmap");
 		if(!load_map_tiles(filename->text))
 		{
 			if(!generate_scaled_map(name))
@@ -359,7 +359,7 @@ int load_map(char *name)
 		break;
 
 	case 1600:
-		string_cat_text(filename, ".cm");
+		string_cat_text(filename, ".cmap");
 		if(!load_map_tiles(filename->text))
 			return 0;
 		break;
