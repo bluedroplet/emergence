@@ -4713,8 +4713,16 @@ void render_match_time()
 }
 
 
+int display_help;
+
 void render_match_info()
 {
+	if(server_discovery_started)
+		return;
+	
+	if(display_help)
+		return;
+		
 	if(!match_begun)
 	{
 		if(!ready)
@@ -4770,7 +4778,6 @@ void render_match_info()
 	}
 }
 
-
 void render_health_and_ammo()
 {
 	if(r_DrawConsole)
@@ -4808,6 +4815,85 @@ void render_health_and_ammo()
 				s_backbuffer, "%u", cgame_state->right_ammo);
 		}
 	}
+}
+
+
+void render_help()
+{
+	if(!display_help)
+	{
+		blit_text_centered(vid_width / 2, 0, 0xff, 0xff, 0xff, 
+			s_backbuffer, "Press F1 for controls");
+		return;
+	}
+	
+	if(server_discovery_started)
+		return;
+	
+	blit_text_centered(vid_width / 3, vid_height / 6, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "mouse");
+	blit_text_centered(vid_width / 3, vid_height / 6 + 14, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "left mouse button");
+	blit_text_centered(vid_width / 3, vid_height / 6 + 28, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "right mouse button");
+	blit_text_centered(vid_width / 3, vid_height / 6 + 42, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "w");
+	blit_text_centered(vid_width / 3, vid_height / 6 + 56, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "s");
+	blit_text_centered(vid_width / 3, vid_height / 6 + 70, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "a");
+	blit_text_centered(vid_width / 3, vid_height / 6 + 84, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "d");
+	blit_text_centered(vid_width / 3, vid_height / 6 + 98, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "space");
+
+	
+	blit_text_centered(vid_width / 2, vid_height / 6, 0xff, 0xff, 0xff, 
+		s_backbuffer, "-");
+	blit_text_centered(vid_width / 2, vid_height / 6 + 14, 0xff, 0xff, 0xff, 
+		s_backbuffer, "-");
+	blit_text_centered(vid_width / 2, vid_height / 6 + 28, 0xff, 0xff, 0xff, 
+		s_backbuffer, "-");
+	blit_text_centered(vid_width / 2, vid_height / 6 + 42, 0xff, 0xff, 0xff, 
+		s_backbuffer, "-");
+	blit_text_centered(vid_width / 2, vid_height / 6 + 56, 0xff, 0xff, 0xff, 
+		s_backbuffer, "-");
+	blit_text_centered(vid_width / 2, vid_height / 6 + 70, 0xff, 0xff, 0xff, 
+		s_backbuffer, "-");
+	blit_text_centered(vid_width / 2, vid_height / 6 + 84, 0xff, 0xff, 0xff,  
+		s_backbuffer, "-");
+	blit_text_centered(vid_width / 2, vid_height / 6 + 98, 0xff, 0xff, 0xff,  
+		s_backbuffer, "-");
+
+	
+	blit_text_centered(vid_width / 3 * 2, vid_height / 6, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "rotate");
+	blit_text_centered(vid_width / 3 * 2, vid_height / 6 + 14, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "fire railgun");
+	blit_text_centered(vid_width / 3 * 2, vid_height / 6 + 28, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "brake");
+	blit_text_centered(vid_width / 3 * 2, vid_height / 6 + 42, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "accelerate");
+	blit_text_centered(vid_width / 3 * 2, vid_height / 6 + 56, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "brake");
+	blit_text_centered(vid_width / 3 * 2, vid_height / 6 + 70, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "fire left weapon");
+	blit_text_centered(vid_width / 3 * 2, vid_height / 6 + 84, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "fire right weapon");
+	blit_text_centered(vid_width / 3 * 2, vid_height / 6 + 98, 0xef, 0x6f, 0xff, 
+		s_backbuffer, "drop mine");
+
+	blit_text_centered(vid_width / 2, vid_height / 6 + 126, 0xff, 0xff, 0xff, 
+		s_backbuffer, "Press F1 to clear");
+}
+
+
+void toggle_help(int state)
+{
+	if(!state)
+		return;
+	
+	display_help = !display_help;
 }
 
 
@@ -4878,6 +4964,7 @@ void render_game()
 	
 	if(game_state != GAMESTATE_DEMO)
 	{
+		render_help();
 		render_recording();
 		render_player_info();
 		render_match_time();

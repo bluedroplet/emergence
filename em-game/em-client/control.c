@@ -42,6 +42,26 @@ pthread_t control_thread_id;
 float mouse_speed = 1.0;
 
 
+void control_escape(int state)
+{
+	if(!state)
+		return;
+	
+	if(server_discovery_started)
+	{
+		stop_server_discovery();
+		console_toggle();
+	}
+	else
+	{
+		if(r_DrawConsole)
+			console_toggle();
+		else
+			start_server_discovery();
+	}
+}
+
+
 void control_enter(int state)
 {
 	if(r_DrawConsole)
@@ -83,7 +103,7 @@ struct
 } controls[] = 
 {
 	{"",			NULL,	NULL},
-	{"escape",		NULL,	console_toggle},
+	{"escape",		NULL,	control_escape},
 	{"1",			NULL,	NULL},
 	{"2",			NULL,	NULL},
 	{"3",			NULL,	NULL},
@@ -123,7 +143,7 @@ struct
 	{"l",			NULL,	NULL},
 	{";",			NULL,	NULL},
 	{"'",			NULL,	NULL},
-	{"`",			NULL,	console_toggle},
+	{"`",			NULL,	control_escape},
 	{"lshift",		NULL,	NULL},
 	{"\\",			NULL,	NULL},
 	{"z",			NULL,	NULL},
@@ -141,7 +161,7 @@ struct
 	{"lalt",		NULL,	NULL},
 	{"space",		NULL,	NULL},
 	{"capslock",	NULL,	NULL},
-	{"f1",			NULL,	NULL},
+	{"f1",			NULL,	toggle_help},
 	{"f2",			NULL,	NULL},
 	{"f3",			NULL,	NULL},
 	{"f4",			NULL,	NULL},
@@ -761,7 +781,7 @@ void process_keypress(uint32_t key, int state)
 	if(func)
 		func(state);
 	
-	if(!r_DrawConsole)
+	if(!r_DrawConsole && !server_discovery_started)
 	{
 		func = controls[key].func;
 		if(func)

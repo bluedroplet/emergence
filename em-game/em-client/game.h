@@ -103,6 +103,7 @@ extern int game_rendering;
 
 extern struct sample_t *plasma_cannon_sample;
 
+void toggle_help(int state);
 
 struct game_state_t
 {

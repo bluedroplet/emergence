@@ -216,6 +216,9 @@ void server_enter(int state)
 	{
 		if(i == selected_server)
 		{
+			if(!r_DrawConsole)
+				console_toggle();
+			
 			em_connect(cserver->ip, cserver->port);
 			goto end;
 		}
@@ -542,8 +545,11 @@ void render_servers()
 		blit_text(50 + 264 + 64, vid_height / 6, 0xff, 0xff, 0xff, 
 			s_backbuffer, "Ping");
 
-		blit_text(50 + 264 + 64 + 64, vid_height / 6 + 6, 0xff, 0xff, 0xff, 
-			s_backbuffer, "Auth");
+		blit_text(50 + 264 + 64 + 64, vid_height / 6, 0xff, 0xff, 0xff, 
+			s_backbuffer, "Key");
+			
+		blit_text(50 + 264 + 64 + 64, vid_height / 6 + 16, 0xff, 0xff, 0xff, 
+			s_backbuffer, "Required?");
 			
 
 		blit_text(50 + 32, vid_height / 6 + 14, 0xff, 0xff, 0xff, 

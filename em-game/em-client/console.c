@@ -291,13 +291,10 @@ void console_print(const char *fmt, ...)
 }
 
 
-void console_toggle(int state)
+void console_toggle()
 {
 	pthread_mutex_lock(&console_mutex);
 	
-	if(!state)
-		goto end;
-
 	r_DrawConsole = !r_DrawConsole;
 
 	if(r_DrawConsole)
@@ -306,7 +303,6 @@ void console_toggle(int state)
 		console_input[0] = '\0';
 	}
 	
-	end:
 	pthread_mutex_unlock(&console_mutex);
 }
 

@@ -8,7 +8,7 @@ void dump_console();
 
 
 
-void console_toggle(int state);
+void console_toggle();
 void prev_command(int state);
 void next_command(int state);
 void console_tab(int state);
