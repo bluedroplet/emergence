@@ -216,6 +216,7 @@ struct entity_t
 	float xdis, ydis;
 	float xvel, yvel;
 	
+	int speeding_up;
 	int teleporting;
 	uint32_t teleporting_tick;
 	uint32_t teleport_spawn_index;

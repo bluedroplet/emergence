@@ -1299,8 +1299,9 @@ void s_tick_craft(struct entity_t *craft)
 		
 		#ifdef EMSERVER
 		
-	/*	
 		// check for collision with speedup ramp
+		
+		int s = 0;
 		
 		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
@@ -1314,30 +1315,27 @@ void s_tick_craft(struct entity_t *craft)
 				speedup_ramp->y - sin_theta * speedup_ramp->width / 2.0,
 				xdis, ydis, CRAFT_RADIUS))
 			{
-				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+				s = 1;
 				
-				craft->xvel += speedup_ramp->boost * sin_theta;
-				craft->yvel += speedup_ramp->boost * cos_theta;
-				
-				if(craft->craft_data.left_weapon)
+				if(!craft->speeding_up)
 				{
-					craft->craft_data.left_weapon->xvel += speedup_ramp->boost * sin_theta;
-					craft->craft_data.left_weapon->yvel += speedup_ramp->boost * cos_theta;
-				}
-				
-				if(craft->craft_data.right_weapon)
-				{
-					craft->craft_data.right_weapon->xvel += speedup_ramp->boost * sin_theta;
-					craft->craft_data.right_weapon->yvel += speedup_ramp->boost * cos_theta;
-				}
+					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 					
-				restart = 1;
+					craft->xvel += speedup_ramp->boost * sin_theta;
+					craft->yvel += speedup_ramp->boost * cos_theta;
+					
+					restart = 1;
+					craft->propagate_me = 1;
+					craft->speeding_up = 1;
+					break;
+				}
 			}			
 			
 			speedup_ramp = speedup_ramp->next;
 		}
 		
-		*/
+		craft->speeding_up = s;
+		
 		
 		
 		// check for collision with teleporter
@@ -1747,7 +1745,9 @@ void s_tick_weapon(struct entity_t *weapon)
 		
 		// check for collision with speedup ramp
 		
-/*		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
+		int s = 0;
+		
+		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
 		{
 			double sin_theta, cos_theta;
@@ -1757,19 +1757,29 @@ void s_tick_weapon(struct entity_t *weapon)
 				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->x - cos_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->y - sin_theta * speedup_ramp->width / 2.0,
-				xdis, ydis, WEAPON_RADIUS))
+				xdis, ydis, CRAFT_RADIUS))
 			{
-				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+				s = 1;
 				
-				weapon->xvel += speedup_ramp->boost * sin_theta;
-				weapon->yvel += speedup_ramp->boost * cos_theta;
-				
-				restart = 1;
+				if(!weapon->speeding_up)
+				{
+					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+					
+					weapon->xvel += speedup_ramp->boost * sin_theta;
+					weapon->yvel += speedup_ramp->boost * cos_theta;
+					
+					restart = 1;
+					weapon->propagate_me = 1;
+					weapon->speeding_up = 1;
+					break;
+				}
 			}			
 			
 			speedup_ramp = speedup_ramp->next;
 		}
-*/		
+		
+		weapon->speeding_up = s;
+		
 		
 		// check for collision with teleporter
 		
@@ -2397,7 +2407,10 @@ void s_tick_rocket(struct entity_t *rocket)
 		}
 		
 		
+		
 		// check for collision with speedup ramp
+		
+		int s = 0;
 		
 		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
@@ -2409,18 +2422,27 @@ void s_tick_rocket(struct entity_t *rocket)
 				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->x - cos_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->y - sin_theta * speedup_ramp->width / 2.0,
-				xdis, ydis, ROCKET_RADIUS))
+				xdis, ydis, CRAFT_RADIUS))
 			{
-				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+				s = 1;
 				
-				rocket->xvel += speedup_ramp->boost * sin_theta;
-				rocket->yvel += speedup_ramp->boost * cos_theta;
-				
-				restart = 1;
+				if(!rocket->speeding_up)
+				{
+					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+					
+					rocket->xvel += speedup_ramp->boost * sin_theta;
+					rocket->yvel += speedup_ramp->boost * cos_theta;
+					
+					restart = 1;
+					rocket->speeding_up = 1;
+					break;
+				}
 			}			
 			
 			speedup_ramp = speedup_ramp->next;
 		}
+		
+		rocket->speeding_up = s;
 		
 		
 		// check for collision with teleporter
@@ -2439,6 +2461,7 @@ void s_tick_rocket(struct entity_t *rocket)
 			
 			teleporter = teleporter->next;
 		}
+		
 		
 		
 		
@@ -2594,6 +2617,8 @@ void s_tick_mine(struct entity_t *mine)
 		
 		// check for collision with speedup ramp
 		
+		int s = 0;
+		
 		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
 		{
@@ -2604,18 +2629,27 @@ void s_tick_mine(struct entity_t *mine)
 				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->x - cos_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->y - sin_theta * speedup_ramp->width / 2.0,
-				xdis, ydis, MINE_RADIUS))
+				xdis, ydis, CRAFT_RADIUS))
 			{
-				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+				s = 1;
 				
-				mine->xvel += speedup_ramp->boost * sin_theta;
-				mine->yvel += speedup_ramp->boost * cos_theta;
-				
-				restart = 1;
+				if(!mine->speeding_up)
+				{
+					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+					
+					mine->xvel += speedup_ramp->boost * sin_theta;
+					mine->yvel += speedup_ramp->boost * cos_theta;
+					
+					restart = 1;
+					mine->speeding_up = 1;
+					break;
+				}
 			}			
 			
 			speedup_ramp = speedup_ramp->next;
 		}
+		
+		mine->speeding_up = s;
 		
 		
 		// check for collision with teleporter
@@ -2776,6 +2810,8 @@ void s_tick_rails(struct entity_t *rails)
 		
 		// check for collision with speedup ramp
 		
+		int s = 0;
+		
 		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
 		{
@@ -2786,18 +2822,27 @@ void s_tick_rails(struct entity_t *rails)
 				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->x - cos_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->y - sin_theta * speedup_ramp->width / 2.0,
-				xdis, ydis, RAILS_RADIUS))
+				xdis, ydis, CRAFT_RADIUS))
 			{
-				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+				s = 1;
 				
-				rails->xvel += speedup_ramp->boost * sin_theta;
-				rails->yvel += speedup_ramp->boost * cos_theta;
-				
-				restart = 1;
+				if(!rails->speeding_up)
+				{
+					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+					
+					rails->xvel += speedup_ramp->boost * sin_theta;
+					rails->yvel += speedup_ramp->boost * cos_theta;
+					
+					restart = 1;
+					rails->speeding_up = 1;
+					break;
+				}
 			}			
 			
 			speedup_ramp = speedup_ramp->next;
 		}
+		
+		rails->speeding_up = s;
 		
 		
 		// check for collision with teleporter
@@ -2956,6 +3001,8 @@ void s_tick_shield(struct entity_t *shield)
 		
 		// check for collision with speedup ramp
 		
+		int s = 0;
+		
 		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
 		{
@@ -2966,18 +3013,27 @@ void s_tick_shield(struct entity_t *shield)
 				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->x - cos_theta * speedup_ramp->width / 2.0, 
 				speedup_ramp->y - sin_theta * speedup_ramp->width / 2.0,
-				xdis, ydis, SHIELD_RADIUS))
+				xdis, ydis, CRAFT_RADIUS))
 			{
-				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+				s = 1;
 				
-				shield->xvel += speedup_ramp->boost * sin_theta;
-				shield->yvel += speedup_ramp->boost * cos_theta;
-				
-				restart = 1;
+				if(!shield->speeding_up)
+				{
+					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
+					
+					shield->xvel += speedup_ramp->boost * sin_theta;
+					shield->yvel += speedup_ramp->boost * cos_theta;
+					
+					restart = 1;
+					shield->speeding_up = 1;
+					break;
+				}
 			}			
 			
 			speedup_ramp = speedup_ramp->next;
 		}
+		
+		shield->speeding_up = s;
 		
 		
 		// check for collision with teleporter
