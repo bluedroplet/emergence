@@ -51,9 +51,6 @@ int nextentity = 0;
 #define COLLISION_FRICTION	0.75
 
 
-#define PLASMA_DAMAGE	10.0
-#define BULLET_DAMAGE	5.0
-
 #define ROCKET_FORCE_THRESHOLD	50.0
 #define MINE_FORCE_THRESHOLD	60.0
 #define RAILS_FORCE_THRESHOLD	20.0
@@ -276,7 +273,8 @@ int point_in_circle(double px, double py, double cx, double cy, double cr)
 }
 
 
-int line_in_circle(double lx1, double ly1, double lx2, double ly2, double cx, double cy, double cr)
+int line_in_circle(double lx1, double ly1, double lx2, double ly2, 
+	double cx, double cy, double cr)
 {
 	double x1 = lx1 - cx;
 	double y1 = ly1 - cy;
@@ -313,6 +311,66 @@ int line_in_circle(double lx1, double ly1, double lx2, double ly2, double cx, do
 		
 		if(t > 0.0 && t < 1.0)
 			return 1;
+	}
+	
+	return 0;
+}	
+
+
+int line_in_circle_with_coords(double lx1, double ly1, double lx2, double ly2, 
+	double cx, double cy, double cr, float *out_x, float *out_y)
+{
+	double x1 = lx1 - cx;
+	double y1 = ly1 - cy;
+	
+	if(x1 * x1 + y1 * y1 < cr * cr)
+	{
+		*out_x = x1;
+		*out_y = y1;
+		return 1;
+	}
+	
+	double x2 = lx2 - cx;
+	double y2 = ly2 - cy;
+	
+	if(x2 * x2 + y2 * y2 < cr * cr)
+	{
+		*out_x = x2;
+		*out_y = y2;
+		return 1;
+	}
+
+	// TODO : use closest distance?
+	
+	double dx = x2 - x1;
+	double dy = y2 - y1;
+	double dr2 = dx * dx + dy * dy;
+	double D = x1 * y2 - x2 * y1;
+	double discr = cr * cr * dr2 - D * D;
+
+	if(discr >= 0.0)
+	{
+		double thing = dx * sqrt(discr);
+
+		double x = (D * dy - thing) / dr2;
+		double t = (x + cx - lx1) / (lx2 - lx1);
+		
+		if(t > 0.0 && t < 1.0)
+		{
+			*out_x = lx1 + t * (lx2 - lx1);
+			*out_y = ly1 + t * (ly2 - ly1);
+			return 1;
+		}
+		
+		x = (D * dy + thing) / dr2;
+		t = (x + cx - lx1) / (lx2 - lx1);
+		
+		if(t > 0.0 && t < 1.0)
+		{
+			*out_x = lx1 + t * (lx2 - lx1);
+			*out_y = ly1 + t * (ly2 - ly1);
+			return 1;
+		}
 	}
 	
 	return 0;
@@ -496,7 +554,7 @@ void strip_craft_from_weapon(struct entity_t *weapon)
 
 	
 void explode_craft(struct entity_t *craft);
-void craft_force(struct entity_t *craft, double force)
+int craft_force(struct entity_t *craft, double force)
 {
 	#ifdef EMSERVER
 	craft->craft_data.shield_strength -= force;
@@ -511,16 +569,21 @@ void craft_force(struct entity_t *craft, double force)
 				craft->craft_data.carcass = 1;
 				strip_weapons_from_craft(craft);
 				make_carcass_on_all_players(craft);
+				return 0;
 			}
 			else
 			{
 				explode_craft(craft);
+				return 1;
 			}
 		}
 		else
 		{
 			if(craft->craft_data.shield_strength < -0.25)
+			{
 				explode_craft(craft);
+				return 1;
+			}
 		}
 	}
 	else
@@ -530,16 +593,21 @@ void craft_force(struct entity_t *craft, double force)
 		craft->propagate_me = 1;
 	}
 	#endif
+	
+	return 0;
 }
 
 
 void explode_weapon(struct entity_t *weapon);
-void weapon_force(struct entity_t *weapon, double force)
+int weapon_force(struct entity_t *weapon, double force)
 {
 	#ifdef EMSERVER
 	weapon->weapon_data.shield_strength -= force;
 	if(weapon->weapon_data.shield_strength < 0.0)
+	{
 		explode_weapon(weapon);
+		return 1;
+	}
 	else
 	{
 		weapon->weapon_data.shield_flare += force;
@@ -547,37 +615,51 @@ void weapon_force(struct entity_t *weapon, double force)
 		weapon->propagate_me = 1;
 	}
 	#endif
+	
+	return 0;
 }
 
 
 void explode_rocket(struct entity_t *rocket);
-void rocket_force(struct entity_t *rocket, double force)
+int rocket_force(struct entity_t *rocket, double force)
 {
 	if(force > ROCKET_FORCE_THRESHOLD)
+	{
 		explode_rocket(rocket);
+		return 1;
+	}
 }
 
 
 void explode_mine(struct entity_t *mine);
-void mine_force(struct entity_t *mine, double force)
+int mine_force(struct entity_t *mine, double force)
 {
 	if(force > MINE_FORCE_THRESHOLD)
+	{
 		explode_mine(mine);
+		return 1;
+	}
 }
 
 
 void explode_rails(struct entity_t *rails);
-void rails_force(struct entity_t *rails, double force)
+int rails_force(struct entity_t *rails, double force)
 {
 	if(force > RAILS_FORCE_THRESHOLD)
+	{
 		explode_rails(rails);
+		return 1;
+	}
 }
 
 
-void shield_force(struct entity_t *shield, double force)
+int shield_force(struct entity_t *shield, double force)
 {
 	if(force > SHIELD_FORCE_THRESHOLD)
+	{
 		shield->kill_me = 1;
+		return 1;
+	}
 }
 
 

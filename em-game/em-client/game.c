@@ -2794,7 +2794,7 @@ void render_rail_trails()
 			
 			render_particle(cx, cy, alpha, 0xff, 0xff, 0xff);
 			
-			double theta = 30 * M_PI * t;
+			double theta = length / 30 * M_PI * t;
 			
 			double nr = cos(theta) * r;
 			

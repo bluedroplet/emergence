@@ -342,3 +342,80 @@ struct bspnode_t *line_walk_bsp_tree(double x1, double y1, double x2, double y2)
 	else
 		return NULL;
 }
+
+float nearest_wall_dist;
+float nearest_wall_x;
+float nearest_wall_y;
+int nearest_wall_first;
+
+void rail_walk_bsp_node(struct bspnode_t *node, 
+	float x1, float y1, float x2, float y2)
+{
+	if(node->front)
+		rail_walk_bsp_node(node->front, x1, y1, x2, y2);
+
+	if(node->back)
+		rail_walk_bsp_node(node->back, x1, y1, x2, y2);
+	
+	double nx = y1 - y2;
+	double ny = -(x1 - x2);
+	
+	double denom = (-nx) * (node->x2 - node->x1) + 
+		(-ny) * (node->y2 - node->y1);
+	
+	if(denom != 0.0)
+	{
+		double numer = nx * (node->x1 - x1) + 
+			ny * (node->y1 - y1);
+		
+		double t = numer / denom;
+		
+		if(t > node->tstart && t < node->tend)
+		{
+			nx = node->y1 - node->y2;
+			ny = -(node->x1 - node->x2);
+			
+			denom = (-nx) * (x2 - x1) + 
+				(-ny) * (y2 - y1);
+			
+			if(denom != 0.0)
+			{
+				numer = nx * (x1 - node->x1) + 
+					ny * (y1 - node->y1);
+			
+				double nt = numer / denom;
+				
+				if(nt > 0.0 && nt < 1.0)
+				{
+					double x = node->x1 + t * (node->x2 - node->x1);
+					double y = node->y1 + t * (node->y2 - node->y1);
+					
+					double dist = hypot(x - x1, y - y1);
+					
+					if(nearest_wall_first || dist < nearest_wall_dist)
+					{
+						nearest_wall_first = 0;
+						nearest_wall_dist = dist;
+						nearest_wall_x = x;
+						nearest_wall_y = y;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+void rail_walk_bsp(float x1, float y1, float x2, float y2, float *out_x, float *out_y)
+{
+	nearest_wall_first = 1;
+
+	if(bspnode0)
+		rail_walk_bsp_node(bspnode0, x1, y1, x2, y2);
+	
+	if(nearest_wall_first)
+		return;
+	
+	*out_x = nearest_wall_x;
+	*out_y = nearest_wall_y;
+}

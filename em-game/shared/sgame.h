@@ -259,6 +259,9 @@ struct entity_t
 #define TELEPORTING_TRAVELLING		2
 #define TELEPORTING_APPEARING		3
 
+#define PLASMA_DAMAGE	0.1
+#define BULLET_DAMAGE	0.05
+#define RAIL_DAMAGE		0.5
 
 struct spawn_point_t
 {
@@ -342,6 +345,18 @@ void strip_weapons_from_craft(struct entity_t *craft);
 void strip_craft_from_weapon(struct entity_t *weapon);
 void explode_craft(struct entity_t *craft);
 void get_spawn_point_coords(uint32_t index, float *x, float *y);
+int line_in_circle(double lx1, double ly1, double lx2, double ly2, 
+	double cx, double cy, double cr);
+int line_in_circle_with_coords(double lx1, double ly1, double lx2, double ly2, 
+	double cx, double cy, double cr, float *out_x, float *out_y);
+
+int craft_force(struct entity_t *craft, double force);
+int weapon_force(struct entity_t *weapon, double force);
+int rocket_force(struct entity_t *rocket, double force);
+int mine_force(struct entity_t *mine, double force);
+int rails_force(struct entity_t *rails, double force);
+int shield_force(struct entity_t *shield, double force);
+
 
 
 #define CRAFT_RADIUS	56.569

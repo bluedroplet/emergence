@@ -604,7 +604,7 @@ void tick_player(struct player_t *player)
 
 void spawn_player(struct player_t *player)
 {
-	player->rails = 10;
+	player->rails = 200;
 	
 	struct spawn_point_t *spawn_point = spawn_point0;
 	
@@ -1202,6 +1202,78 @@ void propagate_rail_trail(float x1, float y1, float x2, float y2)
 }
 
 
+struct rail_entity_t
+{
+	struct entity_t *entity;
+	float dist;
+	float x, y;
+	
+	struct rail_entity_t *next;
+		
+} *rail_entity0;
+
+
+void add_rail_entity(struct entity_t *entity, float dist, float x, float y)
+{
+	struct rail_entity_t *crail_entity, *temp;
+
+
+	if(!rail_entity0)
+	{
+		rail_entity0 = malloc(sizeof(struct rail_entity_t));
+		rail_entity0->entity = entity;
+		rail_entity0->dist = dist;
+		rail_entity0->x = x;
+		rail_entity0->y = y;
+		rail_entity0->next = NULL;
+		return;
+	}
+
+	
+	if(rail_entity0->dist > dist)
+	{
+		temp = rail_entity0;
+		rail_entity0 = malloc(sizeof(struct rail_entity_t));
+		rail_entity0->entity = entity;
+		rail_entity0->dist = dist;
+		rail_entity0->x = x;
+		rail_entity0->y = y;
+		rail_entity0->next = temp;
+		return;
+	}
+
+	
+	crail_entity = rail_entity0;
+	
+	while(crail_entity->next)
+	{
+		if(crail_entity->next->dist > dist)
+		{
+			temp = crail_entity->next;
+			crail_entity->next = malloc(sizeof(struct rail_entity_t));
+			crail_entity = crail_entity->next;
+			crail_entity->entity = entity;
+			crail_entity->dist = dist;
+			crail_entity->x = x;
+			crail_entity->y = y;
+			crail_entity->next = temp;
+			return;
+		}
+
+		crail_entity = crail_entity->next;
+	}
+
+
+	crail_entity->next = malloc(sizeof(struct rail_entity_t));
+	crail_entity = crail_entity->next;
+	crail_entity->entity = entity;
+	crail_entity->dist = dist;
+	crail_entity->x = x;
+	crail_entity->y = y;
+	crail_entity->next = NULL;
+}
+
+
 int game_process_fire_rail(struct player_t *player)
 {
 	if(!player->rails)
@@ -1219,12 +1291,84 @@ int game_process_fire_rail(struct player_t *player)
 	
 	float x1 = player->craft->xdis - CRAFT_RADIUS * sin_theta;
 	float y1 = player->craft->ydis + CRAFT_RADIUS * cos_theta;
-	float x2 = player->craft->xdis - (CRAFT_RADIUS + 1000) * sin_theta;
-	float y2 = player->craft->ydis + (CRAFT_RADIUS + 1000) * cos_theta;
+	float x2 = player->craft->xdis - (CRAFT_RADIUS + 4000) * sin_theta;
+	float y2 = player->craft->ydis + (CRAFT_RADIUS + 4000) * cos_theta;
 	
+	rail_walk_bsp(x1, y1, x2, y2, &x2, &y2);
 	
-	propagate_rail_trail(x1, y1, x2, y2);
+	struct entity_t *centity = entity0;
+		
+	while(centity)
+	{
+		if(centity == player->craft)
+		{
+			centity = centity->next;
+			continue;
+		}
+		
+		double radius;
+		
+		switch(centity->type)
+		{
+		case ENT_CRAFT:		radius = CRAFT_RADIUS;	break;
+		case ENT_WEAPON:	radius = WEAPON_RADIUS;	break;
+		case ENT_PLASMA:	radius = PLASMA_RADIUS;	break;
+		case ENT_ROCKET:	radius = ROCKET_RADIUS;	break;
+		case ENT_MINE:		radius = MINE_RADIUS;	break;
+		case ENT_RAILS:		radius = RAILS_RADIUS;	break;
+		case ENT_SHIELD:	radius = SHIELD_RADIUS;	break;
+		default:			radius = 0.0;			break;
+		}
+		
+		if(radius == 0.0)
+		{
+			centity = centity->next;
+			continue;
+		}
+		
+		float x, y;
+		
+		if(line_in_circle_with_coords(x1, y1, x2, y2, centity->xdis, centity->ydis, 
+			radius, &x, &y))
+		{
+			float dist = hypot(x - x1, y - y1);
+			add_rail_entity(centity, dist, x, y);
+		}
+		
+		centity = centity->next;
+	}
 	
+	struct rail_entity_t *crail_entity = rail_entity0;
+		
+	while(crail_entity)
+	{
+		int destroyed;
+		
+		switch(crail_entity->entity->type)
+		{
+		case ENT_CRAFT:		destroyed = craft_force(crail_entity->entity, RAIL_DAMAGE);		break;
+		case ENT_WEAPON:	destroyed = weapon_force(crail_entity->entity, RAIL_DAMAGE);	break;
+	//	case ENT_PLASMA:	destroyed = plasma_force(crail_entity->entity, RAIL_DAMAGE);	break;
+		case ENT_ROCKET:	destroyed = rocket_force(crail_entity->entity, RAIL_DAMAGE);	break;
+		case ENT_MINE:		destroyed = mine_force(crail_entity->entity, RAIL_DAMAGE);		break;
+		case ENT_RAILS:		destroyed = rails_force(crail_entity->entity, RAIL_DAMAGE);		break;
+		case ENT_SHIELD:	destroyed = shield_force(crail_entity->entity, RAIL_DAMAGE);	break;
+		}
+		
+		if(!destroyed)
+			break;
+		
+		crail_entity = crail_entity->next;
+	}
+	
+	LL_REMOVE_ALL(struct rail_entity_t, &rail_entity0);
+	
+
+	if(crail_entity)
+		propagate_rail_trail(x1, y1, crail_entity->x, crail_entity->y);
+	else
+		propagate_rail_trail(x1, y1, x2, y2);
+
 	return 1;
 }
 
