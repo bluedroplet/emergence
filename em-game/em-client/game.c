@@ -99,6 +99,7 @@ struct event_t
 	uint32_t tick;
 	uint8_t type;
 	int ooo;
+	int applied;
 	uint32_t index;
 	
 	union
@@ -906,6 +907,10 @@ void add_update_ent_event(struct event_t *event)
 void process_update_ent_event(struct event_t *event)
 {
 	struct entity_t *entity = get_entity(centity0, event->ent_data.index);
+		
+	if(!entity)
+		return;		// due to ooo
+	
 	int old_teleporting = entity->teleporting;
 	float teleporter_x, teleporter_y;
 
@@ -1233,6 +1238,7 @@ int process_tick_events_do_not_remove(uint32_t tick)
 			
 			case EMEVENT_CARCASS:
 				process_carcass_event(event);
+				any = 1;
 				break;
 
 			case EMEVENT_RAILTRAIL:
@@ -1241,6 +1247,7 @@ int process_tick_events_do_not_remove(uint32_t tick)
 
 			case EMEVENT_DETACH:
 				process_detach_event(event);
+				any = 1;
 				break;
 			
 			case EMEVENT_TELEPORT:
@@ -1252,13 +1259,15 @@ int process_tick_events_do_not_remove(uint32_t tick)
 				break;
 			
 			case EMEVENT_FRAGS:
-				process_frags_event(event);
+			//	process_frags_event(event);		// not ooo
 				break;
 			
 			case EMEVENT_EXPLOSION:
-				process_explosion_event(event);
+				process_explosion_event(event);	// ?
 				break;
 			}
+			
+			event->applied = 1;
 		}
 		
 		event = event->next;
@@ -1276,7 +1285,7 @@ int get_event_by_ooo_index(uint32_t index)
 	{
 		if(event->ooo && event->index == index)
 		{
-			console_print("ooo neutralized\n");
+		//	console_print("ooo neutralized\n");
 			
 			event->ooo = 0;
 			return 1;
@@ -1538,6 +1547,7 @@ int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp)
 	add_game_tick(event.tick, stamp);
 	event.type = message_reader.message_type;
 	event.ooo = 1;
+	event.applied = 0;
 	event.index = index;
 	
 	switch(event.type)
@@ -1593,6 +1603,7 @@ int game_process_event_untimed_ooo(uint32_t index)
 	event.tick = message_reader.event_tick;
 	event.type = message_reader.message_type;
 	event.ooo = 1;
+	event.applied = 0;
 	event.index = index;
 	
 	switch(event.type)
@@ -1834,7 +1845,7 @@ void game_resolution_change()
 	}
 
 	
-	struct entity_t *entity = centity0;
+	struct entity_t *entity = last_known_game_state.entity0;
 
 	while(entity)
 	{
@@ -2871,8 +2882,6 @@ void free_game_state_list(struct game_state_t **game_state0)
 
 void update_game()
 {
-	// get render_tick and last_known_tick
-	
 	update_tick_parameters();
 	
 	uint32_t render_tick = get_game_tick();
@@ -2884,18 +2893,17 @@ void update_game()
 		
 	while(cevent)
 	{
+		if(new_io_tick || new_ooo_tick)
+			cevent->applied = 0;
+		
 		if(cevent->tick <= render_tick)
 		{
 			if(cevent->ooo)
 			{
-				if(!new_ooo_tick)
+				if(!cevent->applied && !new_ooo_tick)
 				{
 					new_ooo_tick = 1;
 					first_ooo_tick = cevent->tick;
-				}
-				else
-				{
-					first_ooo_tick = min(first_ooo_tick, cevent->tick);
 				}
 			}
 			else
@@ -2907,8 +2915,7 @@ void update_game()
 				}
 				else
 				{
-					first_io_tick = min(first_io_tick, cevent->tick);
-					last_io_tick = max(last_io_tick, cevent->tick);
+					last_io_tick = cevent->tick;
 				}
 			}
 		}
@@ -2919,11 +2926,15 @@ void update_game()
 
 	if(new_io_tick)
 	{
-		if(last_known_game_state.tick != first_io_tick)
+		// absorb game states from the prediction cache as much as possible
+		// game_state0 is always the same tick as last_known_game_state
+		
+		if(last_known_game_state.tick != first_io_tick 
+			&& !game_state0->tainted && game_state0->next)
 		{
-			if(!game_state0->tainted)
+			if(!game_state0->next->tainted)
 			{
-				struct game_state_t *game_state = game_state0;
+				struct game_state_t *game_state = game_state0->next;
 					
 				while(game_state->tick < first_io_tick && game_state->next)
 				{
@@ -2961,7 +2972,7 @@ void update_game()
 	}
 	else
 	{
-		if(game_state0->tainted)
+		if(new_ooo_tick && game_state0->tick == first_ooo_tick && game_state0->tainted)
 		{
 			free_game_state_list(&game_state0);
 			game_state0 = malloc(sizeof(struct game_state_t));
@@ -2969,18 +2980,23 @@ void update_game()
 		}
 	}
 
-	
 	struct game_state_t *game_state = game_state0;
 		
-	while(game_state->next)
+	if(game_state0->tick != first_ooo_tick)
 	{
-		if(new_ooo_tick && game_state->tick >= first_ooo_tick)
-			break;
-		
-		if(game_state->next->tainted)
-			break;
-		
-		game_state = game_state->next;
+		while(game_state->tick < render_tick && game_state->next)
+		{
+			if(new_ooo_tick)
+			{
+				if(game_state->tick == first_ooo_tick)
+					break;
+				
+				if(game_state->next->tainted && game_state->next->tick == first_ooo_tick)
+					break;
+			}
+			
+			game_state = game_state->next;
+		}
 	}
 	
 	free_game_state_list(&game_state->next);
