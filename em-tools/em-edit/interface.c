@@ -2094,7 +2094,7 @@ int mouse_move(int x, int y)
 		if(view_state & VIEW_GRID)
 			snap_to_grid(worldx, worldy, &worldx, &worldy);
 		
-	//	stop_working();		// use a separate lock for this
+	//	stop_working();		// use a separate lock for this?
 		
 		switch(job_type)
 		{

@@ -1121,6 +1121,9 @@ void render_tile()
 
 void scale_tiles()		// called from worker thread
 {
+	if(!worker_try_enter_main_lock())
+		return;
+
 	struct tile_t *ctile = dirty_tile0;
 	
 	while(ctile)
@@ -1135,14 +1138,20 @@ void scale_tiles()		// called from worker thread
 //			if(crap_zoom)
 				;//ctile->scaled_surface = crap_resize(ctile->surface, maxx - minx, maxy - miny);
 //			else
-				ctile->scaled_surface = resize(ctile->surface, maxx - minx, maxy - miny);
+				ctile->scaled_surface = leave_main_lock_and_resize_surface(
+					ctile->surface, maxx - minx, maxy - miny);
 			
 			if(!ctile->scaled_surface)
+				return;
+			
+			if(!worker_try_enter_main_lock())
 				return;
 		}
 		
 		ctile = ctile->next;
 	}
+	
+	leave_main_lock();
 }
 
 

@@ -1126,7 +1126,6 @@ void generate_t_values_for_conns_with_node(struct node_t *node)
 	{
 		if(cconn->node1 == node || cconn->node2 == node)
 		{
-			LL_REMOVE_ALL(struct t_t, &cconn->t0);
 			LL_REMOVE_ALL(struct t_t, &cconn->bigt0);
 			generate_bigt_values(cconn);
 		}
@@ -1154,8 +1153,8 @@ void invalidate_conns_with_node(struct node_t *node)		// always called while not
 			while(cconnp)
 			{
 				LL_REMOVE_ALL(struct t_t, &cconnp->conn->t0);
-				LL_REMOVE_ALL(struct t_t, &cconnp->conn->bigt0);
-				generate_bigt_values(cconnp->conn);
+			//	LL_REMOVE_ALL(struct t_t, &cconnp->conn->bigt0);
+			//	generate_bigt_values(cconnp->conn);
 			
 				free(cconnp->conn->verts);
 				cconnp->conn->verts = NULL;
@@ -1980,9 +1979,6 @@ void finished_tiling_all_conns()
 
 int generate_t_values(struct conn_t *conn)
 {
-	if(!worker_try_enter_main_lock())
-		return 0;
-		
 	struct bezier_t bezier;
 	
 	if(!conn->orientation)
@@ -2026,8 +2022,6 @@ int generate_t_values(struct conn_t *conn)
 	conn->t0 = t0;
 	conn->t_count = count;
 	conn->t_length = length;
-	
-	leave_main_lock();
 	
 	return 1;
 }
@@ -2216,9 +2210,6 @@ int tile_all_conns()
 
 int generate_straight_verticies(struct conn_t *conn)
 {
-	if(!worker_try_enter_main_lock())
-		return 0;
-
 	struct node_t *node1, *node2;
 	int left1, right1, left2, right2;
 	int sat1, sat2;
@@ -2302,9 +2293,6 @@ int generate_straight_verticies(struct conn_t *conn)
 	}
 
 	conn->verts = verts;
-	
-	worker_leave_main_lock();
-
 	return 1;
 }
 
@@ -2327,9 +2315,6 @@ int generate_curved_verticies(struct conn_t *conn)
 		}
 	}
 					
-	if(!worker_try_enter_main_lock())
-		return 0;
-
 	struct curve_t *curve = get_curve(conn);
 	assert(curve);
 
@@ -2437,10 +2422,8 @@ int generate_curved_verticies(struct conn_t *conn)
 		
 		ct = ct->next;
 	}
-
+	
 	conn->verts = verts;
-
-	worker_leave_main_lock();
 
 	return 1;
 }
@@ -2448,6 +2431,9 @@ int generate_curved_verticies(struct conn_t *conn)
 
 void generate_verticies_for_all_conns()
 {
+	if(!worker_try_enter_main_lock())
+		return;
+
 	struct conn_t *cconn = conn0;
 
 	while(cconn)
@@ -2496,18 +2482,15 @@ void generate_verticies_for_all_conns()
 			break;
 		}
 
-
-
 		cconn = cconn->next;
 	}
+	
+	worker_leave_main_lock();
 }
 
 
 int generate_curved_squished_texture(struct conn_t *conn, struct curve_t *curve)
 {
-	if(!worker_try_enter_main_lock())
-		return 0;
-
 	double curve_length = 0.0, dist = 0.0;
 
 	struct conn_pointer_t *cconnp = curve->connp0;
@@ -2591,8 +2574,6 @@ int generate_curved_squished_texture(struct conn_t *conn, struct curve_t *curve)
 
 	conn->squished_texture = squished_texture;
 	
-	worker_leave_main_lock();
-	
 	free(srcxs);
 	free(dists);
 
@@ -2602,9 +2583,6 @@ int generate_curved_squished_texture(struct conn_t *conn, struct curve_t *curve)
 
 int generate_straight_squished_texture(struct conn_t *conn, struct curve_t *curve)
 {
-	if(!worker_try_enter_main_lock())
-		return 0;
-
 	double curve_length = 0.0, dist = 0.0;
 
 	struct conn_pointer_t *cconnp = curve->connp0;
@@ -2682,8 +2660,6 @@ int generate_straight_squished_texture(struct conn_t *conn, struct curve_t *curv
 
 	conn->squished_texture = squished_texture;
 	
-	worker_leave_main_lock();
-	
 	free(srcxs);
 	free(dists);
 
@@ -2693,9 +2669,6 @@ int generate_straight_squished_texture(struct conn_t *conn, struct curve_t *curv
 
 int generate_curved_squished_texture_with_alpha(struct conn_t *conn, struct curve_t *curve)
 {
-	if(!worker_try_enter_main_lock())
-		return 0;
-
 	switch(curve->fill_type)
 	{
 	case CURVE_SOLID:
@@ -2827,17 +2800,12 @@ int generate_curved_squished_texture_with_alpha(struct conn_t *conn, struct curv
 		break;
 	}
 
-	worker_leave_main_lock();
-			
 	return 1;
 }
 	
 
 int generate_straight_squished_texture_with_alpha(struct conn_t *conn, struct curve_t *curve)
 {
-	if(!worker_try_enter_main_lock())
-		return 0;
-
 	switch(curve->fill_type)
 	{
 	case CURVE_SOLID:
@@ -2965,14 +2933,15 @@ int generate_straight_squished_texture_with_alpha(struct conn_t *conn, struct cu
 		break;
 	}
 
-	worker_leave_main_lock();
-			
 	return 1;
 }
 
 
 void generate_squished_textures_for_all_conns()
 {
+	if(!worker_try_enter_main_lock())
+		return;
+
 	struct conn_t *cconn = conn0;
 
 	while(cconn)
@@ -2995,6 +2964,9 @@ void generate_squished_textures_for_all_conns()
 
 				case CONN_TYPE_CONIC:
 				case CONN_TYPE_BEZIER:
+					if(!cconn->t0)
+						break;
+					
 					if(!generate_curved_squished_texture_with_alpha(cconn, curve))
 						return;
 					break;
@@ -3014,6 +2986,9 @@ void generate_squished_textures_for_all_conns()
 
 				case CONN_TYPE_CONIC:
 				case CONN_TYPE_BEZIER:
+					if(!cconn->t0)
+						break;
+					
 					if(!generate_curved_squished_texture_with_alpha(cconn, curve))
 						return;
 					break;
@@ -3024,4 +2999,6 @@ void generate_squished_textures_for_all_conns()
 
 		cconn = cconn->next;
 	}
+	
+	worker_leave_main_lock();
 }

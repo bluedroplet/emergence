@@ -47,10 +47,14 @@
 struct t_t **conic_ct0;
 int conic_count;
 double conic_length;
-int clock;
+int conic_clock;
 
 int cfuck = 0;
 
+struct t_t **conic_big_ct0;
+int conic_big_count;
+double conic_big_length;
+int conic_big_clock;
 
 
 int conic_t_divide(float cx, float cy, float hyp, 
@@ -72,7 +76,7 @@ int conic_t_divide(float cx, float cy, float hyp,
 	x1 = -sin(theta) * hyp + cx;
 	y1 = cos(theta) * hyp + cy;
 	
-	if(clock)
+	if(conic_clock)
 	{
 		dx1 = -cos(theta);
 		dy1 = -sin(theta);
@@ -87,7 +91,7 @@ int conic_t_divide(float cx, float cy, float hyp,
 	
 	x2 = -sin(theta) * hyp + cx;
 	y2 = cos(theta) * hyp + cy;
-	if(clock)
+	if(conic_clock)
 	{
 		dx2 = -cos(theta);
 		dy2 = -sin(theta);
@@ -206,14 +210,16 @@ int generate_conic_ts(struct conn_t *conn)
 	{
 		if(theta1 < theta2)		// go clockwise
 			theta1 += M_PI * 2;
-		clock = 0;
+		conic_clock = 0;
 	}
 	else
 	{
 		if(theta2 < theta1)		// go anti-clockwise
 			theta2 += M_PI * 2;
-		clock = 1;
+		conic_clock = 1;
 	}
+	
+	leave_main_lock();
 
 	struct t_t *t0 = NULL;
 	conic_ct0 = &t0;
@@ -236,8 +242,6 @@ int generate_conic_ts(struct conn_t *conn)
 	conn->t_count = conic_count;
 	conn->t_length = conic_length;
 	
-	leave_main_lock();
-	
 	return 1;
 }
 
@@ -253,7 +257,7 @@ void conic_bigt_divide(float cx, float cy, float hyp,
 	x1 = -sin(theta) * hyp + cx;
 	y1 = cos(theta) * hyp + cy;
 	
-	if(clock)
+	if(conic_big_clock)
 	{
 		dx1 = -cos(theta);
 		dy1 = -sin(theta);
@@ -269,7 +273,7 @@ void conic_bigt_divide(float cx, float cy, float hyp,
 	
 	x2 = -sin(theta) * hyp + cx;
 	y2 = cos(theta) * hyp + cy;
-	if(clock)
+	if(conic_big_clock)
 	{
 		dx2 = -cos(theta);
 		dy2 = -sin(theta);
@@ -309,11 +313,11 @@ void conic_bigt_divide(float cx, float cy, float hyp,
 		t.deltax2 = dx2;
 		t.deltay2 = dy2;
 		t.dist = hypot(x2 - x1, y2 - y1);
-		conic_length += t.dist;
-		conic_count++;
+		conic_big_length += t.dist;
+		conic_big_count++;
 		
-		LL_ADD(struct t_t, conic_ct0, &t);
-		conic_ct0 = &(*conic_ct0)->next;
+		LL_ADD(struct t_t, conic_big_ct0, &t);
+		conic_big_ct0 = &(*conic_big_ct0)->next;
 	}
 }
 
@@ -383,23 +387,23 @@ void generate_conic_bigts(struct conn_t *conn)
 	{
 		if(theta1 < theta2)		// go clockwise
 			theta1 += M_PI * 2;
-		clock = 0;
+		conic_big_clock = 0;
 	}
 	else
 	{
 		if(theta2 < theta1)		// go anti-clockwise
 			theta2 += M_PI * 2;
-		clock = 1;
+		conic_big_clock = 1;
 	}
 
 	struct t_t *t0 = NULL;
-	conic_ct0 = &t0;
-	conic_count = 0;
-	conic_length = 0.0;
+	conic_big_ct0 = &t0;
+	conic_big_count = 0;
+	conic_big_length = 0.0;
 	
 	conic_bigt_divide(cx, cy, hyp, theta1, theta2, 0, 1);
 	
 	conn->bigt0 = t0;
-	conn->bigt_count = conic_count;
-	conn->bigt_length = conic_length;
+	conn->bigt_count = conic_big_count;
+	conn->bigt_length = conic_big_length;
 }

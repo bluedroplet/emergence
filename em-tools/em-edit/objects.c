@@ -2827,21 +2827,6 @@ void finished_scaling_object()
 //
 
 
-struct surface_t *leave_main_lock_and_rotate_surface(struct surface_t *in_surface, 
-	int scale_width, int scale_height, double theta)
-{
-	struct surface_t *duplicate, *rotated;
-	
-	duplicate = duplicate_surface(in_surface);	// this is not necessary for default textures
-	
-	leave_main_lock();
-	
-	rotated = rotate_surface(duplicate, scale_width, scale_height, theta);
-	free_surface(duplicate);
-	return rotated;
-}
-
-
 void resample_object()
 {
 	if(!worker_try_enter_main_lock())
@@ -2968,21 +2953,6 @@ void resample_object()
 			working_object->gravity_well_data.angle);
 		break;
 	}
-}
-
-
-struct surface_t *leave_main_lock_and_resize_surface(struct surface_t *in_surface, 
-	int width, int height)
-{
-	struct surface_t *duplicate, *resized;
-	
-	duplicate = duplicate_surface(in_surface);	// this is not necessary for default textures
-	
-	leave_main_lock();
-	
-	resized = resize(duplicate, width, height);
-	free_surface(duplicate);
-	return resized;
 }
 
 

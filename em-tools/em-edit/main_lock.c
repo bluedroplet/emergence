@@ -27,8 +27,11 @@
 #define _REENTRANT
 #endif
 
+#include <stdint.h>
 #include <pthread.h>
 
+
+#include "../gsub/gsub.h"
 #include "worker_thread.h"
 
 
@@ -77,4 +80,34 @@ void create_main_lock()
 void destroy_main_lock()
 {
 	pthread_mutex_destroy(&mutex);
+}
+
+
+struct surface_t *leave_main_lock_and_rotate_surface(struct surface_t *in_surface, 
+	int scale_width, int scale_height, double theta)
+{
+	struct surface_t *duplicate, *rotated;
+	
+	duplicate = duplicate_surface(in_surface);
+	
+	leave_main_lock();
+	
+	rotated = rotate_surface(duplicate, scale_width, scale_height, theta);
+	free_surface(duplicate);
+	return rotated;
+}
+
+
+struct surface_t *leave_main_lock_and_resize_surface(struct surface_t *in_surface, 
+	int width, int height)
+{
+	struct surface_t *duplicate, *resized;
+	
+	duplicate = duplicate_surface(in_surface);
+	
+	leave_main_lock();
+	
+	resized = resize(duplicate, width, height);
+	free_surface(duplicate);
+	return resized;
 }

@@ -66,6 +66,7 @@ int compiled = 1;				// map compilation waits until necessary all work has been 
 
 int all_work_done = 0;
 
+
 int check_stop_callback()
 {
 	if(!worker_try_enter_main_lock())
@@ -76,6 +77,7 @@ int check_stop_callback()
 	return 0;
 }
 
+
 int in_lock_check_stop_callback()
 {
 	worker_leave_main_lock();
@@ -85,6 +87,7 @@ int in_lock_check_stop_callback()
 
 	return 0;
 }
+
 
 void start()
 {
@@ -402,7 +405,7 @@ void start_working()
 	check_job_tiling();				if(job_pending) return;
 	check_job_rendering();			if(job_pending) return;
 	
-	check_job_resample_object();	if(job_pending) return;		// break me up
+	check_job_resample_object();	if(job_pending) return;		// break me up?
 
 	check_job_bsp();				if(job_pending) return;
 
