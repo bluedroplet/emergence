@@ -67,6 +67,8 @@ struct cvar_t
 		void (*string_qc_func)(char*);
 	};
 
+	void (*int_qc_func_wv)(int*, int);
+	
 	struct cvar_t *next;
 
 } *cvar0;
@@ -193,6 +195,15 @@ void set_int_cvar_qc_function(char *name, void (*qc_func)(int))
 }
 
 
+void set_int_cvar_qc_function_wv(char *name, void (*qc_func)(int*, int))
+{
+	struct cvar_t *cvar = get_cvar(name);
+
+	if(cvar)
+		cvar->int_qc_func_wv = qc_func;
+}
+
+
 void set_float_cvar_qc_function(char *name, void (*qc_func)(float))
 {
 	struct cvar_t *cvar = get_cvar(name);
@@ -227,6 +238,12 @@ void set_cvar_int(char *name, int val)
 	if(cvar->int_qc_func)
 	{
 		cvar->int_qc_func(val);
+		return;
+	}
+
+	if(cvar->int_qc_func_wv)
+	{
+		cvar->int_qc_func_wv(cvar->int_addr, val);
 		return;
 	}
 

@@ -218,6 +218,7 @@ void init()
 	init_tick_cvars();
 
 	init_console();
+	create_colour_cvars();
 	
 	struct string_t *string = new_string_string(emergence_home_dir);
 	string_cat_text(string, "/client.config");

@@ -43,6 +43,7 @@ void create_cvar_string(char *name, char *string, int flags);
 void create_cvar_string_qc(char *name, char *string, void (*qc_func)(char*));
 void create_cvar_command(char *name, void (*cmd_func)(char*));
 void set_int_cvar_qc_function(char *name, void (*qc_func)(int));
+void set_int_cvar_qc_function_wv(char *name, void (*qc_func)(int*, int));
 void set_float_cvar_qc_function(char *name, void (*qc_func)(float));
 void set_string_cvar_qc_function(char *name, void (*qc_func)(char*));
 void set_cvar_int(char *name, int val);
@@ -62,5 +63,3 @@ void clear_cvars();
 #if defined _INC_STDIO || defined _STDIO_H
 void dump_cvars(FILE *file);
 #endif
-
-

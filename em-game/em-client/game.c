@@ -61,6 +61,11 @@ struct event_craft_data_t
 	uint32_t right_weapon_index;
 	float shield_flare;
 	
+	uint8_t shield_red, shield_green, shield_blue;
+	uint8_t magic_smoke;
+	uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
+	uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
+	
 	int carcass;	// handled sepatately
 };
 
@@ -71,6 +76,11 @@ struct event_weapon_data_t
 	float theta;
 	uint32_t craft_index;
 	float shield_flare;
+	
+	uint8_t shield_red, shield_green, shield_blue;
+	uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
+	uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
+	
 	int detached;
 };
 
@@ -79,12 +89,16 @@ struct event_rocket_data_t
 {
 	float theta;
 	uint32_t weapon_id;
+	uint8_t magic_smoke;
+	uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
+	uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
 };
 
 
 struct event_plasma_data_t
 {
 	uint32_t weapon_id;
+	uint8_t red, green, blue;
 };
 
 
@@ -146,14 +160,30 @@ struct event_t
 			float x1, y1;
 			float x2, y2;
 			
+			uint8_t inner_red, inner_green, inner_blue;
+			uint8_t outer_red, outer_green, outer_blue;
+			
 		} railtrail_data;
 		
 		struct
 		{
 			float x, y;
 			float size;
+			uint8_t magic;
+			uint8_t start_red, start_green, start_blue;
+			uint8_t end_red, end_green, end_blue;
 			
 		} explosion_data;
+		
+		struct
+		{
+			uint32_t index;
+			uint8_t magic_smoke;
+			uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
+			uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
+			uint8_t shield_red, shield_green, shield_blue;
+			
+		} colours_data;
 		
 		int frags;
 	};
@@ -252,6 +282,9 @@ struct rail_trail_t
 	float start_time;
 	float x1, y1;
 	float x2, y2;
+	
+	uint8_t inner_red, inner_green, inner_blue;
+	uint8_t outer_red, outer_green, outer_blue;
 
 	struct rail_trail_t *next;
 		
@@ -271,6 +304,18 @@ struct demo_t
 
 
 int game_rendering = 1;
+
+
+int rail_inner_red = 0xff, rail_inner_green = 0xff, rail_inner_blue = 0xff;
+int rail_outer_red = 0, rail_outer_green = 0, rail_outer_blue = 0xff;
+
+int magic_smoke = 0;
+int smoke_start_red = 0xff, smoke_start_green = 0, smoke_start_blue = 0;
+int smoke_end_red = 0xff, smoke_end_green = 0xff, smoke_end_blue = 0xff;
+
+int plasma_red = 0x32, plasma_green = 0x73, plasma_blue = 0x71;
+
+int shield_red = 0xff, shield_green = 0xff, shield_blue = 0xff;
 
 
 void clear_game()
@@ -684,6 +729,33 @@ int game_process_print()
 }
 
 
+void emit_colours()
+{
+	net_emit_uint8(game_conn, rail_inner_red);
+	net_emit_uint8(game_conn, rail_inner_green);
+	net_emit_uint8(game_conn, rail_inner_blue);
+	net_emit_uint8(game_conn, rail_outer_red);
+	net_emit_uint8(game_conn, rail_outer_green);
+	net_emit_uint8(game_conn, rail_outer_blue);
+
+	net_emit_uint8(game_conn, magic_smoke);
+	net_emit_uint8(game_conn, smoke_start_red);
+	net_emit_uint8(game_conn, smoke_start_green);
+	net_emit_uint8(game_conn, smoke_start_blue);
+	net_emit_uint8(game_conn, smoke_end_red);
+	net_emit_uint8(game_conn, smoke_end_green);
+	net_emit_uint8(game_conn, smoke_end_blue);
+
+	net_emit_uint8(game_conn, plasma_red);
+	net_emit_uint8(game_conn, plasma_green);
+	net_emit_uint8(game_conn, plasma_blue);
+
+	net_emit_uint8(game_conn, shield_red);
+	net_emit_uint8(game_conn, shield_green);
+	net_emit_uint8(game_conn, shield_blue);
+}
+
+
 int game_process_proto_ver()
 {
 	if(game_state != GAMESTATE_CONNECTING && game_state != GAMESTATE_DEMO)
@@ -699,6 +771,7 @@ int game_process_proto_ver()
 		{
 			net_emit_uint8(game_conn, EMMSG_JOIN);
 			net_emit_string(game_conn, get_cvar_string("name"));
+			emit_colours();
 			net_emit_end_of_stream(game_conn);
 		}
 	}
@@ -763,21 +836,53 @@ void add_spawn_ent_event(struct event_t *event)
 	case ENT_CRAFT:
 		read_craft_data(&event->ent_data.craft_data);
 	
-		// separate because carcass data is not sent in update_event
+		event->ent_data.craft_data.magic_smoke = message_reader_read_uint8();
+	
+		event->ent_data.craft_data.smoke_start_red = message_reader_read_uint8();
+		event->ent_data.craft_data.smoke_start_green = message_reader_read_uint8();
+		event->ent_data.craft_data.smoke_start_blue = message_reader_read_uint8();
+	
+		event->ent_data.craft_data.smoke_end_red = message_reader_read_uint8();
+		event->ent_data.craft_data.smoke_end_green = message_reader_read_uint8();
+		event->ent_data.craft_data.smoke_end_blue = message_reader_read_uint8();
+	
+		event->ent_data.craft_data.shield_red = message_reader_read_uint8();
+		event->ent_data.craft_data.shield_green = message_reader_read_uint8();
+		event->ent_data.craft_data.shield_blue = message_reader_read_uint8();
+	
 		event->ent_data.craft_data.carcass = message_reader_read_uint8();
 		break;
 	
 	case ENT_WEAPON:
 		read_weapon_data(&event->ent_data.weapon_data);
+	
+		event->ent_data.weapon_data.shield_red = message_reader_read_uint8();
+		event->ent_data.weapon_data.shield_green = message_reader_read_uint8();
+		event->ent_data.weapon_data.shield_blue = message_reader_read_uint8();
+	
 		event->ent_data.weapon_data.detached = message_reader_read_uint8();
 		break;
 	
 	case ENT_PLASMA:
 		read_plasma_data(&event->ent_data.plasma_data);
+	
+		event->ent_data.plasma_data.red = message_reader_read_uint8();
+		event->ent_data.plasma_data.green = message_reader_read_uint8();
+		event->ent_data.plasma_data.blue = message_reader_read_uint8();
 		break;
 	
 	case ENT_ROCKET:
 		read_rocket_data(&event->ent_data.rocket_data);
+	
+		event->ent_data.rocket_data.magic_smoke = message_reader_read_uint8();
+
+		event->ent_data.rocket_data.smoke_start_red = message_reader_read_uint8();
+		event->ent_data.rocket_data.smoke_start_green = message_reader_read_uint8();
+		event->ent_data.rocket_data.smoke_start_blue = message_reader_read_uint8();
+	
+		event->ent_data.rocket_data.smoke_end_red = message_reader_read_uint8();
+		event->ent_data.rocket_data.smoke_end_green = message_reader_read_uint8();
+		event->ent_data.rocket_data.smoke_end_blue = message_reader_read_uint8();
 		break;
 	
 	case ENT_MINE:
@@ -815,7 +920,23 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->craft_data.right_weapon = get_entity(centity0, 
 			event->ent_data.craft_data.right_weapon_index);
 		entity->craft_data.shield_flare = event->ent_data.craft_data.shield_flare;
+	
+		entity->craft_data.magic_smoke = event->ent_data.craft_data.magic_smoke;
+	
+		entity->craft_data.smoke_start_red = event->ent_data.craft_data.smoke_start_red;
+		entity->craft_data.smoke_start_green = event->ent_data.craft_data.smoke_start_green;
+		entity->craft_data.smoke_start_blue = event->ent_data.craft_data.smoke_start_blue;
+	
+		entity->craft_data.smoke_end_red = event->ent_data.craft_data.smoke_end_red;
+		entity->craft_data.smoke_end_green = event->ent_data.craft_data.smoke_end_green;
+		entity->craft_data.smoke_end_blue = event->ent_data.craft_data.smoke_end_blue;
+	
+		entity->craft_data.shield_red = event->ent_data.craft_data.shield_red;
+		entity->craft_data.shield_green = event->ent_data.craft_data.shield_green;
+		entity->craft_data.shield_blue = event->ent_data.craft_data.shield_blue;
+	
 		entity->craft_data.carcass = event->ent_data.craft_data.carcass;
+	
 		entity->craft_data.skin = event->ent_data.skin;
 		entity->craft_data.surface = skin_get_craft_surface(event->ent_data.skin);
 		entity->craft_data.particle = 0.0;
@@ -827,7 +948,13 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->weapon_data.craft = get_entity(centity0, 
 			event->ent_data.weapon_data.craft_index);
 		entity->weapon_data.shield_flare = event->ent_data.weapon_data.shield_flare;
+	
+		entity->weapon_data.shield_red = event->ent_data.weapon_data.shield_red;
+		entity->weapon_data.shield_green = event->ent_data.weapon_data.shield_green;
+		entity->weapon_data.shield_blue = event->ent_data.weapon_data.shield_blue;
+	
 		entity->weapon_data.detached = event->ent_data.weapon_data.detached;
+	
 		entity->weapon_data.skin = event->ent_data.skin;
 
 		switch(entity->weapon_data.type)
@@ -850,6 +977,10 @@ void process_spawn_ent_event(struct event_t *event)
 	case ENT_PLASMA:
 		entity->plasma_data.in_weapon = 1;
 		entity->plasma_data.weapon_id = event->ent_data.plasma_data.weapon_id;
+	
+		entity->plasma_data.red = event->ent_data.plasma_data.red;
+		entity->plasma_data.green = event->ent_data.plasma_data.green;
+		entity->plasma_data.blue = event->ent_data.plasma_data.blue;
 		break;
 	
 	case ENT_ROCKET:
@@ -857,6 +988,16 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->rocket_data.start_tick = cgame_tick;
 		entity->rocket_data.in_weapon = 1;
 		entity->rocket_data.weapon_id = event->ent_data.rocket_data.weapon_id;
+	
+		entity->rocket_data.magic_smoke = event->ent_data.rocket_data.magic_smoke;
+
+		entity->rocket_data.smoke_start_red = event->ent_data.rocket_data.smoke_start_red;
+		entity->rocket_data.smoke_start_green = event->ent_data.rocket_data.smoke_start_green;
+		entity->rocket_data.smoke_start_blue = event->ent_data.rocket_data.smoke_start_blue;
+	
+		entity->rocket_data.smoke_end_red = event->ent_data.rocket_data.smoke_end_red;
+		entity->rocket_data.smoke_end_green = event->ent_data.rocket_data.smoke_end_green;
+		entity->rocket_data.smoke_end_blue = event->ent_data.rocket_data.smoke_end_blue;
 		break;
 	
 	case ENT_MINE:
@@ -1050,6 +1191,13 @@ void add_railtrail_event(struct event_t *event)
 	event->railtrail_data.y1 = message_reader_read_float();
 	event->railtrail_data.x2 = message_reader_read_float();
 	event->railtrail_data.y2 = message_reader_read_float();
+
+	event->railtrail_data.inner_red = message_reader_read_uint8();
+	event->railtrail_data.inner_green = message_reader_read_uint8();
+	event->railtrail_data.inner_blue = message_reader_read_uint8();
+	event->railtrail_data.outer_red = message_reader_read_uint8();
+	event->railtrail_data.outer_green = message_reader_read_uint8();
+	event->railtrail_data.outer_blue = message_reader_read_uint8();
 }
 
 
@@ -1068,6 +1216,13 @@ void process_railtrail_event(struct event_t *event)
 	rail_trail.y1 = event->railtrail_data.y1;
 	rail_trail.x2 = event->railtrail_data.x2;
 	rail_trail.y2 = event->railtrail_data.y2;
+	
+	rail_trail.inner_red = event->railtrail_data.inner_red;
+	rail_trail.inner_green = event->railtrail_data.inner_green;
+	rail_trail.inner_blue = event->railtrail_data.inner_blue;
+	rail_trail.outer_red = event->railtrail_data.outer_red;
+	rail_trail.outer_green = event->railtrail_data.outer_green;
+	rail_trail.outer_blue = event->railtrail_data.outer_blue;
 	
 	LL_ADD(struct rail_trail_t, &rail_trail0, &rail_trail);
 	start_sample(railgun_sample, event->tick);
@@ -1103,13 +1258,26 @@ void add_explosion_event(struct event_t *event)
 	event->explosion_data.x = message_reader_read_float();
 	event->explosion_data.y = message_reader_read_float();
 	event->explosion_data.size = message_reader_read_float();
+	
+	event->explosion_data.magic = message_reader_read_uint8();
+	
+	event->explosion_data.start_red = message_reader_read_uint8();
+	event->explosion_data.start_green = message_reader_read_uint8();
+	event->explosion_data.start_blue = message_reader_read_uint8();
+	
+	event->explosion_data.end_red = message_reader_read_uint8();
+	event->explosion_data.end_green = message_reader_read_uint8();
+	event->explosion_data.end_blue = message_reader_read_uint8();
 }
 
 
 void process_explosion_event(struct event_t *event)
 {
 	explosion(event->explosion_data.x, event->explosion_data.y, 
-		event->explosion_data.size);
+		event->explosion_data.size, event->explosion_data.magic, 
+		event->explosion_data.start_red, event->explosion_data.start_green, 
+		event->explosion_data.start_blue, event->explosion_data.end_red, 
+		event->explosion_data.end_green, event->explosion_data.end_blue);
 }
 
 
@@ -1128,6 +1296,75 @@ void process_speedup_event(struct event_t *event)
 void process_frags_event(struct event_t *event)
 {
 	frags = event->frags;
+}
+
+
+void add_colours_event(struct event_t *event)
+{
+	uint8_t type;
+	
+	event->colours_data.index = message_reader_read_uint32();
+	
+	type = message_reader_read_uint8();
+
+	switch(type)
+	{
+	case ENT_CRAFT:
+		event->colours_data.magic_smoke = message_reader_read_uint8();
+	
+		event->colours_data.smoke_start_red = message_reader_read_uint8();
+		event->colours_data.smoke_start_green = message_reader_read_uint8();
+		event->colours_data.smoke_start_blue = message_reader_read_uint8();
+	
+		event->colours_data.smoke_end_red = message_reader_read_uint8();
+		event->colours_data.smoke_end_green = message_reader_read_uint8();
+		event->colours_data.smoke_end_blue = message_reader_read_uint8();
+	
+		event->colours_data.shield_red = message_reader_read_uint8();
+		event->colours_data.shield_green = message_reader_read_uint8();
+		event->colours_data.shield_blue = message_reader_read_uint8();
+		break;
+	
+	case ENT_WEAPON:
+		event->colours_data.shield_red = message_reader_read_uint8();
+		event->colours_data.shield_green = message_reader_read_uint8();
+		event->colours_data.shield_blue = message_reader_read_uint8();
+		break;
+	}
+}
+
+
+void process_colours_event(struct event_t *event)
+{
+	struct entity_t *entity = get_entity(centity0, event->colours_data.index);
+
+	if(!entity)
+		return;
+
+	switch(entity->type)
+	{
+	case ENT_CRAFT:
+		entity->craft_data.magic_smoke = event->colours_data.magic_smoke;
+	
+		entity->craft_data.smoke_start_red = event->colours_data.smoke_start_red;
+		entity->craft_data.smoke_start_green = event->colours_data.smoke_start_green;
+		entity->craft_data.smoke_start_blue = event->colours_data.smoke_start_blue;
+	
+		entity->craft_data.smoke_end_red = event->colours_data.smoke_end_red;
+		entity->craft_data.smoke_end_green = event->colours_data.smoke_end_green;
+		entity->craft_data.smoke_end_blue = event->colours_data.smoke_end_blue;
+	
+		entity->craft_data.shield_red = event->colours_data.shield_red;
+		entity->craft_data.shield_green = event->colours_data.shield_green;
+		entity->craft_data.shield_blue = event->colours_data.shield_blue;
+		break;
+	
+	case ENT_WEAPON:
+		entity->weapon_data.shield_red = event->colours_data.shield_red;
+		entity->weapon_data.shield_green = event->colours_data.shield_green;
+		entity->weapon_data.shield_blue = event->colours_data.shield_blue;
+		break;
+	}
 }
 
 
@@ -1188,6 +1425,10 @@ void process_tick_events(uint32_t tick)
 			
 			case EMEVENT_EXPLOSION:
 				process_explosion_event(event);
+				break;
+			
+			case EMEVENT_COLOURS:
+				process_colours_event(event);
 				break;
 			}
 			
@@ -1264,6 +1505,10 @@ int process_tick_events_do_not_remove(uint32_t tick)
 			
 			case EMEVENT_EXPLOSION:
 				process_explosion_event(event);	// ?
+				break;
+			
+			case EMEVENT_COLOURS:
+				process_colours_event(event);
 				break;
 			}
 			
@@ -1406,6 +1651,10 @@ int game_demo_process_event()
 	case EMEVENT_EXPLOSION:
 		add_explosion_event(&event);
 		break;
+	
+	case EMEVENT_COLOURS:
+		add_colours_event(&event);
+		break;
 	}
 	
 	LL_ADD_TAIL(struct event_t, &event0, &event);
@@ -1468,6 +1717,10 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp)
 	case EMEVENT_EXPLOSION:
 		add_explosion_event(&event);
 		break;
+	
+	case EMEVENT_COLOURS:
+		add_colours_event(&event);
+		break;
 	}
 	
 	if(!ooon)
@@ -1529,6 +1782,10 @@ int game_process_event_untimed(uint32_t index)
 	case EMEVENT_EXPLOSION:
 		add_explosion_event(&event);
 		break;
+	
+	case EMEVENT_COLOURS:
+		add_colours_event(&event);
+		break;
 	}
 	
 	if(!ooon)
@@ -1587,6 +1844,10 @@ int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp)
 	case EMEVENT_EXPLOSION:
 		add_explosion_event(&event);
 		break;
+	
+	case EMEVENT_COLOURS:
+		add_colours_event(&event);
+		break;
 	}
 	
 	insert_event_in_order(&event);
@@ -1642,6 +1903,10 @@ int game_process_event_untimed_ooo(uint32_t index)
 	
 	case EMEVENT_EXPLOSION:
 		add_explosion_event(&event);
+		break;
+	
+	case EMEVENT_COLOURS:
+		add_colours_event(&event);
 		break;
 	}
 	
@@ -2042,20 +2307,50 @@ void write_entity_to_demo(struct entity_t *entity)
 	{
 	case ENT_CRAFT:
 		write_craft_data_to_demo(entity);
+		gzwrite(gzrecording, &entity->craft_data.magic_smoke, 1);
+
+		gzwrite(gzrecording, &entity->craft_data.smoke_start_red, 1);
+		gzwrite(gzrecording, &entity->craft_data.smoke_start_green, 1);
+		gzwrite(gzrecording, &entity->craft_data.smoke_start_blue, 1);
+	
+		gzwrite(gzrecording, &entity->craft_data.smoke_end_red, 1);
+		gzwrite(gzrecording, &entity->craft_data.smoke_end_green, 1);
+		gzwrite(gzrecording, &entity->craft_data.smoke_end_blue, 1);
+	
+		gzwrite(gzrecording, &entity->craft_data.shield_red, 1);
+		gzwrite(gzrecording, &entity->craft_data.shield_green, 1);
+		gzwrite(gzrecording, &entity->craft_data.shield_blue, 1);
+	
 		gzwrite(gzrecording, &entity->craft_data.carcass, 1);
 		break;
 	
 	case ENT_WEAPON:
 		write_weapon_data_to_demo(entity);
+		gzwrite(gzrecording, &entity->weapon_data.shield_red, 1);
+		gzwrite(gzrecording, &entity->weapon_data.shield_green, 1);
+		gzwrite(gzrecording, &entity->weapon_data.shield_blue, 1);
 		gzwrite(gzrecording, &entity->weapon_data.detached, 1);
 		break;
 	
 	case ENT_PLASMA:
 		write_plasma_data_to_demo(entity);
+	
+		gzwrite(gzrecording, &entity->plasma_data.red, 1);
+		gzwrite(gzrecording, &entity->plasma_data.green, 1);
+		gzwrite(gzrecording, &entity->plasma_data.blue, 1);
 		break;
 	
 	case ENT_ROCKET:
 		write_rocket_data_to_demo(entity);
+		gzwrite(gzrecording, &entity->rocket_data.magic_smoke, 1);
+	
+		gzwrite(gzrecording, &entity->rocket_data.smoke_start_red, 1);
+		gzwrite(gzrecording, &entity->rocket_data.smoke_start_green, 1);
+		gzwrite(gzrecording, &entity->rocket_data.smoke_start_blue, 1);
+	
+		gzwrite(gzrecording, &entity->rocket_data.smoke_end_red, 1);
+		gzwrite(gzrecording, &entity->rocket_data.smoke_end_green, 1);
+		gzwrite(gzrecording, &entity->rocket_data.smoke_end_blue, 1);
 		break;
 	
 	case ENT_MINE:
@@ -2281,13 +2576,26 @@ void roll_right(uint32_t state)
 }
 
 
-void explosion(float x, float y, float size)
+void explosion(float x, float y, float size, uint8_t magic, 
+	uint8_t start_red, uint8_t start_green, uint8_t start_blue,
+	uint8_t end_red, uint8_t end_green, uint8_t end_blue)
 {
 	int np, p;
 	np = lrint(size / 5);
 	
-	
 	struct particle_t particle;
+		
+	if(!magic)
+	{
+		particle.start_red = start_red;
+		particle.start_green = start_green;
+		particle.start_blue = start_blue;
+	
+		particle.end_red = end_red;
+		particle.end_green = end_green;
+		particle.end_blue = end_blue;
+	}
+	
 	particle.xpos = x;
 	particle.ypos = y;
 	
@@ -2319,7 +2627,17 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis)
 	int np = 0, p;
 	double sin_theta, cos_theta;
 	struct particle_t particle;
-
+		
+	if(!craft->craft_data.magic_smoke)
+	{
+		particle.start_red = craft->craft_data.smoke_start_red;
+		particle.start_green = craft->craft_data.smoke_start_green;
+		particle.start_blue = craft->craft_data.smoke_start_blue;
+	
+		particle.end_red = craft->craft_data.smoke_end_red;
+		particle.end_green = craft->craft_data.smoke_end_green;
+		particle.end_blue = craft->craft_data.smoke_end_blue;
+	}
 
 	if(craft->craft_data.carcass)
 	{
@@ -2458,6 +2776,18 @@ void tick_rocket(struct entity_t *rocket, float xdis, float ydis)
 	
 	rocket->rocket_data.particle += 15.0;
 	
+	struct particle_t particle;
+		
+	if(!rocket->rocket_data.magic_smoke)
+	{
+		particle.start_red = rocket->rocket_data.smoke_start_red;
+		particle.start_green = rocket->rocket_data.smoke_start_green;
+		particle.start_blue = rocket->rocket_data.smoke_start_blue;
+	
+		particle.end_red = rocket->rocket_data.smoke_end_red;
+		particle.end_green = rocket->rocket_data.smoke_end_green;
+		particle.end_blue = rocket->rocket_data.smoke_end_blue;
+	}
 	
 	int np = 0, p;
 	
@@ -2480,7 +2810,6 @@ void tick_rocket(struct entity_t *rocket, float xdis, float ydis)
 		double nydis = rocket->ydis + (ydis - rocket->ydis) * (double)(p + 1) / (double)np;
 		
 		
-		struct particle_t particle;
 
 		switch(game_state)
 		{
@@ -2623,7 +2952,9 @@ void render_entities()
 				params.dest_x = x - ris_craft_shield->surface->width / 2;
 				params.dest_y = y - ris_craft_shield->surface->height / 2;
 
-				params.red = params.green = params.blue = 0xff;
+				params.red = entity->craft_data.shield_red;
+				params.green = entity->craft_data.shield_green;
+				params.blue = entity->craft_data.shield_blue;
 				params.alpha = lrint(entity->craft_data.shield_flare * 255.0);
 			
 				alpha_blit_surface(&params);
@@ -2631,6 +2962,7 @@ void render_entities()
 		
 			break;
 		
+			
 		case ENT_WEAPON:
 			params.source = entity->weapon_data.surface;
 		
@@ -2685,7 +3017,9 @@ void render_entities()
 				params.dest_x = x - ris_weapon_shield->surface->width / 2;
 				params.dest_y = y - ris_weapon_shield->surface->height / 2;
 				
-				params.red = params.green = params.blue = 0xff;
+				params.red = entity->weapon_data.shield_red;
+				params.green = entity->weapon_data.shield_green;
+				params.blue = entity->weapon_data.shield_blue;
 				params.alpha = lrint(entity->weapon_data.shield_flare * 255.0);
 			
 				alpha_blit_surface(&params);
@@ -2693,15 +3027,16 @@ void render_entities()
 		
 			break;
 		
+			
 		case ENT_PLASMA:
 
 			params.source = ris_plasma->surface;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
-			params.red = 0x32;
-			params.green = 0x73;
-			params.blue = 0x71;
+			params.red = entity->plasma_data.red;
+			params.green = entity->plasma_data.green;
+			params.blue = entity->plasma_data.blue;
 			
 			params.dest_x = x - ris_plasma->surface->width / 2;
 			params.dest_y = y - ris_plasma->surface->width / 2;
@@ -2728,19 +3063,29 @@ void render_entities()
 		
 			break;
 		
+			
 		case ENT_BULLET:
 			break;
 		
-		case ENT_RAILS:
+		
 		case ENT_ROCKET:
 			
 			params.source = ris_plasma->surface;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
-			params.red = 0x32;
-			params.green = 0x73;
-			params.blue = 0x71;
+			if(entity->rocket_data.magic_smoke)
+			{
+				params.red = drand48();
+				params.green = drand48();
+				params.blue = drand48();
+			}
+			else
+			{
+				params.red = entity->rocket_data.smoke_end_red;
+				params.green = entity->rocket_data.smoke_end_green;
+				params.blue = entity->rocket_data.smoke_end_blue;
+			}
 			
 			params.dest_x = x - ris_plasma->surface->width / 2;
 			params.dest_y = y - ris_plasma->surface->height / 2;
@@ -2770,9 +3115,46 @@ void render_entities()
 		
 			break;
 		
-/*		case ENT_RAILS:
+			
+		case ENT_RAILS:
+			
+			params.source = ris_plasma->surface;
+		
+			world_to_screen(entity->xdis, entity->ydis, &x, &y);
+		
+			params.red = 0x32;
+			params.green = 0xa9;
+			params.blue = 0xf0;
+			
+			params.dest_x = x - ris_plasma->surface->width / 2;
+			params.dest_y = y - ris_plasma->surface->height / 2;
+			
+			if(entity->teleporting)
+			{
+				time = (double)(cgame_tick - entity->teleporting_tick) / 200.0;
+				
+				switch(entity->teleporting)
+				{
+				case TELEPORTING_DISAPPEARING:
+					params.alpha = 255 - min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
+					alpha_blit_surface(&params);
+					break;
+				
+				case TELEPORTING_TRAVELLING:
+					break;
+					
+				case TELEPORTING_APPEARING:
+					params.alpha = min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
+					alpha_blit_surface(&params);
+					break;
+				}
+			}
+			else
+				blit_surface(&params);
+		
 			break;
-*/			
+		
+			
 		case ENT_SHIELD:
 			
 			params.source = ris_shield_pickup->surface;
@@ -2927,7 +3309,8 @@ void update_game()
 	if(new_io_tick)
 	{
 		// absorb game states from the prediction cache as much as possible
-		// game_state0 is always the same tick as last_known_game_state
+		// game_state0 is always the same tick as last_known_game_state,
+		// but can be tainted
 		
 		if(last_known_game_state.tick != first_io_tick 
 			&& !game_state0->tainted && game_state0->next)
@@ -3277,7 +3660,8 @@ void render_rail_trails()
 			else
 				alpha  = (uint8_t)(255 - floor((rail_time - 0.5) / 2.0 * 255.0f));
 			
-			render_particle(cx, cy, alpha, 0xff, 0xff, 0xff);
+			render_particle(cx, cy, alpha, rail_trail->inner_red, 
+				rail_trail->inner_green, rail_trail->inner_blue);
 			
 			double theta = length / 30 * M_PI * t;
 			
@@ -3292,7 +3676,8 @@ void render_rail_trails()
 				alpha  = 0xff;
 			else
 				alpha  = (uint8_t)(255 - floor((rail_time - 0.5) / 2.0 * 255.0f));
-			render_particle(cx, cy, alpha, 0, 7, 0xff);
+			render_particle(cx, cy, alpha, rail_trail->outer_red, 
+				rail_trail->outer_green, rail_trail->outer_blue);
 		}
 		
 		rail_trail = rail_trail->next;
@@ -3496,6 +3881,52 @@ void cf_disconnect()
 }
 
 
+void emit_colours_event()
+{
+	if(game_state != GAMESTATE_PLAYING)
+		return;
+	
+	net_emit_uint8(game_conn, EMMSG_COLOURS);
+	emit_colours();
+	net_emit_end_of_stream(game_conn);
+}
+
+
+void qc_game_colour_cvar(int *var, int val)
+{
+	*var = (uint8_t)val;
+	emit_colours_event();
+}
+
+
+void create_colour_cvars()
+{
+	create_cvar_int("rail_inner_red", &rail_inner_red, 0);
+	create_cvar_int("rail_inner_green", &rail_inner_green, 0);
+	create_cvar_int("rail_inner_blue", &rail_inner_blue, 0);
+	create_cvar_int("rail_outer_red", &rail_outer_red, 0);
+	create_cvar_int("rail_outer_green", &rail_outer_green, 0);
+	create_cvar_int("rail_outer_blue", &rail_outer_blue, 0);
+
+	create_cvar_int("magic_smoke", &magic_smoke, 0);
+
+	create_cvar_int("smoke_start_red", &smoke_start_red, 0);
+	create_cvar_int("smoke_start_green", &smoke_start_green, 0);
+	create_cvar_int("smoke_start_blue", &smoke_start_blue, 0);
+	create_cvar_int("smoke_end_red", &smoke_end_red, 0);
+	create_cvar_int("smoke_end_green", &smoke_end_green, 0);
+	create_cvar_int("smoke_end_blue", &smoke_end_blue, 0);
+
+	create_cvar_int("plasma_red", &plasma_red, 0);
+	create_cvar_int("plasma_green", &plasma_green, 0);
+	create_cvar_int("plasma_blue", &plasma_blue, 0);
+
+	create_cvar_int("shield_red", &shield_red, 0);
+	create_cvar_int("shield_green", &shield_green, 0);
+	create_cvar_int("shield_blue", &shield_blue, 0);
+}
+
+
 void init_game()
 {
 	set_ri_surface_multiplier((double)vid_width / 1600.0);
@@ -3519,6 +3950,31 @@ void init_game()
 	
 	create_cvar_command("suicide", cf_suicide);
 	
+	set_int_cvar_qc_function_wv("magic_smoke", qc_game_colour_cvar);
+	
+	set_int_cvar_qc_function_wv("rail_inner_red", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("rail_inner_green", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("rail_inner_blue", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("rail_outer_red", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("rail_outer_green", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("rail_outer_blue", qc_game_colour_cvar);
+
+	set_int_cvar_qc_function_wv("smoke_start_red", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("smoke_start_green", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("smoke_start_blue", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("smoke_end_red", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("smoke_end_green", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("smoke_end_blue", qc_game_colour_cvar);
+
+	set_int_cvar_qc_function_wv("plasma_red", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("plasma_green", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("plasma_blue", qc_game_colour_cvar);
+
+	set_int_cvar_qc_function_wv("shield_red", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("shield_green", qc_game_colour_cvar);
+	set_int_cvar_qc_function_wv("shield_blue", qc_game_colour_cvar);
+	
+
 	ris_plasma = load_ri_surface(find_resource("stock-object-textures/plasma.png"));
 	ris_craft_shield = load_ri_surface(find_resource("stock-object-textures/craft-shield.png"));
 	ris_weapon_shield = load_ri_surface(find_resource("stock-object-textures/weapon-shield.png"));

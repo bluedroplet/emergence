@@ -866,7 +866,11 @@ void explode_craft(struct entity_t *craft, struct player_t *responsibility)
 	strip_weapons_from_craft(craft);
 	remove_entity_from_all_players(craft);
 	splash_force(craft->xdis, craft->ydis, CRAFT_SPLASH_FORCE, responsibility);
-	emit_explosion(craft->xdis, craft->ydis, CRAFT_EXPLOSION_SIZE);
+	emit_explosion(craft->xdis, craft->ydis, CRAFT_EXPLOSION_SIZE, 
+		craft->craft_data.magic_smoke, 
+		craft->craft_data.smoke_start_red, craft->craft_data.smoke_start_green, 
+		craft->craft_data.smoke_start_blue, craft->craft_data.smoke_end_red, 
+		craft->craft_data.smoke_end_green, craft->craft_data.smoke_end_blue);
 
 	if(!craft->in_tick)
 		remove_entity(sentity0, craft);
@@ -889,7 +893,11 @@ void explode_weapon(struct entity_t *weapon, struct player_t *responsibility)
 	strip_craft_from_weapon(weapon);
 	remove_entity_from_all_players(weapon);
 	splash_force(weapon->xdis, weapon->ydis, WEAPON_SPLASH_FORCE, responsibility);
-	emit_explosion(weapon->xdis, weapon->ydis, WEAPON_EXPLOSION_SIZE);
+	emit_explosion(weapon->xdis, weapon->ydis, WEAPON_EXPLOSION_SIZE, 
+		weapon->weapon_data.magic_smoke, 
+		weapon->weapon_data.smoke_start_red, weapon->weapon_data.smoke_start_green, 
+		weapon->weapon_data.smoke_start_blue, weapon->weapon_data.smoke_end_red, 
+		weapon->weapon_data.smoke_end_green, weapon->weapon_data.smoke_end_blue);
 	
 	respawn_weapon(weapon);
 	
@@ -904,7 +912,8 @@ void explode_rails(struct entity_t *rails, struct player_t *responsibility)
 	
 	remove_entity_from_all_players(rails);
 	splash_force(rails->xdis, rails->ydis, RAILS_SPLASH_FORCE, responsibility);
-	emit_explosion(rails->xdis, rails->ydis, RAILS_EXPLOSION_SIZE);
+	emit_explosion(rails->xdis, rails->ydis, RAILS_EXPLOSION_SIZE, 0, 
+		0xff, 0, 0, 0xff, 0xff, 0xff);
 	calculate_respawn_tick(rails->rails_data.spawn_point);
 	
 	if(!rails->in_tick)
@@ -919,7 +928,11 @@ void destroy_rocket(struct entity_t *rocket)
 	
 	#ifdef EMSERVER
 	splash_force(rocket->xdis, rocket->ydis, ROCKET_SPLASH_FORCE, rocket->rocket_data.owner);
-	emit_explosion(rocket->xdis, rocket->ydis, ROCKET_EXPLOSION_SIZE);
+	emit_explosion(rocket->xdis, rocket->ydis, ROCKET_EXPLOSION_SIZE, 
+		rocket->rocket_data.magic_smoke, 
+		rocket->rocket_data.smoke_start_red, rocket->rocket_data.smoke_start_green, 
+		rocket->rocket_data.smoke_start_blue, rocket->rocket_data.smoke_end_red, 
+		rocket->rocket_data.smoke_end_green, rocket->rocket_data.smoke_end_blue);
 	#endif
 	
 	if(!rocket->in_tick)
@@ -933,7 +946,11 @@ void destroy_mine(struct entity_t *mine)
 	
 	#ifdef EMSERVER
 	splash_force(mine->xdis, mine->ydis, MINE_SPLASH_FORCE, mine->mine_data.owner);
-	emit_explosion(mine->xdis, mine->ydis, MINE_EXPLOSION_SIZE);
+	emit_explosion(mine->xdis, mine->ydis, MINE_EXPLOSION_SIZE, 
+		mine->mine_data.magic_smoke, 
+		mine->mine_data.smoke_start_red, mine->mine_data.smoke_start_green, 
+		mine->mine_data.smoke_start_blue, mine->mine_data.smoke_end_red, 
+		mine->mine_data.smoke_end_green, mine->mine_data.smoke_end_blue);
 	#endif
 	
 	if(!mine->in_tick)
@@ -2019,7 +2036,7 @@ void s_tick_weapon(struct entity_t *weapon)
 					if(!entity->bullet_data.in_weapon || 
 						entity->bullet_data.weapon_id != weapon->index)
 					{
-						weapon_bullet_collision(craft, entity);
+						weapon_bullet_collision(weapon, entity);
 						if(!craft) restart = 1;
 					}
 				}
@@ -2197,6 +2214,45 @@ void s_tick_weapon(struct entity_t *weapon)
 						
 						#ifdef EMSERVER
 						respawn_weapon(weapon);
+						if(!weapon->weapon_data.original_ownership_defined)
+						{
+							weapon->weapon_data.shield_red = 
+								craft->craft_data.shield_red;
+							weapon->weapon_data.shield_green = 
+								craft->craft_data.shield_green;
+							weapon->weapon_data.shield_blue = 
+								craft->craft_data.shield_blue;
+							
+							if(weapon->weapon_data.type == WEAPON_PLASMA_CANNON)
+							{
+								weapon->weapon_data.plasma_red = 
+									craft->craft_data.owner->plasma_red;
+								weapon->weapon_data.plasma_green = 
+									craft->craft_data.owner->plasma_green;
+								weapon->weapon_data.plasma_blue = 
+									craft->craft_data.owner->plasma_blue;
+							}
+
+							weapon->weapon_data.magic_smoke = 
+								craft->craft_data.magic_smoke;
+							
+							weapon->weapon_data.smoke_start_red = 
+								craft->craft_data.smoke_start_red;
+							weapon->weapon_data.smoke_start_green = 
+								craft->craft_data.smoke_start_green;
+							weapon->weapon_data.smoke_start_blue = 
+								craft->craft_data.smoke_start_blue;
+							
+							weapon->weapon_data.smoke_end_red = 
+								craft->craft_data.smoke_end_red;
+							weapon->weapon_data.smoke_end_green = 
+								craft->craft_data.smoke_end_green;
+							weapon->weapon_data.smoke_end_blue = 
+								craft->craft_data.smoke_end_blue;
+						
+							propagate_colours(weapon);
+							weapon->weapon_data.original_ownership_defined = 1;
+						}
 						#endif
 						break;
 					}
@@ -2209,6 +2265,45 @@ void s_tick_weapon(struct entity_t *weapon)
 						
 						#ifdef EMSERVER
 						respawn_weapon(weapon);
+						if(!weapon->weapon_data.original_ownership_defined)
+						{
+							weapon->weapon_data.shield_red = 
+								craft->craft_data.shield_red;
+							weapon->weapon_data.shield_green = 
+								craft->craft_data.shield_green;
+							weapon->weapon_data.shield_blue = 
+								craft->craft_data.shield_blue;
+							
+							if(weapon->weapon_data.type == WEAPON_PLASMA_CANNON)
+							{
+								weapon->weapon_data.plasma_red = 
+									craft->craft_data.owner->plasma_red;
+								weapon->weapon_data.plasma_green = 
+									craft->craft_data.owner->plasma_green;
+								weapon->weapon_data.plasma_blue = 
+									craft->craft_data.owner->plasma_blue;
+							}
+
+							weapon->weapon_data.magic_smoke = 
+								craft->craft_data.magic_smoke;
+							
+							weapon->weapon_data.smoke_start_red = 
+								craft->craft_data.smoke_start_red;
+							weapon->weapon_data.smoke_start_green = 
+								craft->craft_data.smoke_start_green;
+							weapon->weapon_data.smoke_start_blue = 
+								craft->craft_data.smoke_start_blue;
+							
+							weapon->weapon_data.smoke_end_red = 
+								craft->craft_data.smoke_end_red;
+							weapon->weapon_data.smoke_end_green = 
+								craft->craft_data.smoke_end_green;
+							weapon->weapon_data.smoke_end_blue = 
+								craft->craft_data.smoke_end_blue;
+							
+							propagate_colours(weapon);
+							weapon->weapon_data.original_ownership_defined = 1;
+						}
 						#endif
 						break;
 					}

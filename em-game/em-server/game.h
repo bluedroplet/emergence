@@ -27,6 +27,17 @@ struct player_t
 	
 	int frags;
 	int propagate_frags;
+	
+	uint8_t rail_inner_red, rail_inner_green, rail_inner_blue;
+	uint8_t rail_outer_red, rail_outer_green, rail_outer_blue;
+
+	uint8_t plasma_red, plasma_green, plasma_blue;
+
+	uint8_t magic_smoke;
+	uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
+	uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
+
+	uint8_t shield_red, shield_green, shield_blue;
 
 	struct ping_t *ping0;
 	int next_ping;
@@ -116,10 +127,13 @@ void respawn_craft(struct entity_t *craft, struct player_t *responsibility);
 void make_carcass_on_all_players(struct entity_t *craft);
 void calculate_respawn_tick(struct pickup_spawn_point_t *spawn_point);
 void craft_telefragged(struct player_t *victim, struct player_t *telefragger);
+void propagate_colours(struct entity_t *entity);
 
 void emit_teleport_to_all_players();
 void emit_speedup_to_all_players();
-void emit_explosion(float x, float y, float size);
+void emit_explosion(float x, float y, float size, uint8_t magic, 
+	uint8_t start_red, uint8_t start_green, uint8_t start_blue,
+	uint8_t end_red, uint8_t end_green, uint8_t end_blue);
 
 extern uint32_t cgame_tick;
 

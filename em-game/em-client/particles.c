@@ -127,10 +127,25 @@ void render_upper_particles()
 			
 			
 			
-			if(life < 0.1275)
-				params.green = params.blue = (uint8_t)min(floor(life * 2000.0), 255);
+			float a = life * 2.0;
+			
+			if(life < 0.5)
+			{
+				params.red = (uint8_t)floor(upper_particles[i].start_red * (1.0 - a) + 
+					upper_particles[i].end_red * a);
+				
+				params.green = (uint8_t)floor(upper_particles[i].start_green * (1.0 - a) + 
+					upper_particles[i].end_green * a);
+				
+				params.blue = (uint8_t)floor(upper_particles[i].start_blue * (1.0 - a) + 
+					upper_particles[i].end_blue * a);
+			}
 			else
-				params.green = params.blue = 0xff;
+			{
+				params.red = upper_particles[i].end_red;
+				params.green = upper_particles[i].end_green;
+				params.blue = upper_particles[i].end_blue;
+			}
 			
 			params.alpha  = (uint8_t)(255 - floor(life * 255.0f));
 			
@@ -211,10 +226,25 @@ void render_lower_particles()
 			
 			world_to_screen(lower_particles[i].xpos, lower_particles[i].ypos, &x, &y);
 			
-			if(life < 0.1275)
-				params.green = params.blue = (uint8_t)min(floor(life * 2000.0), 255);
+			float a = life * 2.0;
+			
+			if(life < 0.5)
+			{
+				params.red = (uint8_t)floor(lower_particles[i].start_red * (1.0 - a) + 
+					lower_particles[i].end_red * a);
+				
+				params.green = (uint8_t)floor(lower_particles[i].start_green * (1.0 - a) + 
+					lower_particles[i].end_green * a);
+				
+				params.blue = (uint8_t)floor(lower_particles[i].start_blue * (1.0 - a) + 
+					lower_particles[i].end_blue * a);
+			}
 			else
-				params.green = params.blue = 0xff;
+			{
+				params.red = lower_particles[i].end_red;
+				params.green = lower_particles[i].end_green;
+				params.blue = lower_particles[i].end_blue;
+			}
 			
 			params.alpha  = (uint8_t)(255 - floor(life * 255.0f));
 			

@@ -307,20 +307,54 @@ void emit_spawn_entity(uint32_t conn, struct entity_t *entity)
 	{
 	case ENT_CRAFT:
 		write_craft_data_to_net(conn, entity);
+	
+		net_emit_uint8(conn, entity->craft_data.magic_smoke);
+
+		net_emit_uint8(conn, entity->craft_data.smoke_start_red);
+		net_emit_uint8(conn, entity->craft_data.smoke_start_green);
+		net_emit_uint8(conn, entity->craft_data.smoke_start_blue);
+	
+		net_emit_uint8(conn, entity->craft_data.smoke_end_red);
+		net_emit_uint8(conn, entity->craft_data.smoke_end_green);
+		net_emit_uint8(conn, entity->craft_data.smoke_end_blue);
+	
+		net_emit_uint8(conn, entity->craft_data.shield_red);
+		net_emit_uint8(conn, entity->craft_data.shield_green);
+		net_emit_uint8(conn, entity->craft_data.shield_blue);
+	
 		net_emit_uint8(conn, entity->craft_data.carcass);
 		break;
 	
 	case ENT_WEAPON:
 		write_weapon_data_to_net(conn, entity);
+	
+		net_emit_uint8(conn, entity->weapon_data.shield_red);
+		net_emit_uint8(conn, entity->weapon_data.shield_green);
+		net_emit_uint8(conn, entity->weapon_data.shield_blue);
+	
 		net_emit_uint8(conn, entity->weapon_data.detached);
 		break;
 	
 	case ENT_PLASMA:
 		write_plasma_data_to_net(conn, entity);
+	
+		net_emit_uint8(conn, entity->plasma_data.red);
+		net_emit_uint8(conn, entity->plasma_data.green);
+		net_emit_uint8(conn, entity->plasma_data.blue);
 		break;
 	
 	case ENT_ROCKET:
 		write_rocket_data_to_net(conn, entity);
+	
+		net_emit_uint8(conn, entity->rocket_data.magic_smoke);
+	
+		net_emit_uint8(conn, entity->rocket_data.smoke_start_red);
+		net_emit_uint8(conn, entity->rocket_data.smoke_start_green);
+		net_emit_uint8(conn, entity->rocket_data.smoke_start_blue);
+	
+		net_emit_uint8(conn, entity->rocket_data.smoke_end_red);
+		net_emit_uint8(conn, entity->rocket_data.smoke_end_green);
+		net_emit_uint8(conn, entity->rocket_data.smoke_end_blue);
 		break;
 	
 	case ENT_MINE:
@@ -423,7 +457,9 @@ void emit_speedup_to_all_players()
 }
 
 
-void emit_explosion(float x, float y, float size)
+void emit_explosion(float x, float y, float size, uint8_t magic, 
+	uint8_t start_red, uint8_t start_green, uint8_t start_blue,
+	uint8_t end_red, uint8_t end_green, uint8_t end_blue)
 {
 	struct player_t *player = player0;
 		
@@ -434,6 +470,13 @@ void emit_explosion(float x, float y, float size)
 		net_emit_float(player->conn, x);
 		net_emit_float(player->conn, y);
 		net_emit_float(player->conn, size);
+		net_emit_uint8(player->conn, magic);
+		net_emit_uint8(player->conn, start_red);
+		net_emit_uint8(player->conn, start_green);
+		net_emit_uint8(player->conn, start_blue);
+		net_emit_uint8(player->conn, end_red);
+		net_emit_uint8(player->conn, end_green);
+		net_emit_uint8(player->conn, end_blue);
 		net_emit_end_of_stream(player->conn);
 		player = player->next;
 	}
@@ -542,6 +585,10 @@ void spawn_plasma(struct entity_t *weapon, struct player_t *player)
 	plasma->plasma_data.in_weapon = 1;
 	plasma->plasma_data.weapon_id = weapon->index;
 	
+	plasma->plasma_data.red = weapon->weapon_data.plasma_red;
+	plasma->plasma_data.green = weapon->weapon_data.plasma_green;
+	plasma->plasma_data.blue = weapon->weapon_data.plasma_blue;
+	
 	plasma->plasma_data.owner = player;
 
 	spawn_entity_on_all_players(plasma);
@@ -586,6 +633,16 @@ void spawn_rocket(struct entity_t *weapon, struct player_t *player)
 	rocket->rocket_data.start_tick = game_tick;
 	rocket->rocket_data.in_weapon = 1;
 	rocket->rocket_data.weapon_id = weapon->index;
+	
+	rocket->rocket_data.magic_smoke = weapon->weapon_data.magic_smoke;
+	
+	rocket->rocket_data.smoke_start_red = weapon->weapon_data.smoke_start_red;
+	rocket->rocket_data.smoke_start_green = weapon->weapon_data.smoke_start_green;
+	rocket->rocket_data.smoke_start_blue = weapon->weapon_data.smoke_start_blue;
+	
+	rocket->rocket_data.smoke_end_red = weapon->weapon_data.smoke_end_red;
+	rocket->rocket_data.smoke_end_green = weapon->weapon_data.smoke_end_green;
+	rocket->rocket_data.smoke_end_blue = weapon->weapon_data.smoke_end_blue;
 	
 	rocket->rocket_data.owner = player;
 	
@@ -834,6 +891,17 @@ void spawn_player(struct player_t *player)
 	player->craft->craft_data.shield_strength = 1.0;
 	player->craft->craft_data.owner = player;
 	
+	player->craft->craft_data.magic_smoke = player->magic_smoke;
+	player->craft->craft_data.smoke_start_red = player->smoke_start_red;
+	player->craft->craft_data.smoke_start_green = player->smoke_start_green;
+	player->craft->craft_data.smoke_start_blue = player->smoke_start_blue;
+	player->craft->craft_data.smoke_end_red = player->smoke_end_red;
+	player->craft->craft_data.smoke_end_green = player->smoke_end_green;
+	player->craft->craft_data.smoke_end_blue = player->smoke_end_blue;
+	player->craft->craft_data.shield_red = player->shield_red;
+	player->craft->craft_data.shield_green = player->shield_green;
+	player->craft->craft_data.shield_blue = player->shield_blue;
+	
 	if(old_craft)
 	{
 		player->craft->craft_data.acc = old_craft->craft_data.acc;
@@ -911,6 +979,18 @@ struct entity_t *spawn_pickup(struct pickup_spawn_point_t *spawn_point)
 		entity->weapon_data.ammo = spawn_point->plasma_cannon_data.plasmas;
 		entity->weapon_data.shield_strength = 1.0;
 		entity->weapon_data.spawn_point = spawn_point;
+	
+		entity->weapon_data.smoke_start_red = 0xff;
+		entity->weapon_data.smoke_start_green = 0;
+		entity->weapon_data.smoke_start_blue = 0;
+
+		entity->weapon_data.smoke_end_red = 0xff;
+		entity->weapon_data.smoke_end_green = 0xff;
+		entity->weapon_data.smoke_end_blue = 0xff;
+
+		entity->weapon_data.shield_red = 0xff;
+		entity->weapon_data.shield_green = 0xff;
+		entity->weapon_data.shield_blue = 0xff;
 		break;
 	
 	case OBJECTTYPE_MINIGUN:
@@ -920,6 +1000,18 @@ struct entity_t *spawn_pickup(struct pickup_spawn_point_t *spawn_point)
 		entity->weapon_data.ammo = spawn_point->minigun_data.bullets;
 		entity->weapon_data.shield_strength = 1.0;
 		entity->weapon_data.spawn_point = spawn_point;
+	
+		entity->weapon_data.smoke_start_red = 0xff;
+		entity->weapon_data.smoke_start_green = 0;
+		entity->weapon_data.smoke_start_blue = 0;
+
+		entity->weapon_data.smoke_end_red = 0xff;
+		entity->weapon_data.smoke_end_green = 0xff;
+		entity->weapon_data.smoke_end_blue = 0xff;
+
+		entity->weapon_data.shield_red = 0xff;
+		entity->weapon_data.shield_green = 0xff;
+		entity->weapon_data.shield_blue = 0xff;
 		break;
 	
 	case OBJECTTYPE_ROCKETLAUNCHER:
@@ -929,6 +1021,18 @@ struct entity_t *spawn_pickup(struct pickup_spawn_point_t *spawn_point)
 		entity->weapon_data.ammo = spawn_point->rocket_launcher_data.rockets;
 		entity->weapon_data.shield_strength = 1.0;
 		entity->weapon_data.spawn_point = spawn_point;
+	
+		entity->weapon_data.smoke_start_red = 0xff;
+		entity->weapon_data.smoke_start_green = 0;
+		entity->weapon_data.smoke_start_blue = 0;
+
+		entity->weapon_data.smoke_end_red = 0xff;
+		entity->weapon_data.smoke_end_green = 0xff;
+		entity->weapon_data.smoke_end_blue = 0xff;
+
+		entity->weapon_data.shield_red = 0xff;
+		entity->weapon_data.shield_green = 0xff;
+		entity->weapon_data.shield_blue = 0xff;
 		break;
 	
 	case OBJECTTYPE_RAILS:
@@ -949,6 +1053,50 @@ struct entity_t *spawn_pickup(struct pickup_spawn_point_t *spawn_point)
 	spawn_point->respawn = 0;
 	
 	return entity;
+}
+
+
+void propagate_colours(struct entity_t *entity)
+{
+	struct player_t *player = player0;
+		
+	while(player)
+	{
+		net_emit_uint8(player->conn, EMEVENT_COLOURS);
+		net_emit_uint32(player->conn, game_tick);
+		net_emit_uint32(player->conn, entity->index);
+		
+		net_emit_uint8(player->conn, entity->type);
+		
+		switch(entity->type)
+		{
+		case ENT_CRAFT:
+			net_emit_uint8(player->conn, entity->craft_data.magic_smoke);
+		
+			net_emit_uint8(player->conn, entity->craft_data.smoke_start_red);
+			net_emit_uint8(player->conn, entity->craft_data.smoke_start_green);
+			net_emit_uint8(player->conn, entity->craft_data.smoke_start_blue);
+		
+			net_emit_uint8(player->conn, entity->craft_data.smoke_end_red);
+			net_emit_uint8(player->conn, entity->craft_data.smoke_end_green);
+			net_emit_uint8(player->conn, entity->craft_data.smoke_end_blue);
+		
+			net_emit_uint8(player->conn, entity->craft_data.shield_red);
+			net_emit_uint8(player->conn, entity->craft_data.shield_green);
+			net_emit_uint8(player->conn, entity->craft_data.shield_blue);
+			break;
+		
+		case ENT_WEAPON:
+			net_emit_uint8(player->conn, entity->weapon_data.shield_red);
+			net_emit_uint8(player->conn, entity->weapon_data.shield_green);
+			net_emit_uint8(player->conn, entity->weapon_data.shield_blue);
+			break;
+		}
+		
+		net_emit_end_of_stream(player->conn);
+		
+		player = player->next;
+	}
 }
 
 
@@ -1025,6 +1173,51 @@ void update_game()
 }
 
 
+int game_process_colours(struct player_t *player, struct buffer_t *stream)
+{
+	player->rail_inner_red = buffer_read_uint8(stream);
+	player->rail_inner_green = buffer_read_uint8(stream);
+	player->rail_inner_blue = buffer_read_uint8(stream);
+
+	player->rail_outer_red = buffer_read_uint8(stream);
+	player->rail_outer_green = buffer_read_uint8(stream);
+	player->rail_outer_blue = buffer_read_uint8(stream);
+	
+	player->magic_smoke = buffer_read_uint8(stream);
+
+	player->smoke_start_red = buffer_read_uint8(stream);
+	player->smoke_start_green = buffer_read_uint8(stream);
+	player->smoke_start_blue = buffer_read_uint8(stream);
+	player->smoke_end_red = buffer_read_uint8(stream);
+	player->smoke_end_green = buffer_read_uint8(stream);
+	player->smoke_end_blue = buffer_read_uint8(stream);
+
+	player->plasma_red = buffer_read_uint8(stream);
+	player->plasma_green = buffer_read_uint8(stream);
+	player->plasma_blue = buffer_read_uint8(stream);
+
+	player->shield_red = buffer_read_uint8(stream);
+	player->shield_green = buffer_read_uint8(stream);
+	player->shield_blue = buffer_read_uint8(stream);
+	
+	if(player->craft)
+	{
+		player->craft->craft_data.magic_smoke = player->magic_smoke;
+		player->craft->craft_data.smoke_start_red = player->smoke_start_red;
+		player->craft->craft_data.smoke_start_green = player->smoke_start_green;
+		player->craft->craft_data.smoke_start_blue = player->smoke_start_blue;
+		player->craft->craft_data.smoke_end_red = player->smoke_end_red;
+		player->craft->craft_data.smoke_end_green = player->smoke_end_green;
+		player->craft->craft_data.smoke_end_blue = player->smoke_end_blue;
+		player->craft->craft_data.shield_red = player->shield_red;
+		player->craft->craft_data.shield_green = player->shield_green;
+		player->craft->craft_data.shield_blue = player->shield_blue;
+	}
+	
+	return 1;
+}
+
+
 void game_process_join(uint32_t conn, uint32_t index, struct buffer_t *stream)
 {
 	if(game_state != GS_ALIVE)
@@ -1080,7 +1273,8 @@ void game_process_join(uint32_t conn, uint32_t index, struct buffer_t *stream)
 	player->name = name;
 	player->last_control_change = index;
 	player->next_pulse_event = game_tick + 200;
-
+	
+	game_process_colours(player, stream);
 	
 	print_on_player(player, "Welcome to this server.\n");
 	
@@ -1326,7 +1520,8 @@ int game_process_roll(struct player_t *player, struct buffer_t *stream)
 }
 
 
-void propagate_rail_trail(float x1, float y1, float x2, float y2)
+void propagate_rail_trail(float x1, float y1, float x2, float y2, 
+	struct player_t *firer)
 {
 	struct player_t *player = player0;
 
@@ -1338,6 +1533,13 @@ void propagate_rail_trail(float x1, float y1, float x2, float y2)
 		net_emit_float(player->conn, y1);
 		net_emit_float(player->conn, x2);
 		net_emit_float(player->conn, y2);
+		
+		net_emit_uint8(player->conn, firer->rail_inner_red);
+		net_emit_uint8(player->conn, firer->rail_inner_green);
+		net_emit_uint8(player->conn, firer->rail_inner_blue);
+		net_emit_uint8(player->conn, firer->rail_outer_red);
+		net_emit_uint8(player->conn, firer->rail_outer_green);
+		net_emit_uint8(player->conn, firer->rail_outer_blue);
 		
 		net_emit_end_of_stream(player->conn);
 		player = player->next;
@@ -1538,9 +1740,9 @@ int game_process_fire_rail(struct player_t *player)
 
 	
 	if(crail_entity)
-		propagate_rail_trail(x1, y1, crail_entity->x, crail_entity->y);
+		propagate_rail_trail(x1, y1, crail_entity->x, crail_entity->y, player);
 	else
-		propagate_rail_trail(x1, y1, x2, y2);
+		propagate_rail_trail(x1, y1, x2, y2, player);
 	
 	propagate_frags();
 
@@ -1705,6 +1907,16 @@ int game_process_drop_mine(struct player_t *player)
 	mine->mine_data.craft_id = player->craft->index;
 	
 	mine->mine_data.owner = player;
+	
+	mine->mine_data.magic_smoke = player->craft->craft_data.magic_smoke;
+	
+	mine->mine_data.smoke_start_red = player->craft->craft_data.smoke_start_red;
+	mine->mine_data.smoke_start_green = player->craft->craft_data.smoke_start_green;
+	mine->mine_data.smoke_start_blue = player->craft->craft_data.smoke_start_blue;
+
+	mine->mine_data.smoke_end_red = player->craft->craft_data.smoke_end_red;
+	mine->mine_data.smoke_end_green = player->craft->craft_data.smoke_end_green;
+	mine->mine_data.smoke_end_blue = player->craft->craft_data.smoke_end_blue;
 
 	spawn_entity_on_all_players(mine);
 	
@@ -1800,6 +2012,11 @@ void game_process_stream(uint32_t conn, uint32_t index, struct buffer_t *stream)
 		case EMMSG_SUICIDE:
 			if(!game_process_suicide(player))
 				return;
+			break;
+
+		case EMMSG_COLOURS:
+			game_process_colours(player, stream);
+			propagate_colours(player->craft);
 			break;
 
 		default:

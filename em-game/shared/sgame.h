@@ -55,6 +55,7 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 #define EMEVENT_SPEEDUP			(EMMSGCLASS_EVENT | 0x0a)
 #define EMEVENT_FRAGS			(EMMSGCLASS_EVENT | 0x0b)
 #define EMEVENT_EXPLOSION		(EMMSGCLASS_EVENT | 0x0c)
+#define EMEVENT_COLOURS			(EMMSGCLASS_EVENT | 0x0d)
 
 
 
@@ -79,6 +80,7 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 #define EMMSG_STATUS			0x0f
 #define EMMSG_NAMECNGE			0x10
 #define EMMSG_SUICIDE			0x11
+#define EMMSG_COLOURS			0x12
 
 
 
@@ -92,6 +94,11 @@ struct craft_data_t
 	struct entity_t *left_weapon, *right_weapon;
 	float shield_flare;
 	int carcass;
+	
+	uint8_t magic_smoke;
+	uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
+	uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
+	uint8_t shield_red, shield_green, shield_blue;
 	
 	#ifdef EMSERVER
 	float shield_strength;
@@ -115,13 +122,19 @@ struct weapon_data_t
 	
 	struct entity_t *craft;
 	float shield_flare;
+	uint8_t shield_red, shield_green, shield_blue;
 	int detached;
 	
 	#ifdef EMSERVER
 	int ammo;
 	float shield_strength;
 	struct pickup_spawn_point_t *spawn_point;
+	int original_ownership_defined;
 	int respawned;
+	uint8_t magic_smoke;
+	uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
+	uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
+	uint8_t plasma_red, plasma_green, plasma_blue;
 	#endif
 	
 	#ifdef EMCLIENT
@@ -135,6 +148,7 @@ struct plasma_data_t
 {
 	int in_weapon;
 	uint32_t weapon_id;
+	uint8_t red, green, blue;
 
 	#ifdef EMSERVER
 	struct player_t *owner;
@@ -153,6 +167,10 @@ struct rocket_data_t
 	float theta;
 	int in_weapon;
 	uint32_t weapon_id;
+
+	uint8_t magic_smoke;
+	uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
+	uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
 
 	#ifdef EMSERVER
 	struct player_t *owner;
@@ -185,6 +203,9 @@ struct mine_data_t
 
 	#ifdef EMSERVER
 	struct player_t *owner;
+	uint8_t magic_smoke;
+	uint8_t smoke_start_red, smoke_start_green, smoke_start_blue;
+	uint8_t smoke_end_red, smoke_end_green, smoke_end_blue;
 	#endif
 	
 	#ifdef EMCLIENT

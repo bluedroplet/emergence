@@ -3,9 +3,11 @@
 
 struct particle_t
 {
-	float	xpos, ypos;
-	float	xvel, yvel;
-	float	creation, last;
+	float xpos, ypos;
+	float xvel, yvel;
+	float creation, last;
+	uint8_t start_red, start_green, start_blue;
+	uint8_t end_red, end_green, end_blue;
 };
 
 void init_particles();
