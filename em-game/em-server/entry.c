@@ -10,11 +10,13 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <argp.h>
+#include <pthread.h>
 
 #include "../common/types.h"
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "shared/timer.h"
+#include "shared/network.h"
 #include "shared/cvar.h"
 #include "main.h"
 #include "game.h"
@@ -39,13 +41,13 @@ void go_daemon()
 		exit(EXIT_SUCCESS);
 
 	// Become session leader
-	setsid();
+//	setsid();
 
-	fclose(stdin);
+//	fclose(stdin);
 	fclose(stdout);
 	fclose(stderr);
 	
-	stdout = fopen("nfsv.log", "w");
+//	stdout = fopen("nfsv.log", "w");
 }
 
 
@@ -55,7 +57,7 @@ const char *argp_program_bug_address = "<jbrown@emergence.uk.net>";
 static char doc[] = "Emergence Server";
 
 static struct argp_option options[] = {
-	{"daemon",	'd',	0,	0, "don't run in terminal (broken)"},
+	{"daemon",	'd',	0,	0, "don't run in terminal"},
 	{"port",	'p',	"PORT",	0, "port to listen on"},
 	{ 0 }
 };
@@ -87,10 +89,10 @@ int main(int argc, char *argv[])
 {
 	argp_parse(&argp, argc, argv, 0, 0, 0);
 
-	init();
-	
 	if(as_daemon)
 		go_daemon();
+	
+	init();
 	
 	main_thread();
 	

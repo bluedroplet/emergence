@@ -634,7 +634,7 @@ void init()
 	
 	game_timer_fd = create_alarm_listener();
 
-	create_cvar_command("daemonize", cf_go_daemon);
+//	create_cvar_command("daemonize", cf_go_daemon);
 	create_cvar_command("quit", cf_quit);
 	
 	struct string_t *string = new_string_text("%s%s", emergence_home_dir->text, "/server.autoexec");
