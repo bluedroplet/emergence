@@ -22,7 +22,7 @@
 #include "shared/sgame.h"
 #include "shared/network.h"
 #include "shared/parse.h"
-#include "shared/user.h"
+#include "../common/user.h"
 #include "game.h"
 #include "ping.h"
 #include "console.h"

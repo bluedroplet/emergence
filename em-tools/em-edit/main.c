@@ -37,6 +37,7 @@
 #include <gnome.h>
 
 #include "../common/minmax.h"
+#include "../common/user.h"
 #include "../gsub/gsub.h"
 #include "interface.h"
 #include "map.h"
@@ -276,6 +277,7 @@ int main(int argc, char *argv[])
 					  GNOME_PARAM_APP_DATADIR, PKGDATADIR,
                       NULL);
 	
+	init_user();
 	init_gsub();
 	init_interface();
 	init_map();

@@ -15,7 +15,7 @@
 #include "shared/bsp.h"
 #include "shared/objects.h"
 #include "shared/sgame.h"
-#include "shared/user.h"
+#include "../common/user.h"
 #include "shared/network.h"
 #include "../common/llist.h"
 #include "../common/stringbuf.h"

@@ -9,7 +9,10 @@
 
 #include "../../common/types.h"
 #include "../../common/stringbuf.h"
-#include "../console.h"
+
+#ifdef EMGAME
+#include "../em-client/console.h"
+#endif
 
 struct string_t *username = NULL, *home_dir = NULL, *emergence_home_dir = NULL;
 
@@ -20,9 +23,17 @@ void init_user()
 //		client_libc_error("Couldn't find user");
 	
 	username = new_string_text(passwd->pw_name);
+	
+	#ifdef EMGAME
 	console_print("User: %s%c", username->text, '\n');
+	#endif
+	
 	home_dir = new_string_text(passwd->pw_dir);
+	
+	#ifdef EMGAME
 	console_print("Home Directory: %s%c", home_dir->text, '\n');
+	#endif
+	
 	emergence_home_dir = new_string_text("%s/.emergence", passwd->pw_dir);
 	
 	struct stat s;

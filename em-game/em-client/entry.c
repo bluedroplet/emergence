@@ -17,7 +17,7 @@
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../shared/timer.h"
-#include "../shared/user.h"
+#include "../common/user.h"
 #include "../shared/network.h"
 #include "main.h"
 #include "render.h"

@@ -35,6 +35,7 @@
 
 #include "../gsub/gsub.h"
 #include "../common/stringbuf.h"
+#include "../common/user.h"
 
 
 
@@ -111,6 +112,7 @@ static struct argp argp = { NULL, parse_opt, args_doc, doc };
 
 int main (int argc, char **argv)
 {
+	init_user();
 	argp_parse(&argp, argc, argv, 0, 0, NULL);
 	exit(0);
 }

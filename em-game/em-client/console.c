@@ -14,7 +14,7 @@
 #include "../shared/cvar.h"
 #include "../common/stringbuf.h"
 #include "../shared/parse.h"
-#include "../shared/user.h"
+#include "../common/user.h"
 #include "../gsub/gsub.h"
 #include "rcon.h"
 #include "render.h"

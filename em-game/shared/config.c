@@ -9,9 +9,9 @@
 
 #include "../../common/types.h"
 #include "../../common/stringbuf.h"
+#include "../../common/user.h"
 #include "parse.h"
 #include "cvar.h"
-#include "user.h"
 #include "../console.h"
 
 #ifdef EMCLIENT
