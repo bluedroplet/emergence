@@ -22,3 +22,4 @@ GtkWidget* create_map_compiling_dialog (void);
 GtkWidget* create_file_not_found_dialog (void);
 GtkWidget* create_specify_filename_dialog (void);
 GtkWidget* create_not_saved_dialog (void);
+GtkWidget* create_help_dialog (void);

@@ -60,6 +60,7 @@
 #include "main.h"
 #include "worker.h"
 #include "interface.h"
+#include "glade.h"
 
 float zoom = 1.0;
 float viewx = 0.0, viewy = 0.0;
@@ -237,6 +238,18 @@ void draw_world_clipped_line(float x1, float y1, float x2, float y2)
 	
 	draw_line(&params);
 }
+
+
+void run_help_dialog()
+{
+	GtkWidget *dialog = create_help_dialog();
+	
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(window));
+	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+	
+	gtk_widget_show(dialog);
+	gtk_main();
+}	
 
 
 void run_about_box()
@@ -922,8 +935,8 @@ void run_space_menu()
 
 	
 	menu_items = gtk_menu_item_new_with_label("Help...");
-//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
-//		GTK_SIGNAL_FUNC(run_about_box), NULL);
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+		GTK_SIGNAL_FUNC(run_help_dialog), NULL);
 	gtk_menu_append(GTK_MENU(space_menu), menu_items);
 	gtk_widget_show(menu_items);
 	

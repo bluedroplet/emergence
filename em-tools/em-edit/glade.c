@@ -4390,3 +4390,72 @@ create_not_saved_dialog (void)
   return not_saved_dialog;
 }
 
+GtkWidget*
+create_help_dialog (void)
+{
+  GtkWidget *help_dialog;
+  GtkWidget *vbox67;
+  GtkWidget *hbox188;
+  GtkWidget *label222;
+  GtkWidget *vseparator1;
+  GtkWidget *label223;
+  GtkWidget *hbuttonbox15;
+  GtkWidget *button12;
+
+  help_dialog = gtk_dialog_new ();
+  gtk_window_set_title (GTK_WINDOW (help_dialog), "Emergence Editor Help");
+  gtk_window_set_modal (GTK_WINDOW (help_dialog), TRUE);
+  gtk_window_set_resizable (GTK_WINDOW (help_dialog), FALSE);
+  gtk_window_set_type_hint (GTK_WINDOW (help_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
+
+  vbox67 = GTK_DIALOG (help_dialog)->vbox;
+  gtk_widget_show (vbox67);
+
+  hbox188 = gtk_hbox_new (FALSE, 5);
+  gtk_widget_show (hbox188);
+  gtk_box_pack_start (GTK_BOX (vbox67), hbox188, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox188), 20);
+
+  label222 = gtk_label_new ("left click\nright click\nl + r click\nwheel\nshift\nb\nc\ng\nn\nt\nx\n[\n]\n,\n.");
+  gtk_widget_show (label222);
+  gtk_box_pack_start (GTK_BOX (hbox188), label222, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label222), GTK_JUSTIFY_CENTER);
+  gtk_misc_set_alignment (GTK_MISC (label222), 0.45, 0.5);
+
+  vseparator1 = gtk_vseparator_new ();
+  gtk_widget_show (vseparator1);
+  gtk_box_pack_start (GTK_BOX (hbox188), vseparator1, TRUE, TRUE, 0);
+
+  label223 = gtk_label_new ("insert node / select item(s) / drag item(s)\ncontext menu\nzoom with mouse movement\nzoom\nselect more\ntoggle BSP tree\ntoggle outlines\ntoggle grid\ntoggle nodes\ntoggle tiles\ntoggle boxes\nless grid\nmore grid\nless BSP tree\nmore BSP tree");
+  gtk_widget_show (label223);
+  gtk_box_pack_start (GTK_BOX (hbox188), label223, FALSE, FALSE, 0);
+
+  hbuttonbox15 = GTK_DIALOG (help_dialog)->action_area;
+  gtk_widget_show (hbuttonbox15);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox15), GTK_BUTTONBOX_SPREAD);
+
+  button12 = gtk_button_new_from_stock ("gtk-close");
+  gtk_widget_show (button12);
+  gtk_dialog_add_action_widget (GTK_DIALOG (help_dialog), button12, GTK_RESPONSE_CLOSE);
+  GTK_WIDGET_SET_FLAGS (button12, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) help_dialog, "response",
+                    G_CALLBACK (gtk_widget_destroy),
+                    NULL);
+  g_signal_connect ((gpointer) help_dialog, "destroy",
+                    G_CALLBACK (gtk_main_quit),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (help_dialog, help_dialog, "help_dialog");
+  GLADE_HOOKUP_OBJECT_NO_REF (help_dialog, vbox67, "vbox67");
+  GLADE_HOOKUP_OBJECT (help_dialog, hbox188, "hbox188");
+  GLADE_HOOKUP_OBJECT (help_dialog, label222, "label222");
+  GLADE_HOOKUP_OBJECT (help_dialog, vseparator1, "vseparator1");
+  GLADE_HOOKUP_OBJECT (help_dialog, label223, "label223");
+  GLADE_HOOKUP_OBJECT_NO_REF (help_dialog, hbuttonbox15, "hbuttonbox15");
+  GLADE_HOOKUP_OBJECT (help_dialog, button12, "button12");
+
+  return help_dialog;
+}
+
