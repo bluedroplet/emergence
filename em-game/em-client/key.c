@@ -139,7 +139,8 @@ void *key_thread(void *a)
 			
 			request = new_string_text("GET /quit-session.php?key=");
 			string_cat_text(request, key);
-			string_cat_text(request, " HTTP/1.1\r\nHost: master.emergence.uk.net\r\n\r\n");
+//			string_cat_text(request, " HTTP/1.1\r\nHost: master.emergence.uk.net\r\n\r\n");
+			string_cat_text(request, "\r\n");
 			SSL_write(ssl, request->text, strlen(request->text));
 			free_string(request);
 				

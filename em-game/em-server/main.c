@@ -29,6 +29,7 @@
 #include "shared/network.h"
 #include "shared/parse.h"
 #include "shared/config.h"
+#include "shared/openssl.h"
 #include "../common/user.h"
 #include "game.h"
 #include "ping.h"
@@ -65,8 +66,9 @@ void server_shutdown()
 {
 	console_print("Shutting down...\n");
 
-	kill_download();
 	kill_key();
+	kill_openssl();
+	kill_download();
 	kill_network();
 	kill_game();
 	kill_alarm();
@@ -626,6 +628,7 @@ void init()
 	init_timer();
 	init_alarm();
 	init_game();
+	init_openssl();
 	init_key();
 	init_download();
 	
