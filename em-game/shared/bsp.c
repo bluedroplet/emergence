@@ -10,6 +10,7 @@
 
 #include <zlib.h>
 
+#include "../../common/inout.h"
 #include "bsp.h"
 
 
@@ -81,8 +82,7 @@ int load_bsp_tree(gzFile file)
 }
 
 
-struct bspnode_t *circle_walk_bsp_node(struct bspnode_t *node, float xdis, float ydis, float r, 
-	float *t_out)
+struct bspnode_t *circle_walk_bsp_node(struct bspnode_t *node, float xdis, float ydis, float r)
 {
 	struct bspnode_t *cnode;
 		
@@ -99,122 +99,75 @@ struct bspnode_t *circle_walk_bsp_node(struct bspnode_t *node, float xdis, float
 	double dr2 = dx * dx + dy * dy;
 	double D = x1 * y2 - x2 * y1;
 	double discr = r * r * dr2 - D * D;
-	
+
 	if(discr >= 0.0)
 	{
-		double thing = dx * sqrt(discr);
-
-		double x = (D * dy + thing) / dr2;
-		double t = (x + xdis - node->x1) / (node->x2 - node->x1);
-		
-		if(t > node->tstart && t < node->tend)
+		if(fabs(dx) > fabs(dy))
 		{
-			if(t_out)
-				*t_out = t;
+			double thing = dx * sqrt(discr);
+	
+			double x = (D * dy + thing) / dr2;
+			double t = (x + xdis - node->x1) / (node->x2 - node->x1);
 			
-			return node;
+			if(t > node->tstart && t < node->tend)
+				return node;
+			
+			x = (D * dy - thing) / dr2;
+			t = (x + xdis - node->x1) / (node->x2 - node->x1);
+			
+			if(t > node->tstart && t < node->tend)
+				return node;
 		}
-		
-		x = (D * dy - thing) / dr2;
-		t = (x + xdis - node->x1) / (node->x2 - node->x1);
-		
-		if(t > node->tstart && t < node->tend)
+		else
 		{
-			if(t_out)
-				*t_out = t;
+			double thing = dy * sqrt(discr);
+	
+			double y = -(D * dx + thing) / dr2;
+			double t = (y + ydis - node->y1) / (node->y2 - node->y1);
 			
-			return node;
+			if(t > node->tstart && t < node->tend)
+				return node;
+			
+			y = -(D * dx - thing) / dr2;
+			t = (y + ydis - node->y1) / (node->y2 - node->y1);
+			
+			if(t > node->tstart && t < node->tend)
+				return node;
 		}
-		
+			
 		if(node->front)
 		{
-			cnode = circle_walk_bsp_node(node->front, xdis, ydis, r, t_out);
+			cnode = circle_walk_bsp_node(node->front, xdis, ydis, r);
 			if(cnode)
 				return cnode;
 		}
 	
 		if(node->back)
 		{
-			cnode = circle_walk_bsp_node(node->back, xdis, ydis, r, t_out);
+			cnode = circle_walk_bsp_node(node->back, xdis, ydis, r);
+			if(cnode)
+				return cnode;
+		}
+		
+		return NULL;
+	}
+
+	if(!inout(node->x1, node->y1, node->x2, node->y2, xdis, ydis))
+	{
+		if(node->front)
+		{
+			cnode = circle_walk_bsp_node(node->front, xdis, ydis, r);
 			if(cnode)
 				return cnode;
 		}
 	}
 	else
 	{
-		int front;
-		
-		if(dy == 0.0)	// north or south
+		if(node->back)
 		{
-			if(dx > 0.0)	// north
-			{				
-				if(x1 < 0.0)
-					front = 1;
-				else
-					front = 0;
-			}
-			else			// south
-			{
-				if(x1 > 0.0)
-					front = 1;
-				else
-					front = 0;
-			}
-		}
-		else if(dx == 0.0)	// east or west
-		{
-			if(dy > 0.0)	// east
-			{
-				if(y1 > 0.0)
-					front = 1;
-				else
-					front = 0;
-			}
-			else			// west
-			{
-				if(y1 < 0.0)
-					front = 1;
-				else
-					front = 0;
-			}
-		}
-		else	// diagonal
-		{
-			double x = x1 + (-y1 / dy) * dx;	// bad
-			
-			if(dy > 0.0)	// north
-			{
-				if(x < 0.0)
-					front = 1;
-				else
-					front = 0;
-			}
-			else			// south
-			{
-				if(x > 0.0)
-					front = 1;
-				else
-					front = 0;
-			}
-		}			
-		
-		if(!front)
-		{
-			if(node->front)
-			{
-				cnode = circle_walk_bsp_node(node->front, xdis, ydis, r, t_out);
-				if(cnode)
-					return cnode;
-			}
-		}
-		else
-		{
-			if(node->back)
-			{
-				cnode = circle_walk_bsp_node(node->back, xdis, ydis, r, t_out);
-				if(cnode)
-					return cnode;
-			}
+			cnode = circle_walk_bsp_node(node->back, xdis, ydis, r);
+			if(cnode)
+				return cnode;
 		}
 	}
 	
@@ -222,10 +175,10 @@ struct bspnode_t *circle_walk_bsp_node(struct bspnode_t *node, float xdis, float
 }
 
 
-struct bspnode_t *circle_walk_bsp_tree(float xdis, float ydis, float r, float *t_out)
+struct bspnode_t *circle_walk_bsp_tree(float xdis, float ydis, float r)
 {
 	if(bspnode0)
-		return circle_walk_bsp_node(bspnode0, xdis, ydis, r, t_out);
+		return circle_walk_bsp_node(bspnode0, xdis, ydis, r);
 	else
 		return NULL;
 }

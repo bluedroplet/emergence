@@ -34,9 +34,10 @@
 #endif
 
 #include <stdlib.h>
+#include <math.h>
 
 
-int inout(double x1, double y1, double x2, double y2, double x, double y)
+int inout(float x1, float y1, float x2, float y2, float x, float y)
 {
 	double dx = x2 - x1;
 	double dy = y2 - y1;
@@ -77,7 +78,7 @@ int inout(double x1, double y1, double x2, double y2, double x, double y)
 	}
 	else	// diagonal
 	{
-		if(abs(dx) > abs(dy))
+		if(fabs(dx) > fabs(dy))
 		{
 			double y_inter = y1 + dy * (x - x1) / dx;
 			

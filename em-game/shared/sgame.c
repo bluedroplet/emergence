@@ -1292,8 +1292,7 @@ void s_tick_craft(struct entity_t *craft)
 		
 		// check for wall collision
 		
-		float t;
-		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, CRAFT_RADIUS, &t);
+		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, CRAFT_RADIUS);
 		if(node)
 		{
 			#ifdef EMSERVER
@@ -1510,7 +1509,7 @@ int check_weapon_placement(double xdis, double ydis, struct entity_t *weapon)
 {
 	// check for collision with wall
 	
-	if(circle_walk_bsp_tree(xdis, ydis, WEAPON_RADIUS, NULL))
+	if(circle_walk_bsp_tree(xdis, ydis, WEAPON_RADIUS))
 		return 0;
 	
 	
@@ -1731,8 +1730,7 @@ void s_tick_weapon(struct entity_t *weapon)
 		
 		// check for collision against wall
 		
-		float t;
-		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, WEAPON_RADIUS, &t);
+		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, WEAPON_RADIUS);
 		if(node)
 		{
 			#ifdef EMSERVER
@@ -2106,7 +2104,7 @@ void s_tick_plasma(struct entity_t *plasma)
 		
 		// check for collision against wall
 		
-		struct bspnode_t *node = circle_walk_bsp_tree(plasma->xdis, plasma->ydis, PLASMA_RADIUS, NULL);
+		struct bspnode_t *node = circle_walk_bsp_tree(plasma->xdis, plasma->ydis, PLASMA_RADIUS);
 		if(node)
 		{
 			plasma->kill_me = 1;
@@ -2428,7 +2426,7 @@ void s_tick_rocket(struct entity_t *rocket)
 		
 		// check for collision against wall
 		
-		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, ROCKET_RADIUS, NULL);
+		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, ROCKET_RADIUS);
 		if(node)
 		{
 			explode_rocket(rocket);
@@ -2653,7 +2651,7 @@ void s_tick_mine(struct entity_t *mine)
 		
 		// check for collision against wall
 		
-		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, MINE_RADIUS, NULL);
+		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, MINE_RADIUS);
 		if(node)
 		{
 			explode_mine(mine);
@@ -2855,7 +2853,7 @@ void s_tick_rails(struct entity_t *rails)
 		
 		// check for collision against wall
 		
-		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, RAILS_RADIUS, NULL);
+		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, RAILS_RADIUS);
 		if(node)
 		{
 			#ifdef EMSERVER
@@ -3056,7 +3054,7 @@ void s_tick_shield(struct entity_t *shield)
 		
 		// check for collision against wall
 		
-		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, SHIELD_RADIUS, NULL);
+		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, SHIELD_RADIUS);
 		if(node)
 		{
 ;//			remove_entity(shield);

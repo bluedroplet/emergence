@@ -24,4 +24,4 @@
 */
 
 
-int inout(double x1, double y1, double x2, double y2, double x, double y);
+int inout(float x1, float y1, float x2, float y2, float x, float y);

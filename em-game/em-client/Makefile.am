@@ -1,5 +1,5 @@
 SUBDIRS = shared share
-LDADD = -L/usr/X11R6/lib ../gsub/libgsub.a ../common/libcommon.a shared/libshared.a -lm -lz -lpng -lX11 -lXext -lXrandr -lssl -lcrypto -lvorbisfile -lvorbis -logg -lasound -lpthread
+LDADD = -L/usr/X11R6/lib ../gsub/libgsub.a shared/libshared.a ../common/libcommon.a -lm -lz -lpng -lX11 -lXext -lXrandr -lssl -lcrypto -lvorbisfile -lvorbis -logg -lasound -lpthread
 AM_CPPFLAGS = -DLINUX -DEMCLIENT -Wall -I/usr/X11R6/include/X11/extensions/ -DPKGDATADIR=\""$(datadir)/emergence/"\"
 bin_PROGRAMS = em-client
 
