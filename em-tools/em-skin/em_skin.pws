@@ -1,0 +1,29 @@
+
+[filenumbers]
+0=97
+1=1252
+2=79
+3=78
+
+[filemarkers]
+0=
+1=
+2=
+3=
+
+[executer]
+RunInTerminal=true
+
+[File View]
+filter.file.unmatch=*.so *.o *.a *.la
+filter.file.ignore.hidden=0
+filter.dir.ignore.hidden=0
+
+[Project DBase]
+ShowLocals=true
+
+[filelist]
+0=/home/jonny/emergence/emergence/common/stringbuf.c
+1=/home/jonny/emergence/emergence/gsub/surfaces.c
+2=/home/jonny/emergence/emergence/gsub/gsub.h
+3=/home/jonny/emergence/emergence/em-tools/em-skin/main.c
