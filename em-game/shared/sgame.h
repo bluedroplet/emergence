@@ -380,6 +380,7 @@ struct speedup_ramp_t
 	float theta;
 	float width;
 	float boost;
+	uint32_t last_boost_tick;
 	
 	struct speedup_ramp_t *next;
 };

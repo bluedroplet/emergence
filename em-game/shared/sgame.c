@@ -142,6 +142,8 @@ int read_speedup_ramp(gzFile file)
 	if(gzread(file, &speedup_ramp.boost, 4) != 4)
 		goto error;
 	
+	speedup_ramp.last_boost_tick = 0;
+	
 	LL_ADD(struct speedup_ramp_t, &speedup_ramp0, &speedup_ramp);
 	
 	return 1;
@@ -1670,6 +1672,12 @@ int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 	struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 	while(speedup_ramp)
 	{
+		if(cgame_tick - speedup_ramp->last_boost_tick < 200)
+		{
+			LL_NEXT(speedup_ramp);
+			continue;
+		}
+		
 		double sin_theta, cos_theta;
 		sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 		
@@ -1699,13 +1707,14 @@ int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 				if(craft->craft_data.right_weapon)
 					craft->craft_data.right_weapon->propagate_me = 1;
 				
+				speedup_ramp->last_boost_tick = cgame_tick;
 				
 				emit_speedup_to_all_players(speedup_ramp);
 				break;
 			}
 		}
 		
-		speedup_ramp = speedup_ramp->next;
+		LL_NEXT(speedup_ramp);
 	}
 	
 	craft->speeding_up = s;
@@ -1902,11 +1911,18 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 	
 	// check for collision with speedup ramp
 	
-	int s = 0;
+/*	int s = 0;
 	
 	struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 	while(speedup_ramp)
 	{
+		if(cgame_tick - speedup_ramp->last_boost_tick < 200)
+		{
+			LL_NEXT(speedup_ramp);
+			continue;
+		}
+		
+		
 		double sin_theta, cos_theta;
 		sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 		
@@ -1933,16 +1949,18 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 				if(weapon->weapon_data.craft)
 					weapon->weapon_data.craft->propagate_me = 1;
 				
+				speedup_ramp->last_boost_tick = cgame_tick;
+				
 				emit_speedup_to_all_players(speedup_ramp);
 				break;
 			}
 		}			
 		
-		speedup_ramp = speedup_ramp->next;
+		LL_NEXT(speedup_ramp);
 	}
 	
 	weapon->speeding_up = s;
-	
+	*/
 	
 	// check for collision with teleporter
 	
@@ -2844,6 +2862,13 @@ void s_tick_weapon(struct entity_t *weapon)
 		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
 		{
+			if(cgame_tick - speedup_ramp->last_boost_tick < 200)
+			{
+				LL_NEXT(speedup_ramp);
+				continue;
+			}
+		
+		
 			double sin_theta, cos_theta;
 			sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 			
@@ -2860,6 +2885,7 @@ void s_tick_weapon(struct entity_t *weapon)
 					weapon->xvel -= speedup_ramp->boost * sin_theta;
 					weapon->yvel += speedup_ramp->boost * cos_theta;
 					
+					speedup_ramp->last_boost_tick = cgame_tick;
 					restart = 1;
 					weapon->propagate_me = 1;
 					weapon->speeding_up = 1;
@@ -3547,6 +3573,13 @@ void s_tick_rocket(struct entity_t *rocket)
 		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
 		{
+			if(cgame_tick - speedup_ramp->last_boost_tick < 200)
+			{
+				LL_NEXT(speedup_ramp);
+				continue;
+			}
+		
+		
 		//	double sin_theta, cos_theta;
 			sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 			
@@ -3563,6 +3596,7 @@ void s_tick_rocket(struct entity_t *rocket)
 					rocket->xvel -= speedup_ramp->boost * sin_theta;
 					rocket->yvel += speedup_ramp->boost * cos_theta;
 					
+					speedup_ramp->last_boost_tick = cgame_tick;
 					restart = 1;
 					rocket->speeding_up = 1;
 					#ifdef EMSERVER
@@ -3811,6 +3845,13 @@ void s_tick_mine(struct entity_t *mine)
 		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
 		{
+			if(cgame_tick - speedup_ramp->last_boost_tick < 200)
+			{
+				LL_NEXT(speedup_ramp);
+				continue;
+			}
+		
+		
 			double sin_theta, cos_theta;
 			sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 			
@@ -3827,6 +3868,7 @@ void s_tick_mine(struct entity_t *mine)
 					mine->xvel -= speedup_ramp->boost * sin_theta;
 					mine->yvel += speedup_ramp->boost * cos_theta;
 					
+					speedup_ramp->last_boost_tick = cgame_tick;
 					restart = 1;
 					mine->speeding_up = 1;
 					#ifdef EMSERVER
@@ -4083,6 +4125,7 @@ void s_tick_rails(struct entity_t *rails)
 					rails->xvel -= speedup_ramp->boost * sin_theta;
 					rails->yvel += speedup_ramp->boost * cos_theta;
 					
+					speedup_ramp->last_boost_tick = cgame_tick;
 					restart = 1;
 					rails->speeding_up = 1;
 					#ifdef EMSERVER
@@ -4288,6 +4331,13 @@ void s_tick_shield(struct entity_t *shield)
 		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
 		while(speedup_ramp)
 		{
+			if(cgame_tick - speedup_ramp->last_boost_tick < 200)
+			{
+				LL_NEXT(speedup_ramp);
+				continue;
+			}
+		
+		
 			double sin_theta, cos_theta;
 			sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 			
@@ -4304,6 +4354,7 @@ void s_tick_shield(struct entity_t *shield)
 					shield->xvel -= speedup_ramp->boost * sin_theta;
 					shield->yvel += speedup_ramp->boost * cos_theta;
 					
+					speedup_ramp->last_boost_tick = cgame_tick;
 					restart = 1;
 					shield->speeding_up = 1;
 					#ifdef EMSERVER
