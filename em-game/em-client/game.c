@@ -939,7 +939,9 @@ int game_process_joined()
 
 int game_process_failed()
 {
-	if(game_state != GAMESTATE_AWAITING_APPROVAL)
+	if(game_state != GAMESTATE_AWAITING_APPROVAL && 
+		game_state != GAMESTATE_JOINED &&
+		game_state != GAMESTATE_PLAYING)
 		return 1;
 	
 	console_print("!\nAuthentication failed.\n");

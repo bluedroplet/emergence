@@ -39,9 +39,11 @@
 struct conn_state_t
 {
 	uint32_t conn;
-	double birth;
+	float birth;
 	int state;
 	int type;
+	char session_key[16];
+	float next_check;
 	
 	struct conn_state_t *next;
 		
@@ -179,8 +181,6 @@ void process_virgin_stream(uint32_t conn, uint32_t index, struct buffer_t *strea
 	struct conn_state_t *cstate = find_conn_state(conn);
 	assert(cstate);
 	
-	char session_key[16];
-	
 	switch(buffer_read_uint8(stream))
 	{
 	case EMMSG_JOIN:
@@ -188,21 +188,21 @@ void process_virgin_stream(uint32_t conn, uint32_t index, struct buffer_t *strea
 		if(cstate->state != CONN_STATE_VIRGIN)
 			break;
 		
-		#ifndef NONAUTHENTICATING
+//		#ifndef NONAUTHENTICATING
 	
-		if(cstate->type == CONN_TYPE_PUBLIC)
-		{
+//		if(cstate->type == CONN_TYPE_PUBLIC)
+//		{
 			console_print("Requiring authentication\n");
 			
 			net_emit_uint8(conn, EMNETMSG_AUTHENTICATE);
 			net_emit_end_of_stream(conn);
 			cstate->state = CONN_STATE_AUTHENTICATING;
-		}
-		else
+//		}
+//		else
 			
-		#endif
+//		#endif
 		
-		{
+/*		{
 			cstate->state = CONN_STATE_JOINED;
 			
 			net_emit_uint8(conn, EMNETMSG_JOINED);
@@ -210,7 +210,7 @@ void process_virgin_stream(uint32_t conn, uint32_t index, struct buffer_t *strea
 			
 			game_process_joined(conn);
 		}
-		
+*/		
 		break;
 		
 		
@@ -219,11 +219,11 @@ void process_virgin_stream(uint32_t conn, uint32_t index, struct buffer_t *strea
 		if(cstate->state != CONN_STATE_AUTHENTICATING)
 			break;
 		
-		buffer_read_buf(stream, session_key, 16);
+		buffer_read_buf(stream, cstate->session_key, 16);
 		
 		console_print("Authentication received\n");
 		
-		key_verify_session(conn, session_key);
+		key_verify_session(conn, cstate->session_key);
 		
 		cstate->state = CONN_STATE_VERIFYING;
 		
@@ -243,6 +243,7 @@ void process_session_accepted(uint32_t conn)
 	console_print("Authentication succeeded\n");
 	
 	cstate->state = CONN_STATE_JOINED;
+	cstate->next_check = get_wall_time() + 30;
 	
 	net_emit_uint8(conn, EMNETMSG_JOINED);
 	net_emit_end_of_stream(conn);
@@ -254,9 +255,11 @@ void process_session_accepted(uint32_t conn)
 void process_session_declined(uint32_t conn)
 {
 	struct conn_state_t *cstate = find_conn_state(conn);
-	assert(cstate);
+	if(!cstate)
+		return;
 	
-	if(cstate->state != CONN_STATE_VERIFYING)
+	if(cstate->state != CONN_STATE_VERIFYING && 
+		cstate->state != CONN_STATE_JOINED)
 		return;
 
 	console_print("Authentication failed\n");
@@ -264,6 +267,9 @@ void process_session_declined(uint32_t conn)
 	net_emit_uint8(conn, EMNETMSG_FAILED);
 	net_emit_end_of_stream(conn);
 	em_disconnect(conn);
+	
+	if(cstate->state == CONN_STATE_JOINED)
+		game_process_conn_lost(conn);		
 }
 
 
@@ -280,6 +286,26 @@ void process_session_error(uint32_t conn)
 	net_emit_uint8(conn, EMNETMSG_FAILED);
 	net_emit_end_of_stream(conn);
 	em_disconnect(conn);
+}
+
+
+void check_sessions()
+{
+	struct conn_state_t *cstate = conn_state0;
+	float time = get_wall_time();
+		
+	while(cstate)
+	{
+		if(cstate->state == CONN_STATE_JOINED &&
+		//	cstate->type == CONN_TYPE_PUBLIC &&
+			cstate->next_check < time)
+		{
+			key_verify_session(cstate->conn, cstate->session_key);
+			cstate->next_check += 30;
+		}
+		
+		cstate = cstate->next;
+	}
 }
 
 
@@ -488,6 +514,10 @@ void process_game_timer()
 {
 	uint32_t m;
 	while(read(game_timer_fd, &m, 1) != -1);
+		
+//	#ifndef NONAUTHENTICATING
+	check_sessions();
+//	#endif
 		
 	update_game();
 }

@@ -16,10 +16,11 @@
 
 
 #include "../common/stringbuf.h"
+#include "../common/buffer.h"
 #include "../common/user.h"
 #include "console.h"
 #include "key.h"
-#include "game.h"
+#include "main.h"
 
 SSL_CTX *ctx;
 
@@ -28,12 +29,8 @@ int key_out_pipe[2];
 
 pthread_t key_thread_id;
 
-int key_loaded = 0;
-char key[17];
-
 #define KEY_THREAD_IN_SHUTDOWN			0
-#define KEY_THREAD_IN_NEW_SESSION		1
-#define KEY_THREAD_IN_QUIT_SESSION		2
+#define KEY_THREAD_IN_VERIFY_SESSION	1
 
 #define KEY_THREAD_OUT_KEY_ACCEPTED		0
 #define KEY_THREAD_OUT_KEY_DECLINED		1
@@ -73,8 +70,9 @@ void *key_thread(void *a)
 	SSL *ssl;
 	struct string_t *request = NULL;
 	char result[8];
-	char session_key[16];
+	char session_key[17];
 	uint8_t msg;
+	uint32_t conn;
 	
 	SSL_library_init();
 	
@@ -93,7 +91,7 @@ void *key_thread(void *a)
 			pthread_exit(NULL);
 			break;
 		
-		case KEY_THREAD_IN_NEW_SESSION:
+		case KEY_THREAD_IN_VERIFY_SESSION:
 		
 			ssl = create_SSL(MASTER_SERVER);
 			if(!ssl)
@@ -103,8 +101,12 @@ void *key_thread(void *a)
 				break;
 			}
 			
-			request = new_string_text("GET /new-session.php?key=");
-			string_cat_text(request, key);
+			read(key_in_pipe[0], &conn, 4);
+			read(key_in_pipe[0], session_key, 16);
+			session_key[16] = '\0';
+			
+			request = new_string_text("GET /verify-session.php?session_key=");
+			string_cat_text(request, session_key);
 //			string_cat_text(request, " HTTP/1.1\r\nHost: master.emergence.uk.net\r\n\r\n");
 			string_cat_text(request, "\r\n");
 			SSL_write(ssl, request->text, strlen(request->text));
@@ -115,34 +117,15 @@ void *key_thread(void *a)
 			{
 				msg = KEY_THREAD_OUT_KEY_DECLINED;
 				write(key_out_pipe[1], &msg, 1);
+				write(key_out_pipe[1], &conn, 4);
 				SSL_clear(ssl);
 				SSL_free(ssl);
 				break;
 			}
 			
-			SSL_read(ssl, session_key, 16);
-
 			msg = KEY_THREAD_OUT_KEY_ACCEPTED;
 			write(key_out_pipe[1], &msg, 1);
-			write(key_out_pipe[1], session_key, 16);
-				
-			SSL_clear(ssl);
-			SSL_free(ssl);
-			
-			break;
-
-			
-		case KEY_THREAD_IN_QUIT_SESSION:
-			
-			ssl = create_SSL(MASTER_SERVER);
-			if(!ssl)
-				break;
-			
-			request = new_string_text("GET /quit-session.php?key=");
-			string_cat_text(request, key);
-			string_cat_text(request, " HTTP/1.1\r\nHost: master.emergence.uk.net\r\n\r\n");
-			SSL_write(ssl, request->text, strlen(request->text));
-			free_string(request);
+			write(key_out_pipe[1], &conn, 4);
 				
 			SSL_clear(ssl);
 			SSL_free(ssl);
@@ -155,27 +138,6 @@ void *key_thread(void *a)
 
 void init_key()
 {
-	struct string_t *key_path = new_string_string(home_dir);
-	string_cat_text(key_path, "/.emergence-key");
-	
-	FILE *key_file = fopen(key_path->text, "r");
-	free_string(key_path);
-
-	if(!key_file)
-	{
-		console_print("Authentication key not found.\n");
-		return;
-	}
-	
-	fread(key, 1, 16, key_file);
-	
-	fclose(key_file);
-	
-	key[16] = '\0';
-	
-	console_print("Authentication key found.\n");
-	key_loaded = 1;
-
 	pipe(key_in_pipe);
 	pipe(key_out_pipe);
 	pthread_create(&key_thread_id, NULL, key_thread, NULL);
@@ -184,47 +146,41 @@ void init_key()
 
 void kill_key()
 {
-	if(!key_loaded)
-		return;
-	
 	uint8_t msg = KEY_THREAD_IN_SHUTDOWN;
 	write(key_in_pipe[1], &msg, 1);
 	pthread_join(key_thread_id, NULL);
 }
 
 
-int key_create_session()
+void key_verify_session(uint32_t conn, char session_key[16])
 {
-	if(!key_loaded)
-		return 0;
-	
-	uint8_t msg = KEY_THREAD_IN_NEW_SESSION;
+	uint8_t msg = KEY_THREAD_IN_VERIFY_SESSION;
 	write(key_in_pipe[1], &msg, 1);
-	
-	return 1;
+	write(key_in_pipe[1], &conn, 4);
+	write(key_in_pipe[1], session_key, 16);
 }
 
 
 void process_key_out_pipe()
 {
 	uint8_t msg;
-	char session_key[16];
+	uint32_t conn;
 	
 	read(key_out_pipe[0], &msg, 1);
+	read(key_out_pipe[0], &conn, 4);
 
 	switch(msg)
 	{
 	case KEY_THREAD_OUT_KEY_ACCEPTED:
-		read(key_out_pipe[0], session_key, 16);
-		game_process_key_accepted(session_key);
+		process_session_accepted(conn);
 		break;
 	
 	case KEY_THREAD_OUT_KEY_DECLINED:
-		game_process_key_declined();
+		process_session_declined(conn);
 		break;
 	
 	case KEY_THREAD_OUT_KEY_ERROR:
-		game_process_key_error();
+		process_session_error(conn);
 		break;
 	}
 }
