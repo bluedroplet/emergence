@@ -288,7 +288,7 @@ struct
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
 	{"BTN_0",				NULL,	NULL},
-	{"BTN_1",				NULL,	screenshot},
+	{"BTN_1",				NULL,	NULL},//screenshot},
 	{"BTN_2",				NULL,	NULL},
 	{"BTN_3",				NULL,	NULL},
 	{"BTN_4",				NULL,	NULL},
@@ -359,16 +359,29 @@ int control_changed;
 
 void action_thrust(float val)
 {
-	thrust = fabs(val);
+	thrust += val / 2.0;
 	control_changed = 1;
 }
 
 
 void action_roll(float val)
 {
-	roll = val;
+	roll += val;
 	control_changed = 1;
 }
+
+void thrust_bool(uint32_t state)
+{
+	if(state)
+		thrust = 10000.0f;
+	else
+		thrust = 0.0f;
+	
+	control_changed = 1;
+}
+
+
+
 
 
 void fire_rail(uint32_t state)
@@ -438,13 +451,13 @@ struct
 	{"LEFT",				fire_left,		ACTIONTYPE_BOOL}, 
 	{"RIGHT",				fire_right,		ACTIONTYPE_BOOL}, 
 	{"DropMine",			drop_mine,		ACTIONTYPE_BOOL}, 
-//	{"ThrustBool",			thrust_bool,	ACTIONTYPE_BOOL}, 
+	{"THRUSTBOOL",			thrust_bool,	ACTIONTYPE_BOOL}, 
 //	{"RollLeftBool",		roll_left,		ACTIONTYPE_BOOL}, 
 //	{"RollRightBool",		roll_right,		ACTIONTYPE_BOOL}, 
 };
 
 
-int numactions = 5; //sizeof(controls) / sizeof(controls[0]);
+int numactions = 7; //sizeof(controls) / sizeof(controls[0]);
 
 struct
 {
@@ -476,6 +489,8 @@ void process_control_alarm()
 			net_emit_float(roll);
 			net_emit_end_of_stream();
 			control_changed = 0;
+			roll = 0.0;
+			thrust = 0.0;
 		}
 	
 		next_control_tick = ((int)(time / CONTROL_TICK_INTERVAL) + 1) * (double)CONTROL_TICK_INTERVAL;
@@ -636,6 +651,9 @@ void process_keypress(int key, int state)
 
 	if(func)
 		func(state);
+	
+	if(!state)
+		return;
 
 	if(key == 42 || key == 54)
 	{
@@ -697,7 +715,7 @@ void process_axis(int axis, float val)
 	if(axis >= 32)
 		return;
 
-	if(!axis_calib[axis].set)
+/*	if(!axis_calib[axis].set)
 	{
 		axis_calib[axis].set = 1;
 		axis_calib[axis].min = val;
@@ -729,13 +747,14 @@ void process_axis(int axis, float val)
 	
 	if(val > -0.1f && val < 0.1f)
 		val = 0.0f;
-	
+	*/
 //	printf("%f\n", val);
 	
 	void (*func)(float);
 
 	func = controls[axis + 288].func;
 	
+//	printf("%f\n", val);
 
 	if(func)
 		func(val);

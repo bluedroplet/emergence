@@ -5,7 +5,8 @@
 struct craft_data_t
 {
 	float acc;
-	float theta, omega;
+	float theta;
+	int braking;
 
 	struct entity_t *left_weapon, *right_weapon;
 	float shield_flare;

@@ -201,7 +201,7 @@ void write_craft_data_to_net(uint32_t conn, struct entity_t *craft)
 {
 	net_emit_float(conn, craft->craft_data.acc);
 	net_emit_float(conn, craft->craft_data.theta);
-	net_emit_float(conn, craft->craft_data.omega);
+	net_emit_int(conn, craft->craft_data.braking);
 	net_emit_float(conn, craft->craft_data.shield_flare);
 }
 
@@ -781,7 +781,6 @@ void spawn_player(struct player_t *player)
 	if(old_craft)
 	{
 		player->craft->craft_data.acc = old_craft->craft_data.acc;
-		player->craft->craft_data.omega = old_craft->craft_data.omega;
 	}
 		
 	
@@ -1168,13 +1167,16 @@ int game_process_control_change(struct player_t *player, uint32_t index, struct 
 	float thrust = buffer_read_float(stream);
 	float roll = buffer_read_float(stream);
 	
-	thrust = max(thrust, 0.0);
-	thrust = min(thrust, 1.0);
-	player->craft->craft_data.acc = thrust * 0.020;
+//	thrust = max(thrust, 0.0);
+//	thrust = min(thrust, 1.0);
+	player->craft->craft_data.acc += -thrust * 0.0020;
 	
-	roll = max(roll, -1.0);
-	roll = min(roll, 1.0);
-	player->craft->craft_data.omega = -roll * 0.075;
+	player->craft->craft_data.acc = max(player->craft->craft_data.acc, 0.0);
+	player->craft->craft_data.acc = min(player->craft->craft_data.acc, 0.025);
+	
+//	roll = max(roll, -1.0);
+//	roll = min(roll, 1.0);
+	player->craft->craft_data.theta += -roll * 0.015;
 	
 	propagate_entity(player->craft);
 	

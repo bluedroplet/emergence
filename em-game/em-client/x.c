@@ -71,6 +71,7 @@ void process_x()
 		break;
 	
 	case KeyRelease:
+		process_keypress(report.xkey.keycode - 8, 0);
 		break;
 	
 	default:
@@ -80,6 +81,87 @@ void process_x()
 		
 		break;
 	}
+}
+
+Cursor create_blank_cursor()
+{
+	Cursor cursor;
+	XGCValues GCvalues;
+	GC        GCcursor;
+	XImage *data_image, *mask_image;
+	Pixmap  data_pixmap, mask_pixmap;
+	int       clen, i;
+	char     *x_data, *x_mask;
+	static XColor black = {  0,  0,  0,  0 };
+	static XColor white = { 0xffff, 0xffff, 0xffff, 0xffff };
+	
+	uint8_t data[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	uint8_t mask[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	/* Mix the mask and the data */
+	clen = 8;
+	x_data = (char *)malloc(clen);
+	if ( x_data == NULL ) {
+	//	SDL_OutOfMemory();
+		return(NULL);
+	}
+	x_mask = (char *)malloc(clen);
+	if ( x_mask == NULL ) {
+		free(x_data);
+	//	SDL_OutOfMemory();
+		return(NULL);
+	}
+	for ( i=0; i<clen; ++i ) {
+		/* The mask is OR'd with the data to turn inverted color
+		   pixels black since inverted color cursors aren't supported
+		   under X11.
+		 */
+		x_mask[i] = data[i] | mask[i];
+		x_data[i] = data[i];
+	}
+
+
+	/* Create the data image */
+	data_image = XCreateImage(xdisplay, 
+			DefaultVisual(xdisplay, xscreen),
+					1, XYBitmap, 0, x_data, 8, 8, 8, 1);
+	data_image->byte_order = MSBFirst;
+	data_image->bitmap_bit_order = MSBFirst;
+	data_pixmap = XCreatePixmap(xdisplay, xwindow, 8, 8, 1);
+
+	/* Create the data mask */
+	mask_image = XCreateImage(xdisplay, 
+			DefaultVisual(xdisplay, xscreen),
+					1, XYBitmap, 0, x_mask, 8, 8, 8, 1);
+	mask_image->byte_order = MSBFirst;
+	mask_image->bitmap_bit_order = MSBFirst;
+	mask_pixmap = XCreatePixmap(xdisplay, xwindow, 8, 8, 1);
+
+	/* Create the graphics context */
+	GCvalues.function = GXcopy;
+	GCvalues.foreground = ~0;
+	GCvalues.background =  0;
+	GCvalues.plane_mask = AllPlanes;
+	GCcursor = XCreateGC(xdisplay, data_pixmap,
+			(GCFunction|GCForeground|GCBackground|GCPlaneMask),
+								&GCvalues);
+
+	/* Blit the images to the pixmaps */
+	XPutImage(xdisplay, data_pixmap, GCcursor, data_image,
+							0, 0, 0, 0, 8, 8);
+	XPutImage(xdisplay, mask_pixmap, GCcursor, mask_image,
+							0, 0, 0, 0, 8, 8);
+	XFreeGC(xdisplay, GCcursor);
+	/* These free the x_data and x_mask memory pointers */
+	XDestroyImage(data_image);
+	XDestroyImage(mask_image);
+
+	/* Create the cursor */
+	cursor = XCreatePixmapCursor(xdisplay, data_pixmap,
+				mask_pixmap, &black, &white, 0, 0);
+
+
+	return(cursor);
 }
 
 
@@ -140,6 +222,10 @@ void init_x()
 	XMapRaised(xdisplay, xwindow);
 	
 	XSetInputFocus(xdisplay, xwindow, RevertToNone, CurrentTime);
+	
+	Cursor xcursor = create_blank_cursor();
+	
+	XDefineCursor(xdisplay, xwindow, xcursor);
 	
   gc=XCreateGC(xdisplay, xwindow, 0, NULL);	
 	

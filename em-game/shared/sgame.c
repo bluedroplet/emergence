@@ -1378,8 +1378,6 @@ void s_tick_craft(struct entity_t *craft)
 {
 	craft->craft_data.shield_flare = max(0.0, craft->craft_data.shield_flare - 0.005);
 	
-	craft->craft_data.theta += craft->craft_data.omega;
-	
 	while(craft->craft_data.theta >= M_PI)
 		craft->craft_data.theta -= 2 * M_PI;
 	
@@ -1395,7 +1393,7 @@ void s_tick_craft(struct entity_t *craft)
 		craft->yvel += craft->craft_data.acc * cos_theta;
 	}
 
-	apply_gravity_acceleration(craft);
+//	apply_gravity_acceleration(craft);
 	slow_entity(craft);
 
 

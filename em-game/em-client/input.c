@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include <linux/joystick.h>
+#include <linux/input.h>
 
 #include "../common/types.h"
 #include "../shared/cvar.h"
@@ -24,18 +24,18 @@ int input_fd = -1;
 
 void process_input()
 {
-	struct js_event event;
+	struct input_event event;
 	
-	read(input_fd, &event, sizeof(struct js_event));
+	read(input_fd, &event, sizeof(struct input_event));
 		
-	switch(event.type & ~JS_EVENT_INIT)
+	switch(event.type)
 	{
-	case JS_EVENT_BUTTON:
-		process_button(event.number, event.value);
+	case EV_KEY:
+		process_button(event.code - BTN_MOUSE, event.value);
 		break;
 	
-	case JS_EVENT_AXIS:
-		process_axis(event.number, (float)event.value);
+	case EV_REL:
+		process_axis(event.code, (float)*(int*)&event.value);
 		break;
 	}
 }
@@ -43,14 +43,12 @@ void process_input()
 
 void create_input_cvars()
 {
-	create_cvar_string("input_dev", "/dev/js0", 0);
+	create_cvar_string("input_dev", "/dev/input/event2", 0);
 }
 
 
 void init_input()
 {
-	return;
-	
 	console_print("Opening input device: ");
 	
 	input_fd = open(get_cvar_string("input_dev"), O_RDONLY);

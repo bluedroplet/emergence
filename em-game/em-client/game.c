@@ -67,7 +67,8 @@ struct event_t
 				struct
 				{
 					float acc;
-					float theta, omega;
+					float theta;
+					int braking;
 					float shield_flare;
 					int carcass;
 					
@@ -380,7 +381,7 @@ void read_craft_data_from_stream(struct event_t *event, struct buffer_t *stream)
 {
 	event->ent_data.craft_data.acc = buffer_read_float(stream);
 	event->ent_data.craft_data.theta = buffer_read_float(stream);
-	event->ent_data.craft_data.omega = buffer_read_float(stream);
+	event->ent_data.craft_data.braking = buffer_read_float(stream);
 	event->ent_data.craft_data.shield_flare = buffer_read_float(stream);
 }
 
@@ -460,7 +461,7 @@ void process_spawn_ent_event(struct event_t *event)
 	case ENT_CRAFT:
 		entity->craft_data.acc = event->ent_data.craft_data.acc;
 		entity->craft_data.theta = event->ent_data.craft_data.theta;
-		entity->craft_data.omega = event->ent_data.craft_data.omega;
+		entity->craft_data.braking = event->ent_data.craft_data.braking;
 		entity->craft_data.shield_flare = event->ent_data.craft_data.shield_flare;
 		entity->craft_data.surface = skin_get_craft_surface(event->ent_data.skin);
 		entity->craft_data.particle = 0.0;
@@ -555,7 +556,7 @@ void process_update_ent_event(struct event_t *event)
 	case ENT_CRAFT:
 		entity->craft_data.acc = event->ent_data.craft_data.acc;
 		entity->craft_data.theta = event->ent_data.craft_data.theta;
-		entity->craft_data.omega = event->ent_data.craft_data.omega;
+		entity->craft_data.braking = event->ent_data.craft_data.braking;
 		entity->craft_data.shield_flare = event->ent_data.craft_data.shield_flare;
 		break;
 	
@@ -1170,24 +1171,6 @@ void cf_play(char *c)
 }
 
 
-void thrust_bool(uint32_t state)
-{
-//	if(game_state != GAMESTATE_ALIVE)
-//		return;
-
-//	net_write_dword(EMNETMSG_CTRLCNGE);
-//	net_write_dword(EMCTRL_THRUST);
-
-//	if(state)
-//		net_write_float(1.0f);
-//	else
-//		net_write_float(0.0f);
-
-//	finished_writing();
-}
-
-
-
 void roll_left(uint32_t state)
 {
 //	if(game_state != GAMESTATE_ALIVE)
@@ -1475,7 +1458,7 @@ void render_entities()
 				params.red = params.green = params.blue = 0xff;
 				params.alpha = lrint(entity->craft_data.shield_flare * 255.0);
 			
-				blit_alpha_surface(&params);
+				alpha_blit_surface(&params);
 			}
 		
 			break;
@@ -1504,7 +1487,7 @@ void render_entities()
 			params.red = params.green = params.blue = 0xff;
 			params.alpha = lrint(entity->weapon_data.shield_flare * 255.0);
 		
-			blit_alpha_surface(&params);
+			alpha_blit_surface(&params);
 		
 			break;
 		
@@ -1521,7 +1504,7 @@ void render_entities()
 			params.dest_x = x - s_plasma->width / 2;
 			params.dest_y = y - s_plasma->width / 2;
 			
-			blit_alpha_surface(&params);
+			blit_surface(&params);
 		
 			break;
 		
@@ -1541,7 +1524,7 @@ void render_entities()
 			params.dest_x = x - s_plasma->width / 2;
 			params.dest_y = y - s_plasma->width / 2;
 			
-			blit_alpha_surface(&params);
+			blit_surface(&params);
 		
 			break;
 		
@@ -1827,6 +1810,9 @@ void render_particle(float wx, float wy, uint8_t alpha, uint8_t red, uint8_t gre
 	world_to_screen(wx, wy, &x, &y);
 
 	struct blit_params_t params;
+	params.red = red;
+	params.green = green;
+	params.blue = blue;
 	params.dest = s_backbuffer;
 	
 	params.dest_x = x;
@@ -1834,23 +1820,23 @@ void render_particle(float wx, float wy, uint8_t alpha, uint8_t red, uint8_t gre
 	
 	params.alpha = alpha;
 	
-	plot_alpha_pixel(&params);
+	alpha_plot_pixel(&params);
 	
 	params.alpha >>= 1;
 	
 	params.dest_x++;
-	plot_alpha_pixel(&params);
+	alpha_plot_pixel(&params);
 	
 	params.dest_x--;
 	params.dest_y++;
-	plot_alpha_pixel(&params);
+	alpha_plot_pixel(&params);
 	
 	params.dest_y -= 2;
-	plot_alpha_pixel(&params);
+	alpha_plot_pixel(&params);
 	
 	params.dest_x--;
 	params.dest_y++;
-	plot_alpha_pixel(&params);
+	alpha_plot_pixel(&params);
 }
 
 

@@ -18,7 +18,7 @@ double star_zs = 1.0f;
 struct star_t
 {
 	float x, y, z;
-	dword colour;
+	uint8_t alpha;
 
 } *stars = NULL;
 
@@ -73,7 +73,7 @@ void init_stars()
 		stars[s].x = drand48() * 8000;
 		stars[s].y = drand48() * 8000;
 
-		stars[s].colour = vid_graylookup[lround((drand48() * 255.0f))];	// pile of crap
+		stars[s].alpha = lround(drand48() * 255.0f);
 	}
 }
 
@@ -84,6 +84,10 @@ void render_stars()
 		return;
 
 	int s;
+	
+	struct blit_params_t params;
+		
+	params.dest = s_backbuffer;
 
 	for(s = 0; s < numstars; s++)
 	{
@@ -100,11 +104,14 @@ void render_stars()
 			continue;
 		}
 
-/*		blit_colour = stars[s].colour;
 		
-		blit_destx = x;
-		blit_desty = y;
+		params.red = stars[s].alpha;
+		params.green = stars[s].alpha;
+		params.blue = stars[s].alpha;
 		
-		plot_pixel();
-*/	}
+		params.dest_x = x;
+		params.dest_y = y;
+		
+		plot_pixel(&params);
+	}
 }

@@ -80,6 +80,11 @@ void render_upper_particles()
 	
 	float time = get_double_time();
 	
+	struct blit_params_t params;
+		
+	params.dest = s_backbuffer;
+	params.red = 0xff;
+	
 	for(p = 0; p != NUMPARTICLES; p++)
 	{
 		int i = (p + nupperpart) % NUMPARTICLES;
@@ -121,34 +126,36 @@ void render_upper_particles()
 			
 			world_to_screen(upper_particles[i].xpos, upper_particles[i].ypos, &x, &y);
 			
-/*			if(life < 0.1275)
-				blit_colour = convert_24bit_to_16bit(255, (uint8_t)min(floor(life * 2000.0), 255), (uint8_t)min(floor(life * 2000.0), 255));
+			
+			
+			if(life < 0.1275)
+				params.green = params.blue = (uint8_t)min(floor(life * 2000.0), 255);
 			else
-				blit_colour = 0xffff;
+				params.green = params.blue = 0xff;
 			
-			blit_alpha  = (uint8_t)(255 - floor(life * 255.0f));
+			params.alpha  = (uint8_t)(255 - floor(life * 255.0f));
 			
-			blit_destx = x;
-			blit_desty = y;
+			params.dest_x = x;
+			params.dest_y = y;
 			
-			plot_alpha_pixel();
+			alpha_plot_pixel(&params);
 			
-			blit_alpha >>= 1;
+			params.alpha >>= 1;
 			
-			blit_destx++;
-			plot_alpha_pixel();
+			params.dest_x++;
+			alpha_plot_pixel(&params);
 			
-			blit_destx--;
-			blit_desty++;
-			plot_alpha_pixel();
+			params.dest_x--;
+			params.dest_y++;
+			alpha_plot_pixel(&params);
 			
-			blit_desty -= 2;
-			plot_alpha_pixel();
+			params.dest_y -= 2;
+			alpha_plot_pixel(&params);
 			
-			blit_destx--;
-			blit_desty++;
-			plot_alpha_pixel();
-*/			
+			params.dest_x--;
+			params.dest_y++;
+			alpha_plot_pixel(&params);
+			
 			upper_particles[i].last = time;
 		}
 	}
@@ -161,7 +168,11 @@ void render_lower_particles()
 	
 	float time = get_double_time();
 	
-	
+	struct blit_params_t params;
+		
+	params.dest = s_backbuffer;
+	params.red = 0xff;
+
 	for(p = 0; p != NUMPARTICLES; p++)
 	{
 		int i = (p + nlowerpart) % NUMPARTICLES;
@@ -203,34 +214,34 @@ void render_lower_particles()
 			
 			world_to_screen(lower_particles[i].xpos, lower_particles[i].ypos, &x, &y);
 			
-/*			if(life < 0.1275)
-				blit_colour = convert_24bit_to_16bit(255, (uint8_t)min(floor(life * 2000.0), 255), (uint8_t)min(floor(life * 2000.0), 255));
+			if(life < 0.1275)
+				params.green = params.blue = (uint8_t)min(floor(life * 2000.0), 255);
 			else
-				blit_colour = 0xffff;
+				params.green = params.blue = 0xff;
 			
-			blit_alpha  = (uint8_t)(255 - floor(life * 255.0f));
+			params.alpha  = (uint8_t)(255 - floor(life * 255.0f));
 			
-			blit_destx = x;
-			blit_desty = y;
+			params.dest_x = x;
+			params.dest_y = y;
 			
-			plot_alpha_pixel();
+			alpha_plot_pixel(&params);
 			
-			blit_alpha >>= 1;
+			params.alpha >>= 1;
 			
-			blit_destx++;
-			plot_alpha_pixel();
+			params.dest_x++;
+			alpha_plot_pixel(&params);
 			
-			blit_destx--;
-			blit_desty++;
-			plot_alpha_pixel();
+			params.dest_x--;
+			params.dest_y++;
+			alpha_plot_pixel(&params);
 			
-			blit_desty -= 2;
-			plot_alpha_pixel();
+			params.dest_y -= 2;
+			alpha_plot_pixel(&params);
 			
-			blit_destx--;
-			blit_desty++;
-			plot_alpha_pixel();
-*/			
+			params.dest_x--;
+			params.dest_y++;
+			alpha_plot_pixel(&params);
+			
 			lower_particles[i].last = time;
 		}
 	}

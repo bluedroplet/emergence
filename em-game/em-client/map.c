@@ -356,6 +356,10 @@ int load_map(char *name)
 void render_map()
 {
 	struct tile_t *tile = tile0;
+		
+	struct blit_params_t params;
+		
+	params.dest = s_backbuffer;
 
 	while(tile)
 	{
@@ -364,13 +368,13 @@ void render_map()
 		world_to_screen((double)tile->x, (double)tile->y, &x, &y);
 
 
-/*		blit_source = tile->surface;
+		params.source = tile->surface;
 	
-		blit_destx = x;
-		blit_desty = y;
+		params.dest_x = x;
+		params.dest_y = y;
 	
-		alpha_surface_blit_surface();
-*/
+		blit_surface(&params);
+
 		tile = tile->next;
 	}
 	
