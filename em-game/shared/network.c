@@ -1829,17 +1829,12 @@ void init_network()
 	name.sin_port = htons(net_listen_port);
 	name.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if(bind(udp_fd, (struct sockaddr *) &name, sizeof (name)) < 0)
+	while(bind(udp_fd, (struct sockaddr *) &name, sizeof (name)) < 0)
 	{
-		name.sin_port = htons(++net_listen_port);
-		
-		while(bind(udp_fd, (struct sockaddr *) &name, sizeof (name)) < 0)
-		{
-			if(errno == EADDRINUSE)
-				name.sin_port = htons(++net_listen_port);
-			else
-				server_libc_error("bind failure");
-		}
+		if(errno == EADDRINUSE)
+			name.sin_port = htons(++net_listen_port);
+		else
+			server_libc_error("bind failure");
 	}
 
 	console_print("Listening on port %i\n", net_listen_port);
