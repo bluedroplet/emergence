@@ -55,6 +55,7 @@ void game_process_stream_untimed_ooo(uint32_t conn, uint32_t index, struct buffe
 void init_game();
 void kill_game();
 
+void print_on_all_players(char *text);
 void remove_entity_from_all_players(struct entity_t *entity);
 void respawn_craft(struct entity_t *craft);
 void make_carcass_on_all_players(struct entity_t *craft);
