@@ -6,6 +6,8 @@ export CFLAGS="-march=pentium3 -O2 -pipe -g -fomit-frame-pointer -fprefetch-loop
 
 cd em-game
 
+make distclean
+
 aclocal-1.8
 automake-1.8
 autoconf-2.58
@@ -13,12 +15,16 @@ autoconf-2.58
 
 cd ../em-tools
 
+make distclean
+
 aclocal-1.8
 automake-1.8
 autoconf-2.58
 ./configure
 
 cd ../misc
+
+make distclean
 
 aclocal-1.8
 automake-1.8
