@@ -1798,11 +1798,7 @@ void right_button_up(int x, int y)
 			
 			if(node)
 			{
-				if(get_conn_from_sat(node, sat))
-					run_connected_sat_menu();
-				else
-					run_unconnected_sat_menu();
-				
+				run_sat_menu(node, sat);
 				goto end;
 			}
 			

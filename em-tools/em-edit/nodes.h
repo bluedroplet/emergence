@@ -121,8 +121,7 @@ void init_nodes();
 void kill_nodes();
 
 
-void run_connected_sat_menu();
-void run_unconnected_sat_menu();
+void run_sat_menu(struct node_t *node, int sat);
 
 
 #endif	// _INC_NODES

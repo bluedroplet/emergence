@@ -2532,6 +2532,32 @@ void run_node_menu(struct node_t *node)
 }
 
 
+void sat_menu_disconnect(GtkWidget *menu, struct conn_t *conn)
+{
+	stop_working();
+	delete_conn(conn);
+	start_working();
+}
+
+
+void run_sat_menu(struct node_t *node, int sat)
+{
+	struct conn_t *conn = get_conn_from_sat(node, sat);
+		
+	GtkWidget *menu;
+	GtkWidget *menu_items;
+	menu = gtk_menu_new();
+
+	menu_items = gtk_menu_item_new_with_label("Disconnect");
+	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(sat_menu_disconnect), 
+		conn);
+	gtk_menu_append(GTK_MENU(menu), menu_items);
+	gtk_widget_show(menu_items);
+
+	gtk_menu_popup (GTK_MENU(menu), NULL, NULL, (GtkMenuPositionFunc)(NULL), NULL, 0, 0);
+}
+
+
 //
 // WORKER THREAD FUNCTIONS
 //
@@ -2639,46 +2665,4 @@ int tile_all_node_textures()
 	worker_leave_main_lock();
 	
 	return 1;
-}
-
-
-
-void run_connected_sat_menu()
-{
-	GtkWidget *menu;
-	GtkWidget *menu_items;
-	menu = gtk_menu_new();
-
-	menu_items = gtk_menu_item_new_with_label("Disconnect");
-//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(join_straight), NULL);
-	gtk_menu_append(GTK_MENU(menu), menu_items);
-	gtk_widget_show(menu_items);
-	
-	menu_items = gtk_menu_item_new_with_label("Delete Node");
-//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_delete_node), node);
-	gtk_menu_append(GTK_MENU(menu), menu_items);
-	gtk_widget_show(menu_items);
-
-	gtk_menu_popup (GTK_MENU(menu), NULL, NULL, (GtkMenuPositionFunc)(NULL), NULL, 0, 0);
-}
-
-
-void run_unconnected_sat_menu()
-{
-	GtkWidget *menu;
-	GtkWidget *menu_items;
-	menu = gtk_menu_new();
-
-	menu_items = gtk_menu_item_new_with_label("Straight connect");
-	gtk_widget_show(menu_items);
-	
-	menu_items = gtk_menu_item_new_with_label("Curved connect");
-	gtk_widget_show(menu_items);
-
-	menu_items = gtk_menu_item_new_with_label("Delete Node");
-//	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_delete_node), node);
-	gtk_menu_append(GTK_MENU(menu), menu_items);
-	gtk_widget_show(menu_items);
-
-	gtk_menu_popup (GTK_MENU(menu), NULL, NULL, (GtkMenuPositionFunc)(NULL), NULL, 0, 0);
 }
