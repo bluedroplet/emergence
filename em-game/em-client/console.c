@@ -23,7 +23,7 @@
 #include "entry.h"
 
 #define CONSOLE_LL_GRAN 200
-#define CONSOLE_INPUT_LENGTH 40
+#define CONSOLE_INPUT_LENGTH 80
 
 pthread_mutex_t console_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
