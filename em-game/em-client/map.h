@@ -9,3 +9,8 @@ void reload_map();
 extern struct string_t *map_name;
 extern int downloading_map;
 extern int map_loaded;
+extern int map_size;
+
+#ifdef _FILEINFO_H
+extern uint8_t map_hash[FILEINFO_DIGEST_SIZE];
+#endif

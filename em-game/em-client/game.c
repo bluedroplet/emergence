@@ -23,10 +23,10 @@
 #include "../common/resource.h"
 #include "shared/cvar.h"
 #include "shared/network.h"
+#include "shared/fileinfo.h"
 #include "particles.h"
 #include "shared/sgame.h"
 #include "rcon.h"
-#include "map.h"
 #include "console.h"
 #include "../gsub/gsub.h"
 #include "render.h"
@@ -43,6 +43,7 @@
 #include "ris.h"
 #include "key.h"
 #include "download.h"
+#include "map.h"
 
 #ifdef LINUX
 #include "shared/timer.h"
@@ -3072,6 +3073,8 @@ void cf_record(char *c)
 	
 	
 		gzwrite_string(message_reader.gzdemo, map_name);
+		gzwrite(message_reader.gzdemo, &map_size, 4);
+		gzwrite(message_reader.gzdemo, map_hash, FILEINFO_DIGEST_SIZE);
 		
 		msg = EMMSG_LOADSKIN;
 		gzwrite(gzrecording, &msg, 1);

@@ -281,21 +281,14 @@ int load_map()
 		break;
 	}
 	
-	console_print("Attempting to download from server.\n");
-	render_frame();
+	if(game_state != GAMESTATE_DEMO)
+	{
+		console_print("Attempting to download from server.\n");
+		render_frame();
+		download_map(map_name->text);
+		downloading_map = 1;	// suspend processing of messages from server
+	}
 	
-/*	struct string_t *command = new_string_text("rm ");
-	string_cat_string(command, emergence_home_dir);
-	string_cat_text(command, "/maps/");
-	string_cat_text(command, map_name->text);
-	string_cat_text(temp, ".cmap.cache*");
-	
-	console_print("%s\n", command->text);
-	system(command->text);
-	free_string(command);
-*/	
-	download_map(map_name->text);
-	downloading_map = 1;	// suspend processing of messages from server
 	return 0;
 
 	okay:;
