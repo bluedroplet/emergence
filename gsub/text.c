@@ -32,6 +32,8 @@
 #include <stdint.h>
 #include <stdarg.h>
 
+#include "../common/prefix.h"
+
 #include "../common/stringbuf.h"
 #include "../common/vertex.h"
 #include "gsub.h"
@@ -42,7 +44,7 @@ struct surface_t *smallfont;
 
 void init_text()
 {
-	smallfont = read_png_surface(PKGDATADIR "/em-client/smallfont.png");
+	smallfont = read_png_surface(BR_DATADIR("/emergence/em-client/smallfont.png"));
 
 	int i;
 

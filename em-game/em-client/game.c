@@ -12,6 +12,8 @@
 
 #include <zlib.h>
 
+#include "../common/prefix.h"
+
 #include "../common/types.h"
 #include "../common/minmax.h"
 #include "../common/llist.h"
@@ -3632,15 +3634,15 @@ void init_game()
 	
 	create_cvar_command("suicide", cf_suicide);
 	
-	ris_plasma = load_ri_surface(PKGDATADIR "/stock-object-textures/plasma.png");
-	ris_craft_shield = load_ri_surface(PKGDATADIR "/stock-object-textures/craft-shield.png");
-	ris_weapon_shield = load_ri_surface(PKGDATADIR "/stock-object-textures/weapon-shield.png");
-	ris_shield_pickup = load_ri_surface(PKGDATADIR "/stock-object-textures/shield-pickup.png");
-	ris_mine = load_ri_surface(PKGDATADIR "/stock-object-textures/mine.png");
+	ris_plasma = load_ri_surface(BR_DATADIR("/emergence/stock-object-textures/plasma.png"));
+	ris_craft_shield = load_ri_surface(BR_DATADIR("/emergence/stock-object-textures/craft-shield.png"));
+	ris_weapon_shield = load_ri_surface(BR_DATADIR("/emergence/stock-object-textures/weapon-shield.png"));
+	ris_shield_pickup = load_ri_surface(BR_DATADIR("/emergence/stock-object-textures/shield-pickup.png"));
+	ris_mine = load_ri_surface(BR_DATADIR("/emergence/stock-object-textures/mine.png"));
 	
-	railgun_sample = load_sample(PKGDATADIR "/stock-sounds/railgun.ogg");
-	teleporter_sample = load_sample(PKGDATADIR "/stock-sounds/teleporter.ogg");
-	speedup_ramp_sample = load_sample(PKGDATADIR "/stock-sounds/speedup-ramp.ogg");
+	railgun_sample = load_sample(BR_DATADIR("/emergence/stock-sounds/railgun.ogg"));
+	teleporter_sample = load_sample(BR_DATADIR("/emergence/stock-sounds/teleporter.ogg"));
+	speedup_ramp_sample = load_sample(BR_DATADIR("/emergence/stock-sounds/speedup-ramp.ogg"));
 }
 
 

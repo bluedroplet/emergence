@@ -1,7 +1,8 @@
-AC_INIT(emergence, 0.5.3)
+AC_INIT(emergence, 0.5.4-dev)
 AC_CONFIG_SRCDIR(em-client/main.c)
 AM_INIT_AUTOMAKE
 
+AM_BINRELOC
 
 AM_PROG_AS
 AC_PROG_CC

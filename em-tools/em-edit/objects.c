@@ -38,6 +38,8 @@
 #include <zlib.h>
 #include <gnome.h>
 
+#include "../common/prefix.h"
+
 #include "../common/llist.h"
 #include "../common/stringbuf.h"
 #include "../gsub/gsub.h"
@@ -2598,26 +2600,26 @@ void delete_all_objects()
 
 void init_objects()
 {
-	s_unowned_plasma_cannon = read_png_surface(PKGDATADIR 
-		"/stock-object-textures/unowned-plasma-cannon.png");
-	s_unowned_minigun = read_png_surface(PKGDATADIR 
-		"/stock-object-textures/unowned-minigun.png");
-	s_unowned_rocket_launcher = read_png_surface(PKGDATADIR 
-		"/stock-object-textures/unowned-rocket-launcher.png");
+	s_unowned_plasma_cannon = read_png_surface(BR_DATADIR(
+		"/emergence/stock-object-textures/unowned-plasma-cannon.png"));
+	s_unowned_minigun = read_png_surface(BR_DATADIR(
+		"/emergence/stock-object-textures/unowned-minigun.png"));
+	s_unowned_rocket_launcher = read_png_surface(BR_DATADIR(
+		"/emergence/stock-object-textures/unowned-rocket-launcher.png"));
 		
-	s_rails = read_png_surface(PKGDATADIR 
-		"/stock-object-textures/rails.png");
-	s_spawn_point_placeholder = read_png_surface(PKGDATADIR 
-		"/em-edit/spawn-point-placeholder.png");
-	s_teleporter_placeholder = read_png_surface(PKGDATADIR 
-		"/em-edit/teleporter-placeholder.png");
-	s_gravity_well_placeholder = read_png_surface(PKGDATADIR 
-		"/em-edit/gravity-well-placeholder.png");
-	s_shield_energy = read_png_surface(PKGDATADIR 
-		"/stock-object-textures/shield-pickup.png");
+	s_rails = read_png_surface(BR_DATADIR(
+		"/emergence/stock-object-textures/rails.png"));
+	s_spawn_point_placeholder = read_png_surface(BR_DATADIR(
+		"/emergence/em-edit/spawn-point-placeholder.png"));
+	s_teleporter_placeholder = read_png_surface(BR_DATADIR(
+		"/emergence/em-edit/teleporter-placeholder.png"));
+	s_gravity_well_placeholder = read_png_surface(BR_DATADIR(
+		"/emergence/em-edit/gravity-well-placeholder.png"));
+	s_shield_energy = read_png_surface(BR_DATADIR(
+		"/emergence/stock-object-textures/shield-pickup.png"));
 	
-		
-	s_stock_speedup_ramp = read_png_surface(PKGDATADIR "/em-edit/stock-speedup-ramp.png");
+	s_stock_speedup_ramp = read_png_surface(BR_DATADIR(
+		"/emergence/em-edit/stock-speedup-ramp.png"));
 }
 
 

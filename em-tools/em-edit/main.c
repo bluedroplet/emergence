@@ -36,6 +36,8 @@
 
 #include <gnome.h>
 
+#include "../common/prefix.h"
+
 #include "../common/minmax.h"
 #include "../common/user.h"
 #include "../gsub/gsub.h"
@@ -274,7 +276,7 @@ int main(int argc, char *argv[])
 {
 	gnome_program_init("Emergence Editor", VERSION, LIBGNOMEUI_MODULE,
 		argc, argv,
-		GNOME_PARAM_APP_DATADIR, PKGDATADIR,
+		GNOME_PARAM_APP_DATADIR, BR_DATADIR("/emergence"),
 		NULL);
 	
 	init_user();

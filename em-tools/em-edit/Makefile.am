@@ -1,7 +1,7 @@
 SUBDIRS = share
 
 LDADD =   @GNOME_LIBS@  ../gsub/libgsub.a ../common/libcommon.a -lm -lpthread -lz -lpng
-AM_CPPFLAGS = @GNOME_CFLAGS@ -DLINUX -DPIXMAPSDIR=\""$(datadir)/pixmaps/"\" -DPKGDATADIR=\""$(datadir)/emergence/"\" -Wall
+AM_CPPFLAGS = $(BINRELOC_CFLAGS) @GNOME_CFLAGS@ -DLINUX -Wall
 
 bin_PROGRAMS = em-edit
 

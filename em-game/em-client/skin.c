@@ -11,6 +11,8 @@
 
 #include <sys/stat.h>
 
+#include "../common/prefix.h"
+
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../common/llist.h"
@@ -283,7 +285,8 @@ void init_skin()
 		
 	if(stat(a->text, &buf) == -1)
 	{
-		struct string_t *c = new_string_text("cp " PKGDATADIR "/stock-skins/default.skin ");
+		struct string_t *c = new_string_text("cp ");
+		string_cat_text(c, BR_DATADIR("/emergence/stock-skins/default.skin "));
 		string_cat_string(c, a);
 		
 		system(c->text);

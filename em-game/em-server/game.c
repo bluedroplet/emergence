@@ -16,6 +16,8 @@
 
 #include <zlib.h>
 
+#include "../common/prefix.h"
+
 #include "../common/types.h"
 #include "../common/minmax.h"
 #include "shared/cvar.h"
@@ -2075,7 +2077,7 @@ void map(char *args)
 	
 
 
-	struct string_t *filename = new_string_text(PKGDATADIR "stock-maps/");
+	struct string_t *filename = new_string_text(BR_DATADIR("/emergence/stock-maps/"));
 	string_cat_text(filename, args);
 	string_cat_text(filename, ".cmap");
 

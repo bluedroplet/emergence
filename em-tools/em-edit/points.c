@@ -38,6 +38,8 @@
 #include <gnome.h>
 #include <zlib.h>
 
+#include "../common/prefix.h"
+
 #include "../common/llist.h"
 #include "../gsub/gsub.h"
 #include "conns.h"
@@ -692,7 +694,7 @@ void draw_points()
 
 void init_points()
 {
-	s_pointnode = read_png_surface(PKGDATADIR "/em-edit/point.png");
+	s_pointnode = read_png_surface(BR_DATADIR("/emergence/em-edit/point.png"));
 }
 
 

@@ -1,5 +1,5 @@
 LDADD =  ../gsub/libgsub.a ../common/libcommon.a -lz -lpng
-AM_CPPFLAGS = -DLINUX -DPKGDATADIR=\""$(datadir)/emergence/em-edit"\"
+AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX
 
 bin_PROGRAMS = em-skin
 

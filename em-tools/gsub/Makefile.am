@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -DLINUX  -Wall -DPKGDATADIR=\""$(datadir)/emergence/"\"
+AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX  -Wall -DPKGDATADIR=\""$(datadir)/emergence/"\"
 
 
 noinst_LIBRARIES = libgsub.a

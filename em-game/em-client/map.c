@@ -10,6 +10,8 @@
 
 #include <zlib.h>
 
+#include "../common/prefix.h"
+
 #include "../common/types.h"
 #include "shared/cvar.h"
 #include "shared/bsp.h"
@@ -187,7 +189,7 @@ int load_map(char *map_name)
 	console_print("\n");
 	
 	
-	struct string_t *map_filename = new_string_text(PKGDATADIR "stock-maps/");
+	struct string_t *map_filename = new_string_text(BR_DATADIR("/emergence/stock-maps/"));
 	string_cat_text(map_filename, map_name);
 	string_cat_text(map_filename, ".cmap");
 

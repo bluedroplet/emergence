@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -DLINUX -DEMSERVER -Wall
+AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -DEMSERVER -Wall
 
 noinst_LIBRARIES = libshared.a
 libshared_a_SOURCES = bsp.c  network.c network.h parse.h sgame.c timer.h \

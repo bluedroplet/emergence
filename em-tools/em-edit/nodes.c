@@ -38,6 +38,8 @@
 #include <gnome.h>
 
 
+#include "../common/prefix.h"
+
 #include "../common/llist.h"
 #include "../common/stringbuf.h"
 #include "../common/vertex.h"
@@ -989,9 +991,9 @@ void draw_width_sats()
 
 void init_nodes()
 {
-	s_node = read_png_surface(PKGDATADIR "/em-edit/node.png");
-	s_vectsat = read_png_surface(PKGDATADIR "/em-edit/vect-sat.png");
-	s_widthsat = read_png_surface(PKGDATADIR "/em-edit/width-sat.png");
+	s_node = read_png_surface(BR_DATADIR("/emergence/em-edit/node.png"));
+	s_vectsat = read_png_surface(BR_DATADIR("/emergence/em-edit/vect-sat.png"));
+	s_widthsat = read_png_surface(BR_DATADIR("/emergence/em-edit/width-sat.png"));
 }
 
 
