@@ -18,7 +18,7 @@ cd ../em-tools
 
 make distcheck || exit
                                                                                                                                
-cp em-tools-0.5.0.tar.bz2 ../dist
+cp em-tools-0.5.1.tar.bz2 ../dist
 
 cd ../dist
                                                                                                                                
@@ -59,7 +59,7 @@ make prefix=${D}/usr \
 cd ../dist/root
 
 strip usr/bin/* || exit
-tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-0.5.0.bin.$arch.tar.bz2 * || exit
+tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-0.5.1.bin.$arch.tar.bz2 * || exit
 cd ..
 
 
@@ -81,7 +81,7 @@ cd ../dist/root
 
 strip usr/bin/* || exit
 
-tar --owner=0 --group=0 --numeric-owner -cjf ../emergence-0.5.0.bin.$arch.tar.bz2 * || exit
+tar --owner=0 --group=0 --numeric-owner -cjf ../emergence-0.5.1.bin.$arch.tar.bz2 * || exit
 
 find * -type f -printf "/%h/%f\n">../tree
 
@@ -91,7 +91,7 @@ cd ..
 
 rpmbuild -bb emergence.spec
 
-cp ../../redhat/emergence/i386/emergence-0.5.0-1.i386.rpm emergence-0.5.0.$arch.rpm
+cp ../../redhat/emergence/i386/emergence-0.5.1-1.i386.rpm emergence-0.5.1.$arch.rpm
 
 
 done
