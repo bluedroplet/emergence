@@ -465,6 +465,26 @@ void spawn_plasma(struct entity_t *weapon)
 }
 
 
+void spawn_bullet(struct entity_t *weapon)
+{
+	struct entity_t *bullet = new_entity(&entity0);
+	
+	bullet->type = ENT_BULLET;
+	
+	bullet->xdis = weapon->xdis;
+	bullet->ydis = weapon->ydis;
+	
+	double sin_theta, cos_theta;
+	sincos(weapon->weapon_data.theta, &sin_theta, &cos_theta);
+	
+	bullet->xvel = weapon->xvel - sin_theta * 24.0;
+	bullet->yvel = weapon->yvel + cos_theta * 24.0;
+	
+	bullet->bullet_data.in_weapon = 1;
+	bullet->bullet_data.weapon_id = weapon->index;
+}
+
+
 void spawn_rocket(struct entity_t *weapon)
 {
 	struct entity_t *rocket = new_entity(&entity0);
@@ -556,6 +576,8 @@ void tick_player(struct player_t *player)
 	
 	// fire guns
 	
+	int fire;
+	
 	if(player->firing_left)
 	{
 		if(!player->craft->craft_data.left_weapon)
@@ -566,13 +588,29 @@ void tick_player(struct player_t *player)
 		{
 			if(player->craft->craft_data.left_weapon->weapon_data.ammo)		
 			{
-				int fire = ((game_tick - player->firing_left_start) * 20) / 200 - player->left_fired;
-				
-				if(fire > 0)
+				switch(player->craft->craft_data.left_weapon->weapon_data.type)
 				{
-					spawn_plasma(player->craft->craft_data.left_weapon);
-					player->left_fired += fire;
-					player->craft->craft_data.left_weapon->weapon_data.ammo--;
+				case WEAPON_PLASMA_CANNON:
+					fire = ((game_tick - player->firing_left_start) * 20) / 200 - player->left_fired;
+					
+					if(fire > 0)
+					{
+						spawn_plasma(player->craft->craft_data.left_weapon);
+						player->left_fired += fire;
+						player->craft->craft_data.left_weapon->weapon_data.ammo--;
+					}
+					break;
+					
+				case WEAPON_MINIGUN:
+					fire = ((game_tick - player->firing_left_start) * 20) / 200 - player->left_fired;
+					
+					if(fire > 0)
+					{
+						spawn_bullet(player->craft->craft_data.left_weapon);
+						player->left_fired += fire;
+						player->craft->craft_data.left_weapon->weapon_data.ammo--;
+					}
+					break;
 				}
 			}
 		}
@@ -588,13 +626,29 @@ void tick_player(struct player_t *player)
 		{
 			if(player->craft->craft_data.right_weapon->weapon_data.ammo)		
 			{
-				int fire = ((game_tick - player->firing_right_start) * 20) / 200 - player->right_fired;
-				
-				if(fire > 0)
+				switch(player->craft->craft_data.right_weapon->weapon_data.type)
 				{
-					spawn_plasma(player->craft->craft_data.right_weapon);
-					player->right_fired += fire;
-					player->craft->craft_data.right_weapon->weapon_data.ammo--;
+				case WEAPON_PLASMA_CANNON:
+					fire = ((game_tick - player->firing_right_start) * 20) / 200 - player->right_fired;
+					
+					if(fire > 0)
+					{
+						spawn_plasma(player->craft->craft_data.right_weapon);
+						player->right_fired += fire;
+						player->craft->craft_data.right_weapon->weapon_data.ammo--;
+					}
+					break;
+					
+				case WEAPON_MINIGUN:
+					fire = ((game_tick - player->firing_right_start) * 20) / 200 - player->right_fired;
+					
+					if(fire > 0)
+					{
+						spawn_bullet(player->craft->craft_data.right_weapon);
+						player->right_fired += fire;
+						player->craft->craft_data.right_weapon->weapon_data.ammo--;
+					}
+					break;
 				}
 			}
 		}
@@ -862,7 +916,7 @@ void propagate_entities()
 		
 	while(entity)
 	{
-		if(entity->propagate_me)
+		if(entity->propagate_me && entity->type != ENT_BULLET)
 		{
 			propagate_entity(entity);
 			entity->propagate_me = 0;
@@ -1426,6 +1480,16 @@ int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 		break;
 	
 	case WEAPON_MINIGUN:
+		player->firing_left = state;
+	
+		if(state && player->craft->craft_data.left_weapon->weapon_data.ammo)
+		{
+			spawn_bullet(player->craft->craft_data.left_weapon);
+			player->firing_left_start = game_tick + 1;
+			player->left_fired = 0;
+			player->craft->craft_data.left_weapon->weapon_data.ammo--;
+		}
+
 		break;
 	
 	case WEAPON_ROCKET_LAUNCHER:
@@ -1472,6 +1536,16 @@ int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 		break;
 	
 	case WEAPON_MINIGUN:
+		player->firing_right = state;
+	
+		if(state && player->craft->craft_data.right_weapon->weapon_data.ammo)
+		{
+			spawn_bullet(player->craft->craft_data.right_weapon);
+			player->firing_right_start = game_tick + 1;
+			player->right_fired = 0;
+			player->craft->craft_data.right_weapon->weapon_data.ammo--;
+		}
+
 		break;
 	
 	case WEAPON_ROCKET_LAUNCHER:

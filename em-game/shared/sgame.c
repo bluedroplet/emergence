@@ -1235,6 +1235,15 @@ void s_tick_craft(struct entity_t *craft)
 				}
 				break;
 				
+			#ifdef EMSERVER
+			case ENT_BULLET:
+				if(point_in_circle(entity->xdis, entity->ydis, xdis, ydis, CRAFT_RADIUS))
+				{
+					craft_bullet_collision(craft, entity);
+				}
+				break;
+			#endif
+				
 			case ENT_ROCKET:
 				if(circles_intersect(xdis, ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
 				{
@@ -1663,6 +1672,19 @@ void s_tick_weapon(struct entity_t *weapon)
 				}
 				break;
 				
+			#ifdef EMSERVER
+			case ENT_BULLET:
+				if(point_in_circle(entity->xdis, entity->ydis, xdis, ydis, WEAPON_RADIUS))
+				{
+					if(!entity->bullet_data.in_weapon || entity->bullet_data.weapon_id != weapon->index)
+					{
+						weapon_bullet_collision(craft, entity);
+						restart = 1;
+					}
+				}
+				break;
+			#endif
+				
 			case ENT_ROCKET:
 				if(circles_intersect(xdis, ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
 				{
@@ -1997,6 +2019,15 @@ void s_tick_plasma(struct entity_t *plasma)
 				}
 				break;
 				
+			#ifdef EMSERVER
+		/*	case ENT_BULLET:
+				if(circles_intersect(xdis, ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, BULLET_RADIUS))
+				{
+					craft_bullet_collision(craft, entity);
+				}
+				break;
+		*/	#endif
+				
 			case ENT_MINE:
 				if(circles_intersect(plasma->xdis, plasma->ydis, PLASMA_RADIUS, entity->xdis, entity->ydis, MINE_RADIUS))
 				{
@@ -2108,7 +2139,8 @@ void s_tick_bullet(struct entity_t *bullet)
 			case ENT_WEAPON:
 				if(line_in_circle(bullet->xdis, bullet->ydis, xdis, ydis, entity->xdis, entity->ydis, WEAPON_RADIUS))
 				{
-					weapon_bullet_collision(entity, bullet);
+					if(!bullet->bullet_data.in_weapon || bullet->bullet_data.weapon_id != entity->index)
+						weapon_bullet_collision(entity, bullet);
 				}
 				break;
 				
@@ -2305,6 +2337,15 @@ void s_tick_rocket(struct entity_t *rocket)
 					plasma_rocket_collision(entity, rocket);
 				}
 				break;
+				
+			#ifdef EMSERVER
+			case ENT_BULLET:
+				if(point_in_circle(entity->xdis, entity->ydis, xdis, ydis, ROCKET_RADIUS))
+				{
+					bullet_rocket_collision(entity, rocket);
+				}
+				break;
+			#endif
 				
 			case ENT_ROCKET:
 				if(circles_intersect(xdis, ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))

@@ -163,6 +163,9 @@ struct rocket_data_t
 
 struct bullet_data_t
 {
+	int in_weapon;
+	uint32_t weapon_id;
+
 	#ifdef EMSERVER
 	struct player_t *owner;
 	#endif
