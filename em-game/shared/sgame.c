@@ -42,7 +42,7 @@ struct teleporter_t *teleporter0 = NULL;
 struct speedup_ramp_t *speedup_ramp0 = NULL;
 struct gravity_well_t *gravity_well0 = NULL;
 
-struct entity_t *sentity0 = NULL;
+struct entity_t **sentity0 = NULL;
 	
 int nextentity = 0;
 
@@ -241,7 +241,6 @@ void remove_entity(struct entity_t **entity0, struct entity_t *entity)
 	}
 	
 	LL_REMOVE(struct entity_t, entity0, entity);
-	sentity0 = *entity0;
 }
 
 
@@ -628,6 +627,8 @@ int rocket_force(struct entity_t *rocket, double force)
 		explode_rocket(rocket);
 		return 1;
 	}
+	
+	return 0;
 }
 
 
@@ -639,6 +640,8 @@ int mine_force(struct entity_t *mine, double force)
 		explode_mine(mine);
 		return 1;
 	}
+	
+	return 0;
 }
 
 
@@ -650,6 +653,8 @@ int rails_force(struct entity_t *rails, double force)
 		explode_rails(rails);
 		return 1;
 	}
+	
+	return 0;
 }
 
 
@@ -660,6 +665,8 @@ int shield_force(struct entity_t *shield, double force)
 		shield->kill_me = 1;
 		return 1;
 	}
+	
+	return 0;
 }
 
 
@@ -667,7 +674,7 @@ int shield_force(struct entity_t *shield, double force)
 
 void splash_force(double x, double y, double force)
 {
-	struct entity_t *entity = sentity0;
+	struct entity_t *entity = *sentity0;
 	
 	while(entity)
 	{
@@ -683,62 +690,61 @@ void splash_force(double x, double y, double force)
 			continue;
 		}
 		
+		if(entity->kill_me)
+		{
+			entity = entity->next;
+			continue;
+		}
+		
 		struct entity_t *next;
 		
-		if(!entity->kill_me)
-		{
-			double xdist = entity->xdis - x;
-			double ydist = entity->ydis - y;
-			double dist_squared = xdist * xdist + ydist * ydist;
-			double dist = sqrt(dist_squared);
-			double att_force = force / dist_squared;
-			
-			entity->xvel += (xdist / dist) * att_force * FORCE_VELOCITY_MULTIPLIER;
-			entity->yvel += (xdist / dist) * att_force * FORCE_VELOCITY_MULTIPLIER;
+		double xdist = entity->xdis - x;
+		double ydist = entity->ydis - y;
+		double dist_squared = xdist * xdist + ydist * ydist;
+		double dist = sqrt(dist_squared);
+		double att_force = force / dist_squared;
+		
+		entity->xvel += (xdist / dist) * att_force * FORCE_VELOCITY_MULTIPLIER;
+		entity->yvel += (xdist / dist) * att_force * FORCE_VELOCITY_MULTIPLIER;
 
-			int in_tick = entity->in_tick;
-			entity->in_tick = 1;
-			
-			switch(entity->type)
-			{
-			case ENT_CRAFT:
-				craft_force(entity, att_force);
-				break;
-			
-			case ENT_WEAPON:
-				weapon_force(entity, att_force);
-				break;
-			
-			case ENT_ROCKET:
-				rocket_force(entity, att_force);
-				break;
-			
-			case ENT_MINE:
-				mine_force(entity, att_force);
-				break;
-			
-			case ENT_RAILS:
-				rails_force(entity, att_force);
-				break;
-			
-			case ENT_SHIELD:
-				shield_force(entity, att_force);
-				break;
-			}
-			
-			next = entity->next;
-			
-			if(!in_tick && entity->kill_me)
-				remove_entity(&sentity0, entity);
-			else
-			{
-				entity->propagate_me = 1;
-				entity->in_tick = in_tick;
-			}
+		int in_tick = entity->in_tick;
+		entity->in_tick = 1;
+		
+		switch(entity->type)
+		{
+		case ENT_CRAFT:
+			craft_force(entity, att_force);
+			break;
+		
+		case ENT_WEAPON:
+			weapon_force(entity, att_force);
+			break;
+		
+		case ENT_ROCKET:
+			rocket_force(entity, att_force);
+			break;
+		
+		case ENT_MINE:
+			mine_force(entity, att_force);
+			break;
+		
+		case ENT_RAILS:
+			rails_force(entity, att_force);
+			break;
+		
+		case ENT_SHIELD:
+			shield_force(entity, att_force);
+			break;
 		}
+		
+		next = entity->next;
+		
+		if(!in_tick && entity->kill_me)
+			remove_entity(sentity0, entity);
 		else
 		{
-			next = entity->next;
+			entity->propagate_me = 1;
+			entity->in_tick = in_tick;
 		}
 		
 		entity = next;
@@ -1199,7 +1205,7 @@ void s_tick_craft(struct entity_t *craft)
 		
 		// check for collision with other entities
 		
-		struct entity_t *entity = sentity0;
+		struct entity_t *entity = *sentity0;
 		while(entity)
 		{
 			if(entity == craft || entity->teleporting)
@@ -1278,7 +1284,7 @@ void s_tick_craft(struct entity_t *craft)
 			struct entity_t *next = entity->next;
 			
 			if(entity->kill_me)
-				remove_entity(&sentity0, entity);
+				remove_entity(sentity0, entity);
 			else
 				entity->in_tick = 0;
 
@@ -1402,7 +1408,7 @@ int check_weapon_placement(double xdis, double ydis, struct entity_t *weapon)
 	
 	// check for collision with other entities
 	
-	struct entity_t *entity = sentity0;
+	struct entity_t *entity = *sentity0;
 	while(entity)
 	{
 		if(entity == weapon || entity->teleporting)
@@ -1632,7 +1638,7 @@ void s_tick_weapon(struct entity_t *weapon)
 		
 		// check for collision with other entities
 		
-		struct entity_t *entity = sentity0;
+		struct entity_t *entity = *sentity0;
 		while(entity)
 		{
 			if(entity == weapon || entity->teleporting)
@@ -1723,7 +1729,7 @@ void s_tick_weapon(struct entity_t *weapon)
 			struct entity_t *next = entity->next;
 			
 			if(entity->kill_me)
-				remove_entity(&sentity0, entity);
+				remove_entity(sentity0, entity);
 			else
 				entity->in_tick = 0;
 			
@@ -1810,7 +1816,7 @@ void s_tick_weapon(struct entity_t *weapon)
 	
 	if(!craft)
 	{
-		struct entity_t *entity = sentity0;
+		struct entity_t *entity = *sentity0;
 		while(entity)
 		{
 			if(entity->type == ENT_CRAFT && !entity->craft_data.carcass && !entity->teleporting &&
@@ -1947,7 +1953,7 @@ void s_tick_plasma(struct entity_t *plasma)
 	
 	if(plasma->plasma_data.in_weapon)
 	{
-		struct entity_t *weapon = get_entity(sentity0, plasma->plasma_data.weapon_id);
+		struct entity_t *weapon = get_entity(*sentity0, plasma->plasma_data.weapon_id);
 			
 		if(!weapon)
 			plasma->plasma_data.in_weapon = 0;
@@ -1984,7 +1990,7 @@ void s_tick_plasma(struct entity_t *plasma)
 		
 		// check for collision with other entities
 		
-		struct entity_t *entity = sentity0;
+		struct entity_t *entity = *sentity0;
 		while(entity)
 		{
 			if(entity == plasma || entity->teleporting)
@@ -2053,7 +2059,7 @@ void s_tick_plasma(struct entity_t *plasma)
 			struct entity_t *next = entity->next;
 			
 			if(entity->kill_me)
-				remove_entity(&sentity0, entity);
+				remove_entity(sentity0, entity);
 			else
 				entity->in_tick = 0;
 			
@@ -2116,7 +2122,7 @@ void s_tick_bullet(struct entity_t *bullet)
 		
 		// check for collision with other entities
 		
-		struct entity_t *entity = sentity0;
+		struct entity_t *entity = *sentity0;
 		while(entity)
 		{
 			if(entity == bullet || entity->teleporting)
@@ -2176,7 +2182,7 @@ void s_tick_bullet(struct entity_t *bullet)
 			struct entity_t *next = entity->next;
 				
 			if(entity->kill_me)
-				remove_entity(&sentity0, entity);
+				remove_entity(sentity0, entity);
 			else
 				entity->in_tick = 0;
 			
@@ -2256,7 +2262,7 @@ void s_tick_rocket(struct entity_t *rocket)
 	
 	if(rocket->rocket_data.in_weapon)
 	{
-		struct entity_t *weapon = get_entity(sentity0, rocket->rocket_data.weapon_id);
+		struct entity_t *weapon = get_entity(*sentity0, rocket->rocket_data.weapon_id);
 			
 		if(!weapon)
 			rocket->rocket_data.in_weapon = 0;
@@ -2303,7 +2309,7 @@ void s_tick_rocket(struct entity_t *rocket)
 		
 		// check for collision with other entities
 		
-		struct entity_t *entity = sentity0;
+		struct entity_t *entity = *sentity0;
 		while(entity)
 		{
 			if(entity == rocket || entity->teleporting)
@@ -2327,7 +2333,9 @@ void s_tick_rocket(struct entity_t *rocket)
 				if(circles_intersect(xdis, ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, WEAPON_RADIUS))
 				{
 					if(!rocket->rocket_data.in_weapon || rocket->rocket_data.weapon_id != entity->index)
+					{
 						explode_rocket(rocket);
+					}
 				}
 				break;
 				
@@ -2377,9 +2385,8 @@ void s_tick_rocket(struct entity_t *rocket)
 	*/		}
 			
 			struct entity_t *next = entity->next;
-			
 			if(entity->kill_me)
-				remove_entity(&sentity0, entity);
+				remove_entity(sentity0, entity);
 			else
 				entity->in_tick = 0;
 			
@@ -2508,7 +2515,7 @@ void s_tick_mine(struct entity_t *mine)
 		
 		// check for collision with other entities
 		
-		struct entity_t *entity = sentity0;
+		struct entity_t *entity = *sentity0;
 		while(entity)
 		{
 			if(entity == mine || entity->teleporting)
@@ -2574,7 +2581,7 @@ void s_tick_mine(struct entity_t *mine)
 			struct entity_t *next = entity->next;
 			
 			if(entity->kill_me)
-				remove_entity(&sentity0, entity);
+				remove_entity(sentity0, entity);
 			else
 				entity->in_tick = 0;
 
@@ -2694,7 +2701,7 @@ void s_tick_rails(struct entity_t *rails)
 		
 		// check for collision with other entities
 		
-		struct entity_t *entity = sentity0;
+		struct entity_t *entity = *sentity0;
 		while(entity)
 		{
 			if(entity == rails || entity->teleporting)
@@ -2874,7 +2881,7 @@ void s_tick_shield(struct entity_t *shield)
 		
 		// check for collision with other entities
 		
-		struct entity_t *entity = sentity0;
+		struct entity_t *entity = *sentity0;
 		while(entity)
 		{
 			if(entity == shield || entity->teleporting)
@@ -3001,9 +3008,9 @@ void s_tick_shield(struct entity_t *shield)
 
 void s_tick_entities(struct entity_t **entity0)
 {
-	sentity0 = *entity0;
+	sentity0 = entity0;
 	
-	struct entity_t *centity = *entity0;
+	struct entity_t *centity = *sentity0;
 	
 	while(centity)
 	{
@@ -3042,13 +3049,11 @@ void s_tick_entities(struct entity_t **entity0)
 			break;
 			*/
 		}
-
 		
 		if(centity->kill_me)
 		{
 			struct entity_t *next = centity->next;
-			LL_REMOVE(struct entity_t, entity0, centity);
-			sentity0 = *entity0;
+			remove_entity(sentity0, centity);
 			centity = next;
 		}
 		else
@@ -3058,7 +3063,7 @@ void s_tick_entities(struct entity_t **entity0)
 		}
 	}
 	
-	centity = *entity0;
+	centity = *sentity0;
 	
 	while(centity)
 	{
@@ -3074,8 +3079,7 @@ void s_tick_entities(struct entity_t **entity0)
 		if(centity->kill_me)
 		{
 			struct entity_t *next = centity->next;
-			LL_REMOVE(struct entity_t, entity0, centity);
-			sentity0 = *entity0;
+			remove_entity(sentity0, centity);
 			centity = next;
 		}
 		else
