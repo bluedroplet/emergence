@@ -257,8 +257,12 @@ struct sample_t *teleporter_sample;
 struct sample_t *speedup_ramp_sample;
 
 
-
-
+struct demo_t
+{
+	struct string_t *filename;
+	struct demo_t *next;
+		
+} *demo0, *cdemo;
 
 
 void clear_game()
@@ -2254,6 +2258,12 @@ void cf_stop(char *c)
 
 void cf_demo(char *c)
 {
+	while(demo0)
+	{
+		free_string(demo0->filename);
+		LL_REMOVE(struct demo_t, &demo0, demo0)
+	}
+	
 	switch(game_state)
 	{
 	case GAMESTATE_DEAD:
@@ -2272,8 +2282,20 @@ void cf_demo(char *c)
 	
 	clear_game();
 	
+	struct demo_t demo;
+	
+	char *token = strtok(c, " ");
+	demo.filename = new_string_text(token);
+	LL_ADD(struct demo_t, &demo0, &demo);
+		
+	while((token = strtok(NULL, " ")))
+	{
+		demo.filename = new_string_text(token);
+		LL_ADD_TAIL(struct demo_t, &demo0, &demo);
+	}		
+	
 	game_conn = 0;
-	gzdemo = gzopen(c, "rb");
+	gzdemo = gzopen(demo0->filename->text, "rb");
 	
 	if(!gzdemo)
 	{
@@ -2287,6 +2309,7 @@ void cf_demo(char *c)
 	message_reader.type = MESSAGE_READER_GZDEMO;
 	demo_first_tick = 0;
 	cgame_tick = 0;
+	cdemo = demo0;
 }
 
 
@@ -3095,6 +3118,8 @@ void update_demo()
 {
 	uint32_t tick;
 	
+	top:
+	
 	if(demo_first_tick)		// i.e. not the first event
 	{
 		tick = get_tick_from_wall_time() + demo_first_tick;
@@ -3105,7 +3130,7 @@ void update_demo()
 	}
 	
 	
-	do
+	while(1)
 	{
 		int stop = 0;
 		switch(message_reader.message_type & EMMSGCLASS_MASK)
@@ -3142,8 +3167,35 @@ void update_demo()
 		
 		if(stop)
 			break;
+		
+		if(!message_reader_new_message())
+		{
+			clear_game();
+			game_conn = 0;
+			
+			if(cdemo->next)
+				cdemo = cdemo->next;
+			else
+				cdemo = demo0;
+			
+			gzdemo = gzopen(cdemo->filename->text, "rb");
+			
+			if(!gzdemo)
+			{
+				console_print("File not found.\n");
+				game_state = GAMESTATE_DEAD;
+				return;
+			}
+			
+			game_state = GAMESTATE_DEMO;
+			message_reader.gzdemo = gzdemo;
+			message_reader.type = MESSAGE_READER_GZDEMO;
+			demo_first_tick = 0;
+			cgame_tick = 0;
+			
+			goto top;
+		}
 	}
-	while(message_reader_new_message());
 	
 	
 	while(demo_last_tick <= tick)
