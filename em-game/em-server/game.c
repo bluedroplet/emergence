@@ -1148,25 +1148,49 @@ int game_process_name_change(struct player_t *player, struct buffer_t *stream)
 }
 
 
-int game_process_control_change(struct player_t *player, uint32_t index, struct buffer_t *stream)
+int game_process_thrust(struct player_t *player, struct buffer_t *stream)
 {
-	if(index <= player->last_control_change)
+	float thrust = buffer_read_float(stream);
+
+	thrust = max(thrust, 0.0);
+	thrust = min(thrust, 1.0);
+	
+	player->craft->craft_data.acc = thrust * 0.025;
+	
+	propagate_entity(player->craft);
+	
+	return 1;
+}
+
+
+int game_process_brake(struct player_t *player)
+{
+	player->craft->craft_data.braking = 1;
+	propagate_entity(player->craft);
+	return 1;
+}
+
+
+int game_process_no_brake(struct player_t *player)
+{
+	player->craft->craft_data.braking = 0;
+	propagate_entity(player->craft);
+	return 1;
+}
+
+
+int game_process_roll(struct player_t *player, struct buffer_t *stream)
+{
+/*	if(index <= player->last_control_change)
 		index += EMNETINDEX_MAX + 1;
 	
 	if(!(index < player->last_control_change + 100))
 		return 0;
 
 	player->last_control_change = index;
+*/
 	
-	float thrust = buffer_read_float(stream);
 	float roll = buffer_read_float(stream);
-	
-//	thrust = max(thrust, 0.0);
-//	thrust = min(thrust, 1.0);
-	player->craft->craft_data.acc += -thrust * 0.0020;
-	
-	player->craft->craft_data.acc = max(player->craft->craft_data.acc, 0.0);
-	player->craft->craft_data.acc = min(player->craft->craft_data.acc, 0.025);
 	
 //	roll = max(roll, -1.0);
 //	roll = min(roll, 1.0);
@@ -1229,7 +1253,7 @@ int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 	if(!player->craft->craft_data.left_weapon)
 		return 0;
 	
-	uint32_t state = buffer_read_uint32(stream);
+	uint32_t state = buffer_read_uint8(stream);
 	
 	switch(player->craft->craft_data.left_weapon->weapon_data.type)
 	{
@@ -1269,7 +1293,7 @@ int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 	if(!player->craft->craft_data.right_weapon)
 		return 0;
 	
-	uint32_t state = buffer_read_uint32(stream);
+	uint32_t state = buffer_read_uint8(stream);
 	
 	switch(player->craft->craft_data.right_weapon->weapon_data.type)
 	{
@@ -1335,31 +1359,58 @@ void game_process_stream(uint32_t conn, uint32_t index, struct buffer_t *stream)
 				return;
 			break;
 		
-		case EMMSG_NAMECNGE:
-			if(!game_process_name_change(player, stream))
+		case EMMSG_THRUST:
+			if(!game_process_thrust(player, stream))
 				return;
 			break;
-			
-		case EMMSG_CTRLCNGE:
-			if(!game_process_control_change(player, index, stream))
+		
+		case EMMSG_BRAKE:
+			if(!game_process_brake(player))
 				return;
 			break;
-			
+		
+		case EMMSG_NOBRAKE:
+			if(!game_process_no_brake(player))
+				return;
+			break;
+		
+		case EMMSG_ROLL:
+			if(!game_process_roll(player, stream))
+				return;
+			break;
+		
 		case EMMSG_FIRERAIL:
 			if(!game_process_fire_rail(player))
 				return;
 			break;
-			
+		
 		case EMMSG_FIRELEFT:
 			if(!game_process_fire_left(player, stream))
 				return;
 			break;
-			
+		
 		case EMMSG_FIRERIGHT:
 			if(!game_process_fire_right(player, stream))
 				return;
 			break;
-			
+		
+		case EMMSG_DROPMINE:
+			break;
+		
+		case EMMSG_ENTERRCON:
+			break;
+		
+		case EMMSG_LEAVERCON:
+			break;
+		
+		case EMMSG_RCONMSG:
+			break;
+		
+		case EMMSG_NAMECNGE:
+			if(!game_process_name_change(player, stream))
+				return;
+			break;
+
 		default:
 			return;
 		}
@@ -1378,11 +1429,6 @@ void game_process_stream_ooo(uint32_t conn, uint32_t index, struct buffer_t *str
 	{		
 		switch(buffer_read_uint8(stream))
 		{
-		case EMMSG_CTRLCNGE:
-			if(!game_process_control_change(player, index, stream))
-				return;
-			break;
-			
 		default:
 			return;
 		}

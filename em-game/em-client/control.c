@@ -43,7 +43,7 @@ struct
 
 } controls[] = 
 {
-	{"",				NULL,	NULL},
+	{"",			NULL,	NULL},
 	{"escape",		NULL,	NULL},
 	{"1",			NULL,	NULL},
 	{"2",			NULL,	NULL},
@@ -98,10 +98,10 @@ struct
 	{".",			NULL,	NULL},
 	{"/",			NULL,	NULL},
 	{"rshift",		NULL,	NULL},
-	{"pad*",			NULL,	NULL},
-	{"lalt",			NULL,	NULL},
+	{"pad*",		NULL,	NULL},
+	{"lalt",		NULL,	NULL},
 	{"space",		NULL,	NULL},
-	{"capslock",		NULL,	NULL},
+	{"capslock",	NULL,	NULL},
 	{"f1",			NULL,	NULL},
 	{"f2",			NULL,	NULL},
 	{"f3",			NULL,	NULL},
@@ -114,158 +114,158 @@ struct
 	{"f10",			NULL,	NULL},
 	{"numlock",		NULL,	NULL},
 	{"scroll",		NULL,	NULL},
-	{"pad7",			NULL,	NULL},
-	{"pad8",			NULL,	prev_command},
-	{"pad9",			NULL,	NULL},
-	{"pad-",			NULL,	NULL},
-	{"pad4",			NULL,	NULL},
-	{"pad5",			NULL,	NULL},
-	{"pad6",			NULL,	NULL},
-	{"pad+",			NULL,	NULL},
-	{"pad1",			NULL,	NULL},
-	{"pad2",			NULL,	next_command},
-	{"pad3",			NULL,	NULL},
-	{"pad0",			NULL,	NULL},
-	{"pad.",			NULL,	NULL},
+	{"pad7",		NULL,	NULL},
+	{"pad8",		NULL,	prev_command},
+	{"pad9",		NULL,	NULL},
+	{"pad-",		NULL,	NULL},
+	{"pad4",		NULL,	NULL},
+	{"pad5",		NULL,	NULL},
+	{"pad6",		NULL,	NULL},
+	{"pad+",		NULL,	NULL},
+	{"pad1",		NULL,	NULL},
+	{"pad2",		NULL,	next_command},
+	{"pad3",		NULL,	NULL},
+	{"pad0",		NULL,	NULL},
+	{"pad.",		NULL,	NULL},
 	{"102",			NULL,	NULL},
 	{"f11",			NULL,	NULL},
 	{"f12",			NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"padenter",		NULL,	console_enter},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"padenter",	NULL,	console_enter},
 	{"rctrl",		NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"pad,",			NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"pad/",			NULL,	NULL},
-	{"",				NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"pad,",		NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"pad/",		NULL,	NULL},
+	{"",			NULL,	NULL},
 	{"sysrq",		NULL,	NULL},
-	{"ralt",			NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
+	{"ralt",		NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
 	{"pause",		NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"home",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"home",		NULL,	NULL},
 	{"up",			NULL,	prev_command},
-	{"pgup",			NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"left",			NULL,	NULL},
-	{"",				NULL,	NULL},
+	{"pgup",		NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"left",		NULL,	NULL},
+	{"",			NULL,	NULL},
 	{"right",		NULL,	NULL},
-	{"",				NULL,	NULL},
+	{"",			NULL,	NULL},
 	{"end",			NULL,	NULL},
-	{"down",			NULL,	next_command},
-	{"pgdn",			NULL,	NULL},
+	{"down",		NULL,	next_command},
+	{"pgdn",		NULL,	NULL},
 	{"insert",		NULL,	NULL},
 	{"delete",		NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"",				NULL,	NULL},
-	{"lwin",			NULL,	NULL},
-	{"rwin",			NULL,	NULL},
-	{"apps",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"",			NULL,	NULL},
+	{"lwin",		NULL,	NULL},
+	{"rwin",		NULL,	NULL},
+	{"apps",		NULL,	NULL},
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
@@ -299,104 +299,147 @@ struct
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
 	{"",			NULL,	NULL},
-	{"BTN_0",				NULL,	NULL},
-	{"BTN_1",				NULL,	NULL},//screenshot},
-	{"BTN_2",				NULL,	NULL},
-	{"BTN_3",				NULL,	NULL},
-	{"BTN_4",				NULL,	NULL},
-	{"BTN_5",				NULL,	NULL},
-	{"BTN_6",				NULL,	NULL},
-	{"BTN_7",				NULL,	NULL},
-	{"BTN_8",				NULL,	NULL},
-	{"BTN_9",				NULL,	NULL},
-	{"BTN_10",				NULL,	NULL},
-	{"BTN_11",				NULL,	NULL},
-	{"BTN_12",				NULL,	NULL},
-	{"BTN_13",				NULL,	NULL},
-	{"BTN_14",				NULL,	NULL},
-	{"BTN_15",				NULL,	NULL},
-	{"BTN_16",				NULL,	NULL},
-	{"BTN_17",				NULL,	NULL},
-	{"BTN_18",				NULL,	NULL},
-	{"BTN_19",				NULL,	NULL},
-	{"BTN_20",				NULL,	NULL},
-	{"BTN_21",				NULL,	NULL},
-	{"BTN_22",				NULL,	NULL},
-	{"BTN_23",				NULL,	NULL},
-	{"BTN_24",				NULL,	NULL},
-	{"BTN_25",				NULL,	NULL},
-	{"BTN_26",				NULL,	NULL},
-	{"BTN_27",				NULL,	NULL},
-	{"BTN_28",				NULL,	NULL},
-	{"BTN_29",				NULL,	NULL},
-	{"BTN_30",				NULL,	NULL},
-	{"BTN_31",				NULL,	NULL},
-	{"AXIS_0",				NULL,	NULL},
-	{"AXIS_1",				NULL,	NULL},
-	{"AXIS_2",				NULL,	NULL},
-	{"AXIS_3",				NULL,	NULL},
-	{"AXIS_4",				NULL,	NULL},
-	{"AXIS_5",				NULL,	NULL},
-	{"AXIS_6",				NULL,	NULL},
-	{"AXIS_7",				NULL,	NULL},
-	{"AXIS_8",				NULL,	NULL},
-	{"AXIS_9",				NULL,	NULL},
-	{"AXIS_10",				NULL,	NULL},
-	{"AXIS_11",				NULL,	NULL},
-	{"AXIS_12",				NULL,	NULL},
-	{"AXIS_13",				NULL,	NULL},
-	{"AXIS_14",				NULL,	NULL},
-	{"AXIS_15",				NULL,	NULL},
-	{"AXIS_16",				NULL,	NULL},
-	{"AXIS_17",				NULL,	NULL},
-	{"AXIS_18",				NULL,	NULL},
-	{"AXIS_19",				NULL,	NULL},
-	{"AXIS_20",				NULL,	NULL},
-	{"AXIS_21",				NULL,	NULL},
-	{"AXIS_22",				NULL,	NULL},
-	{"AXIS_23",				NULL,	NULL},
-	{"AXIS_24",				NULL,	NULL},
-	{"AXIS_25",				NULL,	NULL},
-	{"AXIS_26",				NULL,	NULL},
-	{"AXIS_27",				NULL,	NULL},
-	{"AXIS_28",				NULL,	NULL},
-	{"AXIS_29",				NULL,	NULL},
-	{"AXIS_30",				NULL,	NULL},
-	{"AXIS_31",				NULL,	NULL}
+	{"btn_0",		NULL,	NULL},
+	{"btn_1",		NULL,	NULL},//screenshot},
+	{"btn_2",		NULL,	NULL},
+	{"btn_3",		NULL,	NULL},
+	{"btn_4",		NULL,	NULL},
+	{"btn_5",		NULL,	NULL},
+	{"btn_6",		NULL,	NULL},
+	{"btn_7",		NULL,	NULL},
+	{"btn_8",		NULL,	NULL},
+	{"btn_9",		NULL,	NULL},
+	{"btn_10",		NULL,	NULL},
+	{"btn_11",		NULL,	NULL},
+	{"btn_12",		NULL,	NULL},
+	{"btn_13",		NULL,	NULL},
+	{"btn_14",		NULL,	NULL},
+	{"btn_15",		NULL,	NULL},
+	{"btn_16",		NULL,	NULL},
+	{"btn_17",		NULL,	NULL},
+	{"btn_18",		NULL,	NULL},
+	{"btn_19",		NULL,	NULL},
+	{"btn_20",		NULL,	NULL},
+	{"btn_21",		NULL,	NULL},
+	{"btn_22",		NULL,	NULL},
+	{"btn_23",		NULL,	NULL},
+	{"btn_24",		NULL,	NULL},
+	{"btn_25",		NULL,	NULL},
+	{"btn_26",		NULL,	NULL},
+	{"btn_27",		NULL,	NULL},
+	{"btn_28",		NULL,	NULL},
+	{"btn_29",		NULL,	NULL},
+	{"btn_30",		NULL,	NULL},
+	{"btn_31",		NULL,	NULL},
+	{"axis_0",		NULL,	NULL},
+	{"axis_1",		NULL,	NULL},
+	{"axis_2",		NULL,	NULL},
+	{"axis_3",		NULL,	NULL},
+	{"axis_4",		NULL,	NULL},
+	{"axis_5",		NULL,	NULL},
+	{"axis_6",		NULL,	NULL},
+	{"axis_7",		NULL,	NULL},
+	{"axis_8",		NULL,	NULL},
+	{"axis_9",		NULL,	NULL},
+	{"axis_10",		NULL,	NULL},
+	{"axis_11",		NULL,	NULL},
+	{"axis_12",		NULL,	NULL},
+	{"axis_13",		NULL,	NULL},
+	{"axis_14",		NULL,	NULL},
+	{"axis_15",		NULL,	NULL},
+	{"axis_16",		NULL,	NULL},
+	{"axis_17",		NULL,	NULL},
+	{"axis_18",		NULL,	NULL},
+	{"axis_19",		NULL,	NULL},
+	{"axis_20",		NULL,	NULL},
+	{"axis_21",		NULL,	NULL},
+	{"axis_22",		NULL,	NULL},
+	{"axis_23",		NULL,	NULL},
+	{"axis_24",		NULL,	NULL},
+	{"axis_25",		NULL,	NULL},
+	{"axis_26",		NULL,	NULL},
+	{"axis_27",		NULL,	NULL},
+	{"axis_28",		NULL,	NULL},
+	{"axis_29",		NULL,	NULL},
+	{"axis_30",		NULL,	NULL},
+	{"axis_31",		NULL,	NULL}
 };
 
-float thrust;
 float roll;
-int control_changed;
+int roll_changed;
+int rolling_left;
+int rolling_right;
 
-void action_thrust(float val)
+void action_thrust(uint32_t state)
 {
-	thrust += val / 2.0;
-	control_changed = 1;
+	net_emit_uint8(game_conn, EMMSG_THRUST);
+
+	if(state)
+		net_emit_float(game_conn, 1.0f);
+	else
+		net_emit_float(game_conn, 0.0f);
+
+	net_emit_end_of_stream(game_conn);
+}
+
+
+void action_brake(uint32_t state)
+{
+//	if(game_state != GAMESTATE_ALIVE)
+//		return;
+
+	if(state)
+		net_emit_uint8(game_conn, EMMSG_BRAKE);
+	else
+		net_emit_uint8(game_conn, EMMSG_NOBRAKE);
+	
+	net_emit_uint8(game_conn, (uint8_t)state);
+	net_emit_end_of_stream(game_conn);
 }
 
 
 void action_roll(float val)
 {
 	roll += val;
-	control_changed = 1;
+	roll_changed = 1;
 }
 
-void thrust_bool(uint32_t state)
+
+void action_roll_left(uint32_t state)
 {
-	if(state)
-		thrust = 10000.0f;
-	else
-		thrust = 0.0f;
-	
-	control_changed = 1;
+	rolling_left = state;
 }
 
 
+void action_roll_right(uint32_t state)
+{
+	rolling_right = state;
+}
 
 
+void action_fire_left(uint32_t state)
+{
+//	if(game_state != GAMESTATE_ALIVE)
+//		return;
 
-void fire_rail(uint32_t state)
+	net_emit_uint8(game_conn, EMMSG_FIRELEFT);
+	net_emit_uint8(game_conn, (uint8_t)state);
+	net_emit_end_of_stream(game_conn);
+}
+
+
+void action_fire_right(uint32_t state)
+{
+//	if(game_state != GAMESTATE_ALIVE)
+//		return;
+
+	net_emit_uint8(game_conn, EMMSG_FIRERIGHT);
+	net_emit_uint8(game_conn, (uint8_t)state);
+	net_emit_end_of_stream(game_conn);
+}
+
+
+void action_fire_rail(uint32_t state)
 {
 //	if(game_state != GAMESTATE_ALIVE)
 //		return;
@@ -409,73 +452,41 @@ void fire_rail(uint32_t state)
 }
 
 
-void fire_left(uint32_t state)
+void action_drop_mine(uint32_t state)
 {
 //	if(game_state != GAMESTATE_ALIVE)
 //		return;
-
-	net_emit_uint8(game_conn, EMMSG_FIRELEFT);
-	net_emit_uint32(game_conn, state);
-	net_emit_end_of_stream(game_conn);
-}
-
-
-void fire_right(uint32_t state)
-{
-//	if(game_state != GAMESTATE_ALIVE)
-//		return;
-
-	net_emit_uint8(game_conn, EMMSG_FIRERIGHT);
-	net_emit_uint32(game_conn, state);
-	net_emit_end_of_stream(game_conn);
-}
-
-
-void drop_mine(uint32_t state)
-{
-//	if(game_state != GAMESTATE_ALIVE)
+	
+	if(!state)
 		return;
 
-/*	net_write_dword(EMNETMSG_DROPMINE);
-	net_write_dword(state);
-	finished_writing();
-	*/
+	net_emit_uint8(game_conn, EMMSG_DROPMINE);
+	net_emit_end_of_stream(game_conn);
 }
 
-
-
-
-
-#define ACTIONTYPE_BOOL 0
-#define ACTIONTYPE_CONT	1
 
 struct
 {
 	char *name;
-	void *func;
-	int type;
+	void *bool_func;
+	void *cont_func;
 
 } actions[] = 
 {
-	{"THRUST",				action_thrust,	ACTIONTYPE_CONT}, 
-	{"ROLL",				action_roll,	ACTIONTYPE_CONT}, 
-	{"RAIL",				fire_rail,		ACTIONTYPE_BOOL}, 
-	{"LEFT",				fire_left,		ACTIONTYPE_BOOL}, 
-	{"RIGHT",				fire_right,		ACTIONTYPE_BOOL}, 
-	{"DropMine",			drop_mine,		ACTIONTYPE_BOOL}, 
-	{"THRUSTBOOL",			thrust_bool,	ACTIONTYPE_BOOL}, 
-//	{"RollLeftBool",		roll_left,		ACTIONTYPE_BOOL}, 
-//	{"RollRightBool",		roll_right,		ACTIONTYPE_BOOL}, 
+	{"thrust",		action_thrust,		NULL}, 
+	{"brake",		action_brake,		NULL}, 
+	{"roll",		NULL,				action_roll}, 
+	{"roll_left",	action_roll_left,	NULL}, 
+	{"roll_right",	action_roll_right,	NULL}, 
+	{"fire_left",	action_fire_left,	NULL}, 
+	{"fire_right",	action_fire_right,	NULL}, 
+	{"fire_rail",	action_fire_rail,	NULL}, 
+	{"drop_mine",	action_drop_mine,	NULL}
 };
 
 
-int numactions = 7; //sizeof(controls) / sizeof(controls[0]);
+int numactions = 9;
 
-struct
-{
-	int set;
-	float min, max;
-} axis_calib[32];
 
 #define CONTROL_TICK_INTERVAL 0.05
 
@@ -493,17 +504,29 @@ void process_control_alarm()
 	{
 		pthread_mutex_lock(&control_mutex);
 		
-		if(control_changed)
+		if(roll_changed)
 		{
-			net_emit_uint8(game_conn, EMMSG_CTRLCNGE);
-			net_emit_float(game_conn, thrust);
+			net_emit_uint8(game_conn, EMMSG_ROLL);
 			net_emit_float(game_conn, roll);
 			net_emit_end_of_stream(game_conn);
-			control_changed = 0;
+			roll_changed = 0;
 			roll = 0.0;
-			thrust = 0.0;
 		}
 	
+		if(rolling_left)
+		{
+			net_emit_uint8(game_conn, EMMSG_ROLL);
+			net_emit_float(game_conn, -0.2);
+			net_emit_end_of_stream(game_conn);
+		}
+		
+		if(rolling_right)
+		{
+			net_emit_uint8(game_conn, EMMSG_ROLL);
+			net_emit_float(game_conn, 0.2);
+			net_emit_end_of_stream(game_conn);
+		}
+		
 		pthread_mutex_unlock(&control_mutex);
 		
 		next_control_tick = ((int)(time / CONTROL_TICK_INTERVAL) + 1) * 
@@ -658,13 +681,13 @@ void process_keypress(int key, int state)
 	if(func)
 		func(state);
 	
-	func = controls[key].func;
-	if(func)
-		func(state);
+	if(!r_DrawConsole)
+	{
+		func = controls[key].func;
+		if(func)
+			func(state);
+	}
 	
-	if(!state)
-		goto end;
-
 	if(key == 42 || key == 54)
 	{
 		if(state)
@@ -672,16 +695,17 @@ void process_keypress(int key, int state)
 		else
 			shift = 0x0;
 	}
-	else
-	{
-		if(state)
-		{
-			char c = get_ascii(key);
 
-			if(c)
-			{
-				console_keypress(c);
-			}
+	if(!state)
+		goto end;
+	
+	if(state)
+	{
+		char c = get_ascii(key);
+
+		if(c)
+		{
+			console_keypress(c);
 		}
 	}
 
@@ -716,47 +740,10 @@ void process_axis(int axis, float val)
 	if(axis >= 32)
 		return;
 
-/*	if(!axis_calib[axis].set)
-	{
-		axis_calib[axis].set = 1;
-		axis_calib[axis].min = val;
-		axis_calib[axis].max = val;
-	}
-	else
-	{
-		if(val < axis_calib[axis].min)
-			axis_calib[axis].min = val;
-		
-		if(val > axis_calib[axis].max)
-			axis_calib[axis].max = val;
-	}
-	
-	if(val > 0.0)
-	{
-		val /= axis_calib[axis].max;
-		
-		if(val > 0.9f)
-			val = 1.0f;
-	}
-	else if(val < 0.0)
-	{
-		val /= -axis_calib[axis].min;
-		
-		if(val < -0.9f)
-			val = -1.0f;
-	}
-	
-	if(val > -0.1f && val < 0.1f)
-		val = 0.0f;
-	*/
-//	printf("%f\n", val);
-	
 	void (*func)(float);
 
 	func = controls[axis + 288].func;
 	
-//	printf("%f\n", val);
-
 	if(func)
 		func(val);
 }
@@ -764,8 +751,6 @@ void process_axis(int axis, float val)
 
 void cf_controls(char *params)
 {
-	pthread_mutex_lock(&control_mutex);
-
 	int c;
 
 	for(c = 0; c < 320; c++)
@@ -776,15 +761,11 @@ void cf_controls(char *params)
 			console_print("\n");
 		}
 	}
-
-	pthread_mutex_unlock(&control_mutex);
 }
 
 
 void cf_actions(char *params)
 {
-	pthread_mutex_lock(&control_mutex);
-
 	int a;
 
 	for(a = 0; a < numactions; a++)
@@ -795,8 +776,6 @@ void cf_actions(char *params)
 			console_print("\n");
 		}
 	}
-
-	pthread_mutex_unlock(&control_mutex);
 }	
 
 
@@ -862,20 +841,28 @@ void cf_bind(char *params)
 		goto end;
 	}
 	
-	if(c < 288 && actions[a].type != ACTIONTYPE_BOOL)
+	if(c < 288)
 	{
-		console_print("Boolean controls must be bound to boolean actions.\n");
-		goto end;
+		if(!actions[a].bool_func)
+		{
+			console_print("Boolean controls must be bound to boolean actions.\n");
+			goto end;
+		}
+		
+		controls[c].func = actions[a].bool_func;
 	}
 
-	if(c >= 288 && actions[a].type != ACTIONTYPE_CONT)
+	if(c >= 288)
 	{
-		console_print("Continuous controls must be bound to continuous actions.\n");
-		goto end;
+		if(!actions[a].cont_func)
+		{
+			console_print("Continuous controls must be bound to continuous actions.\n");
+			goto end;
+		}
+		
+		controls[c].func = actions[a].cont_func;
 	}
 
-	controls[c].func = actions[a].func;
-	
 	end:
 	pthread_mutex_unlock(&control_mutex);
 }
@@ -893,7 +880,8 @@ void dump_bindings(FILE *file)
 		{
 			for(a = 0; a < numactions; a++)
 			{
-				if(actions[a].func == controls[c].func)
+				if(actions[a].bool_func == controls[c].func || 
+					actions[a].cont_func == controls[c].func)
 					break;
 			}
 			
@@ -970,12 +958,6 @@ void init_control()
 	create_cvar_command("bind", cf_bind);
 	create_cvar_command("controls", cf_controls);
 	create_cvar_command("actions", cf_actions);
-	
-	int a;
-	for(a = 0; a < 32; a++)
-	{
-		axis_calib[a].set = 0;
-	}
 	
 	control_timer_fd = create_timer_listener();
 	pipe(control_kill_pipe);

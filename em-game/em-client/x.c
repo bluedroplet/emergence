@@ -448,6 +448,9 @@ void init_x()
 	
 	console_print("ok\n");
 	
+	
+	XAutoRepeatOff(xdisplay);
+	
 	query_vid_modes();
 	set_int_cvar_qc_function("vid_mode", vid_mode_qc);
 	set_vid_mode(vid_mode);
@@ -473,6 +476,8 @@ void kill_x()
 	char c;
 	write(x_kill_pipe[1], &c, 1);
 	pthread_join(x_thread_id, NULL);
+	
+	XAutoRepeatOn(xdisplay);
 	
 	XRRSetScreenConfig (xdisplay, screen_config,
 			   xwindow,

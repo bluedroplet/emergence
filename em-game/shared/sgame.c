@@ -42,6 +42,7 @@ struct entity_t *sentity0 = NULL;
 int nextentity = 0;
 
 #define SPACE_FRICTION		0.99935
+#define BRAKE_FRICTION		0.98
 #define COLLISION_FRICTION	0.75
 
 
@@ -1397,6 +1398,13 @@ void s_tick_craft(struct entity_t *craft)
 //	apply_gravity_acceleration(craft);
 	slow_entity(craft);
 
+	
+	if(craft->craft_data.braking)
+	{
+		craft->xvel *= BRAKE_FRICTION;
+		craft->yvel *= BRAKE_FRICTION;
+	}
+		
 
 	int restart = 0;
 	double xdis;

@@ -478,7 +478,7 @@ void console_keypress(char c)
 	pthread_mutex_lock(&console_mutex);
 	
 	if(!r_DrawConsole)
-		return;
+		goto end;
 
 	int l = strlen(console_input);
 
@@ -492,6 +492,7 @@ void console_keypress(char c)
 
 	tabbed = 0;
 
+	end:
 	pthread_mutex_unlock(&console_mutex);
 }
 

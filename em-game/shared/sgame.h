@@ -21,7 +21,7 @@ compatibility of the protocol version detection mechanism
 -------------------------------------------------------------------------------
 
 if changes below this line or in the game code (either server or client side)
-break backward compatibility EM_PROTO_VER must be incremented accordingly
+break backward compatibility, EM_PROTO_VER must be incremented accordingly
 
 */
 
@@ -29,6 +29,8 @@ break backward compatibility EM_PROTO_VER must be incremented accordingly
 #define EM_PROTO_VER									0x01
 
 
+
+// server -> client
 
 #define EMMSG_LOADMAP			(EMMSGCLASS_STND | 0x01)
 #define EMMSG_LOADSKIN			(EMMSGCLASS_STND | 0x02)
@@ -58,16 +60,19 @@ break backward compatibility EM_PROTO_VER must be incremented accordingly
 #define EMMSG_SPECTATE			0x02
 #define EMMSG_SAY				0x03
 
-#define EMMSG_NAMECNGE			0x04
-#define EMMSG_CTRLCNGE			0x05
-#define EMMSG_STATUS			0x06
-#define EMMSG_ENTERRCON			0x07
-#define EMMSG_LEAVERCON			0x08
-#define EMMSG_RCONMSG			0x09	
-#define EMMSG_FIRERAIL			0x0a
-#define EMMSG_FIRELEFT			0x0b
-#define EMMSG_FIRERIGHT			0x0c
-#define EMMSG_DROPMINE			0x0d
+#define EMMSG_THRUST			0x04
+#define EMMSG_BRAKE				0x05
+#define EMMSG_NOBRAKE			0x06
+#define EMMSG_ROLL				0x07
+#define EMMSG_FIRERAIL			0x08
+#define EMMSG_FIRELEFT			0x09
+#define EMMSG_FIRERIGHT			0x0a
+#define EMMSG_DROPMINE			0x0b
+#define EMMSG_ENTERRCON			0x0c
+#define EMMSG_LEAVERCON			0x0d
+#define EMMSG_RCONMSG			0x0e
+#define EMMSG_STATUS			0x0f
+#define EMMSG_NAMECNGE			0x10
 
 
 

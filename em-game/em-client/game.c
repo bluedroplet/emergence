@@ -490,7 +490,7 @@ void read_craft_data(struct event_craft_data_t *craft_data)
 {
 	craft_data->acc = message_reader_read_float();
 	craft_data->theta = message_reader_read_float();
-	craft_data->braking = message_reader_read_float();
+	craft_data->braking = message_reader_read_int();
 	craft_data->shield_flare = message_reader_read_float();
 }
 
