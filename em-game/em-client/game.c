@@ -345,7 +345,7 @@ int magic_smoke = 0;
 int smoke_start_red = 0xff, smoke_start_green = 0, smoke_start_blue = 0;
 int smoke_end_red = 0xff, smoke_end_green = 0xff, smoke_end_blue = 0xff;
 
-int plasma_red = 0x32, plasma_green = 0x73, plasma_blue = 0x71;
+int plasma_red = 0, plasma_green = 0xff, plasma_blue = 0xff;
 
 int shield_red = 0xff, shield_green = 0xff, shield_blue = 0xff;
 
