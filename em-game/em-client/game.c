@@ -847,8 +847,14 @@ int game_process_proto_ver()
 	else
 	{
 		console_print("Incorrect protocol version\n");
+		
+		if(game_state != GAMESTATE_DEMO)
+			em_disconnect(game_conn);
+		
+		clear_game();
 		game_state = GAMESTATE_DEAD;
-		em_disconnect(game_conn);
+		
+		return 0;
 	}
 	
 	return 1;
@@ -4650,7 +4656,9 @@ void render_game()
 		return;
 	}
 	
-	
+	if(game_state == GAMESTATE_DEAD)
+		return;
+		
 	if(entity)
 	{
 		if(entity->teleporting)
