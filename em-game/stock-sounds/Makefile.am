@@ -1,0 +1,17 @@
+SOURCES = railgun.wav teleporter.wav speedup-ramp.wav
+OBJECTS = $(SOURCES:.wav=.ogg)
+
+OGGENCFLAGS = -q 5
+
+all: $(OBJECTS)
+
+%.ogg: %.wav
+	oggenc $(OGGENCFLAGS) $<
+
+clean:
+	rm -f $(OBJECTS) 
+
+sounddatadir = $(pkgdatadir)/stock-sounds
+sounddata_DATA = $(OBJECTS)
+
+.PHONY: all clean
