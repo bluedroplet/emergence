@@ -23,6 +23,7 @@ struct skin_t *get_skin(uint32_t index);
 void reload_skins();
 void flush_all_skins();
 void clear_skins();
+void init_skin();
 
 struct surface_t *skin_get_craft_surface(uint32_t index);
 struct surface_t *skin_get_rocket_launcher_surface(uint32_t index);

@@ -34,6 +34,7 @@
 #include "sound.h"
 #include "main.h"
 #include "x.h"
+#include "skin.h"
 
 #ifdef LINUX
 #include "entry.h"
@@ -202,6 +203,7 @@ void init()
 	init_network();
 
 	init_user();
+	init_skin();
 
 	create_cvars();
 	init_console_cvars();

@@ -9,6 +9,8 @@
 #include <zlib.h>
 #include <math.h>
 
+#include <sys/stat.h>
+
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../common/llist.h"
@@ -267,4 +269,29 @@ struct surface_t *skin_get_plasma_cannon_surface(uint32_t index)
 	}
 	
 	return NULL;
+}
+
+
+void init_skin()
+{
+	struct stat buf;
+		
+	struct string_t *a = new_string_string(emergence_home_dir);
+	
+	string_cat_text(a, "/skins/default.skin");
+
+		
+	if(stat(a->text, &buf) == -1)
+	{
+		struct string_t *c = new_string_text("cp " PKGDATADIR "/stock-skins/default.skin ");
+		string_cat_string(c, a);
+		
+		system(c->text);
+		printf(c->text);
+		printf("\n");
+		
+		free_string(c);
+	}
+	
+	free_string(a);
 }
