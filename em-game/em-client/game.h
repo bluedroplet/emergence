@@ -41,4 +41,4 @@ extern double viewx, viewy;
 void update_game();
 
 
-#define ROTATIONS 40
+#define ROTATIONS 80
