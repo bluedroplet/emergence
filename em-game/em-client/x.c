@@ -92,6 +92,7 @@ void update_frame_buffer()
 void process_x()
 {
 	XEvent report;
+	char c;
 	
 	XNextEvent(xdisplay, &report);
 	
@@ -105,6 +106,8 @@ void process_x()
 		if (report.xexpose.count != 0)
 			break;
 
+	//	write(x_render_pipe[1], &c, 1);
+		
 		break;
 	case KeyPress:
 		//	XKeysymToKeycode(xdisplay, xsym);
@@ -122,7 +125,6 @@ void process_x()
 	
 		if(report.type == CompletionType)
 		{
-			char c;
 			write(x_render_pipe[1], &c, 1);
 		}
 		
@@ -284,8 +286,17 @@ void query_vid_modes()
 
 void set_vid_mode(int mode)	// use goto error crap
 {
-	pthread_mutex_lock(&x_mutex);	
+	pthread_mutex_lock(&x_mutex);
 	
+	
+	if(image)
+	{
+		XDestroyImage(image);
+		image = NULL;
+	}
+	
+	Window oldwindow = xwindow;
+
 	
 	struct vid_mode_t *cvid_mode = vid_mode0;
 		
@@ -298,13 +309,17 @@ void set_vid_mode(int mode)	// use goto error crap
 			return;
 	}
 	
-
 	XRRSetScreenConfig (xdisplay, screen_config,
 			   RootWindow(xdisplay, xscreen),
 			   cvid_mode->index,
 			   RR_Rotate_0,
 			   CurrentTime);
 	
+	system("killall gnome-panel");
+	
+	
+
+
     XSetWindowAttributes xattr;
 
     xattr.override_redirect = True;
@@ -321,12 +336,13 @@ void set_vid_mode(int mode)	// use goto error crap
 			     | CWColormap,
 			     &xattr);
 
+	XMapRaised(xdisplay, xwindow);
 
+		
 	XSelectInput(xdisplay, xwindow, KeyPressMask | KeyReleaseMask | ExposureMask);
    
-	XMapRaised(xdisplay, xwindow);
-	
 	XSetInputFocus(xdisplay, xwindow, RevertToNone, CurrentTime);
+
 	
 	Cursor xcursor = create_blank_cursor();
 	
@@ -380,6 +396,10 @@ void set_vid_mode(int mode)	// use goto error crap
 	
 	XShmAttach(xdisplay, shmseginfo);
 
+	if(oldwindow)
+	{
+		XDestroyWindow(xdisplay, oldwindow);
+	}
 	
 	pthread_mutex_unlock(&x_mutex);
 }
@@ -394,6 +414,8 @@ void vid_mode_qc(int mode)
 	set_vid_mode(mode);
 	
 	game_resolution_change();
+	
+//	render_frame();
 }
 
 
@@ -448,18 +470,6 @@ void init_x()
 	
 	depth = DefaultDepth(xdisplay, xscreen);
 	
-	/*   screen_w = DisplayWidth(SDL_Display, SDL_Screen);
-    screen_h = DisplayHeight(SDL_Display, SDL_Screen);
-    get_real_resolution(this, &real_w, &real_h);
-    if ( current_w > real_w ) {
-        real_w = MAX(real_w, screen_w);
-    }
-    if ( current_h > real_h ) {
-        real_h = MAX(real_h, screen_h);
-    }
-    XMoveResizeWindow(SDL_Display, FSwindow,
-                      xinerama_x, xinerama_y, real_w, real_h);
-					  */
 
 	x_fd = ConnectionNumber(xdisplay);
 
@@ -499,13 +509,29 @@ void kill_x()
 	write(x_kill_pipe[1], &c, 1);
 	pthread_join(x_thread_id, NULL);
 	
+	if(image)
+	{
+		XDestroyImage(image);
+		image = NULL;
+	}
+	
+	if(xwindow)
+	{
+		XDestroyWindow(xdisplay, xwindow);
+		xwindow = 0;
+	}
+	
 	XAutoRepeatOn(xdisplay);
 	
 	XRRSetScreenConfig (xdisplay, screen_config,
-			   xwindow,
+			   RootWindow(xdisplay, xscreen),
 			   original_mode,
 			   RR_Rotate_0,
 			   CurrentTime);
 	
 	XRRFreeScreenConfigInfo(screen_config);
+	
+	XCloseDisplay(xdisplay);
+	
+	system("killall gnome-panel");
 }
