@@ -212,8 +212,8 @@ void init()
 
 	init_console();
 	
-	init_control();
 	init_input();
+	init_control();
 	
 	struct string_t *string = new_string_string(emergence_home_dir);
 	string_cat_text(string, "/client.config");

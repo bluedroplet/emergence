@@ -931,14 +931,12 @@ void *control_thread(void *a)
 		switch(ev.data.u32)
 		{
 		case 0:
-			printf("a\n");
 			pthread_mutex_lock(&control_mutex);
 			process_input();
 			pthread_mutex_unlock(&control_mutex);
 			break;
 		
 		case 1:
-			process_input();
 			process_control_alarm();
 			break;
 		

@@ -696,7 +696,7 @@ void spawn_player(struct player_t *player)
 	
 	while(spawn_point)
 	{
-		if(!spawn_point->teleport_only)
+	//	if(!spawn_point->teleport_only)
 		{
 			struct entity_t *entity = entity0;
 			

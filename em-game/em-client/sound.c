@@ -97,13 +97,33 @@ void sound_mutex_unlock()
 
 void process_alsa()	// check for off-by-ones
 {
-	 int avail = snd_pcm_avail_update(playback_handle);
+	char c;
+	while(read(alsa_fd, &c, 1) != -1);
+		
+	int avail = snd_pcm_avail_update(playback_handle);
 //	printf("%u\n", avail);
 	
-	if(!avail)
-		return;
-
 	
+	if(avail <= 0)
+	{
+		if(avail != 0)
+		{
+     	if (avail == -EPIPE) 
+		 {    /* under-run */
+                snd_pcm_prepare(playback_handle);			
+				avail = snd_pcm_avail_update(playback_handle);
+			 printf("under-run\n");
+			 }
+		 else
+			 
+			 printf("Write error: %s\n", snd_strerror(avail));
+		return;
+		}
+		else
+					return;
+
+	}
+
 	int32_t *buf = malloc(avail * 4);	// get rid of me
 	
 	memset(buf, 0, avail * 4);
@@ -295,7 +315,6 @@ void init_sound()
 		{
 		j++;
 		}
-
 
 	ov_clear(&vf);
 	
