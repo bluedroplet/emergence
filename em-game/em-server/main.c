@@ -419,26 +419,26 @@ void process_console()
 {
 	char c;
 	
-	while(1)
-	{
-		if(read(STDIN_FILENO, &c, 1) == -1)
-			break;
+	if(TEMP_FAILURE_RETRY(read(STDIN_FILENO, &c, 1)) != 1)
+		return;
+
+	fcntl(STDIN_FILENO, F_SETFL, 0);
 	
-		fcntl(STDIN_FILENO, F_SETFL, 0);
-		
-		struct string_t *string = new_string();
-		
-		while(c != '\n')
-		{
-			string_cat_char(string, c);
-			read(STDIN_FILENO, &c, 1);
-		}
-		
-		process_command(string);
-		free_string(string);
-		
-		fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
+	struct string_t *string = new_string();
+	
+	while(c != '\n')
+	{
+		string_cat_char(string, c);
+		if(TEMP_FAILURE_RETRY(read(STDIN_FILENO, &c, 1)) != 1)
+			goto error;
 	}
+	
+	process_command(string);
+	
+	error:	
+	free_string(string);
+	
+	fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
 }
 
 
@@ -453,64 +453,64 @@ void process_network()
 	while(1)
 	{
 		uint32_t m;
-		if(read(net_out_pipe[0], &m, 4) == -1)
-			break;
+		if(TEMP_FAILURE_RETRY(read(net_out_pipe[0], &m, 4)) != 4)
+			return;
 		
 		fcntl(net_out_pipe[0], F_SETFL, 0);
 		
 		switch(m)
 		{
 		case NETMSG_CONNECTION:
-			read(net_out_pipe[0], &conn, 4);
-			read(net_out_pipe[0], &type, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &type, 4));
 			process_connection(conn, type);
 			break;
-
+	
 		case NETMSG_DISCONNECTION:
-			read(net_out_pipe[0], &conn, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
 			process_disconnection(conn);
 			break;
-
+	
 		case NETMSG_CONNLOST:
-			read(net_out_pipe[0], &conn, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
 			process_conn_lost(conn);
 			break;
 		
 		case NETMSG_STREAM_TIMED:
-			read(net_out_pipe[0], &index, 4);
-			read(net_out_pipe[0], &stamp, 8);
-			read(net_out_pipe[0], &conn, 4);
-			read(net_out_pipe[0], &stream, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &index, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stamp, 8));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stream, 4));
 			process_stream_timed(conn, index, &stamp, stream);
 			free_buffer(stream);
 			break;
-
+	
 		case NETMSG_STREAM_UNTIMED:
-			read(net_out_pipe[0], &index, 4);
-			read(net_out_pipe[0], &conn, 4);
-			read(net_out_pipe[0], &stream, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &index, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stream, 4));
 			process_stream_untimed(conn, index, stream);
 			free_buffer(stream);
 			break;
-
+	
 		case NETMSG_STREAM_TIMED_OOO:
-			read(net_out_pipe[0], &index, 4);
-			read(net_out_pipe[0], &stamp, 8);
-			read(net_out_pipe[0], &conn, 4);
-			read(net_out_pipe[0], &stream, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &index, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stamp, 8));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stream, 4));
 			process_stream_timed_ooo(conn, index, &stamp, stream);
 			free_buffer(stream);
 			break;
-
+	
 		case NETMSG_STREAM_UNTIMED_OOO:
-			read(net_out_pipe[0], &index, 4);
-			read(net_out_pipe[0], &conn, 4);
-			read(net_out_pipe[0], &stream, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &index, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stream, 4));
 			process_stream_untimed_ooo(conn, index, stream);
 			free_buffer(stream);
 			break;
 		}
-
+	
 		fcntl(net_out_pipe[0], F_SETFL, O_NONBLOCK);
 	}
 }
@@ -519,7 +519,7 @@ void process_network()
 void process_game_timer()
 {
 	uint32_t m;
-	while(read(game_timer_fd, &m, 1) != -1);
+	while(TEMP_FAILURE_RETRY(read(game_timer_fd, &m, 1)) != -1);
 		
 	#ifndef NONAUTHENTICATING
 	check_sessions();
@@ -534,6 +534,8 @@ void main_thread()
 	struct pollfd *fds;
 	int fdcount;
 	
+	fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
+	
 	fdcount = 4;
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
@@ -546,11 +548,9 @@ void main_thread()
 
 	while(1)
 	{
-		if(poll(fds, fdcount, -1) == -1)
+		if(TEMP_FAILURE_RETRY(poll(fds, fdcount, -1)) == -1)
 		{
-			if(errno == EINTR)
-				continue;
-			
+			perror("poll");
 			return;
 		}
 

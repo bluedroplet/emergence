@@ -536,7 +536,7 @@ void process_control_alarm()
 	pthread_mutex_lock(&control_mutex);
 	
 	char c;
-	while(read(control_timer_fd, &c, 1) != -1);
+	while(TEMP_FAILURE_RETRY(read(control_timer_fd, &c, 1)) == 1);
 		
 	double time = get_wall_time();
 		
@@ -990,12 +990,10 @@ void *control_thread(void *a)
 
 	while(1)
 	{
-		if(poll(fds, fdcount, -1) == -1)
+		if(TEMP_FAILURE_RETRY(poll(fds, fdcount, -1)) == -1)
 		{
-			if(errno == EINTR)	// why is this necessary?
-				continue;
-			
-			return NULL;
+			free(fds);
+			pthread_exit(NULL);
 		}
 
 		if(fds[0].revents & POLLIN)
@@ -1083,7 +1081,7 @@ void init_control()
 void kill_control()
 {
 	char c;
-	write(control_kill_pipe[1], &c, 1);
+	TEMP_FAILURE_RETRY(write(control_kill_pipe[1], &c, 1));
 	pthread_join(control_thread_id, NULL);
 	close(control_kill_pipe[0]);
 	close(control_kill_pipe[1]);

@@ -294,7 +294,7 @@ void process_x()
 		
 			if(report.type == CompletionType)
 			{
-				write(x_render_pipe[1], &c, 1);
+				TEMP_FAILURE_RETRY(write(x_render_pipe[1], &c, 1));
 			}
 			
 			break;
@@ -653,7 +653,7 @@ void vid_mode_qc(int mode)
 	game_resolution_change();
 	
 	char c;
-	write(x_render_pipe[1], &c, 1);
+	TEMP_FAILURE_RETRY(write(x_render_pipe[1], &c, 1));
 }
 
 
@@ -678,12 +678,10 @@ void *x_thread(void *a)
 
 	while(1)
 	{
-		if(poll(fds, fdcount, -1) == -1)
+		if(TEMP_FAILURE_RETRY(poll(fds, fdcount, -1)) == -1)
 		{
-			if(errno == EINTR)	// why is this necessary
-				continue;
-			
-			return NULL;
+			free(fds);
+			pthread_exit(NULL);
 		}
 
 		if(fds[0].revents & POLLIN)
@@ -761,7 +759,7 @@ void init_x()
 	x_fd = ConnectionNumber(xdisplay);
 
 	
-	fcntl(x_fd, F_SETFL, O_NONBLOCK);
+//	fcntl(x_fd, F_SETFL, O_NONBLOCK);
 	
 	query_vid_modes();
 	set_vid_mode(vid_mode);
@@ -786,7 +784,7 @@ void init_x()
 void kill_x()
 {
 	char c;
-	write(x_kill_pipe[1], &c, 1);
+	TEMP_FAILURE_RETRY(write(x_kill_pipe[1], &c, 1));
 	pthread_join(x_thread_id, NULL);
 	close(x_kill_pipe[0]);
 	close(x_kill_pipe[1]);

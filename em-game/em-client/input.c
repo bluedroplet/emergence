@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <errno.h>
 
 #include <linux/input.h>
 
@@ -53,10 +54,9 @@ void process_input()
 {
 	char data[3];
 	
-	while(1)
+//	while(1)
 	{
-		if(read(input_fd, data, 3) == -1)
-			break;
+		TEMP_FAILURE_RETRY(read(input_fd, data, 3));
 
 		if((data[0] & 1) != (old_buttons & 1))
 			process_button(0, data[0] & 1);
@@ -96,12 +96,12 @@ void init_input()
 	if(input_fd < 0)
 			goto error;
 	
-	if(fcntl(input_fd, F_SETFL, O_NONBLOCK) == -1)
+/*	if(fcntl(input_fd, F_SETFL, O_NONBLOCK) == -1)
 	{
 		close(input_fd);
 		goto error;
 	}
-	
+*/	
 	console_print("ok\n");
 	
 	return;

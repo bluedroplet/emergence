@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -61,21 +62,24 @@ int start_downloading_map(char *map_name)
 {
 	download_net_fd = socket(PF_INET, SOCK_STREAM, 0);
 	if(download_net_fd < 0)
+	{
+		perror(NULL);
 		return 0;
 	//	client_libc_error("socket failure");
+	}
 	
 	struct sockaddr_in sockaddr;
 	get_sockaddr_in_from_conn(game_conn, &sockaddr);
 	
 	if(connect(download_net_fd, &sockaddr, sizeof(struct sockaddr_in)) < 0)
 	{
-		printf("a\n");
 		perror(NULL);
 		_stop_downloading_map();
 		return 0;
 	}
 	
-	send(download_net_fd, map_name, strlen(map_name) + 1, 0);
+	TEMP_FAILURE_RETRY(
+		send(download_net_fd, map_name, strlen(map_name) + 1, 0));		// check for EAGAIN
 	
 	struct string_t *filename = new_string_string(emergence_home_dir);
 	string_cat_text(filename, "/maps/");
@@ -92,10 +96,23 @@ int start_downloading_map(char *map_name)
 		return 0;
 	}
 	
-	if(recv(download_net_fd, &download_size, 4, 0) <= 0)
+	
+	int i = 0;
+	
+	while(i < 4)
 	{
-		_stop_downloading_map();
-		return 0;
+		int r = TEMP_FAILURE_RETRY(recv(download_net_fd, &((uint8_t*)&download_size)[i], 4 - i, 0));
+		
+		if(r <= 0)
+		{
+			if(r < 0)
+				perror(NULL);
+			
+			_stop_downloading_map();
+			return 0;
+		}
+		
+		i += r;
 	}
 
 	fcntl(download_net_fd, F_SETFL, O_NONBLOCK);
@@ -134,13 +151,8 @@ void *download_thread(void *a)
 			fds[1].events = POLLIN;
 		}
 		
-		retry:
-		
-		if(poll(fds, fdcount, -1) == -1)
+		if(TEMP_FAILURE_RETRY(poll(fds, fdcount, -1)) == -1)
 		{
-			if(errno == EINTR)	// why is this necessary?
-				goto retry;
-			
 			_stop_downloading_map();
 			free_string(map_name);
 			free(download_buf);
@@ -150,7 +162,7 @@ void *download_thread(void *a)
 		
 		if(fds[0].revents & POLLIN)
 		{
-			read(download_in_pipe[0], &msg, 1);
+			TEMP_FAILURE_RETRY(read(download_in_pipe[0], &msg, 1));
 			
 			switch(msg)
 			{
@@ -164,12 +176,12 @@ void *download_thread(void *a)
 			case DOWNLOAD_THREAD_IN_DOWNLOAD_FILE:
 				
 				string_clear(map_name);
-				read(download_in_pipe[0], &c, 1);
-			
+				TEMP_FAILURE_RETRY(read(download_in_pipe[0], &c, 1));
+					
 				while(c)
 				{
 					string_cat_char(map_name, c);
-					read(download_in_pipe[0], &c, 1);
+					TEMP_FAILURE_RETRY(read(download_in_pipe[0], &c, 1));
 				}
 				
 				if(download_net_fd != -1)
@@ -178,7 +190,7 @@ void *download_thread(void *a)
 				if(!start_downloading_map(map_name->text))
 				{
 					msg = DOWNLOAD_THREAD_OUT_DOWNLOAD_FAILED;
-					write(download_out_pipe[1], &msg, 1);
+					TEMP_FAILURE_RETRY(write(download_out_pipe[1], &msg, 1));
 				}
 				
 				break;
@@ -199,34 +211,35 @@ void *download_thread(void *a)
 			
 			if(fds[1].revents & POLLIN)
 			{
-				int r = recv(download_net_fd, download_buf, DOWNLOAD_BUF_SIZE, 0);
+				int r = TEMP_FAILURE_RETRY(
+					recv(download_net_fd, download_buf, DOWNLOAD_BUF_SIZE, 0));
 				
-				if(r < 0)
+				if(r < 0 && errno == EAGAIN)
 					continue;
 				
-				if(r == 0)
+				if(r <= 0)
 				{
 					_stop_downloading_map();
 					msg = DOWNLOAD_THREAD_OUT_DOWNLOAD_FAILED;
-					write(download_out_pipe[1], &msg, 1);
+					TEMP_FAILURE_RETRY(write(download_out_pipe[1], &msg, 1));
 					continue;
 				}
 				
-				write(download_file_fd, download_buf, r);
+				TEMP_FAILURE_RETRY(write(download_file_fd, download_buf, r));
 				download_offset += r;
 				
 				if(download_offset == download_size)
 				{
 					_stop_downloading_map();
 					msg = DOWNLOAD_THREAD_OUT_DOWNLOAD_COMPLETED;
-					write(download_out_pipe[1], &msg, 1);
+					TEMP_FAILURE_RETRY(write(download_out_pipe[1], &msg, 1));
 				}
 				else
 				{
 					msg = DOWNLOAD_THREAD_OUT_DOWNLOAD_PROGRESS;
-					write(download_out_pipe[1], &msg, 1);
+					TEMP_FAILURE_RETRY(write(download_out_pipe[1], &msg, 1));
 					msg = (download_offset * 100) / download_size;
-					write(download_out_pipe[1], &msg, 1);
+					TEMP_FAILURE_RETRY(write(download_out_pipe[1], &msg, 1));
 				}
 			}
 		}
@@ -239,24 +252,24 @@ void download_map(char *map_name)
 	map_download_progress = 0;
 	
 	uint8_t m = DOWNLOAD_THREAD_IN_DOWNLOAD_FILE;
-	write(download_in_pipe[1], &m, 1);
+	TEMP_FAILURE_RETRY(write(download_in_pipe[1], &m, 1));
 	
 	char *cc = map_name;
 	
 	while(*cc)
 	{
-		write(download_in_pipe[1], cc, 1);
+		TEMP_FAILURE_RETRY(write(download_in_pipe[1], cc, 1));
 		cc++;
 	}
 	
-	write(download_in_pipe[1], cc, 1);
+	TEMP_FAILURE_RETRY(write(download_in_pipe[1], cc, 1));
 }
 
 
 void stop_downloading_map()
 {
 	uint8_t m = DOWNLOAD_THREAD_IN_STOP_DOWNLOADING;
-	write(download_in_pipe[1], &m, 1);
+	TEMP_FAILURE_RETRY(write(download_in_pipe[1], &m, 1));
 }
 
 
@@ -271,7 +284,7 @@ void init_download()
 void kill_download()
 {
 	uint8_t m = DOWNLOAD_THREAD_IN_SHUTDOWN;
-	write(download_in_pipe[1], &m, 1);
+	TEMP_FAILURE_RETRY(write(download_in_pipe[1], &m, 1));
 	pthread_join(download_thread_id, NULL);
 	close(download_in_pipe[0]);
 	close(download_in_pipe[1]);
@@ -284,12 +297,12 @@ void process_download_out_pipe()
 {
 	uint8_t msg;
 	
-	read(download_out_pipe[0], &msg, 1);
+	TEMP_FAILURE_RETRY(read(download_out_pipe[0], &msg, 1));
 
 	switch(msg)
 	{
 	case DOWNLOAD_THREAD_OUT_DOWNLOAD_PROGRESS:
-		read(download_out_pipe[0], &msg, 1);
+		TEMP_FAILURE_RETRY(read(download_out_pipe[0], &msg, 1));
 		map_download_progress = msg;
 		break;
 	

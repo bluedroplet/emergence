@@ -1261,10 +1261,8 @@ void propagate_entities()
 }
 
 
-void begin_match()
+void clear_game()
 {
-	match_start_tick = game_tick;
-	
 	struct player_t *cplayer = player0;
 		
 	while(cplayer)
@@ -1288,6 +1286,14 @@ void begin_match()
 	}
 	
 	LL_REMOVE_ALL(struct entity_t, &entity0);
+}
+
+
+void begin_match()
+{
+	match_start_tick = game_tick;
+	
+	clear_game();
 	
 
 	// spawn objects
@@ -1302,7 +1308,7 @@ void begin_match()
 	}
 
 
-	cplayer = player0;
+	struct player_t *cplayer = player0;
 		
 	while(cplayer)
 	{
@@ -2859,7 +2865,21 @@ error:
 void map(char *args)
 {
 	if(game_state == GS_ALIVE)
-		return;
+	{
+		struct player_t *player = player0, *next;
+			
+		while(player)
+		{
+			em_disconnect(player->conn);
+			next = player->next;
+			destroy_player(player);
+			num_players--;
+			player = next;
+		}
+			
+		clear_game();
+		LL_REMOVE_ALL(struct pickup_spawn_point_t, &pickup_spawn_point0);
+	}		
 	
 	mapname = new_string_text(args);
 	

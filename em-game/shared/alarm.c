@@ -1,21 +1,6 @@
 #define _GNU_SOURCE
 #define _REENTRANT
 
-/*
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <pthread.h>
-#include <string.h>
-
-#include <sys/time.h>
-#include <time.h>
-
-
-#include "../../common/llist.h"
-*/
 #include <stdio.h>
 #include <stdint.h>
 #include <pthread.h>
@@ -25,6 +10,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <math.h>
+#include <errno.h>
 
 #include <sys/time.h>
 
@@ -118,7 +104,7 @@ void *alarm_thread(void *a)
 		while(calarm_listener)
 		{
 			char c;
-			write(calarm_listener->pipe[1], &c, 1);
+			TEMP_FAILURE_RETRY(write(calarm_listener->pipe[1], &c, 1));
 		
 			calarm_listener = calarm_listener->next;
 		};

@@ -13,6 +13,7 @@
 #include <openssl/rand.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 
 
 #include "../common/stringbuf.h"
@@ -82,7 +83,7 @@ void *key_thread(void *a)
 	
 	while(1)
 	{
-		read(key_in_pipe[0], &msg, 1);
+		TEMP_FAILURE_RETRY(read(key_in_pipe[0], &msg, 1));
 
 		switch(msg)
 		{
@@ -97,12 +98,12 @@ void *key_thread(void *a)
 			if(!ssl)
 			{
 				msg = KEY_THREAD_OUT_KEY_ERROR;
-				write(key_out_pipe[1], &msg, 1);
+				TEMP_FAILURE_RETRY(write(key_out_pipe[1], &msg, 1));
 				break;
 			}
 			
-			read(key_in_pipe[0], &conn, 4);
-			read(key_in_pipe[0], session_key, 16);
+			TEMP_FAILURE_RETRY(read(key_in_pipe[0], &conn, 4));
+			TEMP_FAILURE_RETRY(read(key_in_pipe[0], session_key, 16));
 			session_key[16] = '\0';
 			
 			request = new_string_text("GET /verify-session.php?session_key=");
@@ -116,16 +117,16 @@ void *key_thread(void *a)
 			if(strncmp(result, "success\n", 8) != 0)
 			{
 				msg = KEY_THREAD_OUT_KEY_DECLINED;
-				write(key_out_pipe[1], &msg, 1);
-				write(key_out_pipe[1], &conn, 4);
+				TEMP_FAILURE_RETRY(write(key_out_pipe[1], &msg, 1));
+				TEMP_FAILURE_RETRY(write(key_out_pipe[1], &conn, 4));
 				SSL_clear(ssl);
 				SSL_free(ssl);
 				break;
 			}
 			
 			msg = KEY_THREAD_OUT_KEY_ACCEPTED;
-			write(key_out_pipe[1], &msg, 1);
-			write(key_out_pipe[1], &conn, 4);
+			TEMP_FAILURE_RETRY(write(key_out_pipe[1], &msg, 1));
+			TEMP_FAILURE_RETRY(write(key_out_pipe[1], &conn, 4));
 				
 			SSL_clear(ssl);
 			SSL_free(ssl);
@@ -147,7 +148,7 @@ void init_key()
 void kill_key()
 {
 	uint8_t msg = KEY_THREAD_IN_SHUTDOWN;
-	write(key_in_pipe[1], &msg, 1);
+	TEMP_FAILURE_RETRY(write(key_in_pipe[1], &msg, 1));
 	pthread_join(key_thread_id, NULL);
 }
 
@@ -155,9 +156,9 @@ void kill_key()
 void key_verify_session(uint32_t conn, char session_key[16])
 {
 	uint8_t msg = KEY_THREAD_IN_VERIFY_SESSION;
-	write(key_in_pipe[1], &msg, 1);
-	write(key_in_pipe[1], &conn, 4);
-	write(key_in_pipe[1], session_key, 16);
+	TEMP_FAILURE_RETRY(write(key_in_pipe[1], &msg, 1));
+	TEMP_FAILURE_RETRY(write(key_in_pipe[1], &conn, 4));
+	TEMP_FAILURE_RETRY(write(key_in_pipe[1], session_key, 16));
 }
 
 
@@ -166,8 +167,8 @@ void process_key_out_pipe()
 	uint8_t msg;
 	uint32_t conn;
 	
-	read(key_out_pipe[0], &msg, 1);
-	read(key_out_pipe[0], &conn, 4);
+	TEMP_FAILURE_RETRY(read(key_out_pipe[0], &msg, 1));
+	TEMP_FAILURE_RETRY(read(key_out_pipe[0], &conn, 4));
 
 	switch(msg)
 	{

@@ -291,8 +291,8 @@ int output_cpacket(struct conn_t *conn)
 	
 	int size = conn->cpacket_payload_size + EMNETHEADER_SIZE;
 	
-	sendto(udp_fd, (char*)&conn->cpacket, size, 0, 
-		&conn->sockaddr, sizeof(struct sockaddr_in));
+	TEMP_FAILURE_RETRY(sendto(udp_fd, (char*)&conn->cpacket, size, 0, 
+		&conn->sockaddr, sizeof(struct sockaddr_in)));
 			
 
 	// get time
@@ -343,7 +343,8 @@ void send_conn_cookie(struct sockaddr_in *sockaddr)
 	cookie->cookie = mrand48() & EMNETCOOKIE_MASK;
 	
 	uint32_t header = EMNETFLAG_COOKIE | cookie->cookie;
-	sendto(udp_fd, (char*)&header, EMNETHEADER_SIZE, 0, sockaddr, sizeof(struct sockaddr_in));
+	TEMP_FAILURE_RETRY(sendto(udp_fd, (char*)&header, EMNETHEADER_SIZE, 0, 
+		sockaddr, sizeof(struct sockaddr_in)));
 	
 	cookie->expire_time = get_wall_time() + CONNECTION_COOKIE_TIMEOUT;
 	cookie->ip = sockaddr->sin_addr.s_addr;
@@ -378,14 +379,16 @@ int query_conn_cookie(struct sockaddr_in *sockaddr, uint32_t cookie)
 void send_connect(struct sockaddr_in *addr, uint32_t index)
 {
 	uint32_t header = EMNETFLAG_CONNECT | index;
-	sendto(udp_fd, (char*)&header, EMNETHEADER_SIZE, 0, addr, sizeof(struct sockaddr_in));
+	TEMP_FAILURE_RETRY(sendto(udp_fd, (char*)&header, EMNETHEADER_SIZE, 0, 
+		addr, sizeof(struct sockaddr_in)));
 }
 
 
 void send_ack(struct sockaddr_in *addr, uint32_t index)
 {
 	uint32_t header = EMNETFLAG_ACKWLDGEMNT | index;
-	sendto(udp_fd, (char*)&header, EMNETHEADER_SIZE, 0, addr, sizeof(struct sockaddr_in));
+	TEMP_FAILURE_RETRY(sendto(udp_fd, (char*)&header, EMNETHEADER_SIZE, 0, 
+		addr, sizeof(struct sockaddr_in)));
 }
 
 
@@ -439,25 +442,25 @@ void process_ack(struct conn_t *conn, uint32_t index)
 void emit_process_connecting()
 {
 	uint32_t msg = NETMSG_CONNECTING;
-	write(net_out_pipe[1], &msg, 4);
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &msg, 4));
 }
 
 
 void emit_process_cookie_echoed()
 {
 	uint32_t msg = NETMSG_COOKIE_ECHOED;
-	write(net_out_pipe[1], &msg, 4);
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &msg, 4));
 }
 
 
 void emit_process_connection(struct conn_t *conn)
 {
 	uint32_t msg = NETMSG_CONNECTION;
-	write(net_out_pipe[1], &msg, 4);
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &msg, 4));
 	write(net_out_pipe[1], &conn, 4);
 	
 	#ifdef EMSERVER
-	write(net_out_pipe[1], &conn->type, 4);
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &conn->type, 4));
 	#endif
 }
 
@@ -465,24 +468,24 @@ void emit_process_connection(struct conn_t *conn)
 void emit_process_connection_failed(struct conn_t *conn)
 {
 	uint32_t msg = NETMSG_CONNECTION_FAILED;
-	write(net_out_pipe[1], &msg, 4);
-	write(net_out_pipe[1], &conn, 4);
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &msg, 4));
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &conn, 4));
 }
 
 
 void emit_process_disconnection(struct conn_t *conn)
 {
 	uint32_t msg = NETMSG_DISCONNECTION;
-	write(net_out_pipe[1], &msg, 4);
-	write(net_out_pipe[1], &conn, 4);
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &msg, 4));
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &conn, 4));
 }
 
 
 void emit_process_conn_lost(struct conn_t *conn)
 {
 	uint32_t msg = NETMSG_CONNLOST;
-	write(net_out_pipe[1], &msg, 4);
-	write(net_out_pipe[1], &conn, 4);
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &msg, 4));
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &conn, 4));
 }
 
 
@@ -556,20 +559,20 @@ void process_in_order_stream(struct conn_t *conn, struct in_packet_ll_t *end)
 	if(untimed)
 	{
 		msg = NETMSG_STREAM_UNTIMED;
-		write(net_out_pipe[1], &msg, 4);
-		write(net_out_pipe[1], &index, 4);
+		TEMP_FAILURE_RETRY(write(net_out_pipe[1], &msg, 4));
+		TEMP_FAILURE_RETRY(write(net_out_pipe[1], &index, 4));
 	}
 	else
 	{
 		msg = NETMSG_STREAM_TIMED;
 		stamp = timestamp();
-		write(net_out_pipe[1], &msg, 4);
-		write(net_out_pipe[1], &index, 4);
-		write(net_out_pipe[1], &stamp, 8);
+		TEMP_FAILURE_RETRY(write(net_out_pipe[1], &msg, 4));
+		TEMP_FAILURE_RETRY(write(net_out_pipe[1], &index, 4));
+		TEMP_FAILURE_RETRY(write(net_out_pipe[1], &stamp, 8));
 	}
 	
-	write(net_out_pipe[1], &conn, 4);
-	write(net_out_pipe[1], &buf, 4);
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &conn, 4));
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &buf, 4));
 }
 
 
@@ -605,20 +608,20 @@ void process_out_of_order_stream(struct conn_t *conn, struct in_packet_ll_t *sta
 	if(untimed)
 	{
 		msg = NETMSG_STREAM_UNTIMED_OOO;
-		write(net_out_pipe[1], &msg, 4);
-		write(net_out_pipe[1], &index, 4);
+		TEMP_FAILURE_RETRY(write(net_out_pipe[1], &msg, 4));
+		TEMP_FAILURE_RETRY(write(net_out_pipe[1], &index, 4));
 	}
 	else
 	{
 		msg = NETMSG_STREAM_TIMED_OOO;
 		stamp = timestamp();
-		write(net_out_pipe[1], &msg, 4);
-		write(net_out_pipe[1], &index, 4);
-		write(net_out_pipe[1], &stamp, 8);
+		TEMP_FAILURE_RETRY(write(net_out_pipe[1], &msg, 4));
+		TEMP_FAILURE_RETRY(write(net_out_pipe[1], &index, 4));
+		TEMP_FAILURE_RETRY(write(net_out_pipe[1], &stamp, 8));
 	}
 	
-	write(net_out_pipe[1], &conn, 4);
-	write(net_out_pipe[1], &buf, 4);
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &conn, 4));
+	TEMP_FAILURE_RETRY(write(net_out_pipe[1], &buf, 4));
 	
 	start->stream_delivered = 1;
 }
@@ -756,8 +759,8 @@ void process_udp_data()
 		// receive packet and address
 	
 		addr_size = sizeof(struct sockaddr_in);
-		size = recvfrom(udp_fd, (char*)&packet, EMNETPACKET_MAXSIZE, 0, 
-			(struct sockaddr*)&recv_addr, &addr_size);
+		size = TEMP_FAILURE_RETRY(recvfrom(udp_fd, (char*)&packet, EMNETPACKET_MAXSIZE, 0, 
+			(struct sockaddr*)&recv_addr, &addr_size));
 			
 		if(size == -1)
 			break;
@@ -874,8 +877,8 @@ void process_udp_data()
 				if(conn->state != NETSTATE_CONNECTING)
 					break;
 				
-				sendto(udp_fd, (char*)&packet, EMNETHEADER_SIZE, 0, 
-					&recv_addr, sizeof(struct sockaddr_in));
+				TEMP_FAILURE_RETRY(sendto(udp_fd, (char*)&packet, EMNETHEADER_SIZE, 0, 
+					&recv_addr, sizeof(struct sockaddr_in)));
 				
 				emit_process_cookie_echoed();
 					
@@ -1047,8 +1050,8 @@ void process_udp_data()
 			
 				packet.header = EMNETCLASS_MISC | EMNETFLAG_PONG | 
 					(packet.header & EMNETCOOKIE_MASK);
-				sendto(udp_fd, (char*)&packet, EMNETHEADER_SIZE, 0, 
-					&recv_addr, sizeof(struct sockaddr_in));
+				TEMP_FAILURE_RETRY(sendto(udp_fd, (char*)&packet, EMNETHEADER_SIZE, 0, 
+					&recv_addr, sizeof(struct sockaddr_in)));
 						
 				break;
 			
@@ -1108,7 +1111,7 @@ void get_sockaddr_in_from_conn(uint32_t conn, struct sockaddr_in *sockaddr)
 void network_alarm()
 {
 	char c;
-	while(read(net_timer_fd, &c, 1) != -1);
+	while(TEMP_FAILURE_RETRY(read(net_timer_fd, &c, 1)) != -1);
 
 	float time = get_wall_time();
 	
@@ -1160,8 +1163,8 @@ void network_alarm()
 			
 			if(time > packet->next_resend_time)
 			{
-				sendto(udp_fd, (char*)(packet), packet->size, 0, 
-					(struct sockaddr*)&conn->sockaddr, sizeof(struct sockaddr_in));
+				TEMP_FAILURE_RETRY(sendto(udp_fd, (char*)(packet), packet->size, 0, 
+					(struct sockaddr*)&conn->sockaddr, sizeof(struct sockaddr_in)));
 					
 				packet->next_resend_time += (floor((time - packet->next_resend_time) / 
 					CONNECT_RESEND_DELAY) + 1.0) * CONNECT_RESEND_DELAY;
@@ -1195,8 +1198,8 @@ void network_alarm()
 			{
 				if(time > packet->next_resend_time)
 				{
-					sendto(udp_fd, (char*)(packet), packet->size, 0, 
-						(struct sockaddr*)&conn->sockaddr, sizeof(struct sockaddr_in));
+					TEMP_FAILURE_RETRY(sendto(udp_fd, (char*)(packet), packet->size, 0, 
+						(struct sockaddr*)&conn->sockaddr, sizeof(struct sockaddr_in)));
 						
 					packet->next_resend_time += (floor((time - packet->next_resend_time) / 
 						STREAM_RESEND_DELAY) + 1.0) * STREAM_RESEND_DELAY;
@@ -1224,8 +1227,8 @@ void network_alarm()
 			{
 				if(time > packet->next_resend_time)
 				{
-					sendto(udp_fd, (char*)(packet), packet->size, 0, 
-						(struct sockaddr*)&conn->sockaddr, sizeof(struct sockaddr_in));
+					TEMP_FAILURE_RETRY(sendto(udp_fd, (char*)(packet), packet->size, 0, 
+						(struct sockaddr*)&conn->sockaddr, sizeof(struct sockaddr_in)));
 						
 					packet->next_resend_time += (floor((time - packet->next_resend_time) / 
 						STREAM_RESEND_DELAY) + 1.0) * STREAM_RESEND_DELAY;
@@ -1282,12 +1285,10 @@ void *network_thread(void *a)
 	
 	while(1)
 	{
-		if(poll(fds, fdcount, -1) == -1)
+		if(TEMP_FAILURE_RETRY(poll(fds, fdcount, -1)) == -1)
 		{
-			if(errno == EINTR)	// why is this necessary?
-				continue;
-			
-			return NULL;
+			free(fds);
+			pthread_exit(NULL);
 		}
 
 		if(fds[0].revents & POLLIN)
@@ -1307,12 +1308,14 @@ void *network_thread(void *a)
 		if(fds[2].revents & POLLIN)
 		{
 			pthread_mutex_lock(&net_mutex);
+			
 			if(all_connections_disconnected())
 			{
 				free(fds);
 				pthread_mutex_unlock(&net_mutex);
 				pthread_exit(NULL);
 			}
+			
 			pthread_mutex_unlock(&net_mutex);
 		}
 	}
@@ -1860,6 +1863,8 @@ void init_network()
 	pipe(net_kill_pipe);
 	pipe(net_out_pipe);
 	
+	fcntl(net_out_pipe[0], F_SETFL, O_NONBLOCK);
+	
 	net_timer_fd = create_alarm_listener();
 	
 	pthread_create(&network_thread_id, NULL, network_thread, NULL);
@@ -1888,7 +1893,7 @@ void kill_network()		// FIXME
 	net_shutting_down = 1;
 	
 	char c;
-	write(net_kill_pipe[1], &c, 1);
+	TEMP_FAILURE_RETRY(write(net_kill_pipe[1], &c, 1));
 	pthread_join(network_thread_id, NULL);
 	close(net_kill_pipe[0]);
 	close(net_kill_pipe[1]);

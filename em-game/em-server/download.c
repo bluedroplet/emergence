@@ -74,7 +74,7 @@ int start_download(struct download_t *download)
 		string_cat_string(search, download->filename);
 		string_cat_text(search, ".cmap");
 		
-		filename = new_string(find_resource(search->text));
+		filename = new_string_text(find_resource(search->text));
 		free_string(search);
 	
 		if(stat(filename->text, &buf) == -1)
@@ -93,7 +93,7 @@ int start_download(struct download_t *download)
 	download->size = buf.st_size;
 	download->offset = 0;
 	
-	if(send(download->net_fd, &download->size, 4, 0) < 0)
+	if(TEMP_FAILURE_RETRY(send(download->net_fd, &download->size, 4, 0)) <= 0)
 		return 0;
 	
 	return 1;
@@ -172,17 +172,13 @@ void *download_thread(void *a)
 			cfd++;
 		}
 		
-		retry:
-		
-		if(poll(fds, fdcount, -1) < 0)
+		if(TEMP_FAILURE_RETRY(poll(fds, fdcount, -1)) == -1)
 		{
-			if(errno == EINTR)	// why is this necessary?
-				goto retry;
-			
 			while(download0)
 				remove_download(download0);
 			
 			free(fds);
+			close(listen_fd);
 			pthread_exit(NULL);
 		}
 		
@@ -192,6 +188,7 @@ void *download_thread(void *a)
 				remove_download(download0);
 			
 			free(fds);
+			close(listen_fd);
 			pthread_exit(NULL);
 		}
 		
@@ -243,30 +240,39 @@ void *download_thread(void *a)
 				if(fds[cfd].revents & POLLIN)
 				{
 					char c;
-					int r = 0;
-					while(recv(cdownload->net_fd, &c, 1, 0) > 0)	// TODO : handle errors
+					int r = TEMP_FAILURE_RETRY(recv(cdownload->net_fd, &c, 1, 0));
+					
+					if(r == -1 && errno == EAGAIN)
 					{
-						if(c != 0)
-						{
-							string_cat_char(cdownload->filename, c);
-						}
-						else
-						{
-							if(!start_download(cdownload))
-							{
-								temp = cdownload->next;
-								remove_download(cdownload);
-								cdownload = temp;
-								cfd++;
-								r = 1;
-							}
-							
-							break;
-						}
+						LL_NEXT(cdownload);
+						cfd++;
+						continue;
 					}
 					
-					if(r)
+					if(r <= 0)
+					{
+						temp = cdownload->next;
+						remove_download(cdownload);
+						cdownload = temp;
+						cfd++;
 						continue;
+					}
+					
+					if(c != 0)
+					{
+						string_cat_char(cdownload->filename, c);
+					}
+					else
+					{
+						if(!start_download(cdownload))
+						{
+							temp = cdownload->next;
+							remove_download(cdownload);
+							cdownload = temp;
+							cfd++;
+							continue;
+						}
+					}
 				}
 			}
 			else
@@ -306,7 +312,7 @@ void init_download()
 void kill_download()
 {
 	char c;
-	write(download_kill_pipe[1], &c, 1);
+	TEMP_FAILURE_RETRY(write(download_kill_pipe[1], &c, 1));
 	pthread_join(download_thread_id, NULL);
 	close(download_kill_pipe[0]);
 	close(download_kill_pipe[1]);

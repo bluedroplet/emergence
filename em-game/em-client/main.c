@@ -140,11 +140,11 @@ void process_network()
 	while(1)
 	{
 		if(downloading_map)
-			break;
+			return;
 		
 		uint32_t m;
-		if(read(net_out_pipe[0], &m, 4) == -1)
-			break;
+		if(TEMP_FAILURE_RETRY(read(net_out_pipe[0], &m, 4)) != 4)
+			return;
 		
 		fcntl(net_out_pipe[0], F_SETFL, 0);
 		
@@ -159,59 +159,59 @@ void process_network()
 			break;
 		
 		case NETMSG_CONNECTION:
-			read(net_out_pipe[0], &conn, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
 			game_process_connection(conn);
 			break;
-
+	
 		case NETMSG_CONNECTION_FAILED:
 			game_process_connection_failed(conn);
 			break;
 		
 		case NETMSG_DISCONNECTION:
-			read(net_out_pipe[0], &conn, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
 			game_process_disconnection(conn);
 			break;
-
+	
 		case NETMSG_CONNLOST:
-			read(net_out_pipe[0], &conn, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
 			game_process_conn_lost(conn);
 			break;
 		
 		case NETMSG_STREAM_TIMED:
-			read(net_out_pipe[0], &index, 4);
-			read(net_out_pipe[0], &stamp, 8);
-			read(net_out_pipe[0], &conn, 4);
-			read(net_out_pipe[0], &stream, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &index, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stamp, 8));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stream, 4));
 			game_process_stream_timed(conn, index, &stamp, stream);
 			free_buffer(stream);
 			break;
-
+	
 		case NETMSG_STREAM_UNTIMED:
-			read(net_out_pipe[0], &index, 4);
-			read(net_out_pipe[0], &conn, 4);
-			read(net_out_pipe[0], &stream, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &index, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stream, 4));
 			game_process_stream_untimed(conn, index, stream);
 			free_buffer(stream);
 			break;
-
+	
 		case NETMSG_STREAM_TIMED_OOO:
-			read(net_out_pipe[0], &index, 4);
-			read(net_out_pipe[0], &stamp, 8);
-			read(net_out_pipe[0], &conn, 4);
-			read(net_out_pipe[0], &stream, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &index, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stamp, 8));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stream, 4));
 			game_process_stream_timed_ooo(conn, index, &stamp, stream);
 			free_buffer(stream);
 			break;
-
+	
 		case NETMSG_STREAM_UNTIMED_OOO:
-			read(net_out_pipe[0], &index, 4);
-			read(net_out_pipe[0], &conn, 4);
-			read(net_out_pipe[0], &stream, 4);
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &index, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &conn, 4));
+			TEMP_FAILURE_RETRY(read(net_out_pipe[0], &stream, 4));
 			game_process_stream_untimed_ooo(conn, index, stream);
 			free_buffer(stream);
 			break;
 		}
-
+		
 		fcntl(net_out_pipe[0], F_SETFL, O_NONBLOCK);
 	}
 }
@@ -310,7 +310,7 @@ void init()
 void process_x_render_pipe()
 {
 	char c;
-	while(read(x_render_pipe[0], &c, 1) != -1);
+	while(TEMP_FAILURE_RETRY(read(x_render_pipe[0], &c, 1)) == 1);
 		
 	render_frame();
 }
@@ -318,24 +318,28 @@ void process_x_render_pipe()
 
 void process_console_pipe()
 {
-	struct string_t *s = new_string();
 	char c;
-	while(read(console_pipe[0], &c, 1) != -1)
+	
+	if(TEMP_FAILURE_RETRY(read(console_pipe[0], &c, 1)) != 1)
+		return;
+
+	fcntl(console_pipe[0], F_SETFL, 0);
+	
+	struct string_t *string = new_string();
+	
+	while(c != 0)
 	{
-	//	fcntl(console_pipe[0], F_SETFL, 0);
-		
-		if(c == 0)
-		{
-			parse_command(s->text);
-			string_clear(s);
-		}
-		else
-			string_cat_char(s, c);
-		
-	//	fcntl(console_pipe[0], F_SETFL, O_NONBLOCK);
+		string_cat_char(string, c);
+		if(TEMP_FAILURE_RETRY(read(console_pipe[0], &c, 1)) != 1)
+			goto error;
 	}
 	
-	free_string(s);
+	parse_command(string->text);
+	
+	error:	
+	free_string(string);
+	
+	fcntl(console_pipe[0], F_SETFL, O_NONBLOCK);
 }
 
 
@@ -362,14 +366,9 @@ void main_thread()
 		else
 			fdcount = 5;
 		
-		if(poll(fds, fdcount, -1) == -1)
-		{
-			if(errno == EINTR)	// why is this necessary?
-				continue;
-			
-			return;
-		}
-
+		if(TEMP_FAILURE_RETRY(poll(fds, fdcount, -1)) == -1)
+			client_shutdown();
+		
 		if(fds[0].revents & POLLIN)
 			process_x_render_pipe();
 		

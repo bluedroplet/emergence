@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 
 #include <openssl/evp.h>
 
@@ -62,7 +63,7 @@ int get_file_info(char *filename, int *size, uint8_t *hash)
 	
 	while(1)
 	{
-		int b = read(fd, read_buf, FILEINFO_READ_BUF_SIZE);
+		int b = TEMP_FAILURE_RETRY(read(fd, read_buf, FILEINFO_READ_BUF_SIZE));
 		if(b < 0)
 		{
 			close(fd);

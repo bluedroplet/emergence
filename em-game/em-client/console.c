@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include "../common/types.h"
 #include "shared/cvar.h"
@@ -473,7 +474,7 @@ void console_enter(int state)
 		if(rconing == RCCON_IN)
 			rcon_command(s->text);
 		else
-			write(console_pipe[1], s->text, strlen(s->text) + 1);
+			TEMP_FAILURE_RETRY(write(console_pipe[1], s->text, strlen(s->text) + 1));
 
 		free_string(s);
 

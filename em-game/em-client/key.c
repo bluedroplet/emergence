@@ -13,6 +13,7 @@
 #include <openssl/rand.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 
 
 #include "../common/stringbuf.h"
@@ -84,8 +85,8 @@ void *key_thread(void *a)
 	
 	while(1)
 	{
-		read(key_in_pipe[0], &msg, 1);
-
+		TEMP_FAILURE_RETRY(read(key_in_pipe[0], &msg, 1));
+		
 		switch(msg)
 		{
 		case KEY_THREAD_IN_SHUTDOWN:
@@ -98,7 +99,7 @@ void *key_thread(void *a)
 			if(!ssl)
 			{
 				msg = KEY_THREAD_OUT_KEY_ERROR;
-				write(key_out_pipe[1], &msg, 1);
+				TEMP_FAILURE_RETRY(write(key_out_pipe[1], &msg, 1));
 				break;
 			}
 			
@@ -113,7 +114,7 @@ void *key_thread(void *a)
 			if(strncmp(result, "success\n", 8) != 0)
 			{
 				msg = KEY_THREAD_OUT_KEY_DECLINED;
-				write(key_out_pipe[1], &msg, 1);
+				TEMP_FAILURE_RETRY(write(key_out_pipe[1], &msg, 1));
 				SSL_clear(ssl);
 				SSL_free(ssl);
 				break;
@@ -122,8 +123,8 @@ void *key_thread(void *a)
 			SSL_read(ssl, session_key, 16);
 
 			msg = KEY_THREAD_OUT_KEY_ACCEPTED;
-			write(key_out_pipe[1], &msg, 1);
-			write(key_out_pipe[1], session_key, 16);
+			TEMP_FAILURE_RETRY(write(key_out_pipe[1], &msg, 1));
+			TEMP_FAILURE_RETRY(write(key_out_pipe[1], session_key, 16));
 				
 			SSL_clear(ssl);
 			SSL_free(ssl);
@@ -188,7 +189,7 @@ void kill_key()
 		return;
 	
 	uint8_t msg = KEY_THREAD_IN_SHUTDOWN;
-	write(key_in_pipe[1], &msg, 1);
+	TEMP_FAILURE_RETRY(write(key_in_pipe[1], &msg, 1));
 	pthread_join(key_thread_id, NULL);
 	close(key_in_pipe[0]);
 	close(key_in_pipe[1]);
@@ -203,7 +204,7 @@ int key_create_session()
 		return 0;
 	
 	uint8_t msg = KEY_THREAD_IN_NEW_SESSION;
-	write(key_in_pipe[1], &msg, 1);
+	TEMP_FAILURE_RETRY(write(key_in_pipe[1], &msg, 1));
 	
 	return 1;
 }
@@ -214,12 +215,12 @@ void process_key_out_pipe()
 	uint8_t msg;
 	char session_key[16];
 	
-	read(key_out_pipe[0], &msg, 1);
+	TEMP_FAILURE_RETRY(read(key_out_pipe[0], &msg, 1));
 
 	switch(msg)
 	{
 	case KEY_THREAD_OUT_KEY_ACCEPTED:
-		read(key_out_pipe[0], session_key, 16);
+		TEMP_FAILURE_RETRY(read(key_out_pipe[0], session_key, 16));
 		game_process_key_accepted(session_key);
 		break;
 	
