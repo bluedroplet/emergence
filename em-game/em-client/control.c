@@ -547,6 +547,9 @@ char get_ascii(int key)
 {
 	switch(key)
 	{
+	case 53:
+		return '/';
+	
 	case 57:
 		return ' ';
 
