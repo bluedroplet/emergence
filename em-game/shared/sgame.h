@@ -121,6 +121,7 @@ struct weapon_data_t
 	int ammo;
 	float shield_strength;
 	struct pickup_spawn_point_t *spawn_point;
+	int respawned;
 	#endif
 	
 	#ifdef EMCLIENT

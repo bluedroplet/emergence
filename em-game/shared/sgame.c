@@ -875,6 +875,16 @@ void explode_craft(struct entity_t *craft, struct player_t *responsibility)
 }
 
 
+void respawn_weapon(struct entity_t *weapon)
+{
+	if(weapon->weapon_data.respawned)
+		return;
+	
+	calculate_respawn_tick(weapon->weapon_data.spawn_point);
+	weapon->weapon_data.respawned = 1;
+}
+
+
 void explode_weapon(struct entity_t *weapon, struct player_t *responsibility)
 {
 	weapon->kill_me = 1;
@@ -883,8 +893,7 @@ void explode_weapon(struct entity_t *weapon, struct player_t *responsibility)
 	splash_force(weapon->xdis, weapon->ydis, WEAPON_SPLASH_FORCE, responsibility);
 	emit_explosion(weapon->xdis, weapon->ydis, WEAPON_EXPLOSION_SIZE);
 	
-	if(!weapon->weapon_data.spawn_point->respawn)
-		calculate_respawn_tick(weapon->weapon_data.spawn_point);
+	respawn_weapon(weapon);
 	
 	if(!weapon->in_tick)
 		remove_entity(sentity0, weapon);
@@ -2164,8 +2173,7 @@ void s_tick_weapon(struct entity_t *weapon)
 						craft = entity;
 						
 						#ifdef EMSERVER
-						if(!weapon->weapon_data.spawn_point->respawn)
-							calculate_respawn_tick(weapon->weapon_data.spawn_point);
+						respawn_weapon(weapon);
 						#endif
 						break;
 					}
@@ -2177,8 +2185,7 @@ void s_tick_weapon(struct entity_t *weapon)
 						craft = entity;
 						
 						#ifdef EMSERVER
-						if(!weapon->weapon_data.spawn_point->respawn)
-							calculate_respawn_tick(weapon->weapon_data.spawn_point);
+						respawn_weapon(weapon);
 						#endif
 						break;
 					}
