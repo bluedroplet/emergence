@@ -112,3 +112,18 @@ int blit_text(int x, int y, char *text, uint8_t red, uint8_t green, uint8_t blue
 
 	return w;
 }
+
+
+int blit_text_centered(int x, int y, char *text, uint8_t red, uint8_t green, uint8_t blue, struct surface_t *dest)
+{
+	int w = 0;
+	char *c = text;
+
+	while(*c)
+	{
+		w += charlengths[*((uint8_t*)c)];
+		c++;
+	}
+
+	blit_text(x - w/2, y, text, red, green, blue, dest);
+}
