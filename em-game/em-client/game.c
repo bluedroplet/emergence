@@ -4761,7 +4761,8 @@ void cf_connect(char *addr)
 
 void cf_disconnect()
 {
-	em_disconnect(game_conn);
+	if(game_conn)
+		em_disconnect(game_conn);
 }
 
 
