@@ -2875,19 +2875,30 @@ void write_weapon_data_to_demo(struct entity_t *weapon)
 
 void write_plasma_data_to_demo(struct entity_t *plasma)
 {
+	gzwrite(gzrecording, &plasma->plasma_data.in_weapon, 1);
 	gzwrite(gzrecording, &plasma->plasma_data.weapon_id, 4);
+}
+
+
+void write_bullet_data_to_demo(struct entity_t *bullet)
+{
+	gzwrite(gzrecording, &bullet->bullet_data.in_weapon, 1);
+	gzwrite(gzrecording, &bullet->bullet_data.weapon_id, 4);
 }
 
 
 void write_rocket_data_to_demo(struct entity_t *rocket)
 {
 	gzwrite(gzrecording, &rocket->rocket_data.theta, 4);
+	gzwrite(gzrecording, &rocket->rocket_data.start_tick, 4);
+	gzwrite(gzrecording, &rocket->rocket_data.in_weapon, 1);
 	gzwrite(gzrecording, &rocket->rocket_data.weapon_id, 4);
 }
 
 
 void write_mine_data_to_demo(struct entity_t *mine)
 {
+	gzwrite(gzrecording, &mine->mine_data.under_craft, 1);
 	gzwrite(gzrecording, &mine->mine_data.craft_id, 4);
 }
 
@@ -2940,6 +2951,10 @@ void write_entity_to_demo(struct entity_t *entity)
 		gzwrite(gzrecording, &entity->craft_data.shield_green, 1);
 		gzwrite(gzrecording, &entity->craft_data.shield_blue, 1);
 	
+		gzwrite(gzrecording, &entity->craft_data.plasma_red, 1);
+		gzwrite(gzrecording, &entity->craft_data.plasma_green, 1);
+		gzwrite(gzrecording, &entity->craft_data.plasma_blue, 1);
+	
 		gzwrite(gzrecording, &entity->craft_data.carcass, 1);
 		break;
 	
@@ -2957,6 +2972,10 @@ void write_entity_to_demo(struct entity_t *entity)
 		gzwrite(gzrecording, &entity->plasma_data.red, 1);
 		gzwrite(gzrecording, &entity->plasma_data.green, 1);
 		gzwrite(gzrecording, &entity->plasma_data.blue, 1);
+		break;
+	
+	case ENT_BULLET:
+		write_bullet_data_to_demo(entity);
 		break;
 	
 	case ENT_ROCKET:
