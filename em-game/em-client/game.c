@@ -363,6 +363,8 @@ int plasma_red = 187, plasma_green = 241, plasma_blue = 0xff;
 
 int shield_red = 56, shield_green = 23, shield_blue = 245;
 
+int old_proto;
+
 
 struct player_t
 {
@@ -852,6 +854,12 @@ int game_process_proto_ver()
 		return 0;
 	
 	uint8_t proto_ver = message_reader_read_uint8();
+	
+	if(proto_ver == EM_PROTO_VER - 1)
+	{
+		old_proto = 1;
+		proto_ver = EM_PROTO_VER;
+	}
 	
 	if(proto_ver == EM_PROTO_VER)
 	{
@@ -1706,29 +1714,39 @@ void process_explosion_event(struct event_t *event)
 
 void add_teleport_event(struct event_t *event)
 {
-	event->ent_data.index = message_reader_read_uint32();
+	if(!old_proto)
+		event->ent_data.index = message_reader_read_uint32();
 }
 
 
 void process_teleport_event(struct event_t *event)
 {
-	start_entity_sample(teleporter_sample, 
-		event->ent_data.index, event->tick);
+	if(!old_proto)
+		start_entity_sample(teleporter_sample, 
+			event->ent_data.index, event->tick);
+	else
+		start_global_sample(teleporter_sample, event->tick);
 }
 
 
 void add_speedup_event(struct event_t *event)
 {
-	event->static_sound_data.x = message_reader_read_float();
-	event->static_sound_data.y = message_reader_read_float();
+	if(!old_proto)
+	{
+		event->static_sound_data.x = message_reader_read_float();
+		event->static_sound_data.y = message_reader_read_float();
+	}
 }
 
 
 void process_speedup_event(struct event_t *event)
 {
-	start_static_sample(speedup_ramp_sample, 
-		event->static_sound_data.x, event->static_sound_data.y, 
-		event->tick);
+	if(!old_proto)
+		start_static_sample(speedup_ramp_sample, 
+			event->static_sound_data.x, event->static_sound_data.y, 
+			event->tick);
+	else
+		start_global_sample(speedup_ramp_sample, event->tick);
 }
 
 

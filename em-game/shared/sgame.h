@@ -26,7 +26,7 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 */
 
 
-#define EM_PROTO_VER									0x04
+#define EM_PROTO_VER									0x05
 
 
 
