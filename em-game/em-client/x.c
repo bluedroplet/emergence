@@ -65,6 +65,7 @@ struct vid_mode_t
 } *vid_mode0 = NULL;
 
 int vid_mode;
+int depth;
 
 pthread_mutex_t x_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 pthread_t x_thread_id;
@@ -315,7 +316,7 @@ void set_vid_mode(int mode)	// use goto error crap
 	vid_height = cvid_mode->height;
 
     xwindow = XCreateWindow(xdisplay, RootWindow(xdisplay, xscreen), 0, 0, vid_width, vid_height, 0,
-			     24, InputOutput, DefaultVisual(xdisplay, xscreen),
+			     depth, InputOutput, DefaultVisual(xdisplay, xscreen),
 			     CWOverrideRedirect | CWBackPixel | CWBorderPixel
 			     | CWColormap,
 			     &xattr);
@@ -345,7 +346,7 @@ void set_vid_mode(int mode)	// use goto error crap
 
     memset(shmseginfo,0, sizeof(XShmSegmentInfo));
 
-	image=XShmCreateImage(xdisplay, DefaultVisual(xdisplay, xscreen), 24, ZPixmap,
+	image=XShmCreateImage(xdisplay, DefaultVisual(xdisplay, xscreen), depth, ZPixmap,
                                   NULL, shmseginfo, vid_width, vid_height);	
    
    	if(!image)
@@ -363,7 +364,16 @@ void set_vid_mode(int mode)	// use goto error crap
 		client_shutdown();
 	shmseginfo->readOnly=False;
 	
-	s_backbuffer = new_surface_no_buf(SURFACE_24BITPADDING8BIT, vid_width, vid_height);
+	switch(depth)
+	{
+	case 16:
+		s_backbuffer = new_surface_no_buf(SURFACE_16BIT, vid_width, vid_height);
+		break;
+	
+	case 24:
+		s_backbuffer = new_surface_no_buf(SURFACE_24BITPADDING8BIT, vid_width, vid_height);
+		break;
+	}
 	
 	s_backbuffer->buf = image->data = shmseginfo->shmaddr;
 	s_backbuffer->pitch = image->bytes_per_line;
@@ -435,6 +445,8 @@ void init_x()
 	
 	
 	xscreen = DefaultScreen(xdisplay);
+	
+	depth = DefaultDepth(xdisplay, xscreen);
 	
 	/*   screen_w = DisplayWidth(SDL_Display, SDL_Screen);
     screen_h = DisplayHeight(SDL_Display, SDL_Screen);
