@@ -1,6 +1,6 @@
 Summary: Computer Game
 Name: emergence
-Version: 0.6-dev
+Version: 0.6
 Release: 1
 Copyright: Jonathan Brown 
 Group: Amusements/Games

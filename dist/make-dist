@@ -1,6 +1,6 @@
 #!/bin/bash -v
 
-ver=0.6-dev
+ver=0.6
 
 cd ../em-tools
 make distclean
@@ -25,8 +25,8 @@ cd ../em-tools
 cd ../dist
 
 
-#for arch in i386 i686 pentium3 pentium4 athlon-xp
-for arch in pentium3
+for arch in i386 i686 pentium3 pentium4 athlon-xp
+#for arch in pentium3
 do
 
 stage3=i686
@@ -68,7 +68,7 @@ cd ..
 
 
 cd ../em-tools
-make clean
+#make clean
 
 #./configure --prefix=/usr || exit
 #make || exit
