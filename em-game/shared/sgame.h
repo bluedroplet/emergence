@@ -234,7 +234,7 @@ struct entity_t
 
 #define ENT_CRAFT		0
 #define ENT_WEAPON		1
-#define ENT_BOGIE		2
+#define ENT_PLASMA		2
 #define ENT_BULLET		3
 #define ENT_ROCKET		4
 #define ENT_MINE		5
@@ -325,7 +325,7 @@ void explode_craft(struct entity_t *craft);
 
 #define CRAFT_RADIUS	56.569
 #define WEAPON_RADIUS	35.355
-#define BOGIE_RADIUS	5.0
+#define PLASMA_RADIUS	5.0
 #define ROCKET_RADIUS	25.0
 #define MINE_RADIUS		20.0
 #define RAILS_RADIUS	20.0

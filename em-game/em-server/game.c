@@ -221,7 +221,7 @@ void propagate_entity(struct entity_t *entity)
 			write_weapon_data_to_net(player->conn, entity);
 			break;
 		
-		case ENT_BOGIE:
+		case ENT_PLASMA:
 			write_plasma_data_to_net(player->conn, entity);
 			break;
 		
@@ -291,7 +291,7 @@ void spawn_all_entities_on_player(struct player_t *player)
 			net_emit_uint8(player->conn, centity->weapon_data.detached);
 			break;
 		
-		case ENT_BOGIE:
+		case ENT_PLASMA:
 			write_plasma_data_to_net(player->conn, centity);
 			break;
 		
@@ -348,7 +348,7 @@ void spawn_entity_on_all_players(struct entity_t *entity)
 			net_emit_uint8(player->conn, entity->weapon_data.detached);
 			break;
 		
-		case ENT_BOGIE:
+		case ENT_PLASMA:
 			write_plasma_data_to_net(player->conn, entity);
 			break;
 		
@@ -462,7 +462,7 @@ void spawn_plasma(struct entity_t *weapon)
 {
 	struct entity_t *plasma = new_entity(&entity0);
 	
-	plasma->type = ENT_BOGIE;
+	plasma->type = ENT_PLASMA;
 	
 	plasma->xdis = weapon->xdis;
 	plasma->ydis = weapon->ydis;
@@ -647,8 +647,8 @@ void spawn_player(struct player_t *player)
 						occluded = 1;
 					break;
 					
-				case ENT_BOGIE:
-					if(circles_intersect(spawn_point->x, spawn_point->y, CRAFT_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+				case ENT_PLASMA:
+					if(circles_intersect(spawn_point->x, spawn_point->y, CRAFT_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 						occluded = 1;
 					break;
 					

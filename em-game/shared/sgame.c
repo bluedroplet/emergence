@@ -51,7 +51,7 @@ int nextentity = 0;
 #define COLLISION_FRICTION	0.75
 
 
-#define BOGIE_DAMAGE	10.0
+#define PLASMA_DAMAGE	10.0
 #define BULLET_DAMAGE	5.0
 
 #define ROCKET_FORCE_THRESHOLD	50.0
@@ -735,7 +735,7 @@ void craft_weapon_collision(struct entity_t *craft, struct entity_t *weapon)
 
 void craft_plasma_collision(struct entity_t *craft, struct entity_t *plasma)
 {
-	craft_force(craft, BOGIE_DAMAGE);
+	craft_force(craft, PLASMA_DAMAGE);
 	plasma->kill_me = 1;
 }
 
@@ -778,7 +778,7 @@ void weapon_weapon_collision(struct entity_t *weapon1, struct entity_t *weapon2)
 
 void weapon_plasma_collision(struct entity_t *weapon, struct entity_t *plasma)
 {
-	weapon_force(weapon, BOGIE_DAMAGE);
+	weapon_force(weapon, PLASMA_DAMAGE);
 	plasma->kill_me = 1;
 }
 
@@ -974,8 +974,8 @@ void check_craft_teleportation(struct entity_t *craft)
 			}
 			break;
 			
-		case ENT_BOGIE:
-			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+		case ENT_PLASMA:
+			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 			{
 				craft_plasma_collision(craft, entity);
 			}
@@ -1063,8 +1063,8 @@ void check_weapon_teleportation(struct entity_t *weapon)
 			}
 			break;
 			
-		case ENT_BOGIE:
-			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+		case ENT_PLASMA:
+			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 			{
 				weapon_plasma_collision(weapon, entity);
 			}
@@ -1151,8 +1151,8 @@ void check_rocket_teleportation(struct entity_t *rocket)
 			}
 			break;
 			
-		case ENT_BOGIE:
-			if(circles_intersect(rocket->xdis, rocket->ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+		case ENT_PLASMA:
+			if(circles_intersect(rocket->xdis, rocket->ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 			{
 				plasma_rocket_collision(entity, rocket);
 			}
@@ -1239,8 +1239,8 @@ void check_mine_teleportation(struct entity_t *mine)
 			}
 			break;
 			
-		case ENT_BOGIE:
-			if(circles_intersect(mine->xdis, mine->ydis, MINE_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+		case ENT_PLASMA:
+			if(circles_intersect(mine->xdis, mine->ydis, MINE_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 			{
 				plasma_mine_collision(entity, mine);
 			}
@@ -1327,8 +1327,8 @@ void check_rails_teleportation(struct entity_t *rails)
 			}
 			break;
 			
-		case ENT_BOGIE:
-			if(circles_intersect(rails->xdis, rails->ydis, RAILS_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+		case ENT_PLASMA:
+			if(circles_intersect(rails->xdis, rails->ydis, RAILS_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 			{
 				plasma_rails_collision(entity, rails);
 			}
@@ -1498,8 +1498,8 @@ void s_tick_craft(struct entity_t *craft)
 				}
 				break;
 				
-			case ENT_BOGIE:
-				if(circles_intersect(xdis, ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+			case ENT_PLASMA:
+				if(circles_intersect(xdis, ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 				{
 					craft_plasma_collision(craft, entity);
 				}
@@ -1724,8 +1724,8 @@ int check_weapon_placement(double xdis, double ydis, struct entity_t *weapon)
 				return 0;
 			break;
 			
-		case ENT_BOGIE:
-			if(circles_intersect(xdis, ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+		case ENT_PLASMA:
+			if(circles_intersect(xdis, ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 				return 0;
 			break;
 			
@@ -1930,8 +1930,8 @@ void s_tick_weapon(struct entity_t *weapon)
 				}
 				break;
 				
-			case ENT_BOGIE:
-				if(circles_intersect(xdis, ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+			case ENT_PLASMA:
+				if(circles_intersect(xdis, ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 				{
 					if(!entity->plasma_data.in_weapon || entity->plasma_data.weapon_id != weapon->index)
 					{
@@ -2172,7 +2172,7 @@ void s_tick_plasma(struct entity_t *plasma)
 		if(!weapon)
 			plasma->plasma_data.in_weapon = 0;
 		else
-			if(!circles_intersect(plasma->xdis, plasma->ydis, BOGIE_RADIUS, weapon->xdis, weapon->ydis, WEAPON_RADIUS))
+			if(!circles_intersect(plasma->xdis, plasma->ydis, PLASMA_RADIUS, weapon->xdis, weapon->ydis, WEAPON_RADIUS))
 			{
 				plasma->plasma_data.in_weapon = 0;
 			}
@@ -2194,7 +2194,7 @@ void s_tick_plasma(struct entity_t *plasma)
 		
 		// check for collision against wall
 		
-		struct bspnode_t *node = circle_walk_bsp_tree(plasma->xdis, plasma->ydis, BOGIE_RADIUS, NULL);
+		struct bspnode_t *node = circle_walk_bsp_tree(plasma->xdis, plasma->ydis, PLASMA_RADIUS, NULL);
 		if(node)
 		{
 			plasma->kill_me = 1;
@@ -2218,14 +2218,14 @@ void s_tick_plasma(struct entity_t *plasma)
 			switch(entity->type)
 			{
 			case ENT_CRAFT:
-				if(circles_intersect(plasma->xdis, plasma->ydis, BOGIE_RADIUS, entity->xdis, entity->ydis, CRAFT_RADIUS))
+				if(circles_intersect(plasma->xdis, plasma->ydis, PLASMA_RADIUS, entity->xdis, entity->ydis, CRAFT_RADIUS))
 				{
 					craft_plasma_collision(entity, plasma);
 				}
 				break;
 				
 			case ENT_WEAPON:
-				if(circles_intersect(plasma->xdis, plasma->ydis, BOGIE_RADIUS, entity->xdis, entity->ydis, WEAPON_RADIUS))
+				if(circles_intersect(plasma->xdis, plasma->ydis, PLASMA_RADIUS, entity->xdis, entity->ydis, WEAPON_RADIUS))
 				{
 					if(!plasma->plasma_data.in_weapon || plasma->plasma_data.weapon_id != entity->index)
 						weapon_plasma_collision(entity, plasma);
@@ -2233,28 +2233,28 @@ void s_tick_plasma(struct entity_t *plasma)
 				break;
 				
 			case ENT_ROCKET:
-				if(circles_intersect(plasma->xdis, plasma->ydis, BOGIE_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
+				if(circles_intersect(plasma->xdis, plasma->ydis, PLASMA_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
 				{
 					plasma_rocket_collision(plasma, entity);
 				}
 				break;
 				
 			case ENT_MINE:
-				if(circles_intersect(plasma->xdis, plasma->ydis, BOGIE_RADIUS, entity->xdis, entity->ydis, MINE_RADIUS))
+				if(circles_intersect(plasma->xdis, plasma->ydis, PLASMA_RADIUS, entity->xdis, entity->ydis, MINE_RADIUS))
 				{
 					plasma_mine_collision(plasma, entity);
 				}
 				break;
 				
 		/*	case ENT_RAILS:
-				if(circles_intersect(plasma->xdis, plasma->ydis, BOGIE_RADIUS, entity->xdis, entity->ydis, RAILS_RADIUS))
+				if(circles_intersect(plasma->xdis, plasma->ydis, PLASMA_RADIUS, entity->xdis, entity->ydis, RAILS_RADIUS))
 				{
 					plasma_rails_collision(plasma, entity);
 				}
 				break;
 				
 			case ENT_SHIELD:
-				if(circles_intersect(plasma->xdis, plasma->ydis, BOGIE_RADIUS, entity->xdis, entity->ydis, SHIELD_RADIUS))
+				if(circles_intersect(plasma->xdis, plasma->ydis, PLASMA_RADIUS, entity->xdis, entity->ydis, SHIELD_RADIUS))
 				{
 					plasma_shield_collision(plasma, entity);
 				}
@@ -2280,7 +2280,7 @@ void s_tick_plasma(struct entity_t *plasma)
 		struct teleporter_t *teleporter = teleporter0;
 		while(teleporter)
 		{
-			if(circle_in_circle(plasma->xdis, plasma->ydis, BOGIE_RADIUS, teleporter->x, teleporter->y, teleporter->radius))
+			if(circle_in_circle(plasma->xdis, plasma->ydis, PLASMA_RADIUS, teleporter->x, teleporter->y, teleporter->radius))
 			{
 				get_teleporter_spawn_point(teleporter, &plasma->xdis, &plasma->ydis);
 				restart = 1;
@@ -2501,8 +2501,8 @@ void s_tick_rocket(struct entity_t *rocket)
 				}
 				break;
 				
-			case ENT_BOGIE:
-				if(circles_intersect(xdis, ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+			case ENT_PLASMA:
+				if(circles_intersect(xdis, ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 				{
 					plasma_rocket_collision(entity, rocket);
 				}
@@ -2676,8 +2676,8 @@ void s_tick_mine(struct entity_t *mine)
 				}
 				break;
 				
-			case ENT_BOGIE:
-				if(circles_intersect(xdis, ydis, MINE_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+			case ENT_PLASMA:
+				if(circles_intersect(xdis, ydis, MINE_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 				{
 					plasma_mine_collision(entity, mine);
 				}
@@ -2843,8 +2843,8 @@ void s_tick_rails(struct entity_t *rails)
 				}
 				break;
 				
-			case ENT_BOGIE:
-				if(circles_intersect(xdis, ydis, RAILS_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+			case ENT_PLASMA:
+				if(circles_intersect(xdis, ydis, RAILS_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 				{
 					plasma_rails_collision(entity, rails);
 				}
@@ -3004,8 +3004,8 @@ void s_tick_shield(struct entity_t *shield)
 				}
 				break;
 				
-			case ENT_BOGIE:
-				if(circles_intersect(xdis, ydis, SHIELD_RADIUS, entity->xdis, entity->ydis, BOGIE_RADIUS))
+			case ENT_PLASMA:
+				if(circles_intersect(xdis, ydis, SHIELD_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
 				{
 					plasma_shield_collision(entity, shield);
 				}
@@ -3118,7 +3118,7 @@ void s_tick_entities(struct entity_t **entity0)
 			s_tick_craft(centity);
 			break;
 			
-		case ENT_BOGIE:
+		case ENT_PLASMA:
 			s_tick_plasma(centity);
 			break;
 			

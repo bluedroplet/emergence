@@ -542,7 +542,7 @@ void read_spawn_ent_event(struct event_t *event)
 		read_weapon_data(&event->ent_data.weapon_data);
 		break;
 	
-	case ENT_BOGIE:
+	case ENT_PLASMA:
 		read_plasma_data(&event->ent_data.plasma_data);
 		break;
 	
@@ -575,7 +575,7 @@ void read_update_ent_event(struct event_t *event)
 		read_weapon_data(&event->ent_data.weapon_data);
 		break;
 	
-	case ENT_BOGIE:
+	case ENT_PLASMA:
 		read_plasma_data(&event->ent_data.plasma_data);
 		break;
 	
@@ -791,7 +791,7 @@ void add_spawn_ent_event(struct event_t *event)
 		event->ent_data.weapon_data.detached = message_reader_read_uint8();
 		break;
 	
-	case ENT_BOGIE:
+	case ENT_PLASMA:
 		read_plasma_data(&event->ent_data.plasma_data);
 		break;
 	
@@ -855,7 +855,7 @@ void process_spawn_ent_event(struct event_t *event)
 	
 		break;
 	
-	case ENT_BOGIE:
+	case ENT_PLASMA:
 		entity->plasma_data.in_weapon = 1;
 		entity->plasma_data.weapon_id = event->ent_data.plasma_data.weapon_id;
 		break;
@@ -892,7 +892,7 @@ void add_update_ent_event(struct event_t *event)
 		read_weapon_data(&event->ent_data.weapon_data);
 		break;
 	
-	case ENT_BOGIE:
+	case ENT_PLASMA:
 		read_plasma_data(&event->ent_data.plasma_data);
 		break;
 	
@@ -934,7 +934,7 @@ void process_update_ent_event(struct event_t *event)
 		entity->weapon_data.shield_flare = event->ent_data.weapon_data.shield_flare;
 		break;
 	
-	case ENT_BOGIE:
+	case ENT_PLASMA:
 		break;
 	
 	case ENT_ROCKET:
@@ -2178,7 +2178,7 @@ void render_entities()
 		
 			break;
 		
-		case ENT_BOGIE:
+		case ENT_PLASMA:
 
 			params.source = s_plasma;
 		
