@@ -122,7 +122,6 @@ struct line_pointer_t *fill_lines0;
 struct node_pointer_t *selected_node0 = NULL;
 struct object_pointer_t *selected_object0 = NULL;
 
-
 #define LEFT_SHIFT	0x01
 #define RIGHT_SHIFT	0x02
 
@@ -239,41 +238,51 @@ void draw_world_clipped_line(double x1, double y1, double x2, double y2)
 
 void run_about_box()
 {
-	GtkWidget *about = gtk_dialog_new_with_buttons("About Emergence Editor", GTK_WINDOW(window), 
-		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+	static GtkWidget *about = NULL;
+
+	if (about != NULL)
+	{
+		gtk_window_present (GTK_WINDOW (about));
+
+		return;
+	}
+
+	gchar *authors[] = {
+		"Jonathan Brown <jbrown@emergence.uk.net>",
+		NULL
+	};
 	
-	GtkWidget *vbox = gtk_vbox_new (FALSE, 8);
-	gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(about)->vbox), vbox, TRUE, TRUE, 0);
-
-	GtkWidget *logo_image = gtk_image_new();
-	gtk_image_set_from_file(GTK_IMAGE(logo_image), PKGDATADIR "/em-edit/about.png");
-	gtk_box_pack_start(GTK_BOX(vbox), logo_image, FALSE, FALSE, 0);
+	gchar *documenters[] = {
+		NULL
+	};
 	
-	GtkWidget *name_label = gtk_label_new(NULL);
-	gtk_label_set_markup(GTK_LABEL(name_label), "<span size=\"xx-large\" weight=\"bold\">Emergence Editor " VERSION "</span>");
-	gtk_label_set_selectable(GTK_LABEL(name_label), TRUE);
-	gtk_label_set_justify(GTK_LABEL(name_label), GTK_JUSTIFY_CENTER);
-	gtk_box_pack_start(GTK_BOX(vbox), name_label, FALSE, FALSE, 0);
+	gchar *translator_credits = "translator_credits";
 
-	GtkWidget *comments_label = gtk_label_new(NULL);
-	gtk_label_set_markup(GTK_LABEL(comments_label), "Editor for creating Emergence maps");
-	gtk_label_set_selectable(GTK_LABEL(comments_label), TRUE);
-	gtk_label_set_justify(GTK_LABEL(comments_label), GTK_JUSTIFY_CENTER);
-	gtk_label_set_line_wrap(GTK_LABEL(comments_label), TRUE);
-	gtk_box_pack_start(GTK_BOX(vbox), comments_label, FALSE, FALSE, 0);
+GdkPixbuf*  logo_image = gdk_pixbuf_new_from_file(PKGDATADIR "/em-edit/about.png", NULL);
 
-	GtkWidget *copyright_label = gtk_label_new(NULL);
-	gtk_label_set_markup(GTK_LABEL(copyright_label), 
-		"<span size=\"small\">(C) 1998-2003 Jonathan Brown\njbrown@emergence.uk.net</span>");
-	gtk_label_set_selectable(GTK_LABEL(copyright_label), TRUE);	
-	gtk_label_set_justify(GTK_LABEL(copyright_label), GTK_JUSTIFY_CENTER);
-	gtk_box_pack_start(GTK_BOX(vbox), copyright_label, FALSE, FALSE, 0);
+	
+	about = gnome_about_new ("Emergence Editor", VERSION,
+				"Copyright \xc2\xa9 2001-2004 Jonathan Brown",
+				"Tool for creating Emergence maps",
+				(const char **)authors,
+				(const char **)documenters,
+				strcmp (translator_credits, "translator_credits") != 0 ? 
+					(const char *)translator_credits : NULL,
+				logo_image);
 
-	gtk_widget_show_all(vbox);
-	gtk_window_set_resizable (GTK_WINDOW(about), FALSE);
-	gtk_dialog_run(GTK_DIALOG(about));
-	gtk_widget_destroy(about);
+
+	gtk_window_set_transient_for (GTK_WINDOW (about), 
+			GTK_WINDOW (window));
+
+	gtk_window_set_destroy_with_parent (GTK_WINDOW (about), TRUE);
+
+	if (logo_image != NULL)
+		g_object_unref (logo_image);
+	
+	g_signal_connect (G_OBJECT (about), "destroy",
+			  G_CALLBACK (gtk_widget_destroyed), &about);
+
+	gtk_widget_show (about);
 }
 
 
