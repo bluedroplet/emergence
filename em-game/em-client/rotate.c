@@ -75,7 +75,8 @@ void do_rotate(struct rotate_t *rotate0, int width, int height, int frames)
 		assert(rotate->in_surface->width == in_width);
 		assert(rotate->in_surface->height == in_height);
 		
-		*rotate->out_surface = new_surface(SURFACE_FLOATSALPHAFLOATS, out_width, out_height * frames);
+		*rotate->out_surface = new_surface(SURFACE_FLOATSALPHAFLOATS, 
+			out_width, out_height * frames);
 		clear_surface(*rotate->out_surface);
 		rotate = rotate->next;
 	}
@@ -85,7 +86,7 @@ void do_rotate(struct rotate_t *rotate0, int width, int height, int frames)
 
 	int f, src_ypos, src_xpos, i, dst_ypos, dst_xpos;
 
-	for(f = 0; f < frames; f++)
+	for(f = 0; f < frames / 4; f++)
 	{
 		double sin_theta, cos_theta;
 		
@@ -167,10 +168,12 @@ void do_rotate(struct rotate_t *rotate0, int width, int height, int frames)
 					
 				while(rotate)
 				{
-					uint8_t *src = &((uint8_t*)rotate->in_surface->alpha_buf)[src_ypos * in_width + src_xpos];
+					uint8_t *src = &((uint8_t*)rotate->in_surface->alpha_buf)
+						[src_ypos * in_width + src_xpos];
 					rotate->alpha = (double)(*src) / 255.0;
 					
-					src = &((uint8_t*)rotate->in_surface->buf)[(src_ypos * in_width + src_xpos) * 3];
+					src = &((uint8_t*)rotate->in_surface->buf)
+						[(src_ypos * in_width + src_xpos) * 3];
 					rotate->red = ((double)(*src++) / 255.0) * rotate->alpha;
 					rotate->green = ((double)(*src++) / 255.0) * rotate->alpha;
 					rotate->blue = ((double)(*src) / 255.0) * rotate->alpha;
@@ -218,13 +221,15 @@ void do_rotate(struct rotate_t *rotate0, int width, int height, int frames)
 						
 						while(rotate)
 						{
-							float *dst = &((float*)(*rotate->out_surface)->buf)[((dst_ypos + f * out_height) * out_width + dst_xpos) * 3];
+							float *dst = &((float*)(*rotate->out_surface)->buf)
+								[((dst_ypos + f * out_height) * out_width + dst_xpos) * 3];
 	
 							*dst++ += (float)(rotate->red * area);
 							*dst++ += (float)(rotate->green * area);
 							*dst += (float)(rotate->blue * area);
 	
-							((float*)(*rotate->out_surface)->alpha_buf)[(dst_ypos + f * out_height) * out_width + dst_xpos] += 
+							((float*)(*rotate->out_surface)->alpha_buf)
+								[(dst_ypos + f * out_height) * out_width + dst_xpos] += 
 								(float)(rotate->alpha * area);
 							
 							rotate = rotate->next;
@@ -254,7 +259,7 @@ void do_rotate(struct rotate_t *rotate0, int width, int height, int frames)
 	{
 		free_surface(rotate->in_surface);
 	
-		int x = out_width * out_height * frames;
+		int x = out_width * out_height * frames / 4;
 		float *dst = (float*)(*rotate->out_surface)->buf;
 		float *src = (float*)(*rotate->out_surface)->alpha_buf;
 		
@@ -266,6 +271,91 @@ void do_rotate(struct rotate_t *rotate0, int width, int height, int frames)
 		}
 	
 		convert_surface_to_24bitalpha8bit(*rotate->out_surface);
+		
+		rotate = rotate->next;
+	}
+	
+	
+	rotate = rotate0;
+	
+	while(rotate)
+	{
+		uint8_t *dst = &(*rotate->out_surface)->buf
+			[((frames / 4 * out_height) * out_width) * 3];
+		
+		uint8_t *adst = &(*rotate->out_surface)->alpha_buf
+			[(frames / 4 * out_height) * out_width];
+		
+		int x, y;
+		
+		for(f = 0; f < frames / 4; f++)
+		{
+			for(y = 0; y < out_height; y++)
+			{
+				for(x = 0; x < out_width; x++)
+				{
+					uint8_t *src = &(*rotate->out_surface)->buf
+						[(x * out_width + out_height - 1 - y + 
+						out_height * out_width * f) * 3];
+					
+					*dst++ = *src++;
+					*dst++ = *src++;
+					*dst++ = *src;
+					
+					src = &(*rotate->out_surface)->alpha_buf
+						[x * out_width + out_height - 1 - y + 
+						out_height * out_width * f];
+					
+					*adst++ = *src;
+				}
+			}
+		}
+		
+		for(f = 0; f < frames / 4; f++)
+		{
+			for(y = 0; y < out_height; y++)
+			{
+				for(x = 0; x < out_width; x++)
+				{
+					uint8_t *src = &(*rotate->out_surface)->buf
+						[(x * out_width + out_height - 1 - y + 
+						out_height * out_width * (f + frames / 4)) * 3];
+					
+					*dst++ = *src++;
+					*dst++ = *src++;
+					*dst++ = *src;
+					
+					src = &(*rotate->out_surface)->alpha_buf
+						[x * out_width + out_height - 1 - y + 
+						out_height * out_width * (f + frames / 4)];
+					
+					*adst++ = *src;
+				}
+			}
+		}
+		
+		for(f = 0; f < frames / 4; f++)
+		{
+			for(y = 0; y < out_height; y++)
+			{
+				for(x = 0; x < out_width; x++)
+				{
+					uint8_t *src = &(*rotate->out_surface)->buf
+						[(x * out_width + out_height - 1 - y + 
+						out_height * out_width * (f + frames / 2)) * 3];
+					
+					*dst++ = *src++;
+					*dst++ = *src++;
+					*dst++ = *src;
+					
+					src = &(*rotate->out_surface)->alpha_buf
+						[x * out_width + out_height - 1 - y + 
+						out_height * out_width * (f + frames / 2)];
+					
+					*adst++ = *src;
+				}
+			}
+		}
 		
 		rotate = rotate->next;
 	}
