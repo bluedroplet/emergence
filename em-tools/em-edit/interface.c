@@ -514,6 +514,8 @@ void new_map()
 	view_state = VIEW_OBJECTS | VIEW_TILES | VIEW_OUTLINES | 
 		VIEW_SWITCHES_AND_DOORS | VIEW_NODES;
 	view_sats_mode = SATS_VECT;
+	LL_REMOVE_ALL(struct node_pointer_t, &selected_node0);
+	LL_REMOVE_ALL(struct object_pointer_t, &selected_object0);
 	clear_bsp_trees();
 	zoom = 1.0;
 	viewx = 0.0;
