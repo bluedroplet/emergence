@@ -63,6 +63,10 @@ void kill_network();
 
 struct string_t *get_text_addr(void *conn);
 
+#define CONN_TYPE_LOCAL		0
+#define CONN_TYPE_PRIVATE	1
+#define CONN_TYPE_PUBLIC	2
+
 
 void net_emit_uint32(uint32_t temp_conn, uint32_t val);
 void net_emit_int(uint32_t temp_conn, int val);

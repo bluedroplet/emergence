@@ -77,6 +77,7 @@ struct conn_t
 	
 	#ifdef EMSERVER
 	int begun;
+	int type;
 	#endif
 
 	struct sockaddr_in sockaddr;	// address of the other end
@@ -449,6 +450,10 @@ void emit_process_connection(struct conn_t *conn)
 	uint32_t msg = NETMSG_CONNECTION;
 	write(net_out_pipe[1], &msg, 4);
 	write(net_out_pipe[1], &conn, 4);
+	
+	#ifdef EMSERVER
+	write(net_out_pipe[1], &conn->type, 4);
+	#endif
 }
 
 
@@ -484,6 +489,24 @@ void init_new_conn(struct conn_t *conn, uint32_t index)
 	conn->cpacket.header = EMNETCLASS_STREAM | EMNETFLAG_STREAMFIRST | 
 		conn->next_write_index++;
 	conn->next_write_index %= EMNETINDEX_MAX + 1;
+	
+	
+	#ifdef EMSERVER
+	
+	uint32_t addr = conn->sockaddr.sin_addr.s_addr;
+	
+	if((addr & 0xff) == 0x7f)			// 127.0.0.0 - 127.255.255.255  (127/8 prefix) (loopback)
+		conn->type = CONN_TYPE_LOCAL;
+	else if((addr & 0xff) == 0x0a ||	// 10.0.0.0 - 10.255.255.255  (10/8 prefix)
+		(addr & 0xf0ff) == 0x10ac ||	// 172.16.0.0 - 172.31.255.255  (172.16/12 prefix)
+		(addr & 0xffff) == 0xa8c0 ||	// 192.168.0.0 - 192.168.255.255 (192.168/16 prefix)
+		(addr & 0xffff) == 0xfea9)		// 169.254.0.0 - 169.254.255.255 (169.254/16 prefix) (APIPA)
+		conn->type = CONN_TYPE_PRIVATE;
+	else
+		conn->type = CONN_TYPE_PUBLIC;
+	
+	#endif
+	
 	
 	emit_process_connection(conn);
 }
@@ -800,7 +823,7 @@ void process_udp_data()
 						send_connect(&conn->sockaddr, conn->next_read_index);
 						
 						conn->last_time = get_wall_time();	// give the client a little helping
-																// hand in troubled times
+															// hand in troubled times
 					}
 					else
 					{

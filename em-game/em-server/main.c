@@ -35,6 +35,7 @@ struct conn_state_t
 	uint32_t conn;
 	double birth;
 	int state;
+	int type;
 	
 	struct conn_state_t *next;
 		
@@ -111,22 +112,35 @@ struct conn_state_t *find_conn_state(uint32_t conn)
 }
 
 
-void process_connection(uint32_t conn)
+void process_connection(uint32_t conn, int type)
 {
-	printf("process_connection()\n");
 	net_emit_uint8(conn, EMMSG_PROTO_VER);
 	net_emit_uint8(conn, EM_PROTO_VER);
 	net_emit_end_of_stream(conn);
 
 	struct conn_state_t conn_state = 
-		{conn, get_wall_time(), CONN_STATE_VIRGIN};
+		{conn, get_wall_time(), CONN_STATE_VIRGIN, type};
 	LL_ADD(struct conn_state_t, &conn_state0, &conn_state);
+
+	switch(type)
+	{
+	case CONN_TYPE_LOCAL:
+		printf("New local connection.\n");
+		break;
+	
+	case CONN_TYPE_PRIVATE:
+		printf("New private network connection.\n");
+		break;
+	
+	case CONN_TYPE_PUBLIC:
+		printf("New internet connection.\n");
+		break;
+	}
 }
 
 
 void process_disconnection(uint32_t conn)
 {
-	printf("process_disconnection()\n");
 	struct conn_state_t *cstate = find_conn_state(conn);
 	assert(cstate);
 	
@@ -293,6 +307,7 @@ void process_network()
 	struct buffer_t *stream;
 	uint32_t index;
 	uint64_t stamp;
+	int type;
 
 	while(1)
 	{
@@ -306,7 +321,8 @@ void process_network()
 		{
 		case NETMSG_CONNECTION:
 			read(net_out_pipe[0], &conn, 4);
-			process_connection(conn);
+			read(net_out_pipe[0], &type, 4);
+			process_connection(conn, type);
 			break;
 
 		case NETMSG_DISCONNECTION:
