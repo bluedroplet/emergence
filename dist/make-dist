@@ -1,5 +1,7 @@
 #!/bin/bash -v
 
+ver=0.5.5-dev
+
 cd ../em-tools
 make distclean
 aclocal-1.8 || exit
@@ -18,13 +20,13 @@ cd ../em-tools
 
 make distcheck || exit
 
-cp em-tools-0.5.4.tar.bz2 ../dist/em-tools-0.5.4.tbz2
+cp em-tools-$ver.tar.bz2 ../dist/em-tools-$ver.tbz2
 
 cd ../dist
 
 
 for arch in pentiumpro pentium2 pentium3 pentium4 athlon athlon-tbird athlon-xp athlon-mp
-#for arch in pentium4
+#for arch in pentium3
 do
 
 stage3=i686
@@ -60,7 +62,7 @@ make prefix=${D}/usr \
 cd ../dist/emergence
 
 strip usr/bin/* || exit
-tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-0.5.4.bin.$arch.tbz2 * || exit
+tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-$ver.bin.$arch.tbz2 * || exit
 cd ..
 
 
@@ -82,11 +84,11 @@ cd ../dist/emergence
 
 strip usr/bin/* || exit
 
-tar --owner=0 --group=0 --numeric-owner -cjf ../emergence-0.5.4.bin.$arch.tbz2 * || exit
+tar --owner=0 --group=0 --numeric-owner -cjf ../emergence-$ver.bin.$arch.tbz2 * || exit
 
 cd ..
 
-tar --owner=0 --group=0 --numeric-owner -cjf emergence-0.5.4.bin.$arch.home.tbz2 emergence || exit
+tar --owner=0 --group=0 --numeric-owner -cjf emergence-$ver.bin.$arch.home.tbz2 emergence || exit
 
 cd emergence
 
@@ -100,7 +102,7 @@ cd ..
 
 rpmbuild -bb emergence.spec
 
-cp ../../redhat/emergence/i386/emergence-0.5.4-1.i386.rpm emergence-0.5.4.$arch.rpm
+cp ../../redhat/emergence/i386/emergence-$ver-1.i386.rpm emergence-$ver.$arch.rpm
 
 
 done
