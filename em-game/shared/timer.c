@@ -58,9 +58,3 @@ void init_timer()
 	
 	start_count = rdtsc();
 }
-
-
-void reset_tick_from_wall_time()
-{
-	start_count = rdtsc();
-}
