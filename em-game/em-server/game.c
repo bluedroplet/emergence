@@ -1284,7 +1284,7 @@ void game_process_join(uint32_t conn, uint32_t index, struct buffer_t *stream)
 	{
 		player->state = PLAYER_STATE_SPECTATING;
 		print_on_player(player, "You are spectating.\n");
-		net_emit_uint8(player->conn, EMNETMSG_SPECTATING);
+		net_emit_uint8(player->conn, EMMSG_SPECTATING);
 		net_emit_end_of_stream(player->conn);
 	}
 	else
@@ -1292,7 +1292,7 @@ void game_process_join(uint32_t conn, uint32_t index, struct buffer_t *stream)
 		load_all_skins_on_player(player);
 		
 		player->state = PLAYER_STATE_ACTIVE;
-		net_emit_uint8(player->conn, EMNETMSG_PLAYING);
+		net_emit_uint8(player->conn, EMMSG_PLAYING);
 		net_emit_uint32(player->conn, game_tick);
 		net_emit_end_of_stream(player->conn);
 
@@ -1332,7 +1332,7 @@ int game_process_play(struct player_t *player, struct buffer_t *stream)
 	console_print(s->text);
 	free_string(s);
 	
-	net_emit_uint8(player->conn, EMNETMSG_PLAYING);
+	net_emit_uint8(player->conn, EMMSG_PLAYING);
 	net_emit_end_of_stream(player->conn);
 	
 	player->state = PLAYER_STATE_ACTIVE;
@@ -1354,7 +1354,7 @@ int game_process_spectate(struct player_t *player, struct buffer_t *stream)
 	console_print(s->text);
 	free_string(s);
 	
-	net_emit_uint8(player->conn, EMNETMSG_SPECTATING);
+	net_emit_uint8(player->conn, EMMSG_SPECTATING);
 	net_emit_end_of_stream(player->conn);
 	
 	player->state = PLAYER_STATE_SPECTATING;

@@ -801,6 +801,14 @@ int game_process_proto_ver()
 
 int game_process_playing()
 {
+	r_DrawConsole = 0;
+	
+	if(game_state == GAMESTATE_DEMO)
+	{
+		message_reader_read_uint32();
+		return 1;
+	}
+	
 	if(game_state == GAMESTATE_DEAD)
 		return 0;
 	
@@ -816,7 +824,6 @@ int game_process_playing()
 	
 	game_state = GAMESTATE_PLAYING;
 
-	r_DrawConsole = 0;
 	return 1;
 }
 
@@ -1954,10 +1961,10 @@ int game_process_message()
 	case EMNETMSG_PRINT:
 		return game_process_print();
 	
-	case EMNETMSG_PLAYING:
+	case EMMSG_PLAYING:
 		return game_process_playing();
 	
-	case EMNETMSG_SPECTATING:
+	case EMMSG_SPECTATING:
 		return game_process_spectating();
 	
 	case EMNETMSG_INRCON:
@@ -2502,6 +2509,10 @@ void cf_record(char *c)
 		msg_32 = 0;
 		gzwrite(gzrecording, &msg_32, 4);
 		
+		msg = EMMSG_PLAYING;
+		gzwrite(gzrecording, &msg, 1);
+		gzwrite(gzrecording, &msg_32, 4);
+		
 		write_all_entities_to_demo();
 
 		msg = EMEVENT_FOLLOW_ME;
@@ -2512,7 +2523,6 @@ void cf_record(char *c)
 		console_print("Recording...\n");
 		break;
 	}
-	
 	
 	
 	recording = 1;
@@ -2591,8 +2601,6 @@ void cf_demo(char *c)
 	cdemo = demo0;
 	
 //	render_frame();
-	
-	r_DrawConsole = 0;
 }
 
 
