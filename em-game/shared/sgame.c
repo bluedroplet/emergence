@@ -2139,10 +2139,10 @@ void s_tick_craft(struct entity_t *craft)
 				#ifdef EMSERVER
 				respawn_craft(craft, craft->craft_data.owner);
 				explode_craft(craft, craft->craft_data.owner);
-				char *msg = "infinite iteration craft collison broken\n";
+			/*	char *msg = "infinite iteration craft collison broken\n";
 				console_print(msg);
 				print_on_all_players(msg);
-				#endif
+			*/	#endif
 				
 				#ifdef EMCLIENT
 				// try to prevent this happening again until the server 
@@ -2163,10 +2163,10 @@ void s_tick_craft(struct entity_t *craft)
 					
 					#ifdef EMSERVER
 					explode_weapon(left_weapon, get_weapon_owner(left_weapon));
-					char *msg = "infinite iteration weapon collison broken\n";
+				/*	char *msg = "infinite iteration weapon collison broken\n";
 					console_print(msg);
 					print_on_all_players(msg);
-					#endif
+				*/	#endif
 					
 					#ifdef EMCLIENT
 					// try to prevent this happening again until the server 
@@ -2187,10 +2187,10 @@ void s_tick_craft(struct entity_t *craft)
 					
 					#ifdef EMSERVER
 					explode_weapon(right_weapon, get_weapon_owner(right_weapon));
-					char *msg = "infinite iteration weapon collison broken\n";
+				/*	char *msg = "infinite iteration weapon collison broken\n";
 					console_print(msg);
 					print_on_all_players(msg);
-					#endif
+				*/	#endif
 					
 					#ifdef EMCLIENT
 					// try to prevent this happening again until the server 
