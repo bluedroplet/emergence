@@ -729,7 +729,8 @@ void tick_player(struct player_t *player)
 				switch(player->craft->craft_data.left_weapon->weapon_data.type)
 				{
 				case WEAPON_PLASMA_CANNON:
-					fire = ((game_tick - player->firing_left_start) * 20) / 200 - player->left_fired;
+					fire = ((game_tick - player->firing_left_start) * 20) / 200 
+						- player->left_fired;
 					
 					if(fire > 0)
 					{
@@ -740,7 +741,8 @@ void tick_player(struct player_t *player)
 					break;
 					
 				case WEAPON_MINIGUN:
-					fire = ((game_tick - player->firing_left_start) * 50) / 200 - player->left_fired;
+					fire = ((game_tick - player->firing_left_start) * 50) / 200 
+						- player->left_fired;
 					
 					if(fire > 0)
 					{
@@ -767,7 +769,8 @@ void tick_player(struct player_t *player)
 				switch(player->craft->craft_data.right_weapon->weapon_data.type)
 				{
 				case WEAPON_PLASMA_CANNON:
-					fire = ((game_tick - player->firing_right_start) * 20) / 200 - player->right_fired;
+					fire = ((game_tick - player->firing_right_start) * 20) / 200 
+						- player->right_fired;
 					
 					if(fire > 0)
 					{
@@ -778,7 +781,8 @@ void tick_player(struct player_t *player)
 					break;
 					
 				case WEAPON_MINIGUN:
-					fire = ((game_tick - player->firing_right_start) * 50) / 200 - player->right_fired;
+					fire = ((game_tick - player->firing_right_start) * 50) / 200 
+						- player->right_fired;
 					
 					if(fire > 0)
 					{
@@ -956,7 +960,7 @@ void respawn_craft(struct entity_t *craft, struct player_t *responsibility)
 void schedule_respawn(struct pickup_spawn_point_t *spawn_point)
 {
 	spawn_point->respawn = 1;
-	spawn_point->respawn_tick = cgame_tick + spawn_point->respawn_delay / 5;	// terrible
+	spawn_point->respawn_tick = cgame_tick + spawn_point->respawn_delay / 10;	// terrible
 }
 
 
@@ -1782,6 +1786,16 @@ int game_process_fire_rail(struct player_t *player)
 }
 
 
+void respawn_weapon(struct entity_t *weapon)
+{
+	if(weapon->weapon_data.respawned)
+		return;
+	
+	schedule_respawn(weapon->weapon_data.spawn_point);
+	weapon->weapon_data.respawned = 1;
+}
+
+
 void detach_weapon(struct entity_t *weapon)
 {
 	weapon->weapon_data.detached = 1;
@@ -1790,7 +1804,10 @@ void detach_weapon(struct entity_t *weapon)
 	else
 		weapon->weapon_data.craft->craft_data.right_weapon = NULL;
 	
+	weapon->weapon_data.shield_strength = min(weapon->weapon_data.shield_strength, 0.035);
 	weapon->weapon_data.craft = NULL;
+	
+	respawn_weapon(weapon);
 	
 	
 	struct player_t *player = player0;

@@ -128,6 +128,7 @@ void make_carcass_on_all_players(struct entity_t *craft);
 void schedule_respawn(struct pickup_spawn_point_t *spawn_point);
 void craft_telefragged(struct player_t *victim, struct player_t *telefragger);
 void propagate_colours(struct entity_t *entity);
+void respawn_weapon(struct entity_t *weapon);
 
 void emit_teleport_to_all_players();
 void emit_speedup_to_all_players();

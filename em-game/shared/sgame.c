@@ -880,16 +880,6 @@ void explode_craft(struct entity_t *craft, struct player_t *responsibility)
 }
 
 
-void respawn_weapon(struct entity_t *weapon)
-{
-	if(weapon->weapon_data.respawned)
-		return;
-	
-	schedule_respawn(weapon->weapon_data.spawn_point);
-	weapon->weapon_data.respawned = 1;
-}
-
-
 void explode_weapon(struct entity_t *weapon, struct player_t *responsibility)
 {
 	weapon->kill_me = 1;
