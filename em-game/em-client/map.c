@@ -187,9 +187,8 @@ int game_process_load_map(struct buffer_t *stream)
 
 void reload_map()
 {
-	printf("as\n");
-	
-	load_map(map_filename->text);
+	if(map_filename)
+		load_map(map_filename->text);
 }
 
 /*
