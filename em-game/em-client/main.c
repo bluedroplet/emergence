@@ -26,6 +26,7 @@
 #include "shared/config.h"
 #include "shared/timer.h"
 #include "shared/network.h"
+#include "shared/parse.h"
 #include "render.h"
 #include "console.h"
 #include "control.h"
@@ -52,7 +53,7 @@
 void create_cvars()
 {
 	create_cvar_string("name", "noname", 0);
-	create_cvar_command("exec", exec_config_file);
+	create_cvar_command("exec", (void*)exec_config_file);
 }
 
 
@@ -301,7 +302,7 @@ void main_thread()
 	while(1)
 	{
 		if(poll(fds, fdcount, -1) == -1)
-			return NULL;
+			return;
 
 		if(fds[0].revents & POLLIN)
 			process_x_render_pipe();

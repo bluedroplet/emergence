@@ -1,5 +1,5 @@
 LDADD =  ../gsub/libgsub.a ../common/libcommon.a -lz -lpng
-AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX
+AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -Wall
 
 bin_PROGRAMS = em-skin
 

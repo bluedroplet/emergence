@@ -302,13 +302,6 @@ int game_process_load_map()
 }
 
 
-int game_process_demo_load_map()
-{
-//	map_name = gzread_string(gzdemo);
-//	return load_map(map_name->text);
-}
-
-
 void reload_map()
 {
 	if(map_name)

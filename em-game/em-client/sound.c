@@ -241,7 +241,7 @@ void process_alsa()	// check for off-by-ones
 uint32_t start_sample(struct sample_t *sample, uint32_t start_tick)
 {
 	if(!sound_active)
-		return;
+		return -1;
 	
 	struct queued_sample_t queued_sample = {
 		next_queued_sample_index++, 
@@ -357,7 +357,7 @@ struct sample_t *load_sample(char *filename)
 	console_print("Input does not appear to be an Ogg bitstream.\n");
 	}
 	
-	vorbis_info *vi=ov_info(&vf,-1);
+//	vorbis_info *vi=ov_info(&vf,-1);
 	
 	struct sample_t *sample = malloc(sizeof(struct sample_t));
 	
@@ -370,7 +370,7 @@ struct sample_t *load_sample(char *filename)
 	int current_section = 0;
 	
 	int j = 0;
-	while(ov_read(&vf, &sample->buf[j], 2, 0, 2, 1, &current_section) > 0)
+	while(ov_read(&vf, (char*)&sample->buf[j], 2, 0, 2, 1, &current_section) > 0)
 		{
 		j++;
 		}
@@ -456,7 +456,7 @@ void init_sound()
 
 	snd_pcm_hw_params_free (hw_params);
 
-	snd_pcm_sw_params_t *sw_params;
+//	snd_pcm_sw_params_t *sw_params;
 	
 	/* tell ALSA to wake us up whenever 4096 or more frames
 		   of playback data can be delivered. Also, tell
@@ -478,7 +478,7 @@ void init_sound()
 				 snd_strerror (err));
 			exit (1);
 		}
-	/*	if ((err = snd_pcm_sw_params_set_sleep_min (playback_handle, sw_params, 30)) < 0) {
+		if ((err = snd_pcm_sw_params_set_sleep_min (playback_handle, sw_params, 30)) < 0) {
 			fprintf (stderr, "cannot set minimum available sleep (%s)\n",
 				 snd_strerror (err));
 			exit (1);
@@ -494,7 +494,7 @@ void init_sound()
 			exit (1);
 		}
 	
-		/* the interface will interrupt the kernel every 4096 frames, and ALSA
+		 the interface will interrupt the kernel every 4096 frames, and ALSA
 		   will wake up this program very soon after that.
 		*/
 	

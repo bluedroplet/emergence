@@ -321,13 +321,13 @@ Cursor create_blank_cursor()
 	x_data = (char *)malloc(clen);
 	if ( x_data == NULL ) {
 	//	SDL_OutOfMemory();
-		return(NULL);
+		return 0;
 	}
 	x_mask = (char *)malloc(clen);
 	if ( x_mask == NULL ) {
 		free(x_data);
 	//	SDL_OutOfMemory();
-		return(NULL);
+		return 0;
 	}
 	for ( i=0; i<clen; ++i ) {
 		/* The mask is OR'd with the data to turn inverted color
@@ -771,9 +771,9 @@ void init_x()
 	
 	return;
 
-error:
+//error:
 	
-	client_error("fail\n");
+//	client_error("fail\n");
 }
 
 

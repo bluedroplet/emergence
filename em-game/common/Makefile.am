@@ -1,4 +1,4 @@
-AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -DEMGAME
+AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -DEMGAME -Wall
 
 noinst_LIBRARIES = libcommon.a
 libcommon_a_SOURCES = buffer.c polygon.c stringbuf.h types.h buffer.h \

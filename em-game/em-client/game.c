@@ -3534,7 +3534,7 @@ void update_game()
 
 void update_demo()
 {
-	uint32_t tick;
+	uint32_t tick = 0;
 	
 	top:
 	

@@ -360,7 +360,8 @@ void draw_line_888(struct blit_params_t *params)
 }
 
 
-void draw_horiz_run_565(struct blit_params_t *params, uint16_t **dest, int xadvance, int runlength, uint16_t colour)
+void draw_horiz_run_565(struct blit_params_t *params, uint16_t **dest, int xadvance, 
+	int runlength, uint16_t colour)
 {
 	uint16_t *cdest = *dest;
 
@@ -375,14 +376,15 @@ void draw_horiz_run_565(struct blit_params_t *params, uint16_t **dest, int xadva
 }
 
 
-void draw_vert_run_565(struct blit_params_t *params, uint16_t **dest, int xadvance, int runlength, uint16_t colour)
+void draw_vert_run_565(struct blit_params_t *params, uint16_t **dest, int xadvance, 
+	int runlength, uint16_t colour)
 {
 	uint16_t *cdest = *dest;
 
 	while(runlength)
 	{
 		*cdest = colour;
-		(uint8_t*)cdest += params->dest->pitch;
+		cdest = (uint16_t*)&((uint8_t*)cdest)[params->dest->pitch];
 		runlength--;
 	}
 	
@@ -415,7 +417,7 @@ void draw_line_565(struct blit_params_t *params)
 		for(i = 0; i <= ydelta; i++)
 		{
 			*dest = colour;
-			(uint8_t*)dest += params->dest->pitch;
+			dest = (uint16_t*)&((uint8_t*)dest)[params->dest->pitch];
 		}
 
 		return;
@@ -437,7 +439,7 @@ void draw_line_565(struct blit_params_t *params)
 		for(i = 0; i <= xdelta; i++)
 		{
 			*dest = colour;
-			(uint8_t*)dest += xadvance * 2 + params->dest->pitch;
+			dest = (uint16_t*)&((uint8_t*)dest)[xadvance * 2 + params->dest->pitch];
 		}
 
 		return;
@@ -540,7 +542,8 @@ void draw_line(struct blit_params_t *params)
 
 	if(params->y2 >= params->dest->height)
 	{
-		params->x2 -= ((params->x2 - params->x1) * (params->y2 - params->dest->height + 1)) / (params->y2 - params->y1);
+		params->x2 -= ((params->x2 - params->x1) * (params->y2 - params->dest->height + 1)) / 
+			(params->y2 - params->y1);
 		params->y2 = params->dest->height - 1;
 	}
 
@@ -557,7 +560,8 @@ void draw_line(struct blit_params_t *params)
 
 		if(params->x2 >= params->dest->width)
 		{
-			params->y2 -= ((params->y2 - params->y1) * (params->x2 - params->dest->width + 1)) / (params->x2 - params->x1);
+			params->y2 -= ((params->y2 - params->y1) * (params->x2 - params->dest->width + 1)) / 
+				(params->x2 - params->x1);
 			params->x2 = params->dest->width - 1;
 		}
 	}
@@ -574,7 +578,8 @@ void draw_line(struct blit_params_t *params)
 
 		if(params->x1 >= params->dest->width)
 		{
-			params->y1 += ((params->y2 - params->y1) * (params->x1 - params->dest->width + 1)) / (params->x1 - params->x2);
+			params->y1 += ((params->y2 - params->y1) * (params->x1 - params->dest->width + 1)) / 
+				(params->x1 - params->x2);
 			params->x1 = params->dest->width - 1;
 		}
 	}

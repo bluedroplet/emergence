@@ -412,7 +412,7 @@ void main_thread()
 	while(1)
 	{
 		if(poll(fds, fdcount, -1) == -1)
-			return NULL;
+			return;
 
 		if(fds[0].revents & POLLIN)
 			process_console();
