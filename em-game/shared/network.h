@@ -56,7 +56,7 @@ struct packet_t
 };
 
 
-#define EMNET_PORT				45420
+#define EMNET_DEFAULTPORT				45420
 
 void init_network();
 void kill_network();
@@ -85,6 +85,11 @@ void net_emit_end_of_stream(uint32_t temp_conn);
 #ifdef EMCLIENT
 void em_connect(char *addr);
 #endif
+
+#ifdef EMSERVER
+void net_set_listen_port(uint16_t port);
+#endif
+
 
 void em_disconnect(uint32_t conn);
 

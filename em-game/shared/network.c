@@ -126,6 +126,10 @@ int net_out_pipe[2];
 
 int net_shutting_down = 0;
 
+#ifdef EMSERVER
+uint16_t net_listen_port = EMNET_DEFAULTPORT;
+#endif
+
 
 struct conn_t *new_conn()
 {
@@ -1614,9 +1618,15 @@ void net_emit_end_of_stream(uint32_t temp_conn)
 
 
 #ifdef EMCLIENT
-void em_connect(char *addr)
+void em_connect(char *addrport)
 {
-	uint16_t port = htons(EMNET_PORT);
+	char *addr = NULL;
+	uint16_t port = EMNET_DEFAULTPORT;
+	
+	if(addrport)
+		sscanf(addrport, "%a[^:]:%hu", &addr, &port);
+
+	
 	uint32_t ip;
 	
 	if(!addr)
@@ -1637,6 +1647,8 @@ void em_connect(char *addr)
 		ip = *(uint32_t*)hostent->h_addr;
 	}
 	
+	free(addr);
+	
 	
 	pthread_mutex_lock(&net_mutex);
 	
@@ -1647,7 +1659,7 @@ void em_connect(char *addr)
 	conn->state = NETSTATE_CONNECTING;
 
 	conn->sockaddr.sin_family = AF_INET;
-	conn->sockaddr.sin_port = port;
+	conn->sockaddr.sin_port = htons(port);
 	conn->sockaddr.sin_addr.s_addr = ip;
 
 	console_print("Connecting to ");
@@ -1720,6 +1732,14 @@ void em_disconnect(uint32_t temp_conn)
 	end:
 	pthread_mutex_unlock(&net_mutex);
 }
+
+
+#ifdef EMSERVER
+void net_set_listen_port(uint16_t port)
+{
+	net_listen_port = port;
+}
+#endif
 
 
 void init_network()
@@ -1806,12 +1826,25 @@ void init_network()
 	#ifdef EMSERVER	
 	struct sockaddr_in name;
 	name.sin_family = AF_INET;
-	name.sin_port = htons(EMNET_PORT);
+	name.sin_port = htons(net_listen_port);
 	name.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if(bind(udp_fd, (struct sockaddr *) &name, sizeof (name)) < 0)
-		server_libc_error("bind failure");
+	{
+		name.sin_port = htons(++net_listen_port);
+		
+		while(bind(udp_fd, (struct sockaddr *) &name, sizeof (name)) < 0)
+		{
+			if(errno == EADDRINUSE)
+				name.sin_port = htons(++net_listen_port);
+			else
+				server_libc_error("bind failure");
+		}
+	}
+
+	console_print("Listening on port %i\n", net_listen_port);
 	#endif
+	
 	
 	// TODO : use connect()??
 	

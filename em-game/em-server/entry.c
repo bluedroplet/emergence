@@ -55,7 +55,8 @@ const char *argp_program_bug_address = "<jbrown@emergence.uk.net>";
 static char doc[] = "Emergence Server";
 
 static struct argp_option options[] = {
-	{"daemon",	'd',	0,	0, "don't run in terminal"},
+	{"daemon",	'd',	0,	0, "don't run in terminal (broken)"},
+	{"port",	'p',	"PORT",	0, "port to listen on"},
 	{ 0 }
 };
 
@@ -66,6 +67,10 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 	{
 	case 'd':
 		as_daemon = 1;
+		break;
+
+	case 'p':
+		net_set_listen_port(atoi(arg));
 		break;
 
 	default:

@@ -118,7 +118,7 @@ void *download_thread(void *a)
 
 	struct sockaddr_in name;
 	name.sin_family = AF_INET;
-	name.sin_port = htons(EMNET_PORT);
+	name.sin_port = htons(EMNET_DEFAULTPORT);
 	name.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if(bind(listen_fd, (struct sockaddr *) &name, sizeof (name)) < 0)
