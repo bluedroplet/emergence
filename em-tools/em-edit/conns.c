@@ -218,6 +218,9 @@ int insert_straight_conn(struct node_t *node1, struct node_t *node2)
 	if(node1 == node2)
 		return 0;
 	
+	if(node1->num_conns >= 2 || node2->num_conns >= 2)
+		return 0;
+	
 	int sat1 = 0, sat2 = 0, s = 0;
 	
 	switch(node1->num_conns)
@@ -389,6 +392,9 @@ int insert_conic_conn(struct node_t *node1, struct node_t *node2)
 	// make sure we are not connecting a node to itself
 
 	if(node1 == node2)
+		return 0;
+	
+	if(node1->num_conns >= 2 || node2->num_conns >= 2)
 		return 0;
 	
 	int sat1 = 0, sat2 = 0, s = 0;
@@ -567,6 +573,9 @@ int insert_bezier_conn(struct node_t *node1, struct node_t *node2)
 	// make sure we are not connecting a node to itself
 
 	if(node1 == node2)
+		return 0;
+	
+	if(node1->num_conns >= 2 || node2->num_conns >= 2)
 		return 0;
 	
 	int sat1 = 0, sat2 = 0, s = 0, opsat1 = 0, opsat2 = 0;

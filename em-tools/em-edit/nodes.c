@@ -2491,23 +2491,26 @@ void run_node_menu(struct node_t *node)
 	}
 */
 
-	menu_items = gtk_menu_item_new_with_label("Straight Connect");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
-		GTK_SIGNAL_FUNC(node_menu_connect_straight), node);
-	gtk_menu_append(GTK_MENU(menu), menu_items);
-	gtk_widget_show(menu_items);
+	if(node->num_conns < 2)
+	{
+		menu_items = gtk_menu_item_new_with_label("Straight Connect");
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(node_menu_connect_straight), node);
+		gtk_menu_append(GTK_MENU(menu), menu_items);
+		gtk_widget_show(menu_items);
+		
+		menu_items = gtk_menu_item_new_with_label("Conic Connect");
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(node_menu_connect_conic), node);
+		gtk_menu_append(GTK_MENU (menu), menu_items);
+		gtk_widget_show(menu_items);
 	
-	menu_items = gtk_menu_item_new_with_label("Conic Connect");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
-		GTK_SIGNAL_FUNC(node_menu_connect_conic), node);
-	gtk_menu_append(GTK_MENU (menu), menu_items);
-	gtk_widget_show(menu_items);
-
-	menu_items = gtk_menu_item_new_with_label("Bezier Connect");
-	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
-		GTK_SIGNAL_FUNC(node_menu_connect_bezier), node);
-	gtk_menu_append(GTK_MENU (menu), menu_items);
-	gtk_widget_show(menu_items);
+		menu_items = gtk_menu_item_new_with_label("Bezier Connect");
+		gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
+			GTK_SIGNAL_FUNC(node_menu_connect_bezier), node);
+		gtk_menu_append(GTK_MENU (menu), menu_items);
+		gtk_widget_show(menu_items);
+	}
 
 
 /*	if(node->num_conns > 0)
@@ -2519,7 +2522,7 @@ void run_node_menu(struct node_t *node)
 		gtk_widget_show(menu_items);
 	}
 */	
-	menu_items = gtk_menu_item_new_with_label("Delete");
+	menu_items = gtk_menu_item_new_with_label("Delete Node");
 	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", 
 		GTK_SIGNAL_FUNC(menu_delete_node), node);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
