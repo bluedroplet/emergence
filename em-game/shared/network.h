@@ -87,6 +87,7 @@ void em_connect(char *addr);
 #endif
 
 #ifdef EMSERVER
+extern uint16_t net_listen_port;
 void net_set_listen_port(uint16_t port);
 #endif
 
