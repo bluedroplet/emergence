@@ -2964,9 +2964,6 @@ void generate_squished_textures_for_all_conns()
 
 				case CONN_TYPE_CONIC:
 				case CONN_TYPE_BEZIER:
-					if(!cconn->t0)
-						break;
-					
 					if(!generate_curved_squished_texture_with_alpha(cconn, curve))
 						return;
 					break;
@@ -2986,9 +2983,6 @@ void generate_squished_textures_for_all_conns()
 
 				case CONN_TYPE_CONIC:
 				case CONN_TYPE_BEZIER:
-					if(!cconn->t0)
-						break;
-					
 					if(!generate_curved_squished_texture_with_alpha(cconn, curve))
 						return;
 					break;
