@@ -9,11 +9,12 @@
 #include <signal.h>
 #include <math.h>
 #include <pthread.h>
+#include <string.h>
 
 #include <sys/epoll.h>
 #include <sys/poll.h>
 
-#include <alsa/asoundlib.h>
+#include <SDL/SDL.h>
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
 
@@ -27,7 +28,7 @@
 #include "sound.h"
 
 
-snd_pcm_t *playback_handle = NULL;
+//snd_pcm_t *playback_handle = NULL;
 
 
 struct queued_sample_t
@@ -80,45 +81,21 @@ void saturate_frames(int32_t *dst, int c)
 
 void sound_mutex_lock()
 {
-	pthread_mutex_lock(&sound_mutex);
+	SDL_LockAudio();
+//	pthread_mutex_lock(&sound_mutex);
 }
 	
 
 void sound_mutex_unlock()
 {
-	pthread_mutex_unlock(&sound_mutex);
+	SDL_UnlockAudio();
+//	pthread_mutex_unlock(&sound_mutex);
 }
 
 
-void process_alsa()	// check for off-by-ones
+void process_sound(void *userdata, Uint8 *stream, int len)	// check for off-by-ones
 {
-	char c;
-	while(read(alsa_fd, &c, 1) != -1);
-		
-	int avail = snd_pcm_avail_update(playback_handle);
-//	printf("%u\n", avail);
-	
-	
-	if(avail <= 0)
-	{
-		if(avail != 0)
-		{
-     	if (avail == -EPIPE) 
-		 {    /* under-run */
-                snd_pcm_prepare(playback_handle);			
-				avail = snd_pcm_avail_update(playback_handle);
-			 printf("under-run\n");
-			 }
-		 else
-			 
-			 printf("Write error: %s\n", snd_strerror(avail));
-		return;
-		}
-		else
-					return;
-
-	}
-
+	int avail = len / 2;
 	int32_t *buf = malloc(avail * 4);	// get rid of me
 	
 	memset(buf, 0, avail * 4);
@@ -233,7 +210,9 @@ void process_alsa()	// check for off-by-ones
 	}
 	
 	saturate_frames(buf, avail);
-	snd_pcm_writei(playback_handle, buf, avail);
+//	snd_pcm_writei(playback_handle, buf, avail);
+	
+	memcpy(stream, buf, len);
 	
 	free(buf);
 }
@@ -276,7 +255,7 @@ void stop_sample(uint32_t index)
 	sound_mutex_unlock();
 }
 
-
+/*
 void *sound_thread(void *a)
 {
 	struct pollfd *fds;
@@ -314,7 +293,7 @@ void *sound_thread(void *a)
 		}
 	}
 }
-
+*/
 
 /*
 void *sound_thread(void *a)
@@ -390,6 +369,62 @@ struct sample_t *load_sample(char *filename)
 }
 	
 
+
+
+void init_sound()
+{
+	/* Open the audio device */
+	SDL_AudioSpec *desired, *obtained;
+	SDL_AudioSpec *hardware_spec;
+	
+	/* Allocate a desired SDL_AudioSpec */
+	desired = malloc(sizeof(SDL_AudioSpec));
+	
+	/* Allocate space for the obtained SDL_AudioSpec */
+	obtained = malloc(sizeof(SDL_AudioSpec));
+	
+	/* 22050Hz - FM Radio quality */
+	desired->freq=44100;
+	
+	/* 16-bit signed audio */
+	desired->format=AUDIO_S16LSB;
+	
+	/* Mono */
+	desired->channels=1;
+	
+	/* Large audio buffer reduces risk of dropouts but increases response time */
+	desired->samples=256;
+	
+	/* Our callback function */
+	desired->callback=process_sound;
+	
+	desired->userdata=NULL;
+	
+	/* Open the audio device */
+	if ( SDL_OpenAudio(desired, obtained) < 0 ){
+	  fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
+	  exit(-1);
+	}
+	/* desired spec is no longer needed */
+	free(desired);
+	hardware_spec=obtained;
+	
+	SDL_PauseAudio(0);	
+	char name[32];
+	printf("Using audio driver: %s\n", SDL_AudioDriverName(name, 32));
+	
+	sound_active = 1;
+}
+
+
+void kill_sound()
+{
+	SDL_CloseAudio();
+}
+
+
+/*
+
 void init_sound()
 {
 	int err;
@@ -444,8 +479,8 @@ void init_sound()
 		return;
     }
 	
-  /* Set buffer size (in frames). The resulting latency is given by */
-    /* latency = periodsize * periods / (rate * bytes_per_frame)     */
+ //  Set buffer size (in frames). The resulting latency is given by 
+ //    latency = periodsize * periods / (rate * bytes_per_frame)     
     if (snd_pcm_hw_params_set_buffer_size(playback_handle, hw_params, 2048) < 0) {
       fprintf(stderr, "Error setting buffer size.\n");
  		return;
@@ -457,7 +492,7 @@ void init_sound()
     }	
 */	
 
-	if ((err = snd_pcm_hw_params (playback_handle, hw_params)) < 0) {
+/*	if ((err = snd_pcm_hw_params (playback_handle, hw_params)) < 0) {
 		console_print ("cannot set parameters (%s)\n",
 			 snd_strerror (err));
 		return;
@@ -483,7 +518,7 @@ void init_sound()
 			exit (1);
 		}
 		if ((err = snd_pcm_sw_params_set_avail_min (playback_handle, sw_params, 1)) < 0) {
-			fprintf (stderr, "cannot set minimum available count (%s)\n",
+			fprintf (stderr, "cannot set minimum available count (%s)n",
 				 snd_strerror (err));
 			exit (1);
 		}
@@ -507,7 +542,7 @@ void init_sound()
 		   will wake up this program very soon after that.
 		*/
 	
-
+/*
 	if ((err = snd_pcm_prepare (playback_handle)) < 0) {
 		console_print ("cannot prepare audio interface for use (%s)\n",
 			 snd_strerror (err));
@@ -540,3 +575,4 @@ void kill_sound()
 		playback_handle = NULL;
 	}
 }
+*/

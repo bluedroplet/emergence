@@ -16,7 +16,7 @@
 #include <sys/epoll.h>
 #include <sys/poll.h>
 
-//#include <SDL/SDL.h>
+#include <SDL/SDL.h>
 
 #include "../common/prefix.h"
 #include "../common/resource.h"
@@ -79,6 +79,8 @@ void client_shutdown()
 	dump_console();
 	kill_console();
 	write_config_file();
+	
+	SDL_Quit();
 
 	terminate_process();
 }
@@ -224,7 +226,7 @@ void init()
 
 	console_print("Emergence Client " VERSION "\n");
 	
-//	SDL_Init(SDL_INIT_AUDIO);
+	SDL_Init(SDL_INIT_AUDIO);
 	
 	init_user();
 	init_network();
