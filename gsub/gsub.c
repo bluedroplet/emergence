@@ -54,7 +54,8 @@ void clear_backbuffer()
 {
 //	printf("%u\n", (uint32_t)vid_backbuffer % 8);
 	
-	bb_clear_mmx(vid_backbuffer, (vid_pitch * vid_height) / 32, 0);//((vid_pitch * vid_height) % 16) / 2);
+	bb_clear_mmx(vid_backbuffer, (vid_pitch * vid_height) / 32, 0);
+	//((vid_pitch * vid_height) % 16) / 2);
 	
 	if(vid_pitch == vid_width)
 	{

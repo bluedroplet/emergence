@@ -1677,8 +1677,8 @@ int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 			{
 				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 				
-				craft->xvel += speedup_ramp->boost * sin_theta;
-				craft->yvel += speedup_ramp->boost * cos_theta;
+				craft->xvel -= speedup_ramp->boost * sin_theta;
+				craft->yvel -= speedup_ramp->boost * cos_theta;
 				
 				restart = 1;
 				craft->propagate_me = 1;
@@ -1906,8 +1906,8 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 			{
 				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 				
-				weapon->xvel += speedup_ramp->boost * sin_theta;
-				weapon->yvel += speedup_ramp->boost * cos_theta;
+				weapon->xvel -= speedup_ramp->boost * sin_theta;
+				weapon->yvel -= speedup_ramp->boost * cos_theta;
 				
 				restart = 1;
 				weapon->propagate_me = 1;
@@ -3578,8 +3578,8 @@ void s_tick_rocket(struct entity_t *rocket)
 				{
 					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 					
-					rocket->xvel += speedup_ramp->boost * sin_theta;
-					rocket->yvel += speedup_ramp->boost * cos_theta;
+					rocket->xvel -= speedup_ramp->boost * sin_theta;
+					rocket->yvel -= speedup_ramp->boost * cos_theta;
 					
 					restart = 1;
 					rocket->speeding_up = 1;
@@ -3844,8 +3844,8 @@ void s_tick_mine(struct entity_t *mine)
 				{
 					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 					
-					mine->xvel += speedup_ramp->boost * sin_theta;
-					mine->yvel += speedup_ramp->boost * cos_theta;
+					mine->xvel -= speedup_ramp->boost * sin_theta;
+					mine->yvel -= speedup_ramp->boost * cos_theta;
 					
 					restart = 1;
 					mine->speeding_up = 1;
@@ -4102,8 +4102,8 @@ void s_tick_rails(struct entity_t *rails)
 				{
 					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 					
-					rails->xvel += speedup_ramp->boost * sin_theta;
-					rails->yvel += speedup_ramp->boost * cos_theta;
+					rails->xvel -= speedup_ramp->boost * sin_theta;
+					rails->yvel -= speedup_ramp->boost * cos_theta;
 					
 					restart = 1;
 					rails->speeding_up = 1;
@@ -4325,8 +4325,8 @@ void s_tick_shield(struct entity_t *shield)
 				{
 					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 					
-					shield->xvel += speedup_ramp->boost * sin_theta;
-					shield->yvel += speedup_ramp->boost * cos_theta;
+					shield->xvel -= speedup_ramp->boost * sin_theta;
+					shield->yvel -= speedup_ramp->boost * cos_theta;
 					
 					restart = 1;
 					shield->speeding_up = 1;

@@ -426,14 +426,6 @@ void on_plasma_cannon_plasmas_spinbutton_value_changed(GtkSpinButton *spinbutton
 
 
 
-void
-on_plasma_cannon_angle_spinbutton_value_changed
-                                        (GtkSpinButton   *spinbutton,
-                                        gpointer         user_data)
-{
-}
-
-
 
 gboolean
 on_plasma_cannon_angle_spinbutton_button_press_event
@@ -454,26 +446,23 @@ on_plasma_cannon_angle_spinbutton_button_release_event
 }
 
 
-/*
-
-
-//void on_plasma_cannon_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, 
-	gpointer user_data)
+void on_plasma_cannon_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer user_data)
 {
-	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(entry));
+	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
 	
 	stop_working();
 	
-	object->plasma_cannon_data.angle = gtk_spin_button_get_value(GTK_SPIN_BUTTON(entry)) / (180.0 / M_PI);
+	object->plasma_cannon_data.angle = 
+		gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
 
-	invalidate_object_type(OBJECTTYPE_PLASMACANNON);
+	invalidate_object(object);
 	
 	update_client_area();
 	start_working();
 }
 
-*/
+
 void on_plasma_cannon_respawn_delay_spinbutton_value_changed(GtkSpinButton *spinbutton, 
 	gpointer user_data)
 {
@@ -505,16 +494,14 @@ void run_plasma_cannon_properties_dialog(void *menu, struct object_t *object)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(texture_checkbutton), TRUE);
 		
 	if(dynamic_objects[OBJECTTYPE_PLASMACANNON].filename)
-	{
 		gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "texture_entry")), 
 			dynamic_objects[OBJECTTYPE_PLASMACANNON].filename->text);
-	}
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"plasmas_spinbutton")), (gfloat)object->plasma_cannon_data.plasmas);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)object->plasma_cannon_data.angle * (180.0 / M_PI));
+		"angle_spinbutton")), (gfloat)(object->plasma_cannon_data.angle + M_PI) * (180.0 / M_PI));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"respawn_delay_spinbutton")), (gfloat)object->plasma_cannon_data.respawn_delay);
@@ -563,8 +550,10 @@ void on_minigun_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 	
 	g_free(strval);
 	
-	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_MINIGUN].filename->text, map_path->text);
-	dynamic_objects[OBJECTTYPE_MINIGUN].texture = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
+	struct string_t *string = 
+		arb_rel2abs(dynamic_objects[OBJECTTYPE_MINIGUN].filename->text, map_path->text);
+	dynamic_objects[OBJECTTYPE_MINIGUN].texture = 
+		read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object_type(OBJECTTYPE_MINIGUN);
@@ -590,9 +579,9 @@ void on_minigun_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpoint
 	
 	stop_working();
 	
-	object->minigun_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI);
+	object->minigun_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
 
-	invalidate_object_type(OBJECTTYPE_MINIGUN);
+	invalidate_object(object);
 	
 	update_client_area();
 	start_working();
@@ -629,16 +618,14 @@ void run_minigun_properties_dialog(void *menu, struct object_t *object)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(texture_checkbutton), TRUE);
 		
 	if(dynamic_objects[OBJECTTYPE_MINIGUN].filename)
-	{
 		gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "texture_entry")), 
 			dynamic_objects[OBJECTTYPE_MINIGUN].filename->text);
-	}
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"bullets_spinbutton")), (gfloat)object->minigun_data.bullets);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)object->minigun_data.angle * (180.0 / M_PI));
+		"angle_spinbutton")), (gfloat)(object->minigun_data.angle + M_PI) * (180.0 / M_PI));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"respawn_delay_spinbutton")), (gfloat)object->minigun_data.respawn_delay);
@@ -728,9 +715,9 @@ void on_rocket_launcher_angle_spinbutton_value_changed(GtkSpinButton *spinbutton
 		gtk_spin_button_set_value(spinbutton, value);
 	}
 */	
-	object->rocket_launcher_data.angle = value / (180.0 / M_PI);
+	object->rocket_launcher_data.angle = value / (180.0 / M_PI) - M_PI;
 	
-	invalidate_object_type(OBJECTTYPE_ROCKETLAUNCHER);
+	invalidate_object(object);
 	
 	update_client_area();
 	start_working();
@@ -767,16 +754,14 @@ void run_rocket_launcher_properties_dialog(void *menu, struct object_t *object)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(texture_checkbutton), TRUE);
 		
 	if(dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].filename)
-	{
 		gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "texture_entry")), 
 			dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].filename->text);
-	}
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"rockets_spinbutton")), (gfloat)object->rocket_launcher_data.rockets);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)object->rocket_launcher_data.angle * (180.0 / M_PI));
+		"angle_spinbutton")), (gfloat)(object->rocket_launcher_data.angle + M_PI) * (180.0 / M_PI));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"respawn_delay_spinbutton")), (gfloat)object->rocket_launcher_data.respawn_delay);
@@ -854,7 +839,7 @@ void on_rails_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpointer
 	
 	stop_working();
 	
-	object->rails_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI);
+	object->rails_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
 
 	invalidate_object_type(OBJECTTYPE_RAILS);
 	
@@ -892,16 +877,14 @@ void run_rails_properties_dialog(void *menu, struct object_t *object)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(texture_checkbutton), TRUE);
 	
 	if(dynamic_objects[OBJECTTYPE_RAILS].filename)
-	{
 		gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "texture_entry")), 
 			dynamic_objects[OBJECTTYPE_RAILS].filename->text);
-	}
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"quantity_spinbutton")), (gfloat)object->rails_data.quantity);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)object->rails_data.angle * (180.0 / M_PI));
+		"angle_spinbutton")), (gfloat)(object->rails_data.angle + M_PI) * (180.0 / M_PI));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"respawn_delay_spinbutton")), (gfloat)object->rails_data.respawn_delay);
@@ -979,7 +962,8 @@ void on_shield_energy_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, 
 	
 	stop_working();
 	
-	object->shield_energy_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI);
+	object->shield_energy_data.angle = 
+		gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
 
 	invalidate_object_type(OBJECTTYPE_SHIELDENERGY);
 	
@@ -1018,16 +1002,14 @@ void run_shield_energy_properties_dialog(void *menu, struct object_t *object)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(texture_checkbutton), TRUE);
 		
 	if(dynamic_objects[OBJECTTYPE_SHIELDENERGY].filename)
-	{
 		gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "texture_entry")), 
 			dynamic_objects[OBJECTTYPE_SHIELDENERGY].filename->text);
-	}
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"energy_spinbutton")), (gfloat)object->shield_energy_data.energy);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)object->shield_energy_data.angle * (180.0 / M_PI));
+		"angle_spinbutton")), (gfloat)(object->shield_energy_data.angle + M_PI) * (180.0 / M_PI));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"respawn_delay_spinbutton")), (gfloat)object->shield_energy_data.respawn_delay);
@@ -1133,7 +1115,7 @@ void on_spawn_point_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gp
 
 	stop_working();
 
-	object->spawn_point_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI);
+	object->spawn_point_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
 
 	invalidate_object(object);
 	
@@ -1181,10 +1163,8 @@ void run_spawn_point_properties_dialog(void *menu, struct object_t *object)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(texture_checkbutton), TRUE);
 		
 	if(object->spawn_point_data.texture_filename)
-	{
 		gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "texture_entry")), 
 			object->spawn_point_data.texture_filename->text);
-	}
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"width_spinbutton")), (gfloat)object->spawn_point_data.width);
@@ -1193,7 +1173,7 @@ void run_spawn_point_properties_dialog(void *menu, struct object_t *object)
 		"height_spinbutton")), (gfloat)object->spawn_point_data.height);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)object->spawn_point_data.angle * (180.0 / M_PI));
+		"angle_spinbutton")), (gfloat)(object->spawn_point_data.angle + M_PI) * (180.0 / M_PI));
 	
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"teleport_only_checkbutton")), (gboolean)object->spawn_point_data.teleport_only);
@@ -1302,7 +1282,7 @@ void on_speedup_ramp_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, g
 
 	stop_working();
 
-	object->speedup_ramp_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI);
+	object->speedup_ramp_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
 
 	invalidate_object(object);
 	
@@ -1350,10 +1330,8 @@ void run_speedup_ramp_properties_dialog(void *menu, struct object_t *object)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(texture_checkbutton), TRUE);
 	
 	if(object->speedup_ramp_data.texture_filename)
-	{
 		gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "texture_entry")), 
 			object->speedup_ramp_data.texture_filename->text);
-	}
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"width_spinbutton")), (gfloat)object->speedup_ramp_data.width);
@@ -1362,7 +1340,7 @@ void run_speedup_ramp_properties_dialog(void *menu, struct object_t *object)
 		"height_spinbutton")), (gfloat)object->speedup_ramp_data.height);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)object->speedup_ramp_data.angle * (180.0 / M_PI));
+		"angle_spinbutton")), (gfloat)(object->speedup_ramp_data.angle + M_PI) * (180.0 / M_PI));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"activation_width_spinbutton")), (gfloat)object->speedup_ramp_data.activation_width);
@@ -1472,7 +1450,7 @@ void on_teleporter_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, gpo
 
 	stop_working();
 
-	object->teleporter_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI);
+	object->teleporter_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
 
 	invalidate_object(object);
 	
@@ -1543,8 +1521,8 @@ void on_teleporter_rotation_angle_spinbutton_value_changed(GtkSpinButton *spinbu
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
 
-	object->teleporter_data.rotation_angle = gtk_spin_button_get_value(spinbutton) / 
-		(180.0 / M_PI);
+	object->teleporter_data.rotation_angle = 
+		gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
 }
 
 
@@ -1569,7 +1547,8 @@ void on_teleporter_divider_angle_spinbutton_value_changed(GtkSpinButton *spinbut
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
 
-	object->teleporter_data.divider_angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI);
+	object->teleporter_data.divider_angle = 
+		gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
 }
 
 
@@ -1592,10 +1571,8 @@ void run_teleporter_properties_dialog(void *menu, struct object_t *object)
 			"texture_checkbutton")), TRUE);
 	
 	if(object->teleporter_data.texture_filename)
-	{
 		gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "texture_entry")), 
 			object->teleporter_data.texture_filename->text);
-	}
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"width_spinbutton")), (gfloat)object->teleporter_data.width);
@@ -1604,7 +1581,7 @@ void run_teleporter_properties_dialog(void *menu, struct object_t *object)
 		"height_spinbutton")), (gfloat)object->teleporter_data.height);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"angle_spinbutton")), (gfloat)object->teleporter_data.angle * (180.0 / M_PI));
+		"angle_spinbutton")), (gfloat)(object->teleporter_data.angle + M_PI) * (180.0 / M_PI));
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"radius_spinbutton")), (gfloat)object->teleporter_data.radius);
@@ -1623,7 +1600,7 @@ void run_teleporter_properties_dialog(void *menu, struct object_t *object)
 			"rotate_type_rel_radiobutton")), TRUE);
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"rotation_angle_spinbutton")), (gfloat)object->teleporter_data.rotation_angle * 
+		"rotation_angle_spinbutton")), (gfloat)(object->teleporter_data.rotation_angle + M_PI) * 
 		(180.0 / M_PI));
 	
 	if(object->teleporter_data.divider)
@@ -1631,7 +1608,7 @@ void run_teleporter_properties_dialog(void *menu, struct object_t *object)
 			"divider_angle_checkbutton")), TRUE);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"divider_angle_spinbutton")), (gfloat)object->teleporter_data.divider_angle * 
+		"divider_angle_spinbutton")), (gfloat)(object->teleporter_data.divider_angle + M_PI) * 
 		(180.0 / M_PI));
 	
 	
@@ -1736,7 +1713,7 @@ void on_gravity_well_angle_spinbutton_value_changed(GtkSpinButton *spinbutton, g
 
 	stop_working();
 
-	object->gravity_well_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI);
+	object->gravity_well_data.angle = gtk_spin_button_get_value(spinbutton) / (180.0 / M_PI) - M_PI;
 
 	invalidate_object(object);
 	
@@ -1784,10 +1761,8 @@ void run_gravity_well_properties_dialog(void *menu, struct object_t *object)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(texture_checkbutton), TRUE);
 	
 	if(object->gravity_well_data.texture_filename)
-	{
 		gtk_entry_set_text(GTK_ENTRY(g_object_get_data(G_OBJECT(dialog), "texture_entry")), 
 			object->gravity_well_data.texture_filename->text);
-	}
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"width_spinbutton")), (gfloat)object->gravity_well_data.width);
@@ -2831,9 +2806,26 @@ void finished_scaling_object()
 //
 
 
+struct surface_t *leave_main_lock_and_rotate_surface(struct surface_t *in_surface, 
+	int scale_width, int scale_height, double theta)
+{
+	struct surface_t *duplicate, *rotated;
+	
+	duplicate = duplicate_surface(in_surface);	// this is not necessary for default textures
+	
+	leave_main_lock();
+	
+	rotated = rotate_surface(duplicate, scale_width, scale_height, theta);
+	free_surface(duplicate);
+	return rotated;
+}
+
 
 void resample_object()
 {
+	if(!worker_try_enter_main_lock())
+		return;
+
 	switch(working_object->type)
 	{
 	case OBJECTTYPE_PLASMACANNON:
@@ -2842,13 +2834,13 @@ void resample_object()
 			dynamic_objects[OBJECTTYPE_PLASMACANNON].texture)
 		{
 			working_object_surface = 
-				rotate_surface(dynamic_objects[OBJECTTYPE_PLASMACANNON].texture, 
-				64, 64, working_object->plasma_cannon_data.angle);
+				leave_main_lock_and_rotate_surface(dynamic_objects[OBJECTTYPE_PLASMACANNON].texture, 
+				64, 64, working_object->plasma_cannon_data.angle + M_PI);
 		}
 		else
 		{
-			working_object_surface = rotate_surface(s_unowned_plasma_cannon, 64, 64, 
-				working_object->plasma_cannon_data.angle);
+			working_object_surface = leave_main_lock_and_rotate_surface(s_unowned_plasma_cannon, 
+				64, 64, working_object->plasma_cannon_data.angle + M_PI);
 		}
 		break;
 	
@@ -2858,13 +2850,14 @@ void resample_object()
 		if(dynamic_objects[OBJECTTYPE_MINIGUN].non_default && 
 			dynamic_objects[OBJECTTYPE_MINIGUN].texture)
 		{
-			working_object_surface = rotate_surface(dynamic_objects[OBJECTTYPE_MINIGUN].texture, 
-				64, 64, working_object->minigun_data.angle);
+			working_object_surface = leave_main_lock_and_rotate_surface(
+				dynamic_objects[OBJECTTYPE_MINIGUN].texture, 
+				64, 64, working_object->minigun_data.angle + M_PI);
 		}
 		else
 		{
-			working_object_surface = rotate_surface(s_unowned_minigun, 64, 64, 
-				working_object->minigun_data.angle);
+			working_object_surface = leave_main_lock_and_rotate_surface(s_unowned_minigun, 64, 64, 
+				working_object->minigun_data.angle + M_PI);
 		}
 		break;
 	
@@ -2875,13 +2868,15 @@ void resample_object()
 			dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture)
 		{
 			working_object_surface = 
-				rotate_surface(dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture, 
-				64, 64, working_object->rocket_launcher_data.angle);
+				leave_main_lock_and_rotate_surface(
+				dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture, 
+				64, 64, working_object->rocket_launcher_data.angle + M_PI);
 		}
 		else
 		{
-			working_object_surface = rotate_surface(s_unowned_rocket_launcher, 64, 64, 
-				working_object->rocket_launcher_data.angle);
+			working_object_surface = leave_main_lock_and_rotate_surface(
+				s_unowned_rocket_launcher, 64, 64, 
+				working_object->rocket_launcher_data.angle + M_PI);
 		}
 		break;
 	
@@ -2891,23 +2886,24 @@ void resample_object()
 		if(dynamic_objects[OBJECTTYPE_RAILS].non_default && 
 			dynamic_objects[OBJECTTYPE_RAILS].texture)
 		{
-			working_object_surface = rotate_surface(dynamic_objects[OBJECTTYPE_RAILS].texture, 
-				64, 64, working_object->rails_data.angle);
+			working_object_surface = leave_main_lock_and_rotate_surface(
+				dynamic_objects[OBJECTTYPE_RAILS].texture, 
+				64, 64, working_object->rails_data.angle + M_PI);
 		}
 		else
 		{
-			working_object_surface = rotate_surface(s_rails, 64, 64, 
-				working_object->rails_data.angle);
+			working_object_surface = leave_main_lock_and_rotate_surface(s_rails, 64, 64, 
+				working_object->rails_data.angle + M_PI);
 		}
 		break;
 	
 		
 	case OBJECTTYPE_SPAWNPOINT:
 		working_object_surface = 
-			rotate_surface(working_object->spawn_point_data.texture_pre_surface, 
+			leave_main_lock_and_rotate_surface(working_object->spawn_point_data.texture_pre_surface, 
 			working_object->spawn_point_data.width, 
 			working_object->spawn_point_data.height,
-			working_object->spawn_point_data.angle);
+			working_object->spawn_point_data.angle + M_PI);
 		break;
 	
 	
@@ -2917,73 +2913,93 @@ void resample_object()
 			working_object->speedup_ramp_data.non_default_texture)
 		{
 			working_object_surface = 
-				rotate_surface(working_object->speedup_ramp_data.texture_pre_surface, 
+				leave_main_lock_and_rotate_surface(
+				working_object->speedup_ramp_data.texture_pre_surface, 
 				working_object->speedup_ramp_data.width, 
 				working_object->speedup_ramp_data.height,
-				working_object->speedup_ramp_data.angle);
+				working_object->speedup_ramp_data.angle + M_PI);
 		}
 		else
 		{
-			working_object_surface = rotate_surface(s_stock_speedup_ramp, 
+			working_object_surface = leave_main_lock_and_rotate_surface(s_stock_speedup_ramp, 
 				working_object->speedup_ramp_data.width, 
 				working_object->speedup_ramp_data.height,
-				working_object->speedup_ramp_data.angle);
+				working_object->speedup_ramp_data.angle + M_PI);
 		}
 		break;
 	
 		
 	case OBJECTTYPE_TELEPORTER:
 		working_object_surface = 
-			rotate_surface(working_object->teleporter_data.texture_pre_surface, 
+			leave_main_lock_and_rotate_surface(working_object->teleporter_data.texture_pre_surface, 
 			working_object->teleporter_data.width, 
 			working_object->teleporter_data.height,
-			working_object->teleporter_data.angle);
+			working_object->teleporter_data.angle + M_PI);
 		break;
 	
 	
 	case OBJECTTYPE_GRAVITYWELL:
 		working_object_surface = 
-			rotate_surface(working_object->gravity_well_data.texture_pre_surface, 
+			leave_main_lock_and_rotate_surface(
+			working_object->gravity_well_data.texture_pre_surface, 
 			working_object->gravity_well_data.width, 
 			working_object->gravity_well_data.height,
-			working_object->gravity_well_data.angle);
+			working_object->gravity_well_data.angle + M_PI);
 		break;
 	}
 }
 
 
+struct surface_t *leave_main_lock_and_resize_surface(struct surface_t *in_surface, 
+	int width, int height)
+{
+	struct surface_t *duplicate, *resized;
+	
+	duplicate = duplicate_surface(in_surface);	// this is not necessary for default textures
+	
+	leave_main_lock();
+	
+	resized = resize(duplicate, width, height);
+	free_surface(duplicate);
+	return resized;
+}
+
+
 void scale_object()
 {
+	if(!worker_try_enter_main_lock())
+		return;
+
 	switch(object_scale_job)
 	{
 	case OBJECT_SCALE_JOB_SPAWN_POINT:
-		working_object_surface = resize(s_spawn_point_placeholder, 
+		working_object_surface = leave_main_lock_and_resize_surface(s_spawn_point_placeholder, 
 			lround((double)s_spawn_point_placeholder->width * zoom), 
-			lround((double)s_spawn_point_placeholder->height * zoom), NULL);
+			lround((double)s_spawn_point_placeholder->height * zoom));
 		break;
 	
 	case OBJECT_SCALE_JOB_TELEPORTER:
-		working_object_surface = resize(s_teleporter_placeholder, 
+		working_object_surface = leave_main_lock_and_resize_surface(s_teleporter_placeholder, 
 			lround((double)s_teleporter_placeholder->width * zoom), 
-			lround((double)s_teleporter_placeholder->height * zoom), NULL);
+			lround((double)s_teleporter_placeholder->height * zoom));
 		break;
 	
 	case OBJECT_SCALE_JOB_GRAVITY_WELL:
-		working_object_surface = resize(s_gravity_well_placeholder, 
+		working_object_surface = leave_main_lock_and_resize_surface(s_gravity_well_placeholder, 
 			lround((double)s_gravity_well_placeholder->width * zoom), 
-			lround((double)s_gravity_well_placeholder->height * zoom), NULL);
+			lround((double)s_gravity_well_placeholder->height * zoom));
 		break;
 	
 	case OBJECT_SCALE_JOB_SHIELD_ENERGY:
-		working_object_surface = resize(s_shield_energy, 
+		working_object_surface = leave_main_lock_and_resize_surface(s_shield_energy, 
 			lround((double)s_shield_energy->width * zoom), 
-			lround((double)s_shield_energy->height * zoom), NULL);
+			lround((double)s_shield_energy->height * zoom));
 		break;
 	
 	case OBJECT_SCALE_JOB_SPECIFIC:
-		working_object_surface = resize(working_object->texture_surface, 
+		working_object_surface = leave_main_lock_and_resize_surface(working_object->texture_surface, 
 			lround(working_object->texture_surface->width * zoom), 
-			lround(working_object->texture_surface->height * zoom), NULL);
+			lround(working_object->texture_surface->height * zoom));
 		break;
 	}
 }

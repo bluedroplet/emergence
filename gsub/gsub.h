@@ -202,8 +202,9 @@ void draw_line(struct blit_params_t *params);
 	
 
 
-struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)());
-struct surface_t *rotate_surface(struct surface_t *in_surface, int scale_width, int scale_height, double theta);
+struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_height);
+struct surface_t *rotate_surface(struct surface_t *in_surface, 
+	int scale_width, int scale_height, double theta);
 
 
 #ifdef _INC_VERTEX
@@ -224,11 +225,12 @@ struct texture_polys_t
 };
 
 
-struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, struct texture_polys_t *texture_polys0, 
-	int dst_width, int dst_height, int dst_posx, int dst_posy, int (*callback)());
+struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, 
+	struct texture_polys_t *texture_polys0, 
+	int dst_width, int dst_height, int dst_posx, int dst_posy);
 
-struct surface_t *resample(float *src_pixels, struct vertex_t *src_verts, int src_width, int src_height, 
-			  int dst_width, int dst_height, int (*callback)());
+struct surface_t *resample(float *src_pixels, struct vertex_t *src_verts, 
+	int src_width, int src_height, int dst_width, int dst_height);
 
 
 #endif	// _INC_VERTEX

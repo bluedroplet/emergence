@@ -1074,7 +1074,7 @@ void render_tile()
 	assert(height);
 	
 	out_surface = multiple_resample(texture_verts0, texture_polys0, 
-		width, height, left, top, check_stop_callback);
+		width, height, left, top);
 	
 	if(out_surface != NULL)
 	{
@@ -1133,10 +1133,9 @@ void scale_tiles()		// called from worker thread
 			world_to_screen(ctile->x2, ctile->y2, &maxx, &miny);
 			
 //			if(crap_zoom)
-				;//ctile->scaled_surface = crap_resize(ctile->surface, maxx - minx, maxy - miny, 
-//					check_stop_callback);
+				;//ctile->scaled_surface = crap_resize(ctile->surface, maxx - minx, maxy - miny);
 //			else
-				ctile->scaled_surface = resize(ctile->surface, maxx - minx, maxy - miny, NULL);
+				ctile->scaled_surface = resize(ctile->surface, maxx - minx, maxy - miny);
 			
 			if(!ctile->scaled_surface)
 				return;

@@ -47,7 +47,7 @@
 #endif
 
 
-struct surface_t *resize_a8(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+struct surface_t *resize_a8(struct surface_t *src_texture, int dst_width, int dst_height)
 {
 	struct surface_t *dst_texture = new_surface(SURFACE_ALPHA8BIT, dst_width, dst_height);
 	if(!dst_texture)
@@ -133,9 +133,9 @@ struct surface_t *resize_a8(struct surface_t *src_texture, int dst_width, int ds
 			*dst++ = (uint8_t)lround(alpha);
 		}
 		
-		if(callback)
+		if(gsub_callback)
 		{
-			if(callback())
+			if(gsub_callback())
 			{
 				free(src_ys);
 				free(src_xs);
@@ -156,7 +156,7 @@ struct surface_t *resize_a8(struct surface_t *src_texture, int dst_width, int ds
 }
 
 
-struct surface_t *resize_888(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+struct surface_t *resize_888(struct surface_t *src_texture, int dst_width, int dst_height)
 {
 	struct surface_t *dst_texture = new_surface(SURFACE_24BIT, dst_width, dst_height);
 	if(!dst_texture)
@@ -228,7 +228,8 @@ struct surface_t *resize_888(struct surface_t *src_texture, int dst_width, int d
 			{
 				for(src_x = min_src_x; src_x <= max_src_x; src_x++)
 				{
-					double area = (max(dx1, src_xs[src_x]) - min(dx2, src_xs[src_x + 1])) * (max(dy1, src_ys[src_y]) - min(dy2, src_ys[src_y + 1]));
+					double area = (max(dx1, src_xs[src_x]) - min(dx2, src_xs[src_x + 1])) * 
+						(max(dy1, src_ys[src_y]) - min(dy2, src_ys[src_y + 1]));
 					
 					red += area * get_double_from_8(src[0]);
 					green += area * get_double_from_8(src[1]);
@@ -245,9 +246,9 @@ struct surface_t *resize_888(struct surface_t *src_texture, int dst_width, int d
 			*dst++ = convert_double_to_8bit(blue);
 		}
 		
-		if(callback)
+		if(gsub_callback)
 		{
-			if(callback())
+			if(gsub_callback())
 			{
 				free(src_ys);
 				free(src_xs);
@@ -268,7 +269,7 @@ struct surface_t *resize_888(struct surface_t *src_texture, int dst_width, int d
 }
 
 
-struct surface_t *resize_565(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+struct surface_t *resize_565(struct surface_t *src_texture, int dst_width, int dst_height)
 {
 	struct surface_t *dst_texture = new_surface(SURFACE_16BIT, dst_width, dst_height);
 	if(!dst_texture)
@@ -340,7 +341,8 @@ struct surface_t *resize_565(struct surface_t *src_texture, int dst_width, int d
 			{
 				for(src_x = min_src_x; src_x <= max_src_x; src_x++)
 				{
-					double area = (max(dx1, src_xs[src_x]) - min(dx2, src_xs[src_x + 1])) * (max(dy1, src_ys[src_y]) - min(dy2, src_ys[src_y + 1]));
+					double area = (max(dx1, src_xs[src_x]) - min(dx2, src_xs[src_x + 1])) * 
+						(max(dy1, src_ys[src_y]) - min(dy2, src_ys[src_y + 1]));
 					
 					red += area * get_double_red(*src);
 					green += area * get_double_green(*src);
@@ -355,9 +357,9 @@ struct surface_t *resize_565(struct surface_t *src_texture, int dst_width, int d
 			*dst++ = convert_doubles_to_16bit(red, green, blue);
 		}
 		
-		if(callback)
+		if(gsub_callback)
 		{
-			if(callback())
+			if(gsub_callback())
 			{
 				free(src_ys);
 				free(src_xs);
@@ -378,7 +380,7 @@ struct surface_t *resize_565(struct surface_t *src_texture, int dst_width, int d
 }
 
 
-struct surface_t *resize_888a8(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+struct surface_t *resize_888a8(struct surface_t *src_texture, int dst_width, int dst_height)
 {
 	struct surface_t *dst_texture = new_surface(SURFACE_24BITALPHA8BIT, dst_width, dst_height);
 	if(!dst_texture)
@@ -466,7 +468,8 @@ struct surface_t *resize_888a8(struct surface_t *src_texture, int dst_width, int
 			{
 				for(src_x = min_src_x; src_x <= max_src_x; src_x++)
 				{
-					double area = (max(dx1, src_xs[src_x]) - min(dx2, src_xs[src_x + 1])) * (max(dy1, src_ys[src_y]) - min(dy2, src_ys[src_y + 1]));
+					double area = (max(dx1, src_xs[src_x]) - min(dx2, src_xs[src_x + 1])) * 
+						(max(dy1, src_ys[src_y]) - min(dy2, src_ys[src_y + 1]));
 					
 					red += area * get_double_from_8(src[0]) * get_double_from_8(*alpha_src);
 					green += area * get_double_from_8(src[1]) * get_double_from_8(*alpha_src);
@@ -510,7 +513,7 @@ struct surface_t *resize_888a8(struct surface_t *src_texture, int dst_width, int
 }
 
 
-struct surface_t *resize_565a8(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+struct surface_t *resize_565a8(struct surface_t *src_texture, int dst_width, int dst_height)
 {
 	struct surface_t *dst_texture = new_surface(SURFACE_16BITALPHA8BIT, dst_width, dst_height);
 	if(!dst_texture)
@@ -597,7 +600,8 @@ struct surface_t *resize_565a8(struct surface_t *src_texture, int dst_width, int
 			{
 				for(src_x = min_src_x; src_x <= max_src_x; src_x++)
 				{
-					double area = (max(dx1, src_xs[src_x]) - min(dx2, src_xs[src_x + 1])) * (max(dy1, src_ys[src_y]) - min(dy2, src_ys[src_y + 1]));
+					double area = (max(dx1, src_xs[src_x]) - min(dx2, src_xs[src_x + 1])) * 
+						(max(dy1, src_ys[src_y]) - min(dy2, src_ys[src_y + 1]));
 					
 					red += area * get_double_red(*src) * get_double_from_8(*alpha_src);
 					green += area * get_double_green(*src) * get_double_from_8(*alpha_src);
@@ -640,7 +644,7 @@ struct surface_t *resize_565a8(struct surface_t *src_texture, int dst_width, int
 
 
 /*
-struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_height)
 {
 	if(src_texture->flags != SURFACE_16BIT)
 		return NULL;
@@ -679,7 +683,8 @@ struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_h
 			if(((dst_x + 1) * src_texture->width) % dst_width == 0)
 				max_src_x--;
 			
-			uint16_t *src = &((uint16_t*)src_texture->buf)[min_src_y * src_texture->width + min_src_x];
+			uint16_t *src = &((uint16_t*)src_texture->buf)
+				[min_src_y * src_texture->width + min_src_x];
 			int addon = src_texture->width - (max_src_x - min_src_x + 1);
 			
 			for(src_y = min_src_y; src_y <= max_src_y; src_y++)
@@ -692,7 +697,8 @@ struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_h
 					double x2 = (double)src_x / (double)src_texture->width;
 					double x4 = (double)(src_x + 1) / (double)src_texture->width;
 					
-					double area = (max(x1, x2) - min(x3, x4)) * (max(y1, y2) - min(y3, y4)) * total_area;
+					double area = (max(x1, x2) - min(x3, x4)) * (max(y1, y2) - min(y3, y4)) * 
+						total_area;
 					
 					red += area * get_double_red(*src);
 					green += area * get_double_green(*src);
@@ -707,9 +713,9 @@ struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_h
 			*dst++ = convert_doubles_to_16bit(red, green, blue);
 		}
 
-		if(callback)
+		if(gsub_callback)
 		{
-			if(callback())
+			if(gsub_callback())
 			{
 				free_surface(dst_texture);
 				return NULL;
@@ -722,7 +728,7 @@ struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_h
 */
 
 
-struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_height)
 {
 	if(!src_texture)
 		return NULL;
@@ -733,26 +739,26 @@ struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_h
 	switch(src_texture->flags)
 	{
 	case SURFACE_ALPHA8BIT:
-		return resize_a8(src_texture, dst_width, dst_height, callback);
+		return resize_a8(src_texture, dst_width, dst_height);
 	
 	case SURFACE_24BIT:
-		return resize_888(src_texture, dst_width, dst_height, callback);
+		return resize_888(src_texture, dst_width, dst_height);
 	
 	case SURFACE_24BITALPHA8BIT:
-		return resize_888a8(src_texture, dst_width, dst_height, callback);
+		return resize_888a8(src_texture, dst_width, dst_height);
 	
 	case SURFACE_16BIT:
-		return resize_565(src_texture, dst_width, dst_height, callback);
+		return resize_565(src_texture, dst_width, dst_height);
 		
 	case SURFACE_16BITALPHA8BIT:
-		return resize_565a8(src_texture, dst_width, dst_height, callback);
+		return resize_565a8(src_texture, dst_width, dst_height);
 	}
 	
 	return duplicate_surface(src_texture);
 }
 
 
-struct surface_t *crap_resize(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)())
+struct surface_t *crap_resize(struct surface_t *src_texture, int dst_width, int dst_height)
 {
 	if(src_texture->flags != SURFACE_16BIT)
 		return NULL;
@@ -767,19 +773,20 @@ struct surface_t *crap_resize(struct surface_t *src_texture, int dst_width, int 
 
 	int dst_x;
 	for(dst_x = 0; dst_x < dst_width; dst_x++)
-		xverts[dst_x] = (dst_x * src_texture->width) / dst_width;	// Bresenham me
+		xverts[dst_x] = (dst_x * src_texture->width) / dst_width;
 
 	int dst_y;
 	for(dst_y = 0; dst_y < dst_height; dst_y++)
 	{
-		uint16_t *src = &((uint16_t*)src_texture->buf)[(dst_y * src_texture->height) / dst_height * src_texture->width];	// And me
+		uint16_t *src = &((uint16_t*)src_texture->buf)
+			[(dst_y * src_texture->height) / dst_height * src_texture->width];
 		
 		for(dst_x = 0; dst_x < dst_width; dst_x++)
 			*dst++ = src[xverts[dst_x]];
 		
-		if(callback)
+		if(gsub_callback)
 		{
-			if(callback())
+			if(gsub_callback())
 			{
 				free_surface(dst_texture);
 				return NULL;
@@ -804,7 +811,8 @@ struct surface_t *crap_resize(struct surface_t *src_texture, int dst_width, int 
 #define desty (scalex * sin_theta + scaley * cos_theta)
 
 
-struct surface_t *rotate_surface(struct surface_t *in_surface, int scale_width, int scale_height, double theta)
+struct surface_t *rotate_surface(struct surface_t *in_surface, 
+	int scale_width, int scale_height, double theta)
 {
 	if(!in_surface)
 		return NULL;
@@ -920,7 +928,8 @@ struct surface_t *rotate_surface(struct surface_t *in_surface, int scale_width, 
 			max_ypos = min(max_ypos, out_width - 1);
 
 				
-			uint8_t *src = &((uint8_t*)in_surface->alpha_buf)[src_ypos * in_surface->width + src_xpos];
+			uint8_t *src = &((uint8_t*)in_surface->alpha_buf)
+				[src_ypos * in_surface->width + src_xpos];
 			double alpha = (double)(*src) / 255.0;
 			
 			src = &((uint8_t*)in_surface->buf)[(src_ypos * in_surface->width + src_xpos) * 3];
@@ -976,7 +985,6 @@ struct surface_t *rotate_surface(struct surface_t *in_surface, int scale_width, 
 						(float)(alpha * area);
 				}
 			}
-			
 		}
 
 		if(gsub_callback)
@@ -1025,8 +1033,9 @@ struct surface_t *rotate_surface(struct surface_t *in_surface, int scale_width, 
 }
 
 
-struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, struct texture_polys_t *texture_polys0, 
-	int dst_width, int dst_height, int dst_posx, int dst_posy, int (*callback)())
+struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, 
+	struct texture_polys_t *texture_polys0, 
+	int dst_width, int dst_height, int dst_posx, int dst_posy)
 {
 	struct surface_t *out_surface = new_surface(SURFACE_FLOATSALPHAFLOATS, dst_width, dst_height);
 	if(!out_surface)
@@ -1048,10 +1057,14 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 
 				struct polygon_t src_poly;
 
-				src_poly.vertex[0] = texture_verts->verts[src_ypos * (texture_verts->surface->width + 1) + src_xpos];
-				src_poly.vertex[1] = texture_verts->verts[src_ypos * (texture_verts->surface->width + 1) + src_xpos + 1];
-				src_poly.vertex[2] = texture_verts->verts[(src_ypos + 1) * (texture_verts->surface->width + 1) + src_xpos + 1];
-				src_poly.vertex[3] = texture_verts->verts[(src_ypos + 1) * (texture_verts->surface->width + 1) + src_xpos];
+				src_poly.vertex[0] = texture_verts->verts
+					[src_ypos * (texture_verts->surface->width + 1) + src_xpos];
+				src_poly.vertex[1] = texture_verts->verts
+					[src_ypos * (texture_verts->surface->width + 1) + src_xpos + 1];
+				src_poly.vertex[2] = texture_verts->verts
+					[(src_ypos + 1) * (texture_verts->surface->width + 1) + src_xpos + 1];
+				src_poly.vertex[3] = texture_verts->verts
+					[(src_ypos + 1) * (texture_verts->surface->width + 1) + src_xpos];
 
 				src_poly.numverts = 4;
 
@@ -1101,10 +1114,12 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 				max_ypos = min(max_ypos, dst_posy + dst_height - 1);
 
 
-				uint8_t *src = &((uint8_t*)texture_verts->surface->buf)[(src_ypos * texture_verts->surface->width + src_xpos) * 3];
+				uint8_t *src = &((uint8_t*)texture_verts->surface->buf)
+					[(src_ypos * texture_verts->surface->width + src_xpos) * 3];
 				uint8_t *alpha_src = 0;
 				if(texture_verts->surface->flags == SURFACE_24BITALPHA8BIT)
-					alpha_src = &((uint8_t*)texture_verts->surface->alpha_buf)[src_ypos * texture_verts->surface->width + src_xpos];
+					alpha_src = &((uint8_t*)texture_verts->surface->alpha_buf)
+						[src_ypos * texture_verts->surface->width + src_xpos];
 
 				int dst_ypos, dst_xpos;
 				for(dst_ypos = min_ypos; dst_ypos <= max_ypos; dst_ypos++)
@@ -1143,7 +1158,8 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 
 						// actuate pixel intensity
 
-						float *dst = &((float*)out_surface->buf)[((dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx) * 3];
+						float *dst = &((float*)out_surface->buf)
+							[((dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx) * 3];
 						float alpha;
 						
 						switch(texture_verts->surface->flags)
@@ -1152,7 +1168,8 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 							*dst++ += (float)(get_double_from_8(src[0]) * area);
 							*dst++ += (float)(get_double_from_8(src[1]) * area);
 							*dst += (float)(get_double_from_8(src[2]) * area);
-							((float*)out_surface->alpha_buf)[(dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx] += area;
+							((float*)out_surface->alpha_buf)
+								[(dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx] += area;
 							break;
 						
 						case SURFACE_24BITALPHA8BIT:
@@ -1160,16 +1177,18 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 							*dst++ += (float)(get_double_from_8(src[0]) * area * alpha);
 							*dst++ += (float)(get_double_from_8(src[1]) * area * alpha);
 							*dst += (float)(get_double_from_8(src[2]) * area * alpha);
-							((float*)out_surface->alpha_buf)[(dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx] += area * alpha;
+							((float*)out_surface->alpha_buf)
+								[(dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx] += 
+								area * alpha;
 							break;
 						}						
 					}
 				}
 			}
 
-			if(callback)
+			if(gsub_callback)
 			{
-				if(callback())
+				if(gsub_callback())
 				{
 					free_surface(out_surface);
 					return NULL;
@@ -1241,10 +1260,12 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 				max_ypos = min(max_ypos, dst_posy + dst_height - 1);
 	
 	
-				uint16_t *src = &((uint16_t*)texture_polys->surface->buf)[src_ypos * texture_polys->surface->width + src_xpos];
+				uint16_t *src = &((uint16_t*)texture_polys->surface->buf)
+					[src_ypos * texture_polys->surface->width + src_xpos];
 				uint8_t *alpha_src = 0;
 				if(texture_verts->surface->flags == SURFACE_16BITALPHA8BIT)
-					alpha_src = &((uint8_t*)texture_verts->surface->alpha_buf)[src_ypos * texture_verts->surface->width + src_xpos];
+					alpha_src = &((uint8_t*)texture_verts->surface->alpha_buf)
+						[src_ypos * texture_verts->surface->width + src_xpos];
 	
 				int dst_ypos, dst_xpos;
 				for(dst_ypos = min_ypos; dst_ypos <= max_ypos; dst_ypos++)
@@ -1283,7 +1304,8 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 	
 						// actuate pixel intensity
 	
-						float *dst = &((float*)out_surface->buf)[((dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx) * 3];
+						float *dst = &((float*)out_surface->buf)
+							[((dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx) * 3];
 						float alpha;
 						
 						switch(texture_verts->surface->flags)
@@ -1292,7 +1314,8 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 							*dst++ += (float)(get_double_red(*src) * area);
 							*dst++ += (float)(get_double_green(*src) * area);
 							*dst += (float)(get_double_blue(*src) * area);
-							((float*)out_surface->alpha_buf)[(dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx] += area;
+							((float*)out_surface->alpha_buf)
+								[(dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx] += area;
 							break;
 						
 						case SURFACE_16BITALPHA8BIT:
@@ -1300,15 +1323,17 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 							*dst++ += (float)(get_double_red(*src) * area * alpha);
 							*dst++ += (float)(get_double_green(*src) * area * alpha);
 							*dst += (float)(get_double_blue(*src) * area * alpha);
-							((float*)out_surface->alpha_buf)[(dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx] += area * alpha;
+							((float*)out_surface->alpha_buf)
+								[(dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx] += 
+								area * alpha;
 							break;
 						}						
 					}
 				}
 	
-				if(callback)
+				if(gsub_callback)
 				{
-					if(callback())
+					if(gsub_callback())
 					{
 						free_surface(out_surface);
 						return NULL;
@@ -1396,10 +1421,12 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 				max_ypos = min(max_ypos, dst_posy + dst_height - 1);
 	
 	
-				uint8_t *src = &((uint8_t*)texture_polys->surface->buf)[(src_ypos * texture_polys->surface->width + src_xpos) * 3];
+				uint8_t *src = &((uint8_t*)texture_polys->surface->buf)
+					[(src_ypos * texture_polys->surface->width + src_xpos) * 3];
 				uint8_t *alpha_src = 0;
 				if(texture_polys->surface->flags == SURFACE_24BITALPHA8BIT)
-					alpha_src = &((uint8_t*)texture_polys->surface->alpha_buf)[src_ypos * texture_polys->surface->width + src_xpos];
+					alpha_src = &((uint8_t*)texture_polys->surface->alpha_buf)
+						[src_ypos * texture_polys->surface->width + src_xpos];
 	
 				int dst_ypos, dst_xpos;
 				for(dst_ypos = min_ypos; dst_ypos <= max_ypos; dst_ypos++)
@@ -1447,7 +1474,8 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 						// actuate pixel intensity
 						
 	
-						float *dst = &((float*)out_surface->buf)[((dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx) * 3];
+						float *dst = &((float*)out_surface->buf)
+							[((dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx) * 3];
 						float alpha;
 						
 						switch(texture_polys->surface->flags)
@@ -1456,7 +1484,8 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 							*dst++ += (float)(get_double_from_8(src[0]) * area);
 							*dst++ += (float)(get_double_from_8(src[1]) * area);
 							*dst += (float)(get_double_from_8(src[2]) * area);
-							((float*)out_surface->alpha_buf)[(dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx] += area;
+							((float*)out_surface->alpha_buf)
+								[(dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx] += area;
 							break;
 						
 						case SURFACE_24BITALPHA8BIT:
@@ -1464,15 +1493,17 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 							*dst++ += (float)(get_double_from_8(src[0]) * area * alpha);
 							*dst++ += (float)(get_double_from_8(src[1]) * area * alpha);
 							*dst += (float)(get_double_from_8(src[2]) * area * alpha);
-							((float*)out_surface->alpha_buf)[(dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx] += area * alpha;
+							((float*)out_surface->alpha_buf)
+								[(dst_ypos - dst_posy) * dst_width + dst_xpos - dst_posx] += 
+									area * alpha;
 							break;
 						}						
 					}
 				}
 	
-				if(callback)
+				if(gsub_callback)
 				{
-					if(callback())
+					if(gsub_callback())
 					{
 						free_surface(out_surface);
 						return NULL;
@@ -1507,7 +1538,7 @@ struct surface_t *multiple_resample(struct texture_verts_t *texture_verts0, stru
 
 /*
 float *resample(float *src_pixels, vertex_t *src_verts, int src_width, int src_height, 
-			  int dst_width, int dst_height, int (*callback)())
+			  int dst_width, int dst_height)
 {
 	float *dst_pixels = (float*)calloc(dst_width * dst_height * 3, 4);
 
@@ -1623,9 +1654,9 @@ float *resample(float *src_pixels, vertex_t *src_verts, int src_width, int src_h
 			}
 		}
 
-		if(callback)
+		if(gsub_callback)
 		{
-			if(callback())
+			if(gsub_callback())
 			{
 				free(dst_pixels);
 				return NULL;

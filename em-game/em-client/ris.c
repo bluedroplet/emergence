@@ -30,8 +30,7 @@ void set_ri_surface_multiplier(float m)
 		
 		struct surface_t *temp = read_png_surface(cris->filename->text);
 		
-		cris->surface = resize(temp, temp->width * ris_multiplier, 
-			temp->height * ris_multiplier, NULL);
+		cris->surface = resize(temp, temp->width * ris_multiplier, temp->height * ris_multiplier);
 		
 		free_surface(temp);		
 		
@@ -49,8 +48,7 @@ struct ris_t *load_ri_surface(char *filename)
 	struct surface_t *temp = read_png_surface(filename);
 	
 	
-	ris.surface = resize(temp, temp->width * ris_multiplier, 
-		temp->height * ris_multiplier, NULL);
+	ris.surface = resize(temp, temp->width * ris_multiplier, temp->height * ris_multiplier);
 	
 	free_surface(temp);
 	

@@ -109,7 +109,7 @@ int generate_and_write_scaled_tiles(gzFile gzfile, gzFile gzfileout)
 		tile.surface = gzread_raw_surface(gzfile);
 		
 		struct surface_t *surface = resize(tile.surface, tile.surface->width * vid_width / 1600, 
-			tile.surface->height * vid_height / 1200, NULL);
+			tile.surface->height * vid_height / 1200);
 
 		free_surface(tile.surface);
 		tile.surface = surface;

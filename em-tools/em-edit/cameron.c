@@ -134,5 +134,5 @@ void scale_cameron()
 	if(cameron_width == s_cameron->width && cameron_height == s_cameron->height)
 		out_cameron = duplicate_surface(s_cameron);
 	else
-		out_cameron = resize(s_cameron, cameron_width, cameron_height, check_stop_callback);
+		out_cameron = resize(s_cameron, cameron_width, cameron_height);
 }

@@ -53,7 +53,7 @@ int generate_and_write_scaled_floating_images(gzFile infile, gzFile outfile)
 		struct surface_t *surface = gzread_raw_surface(infile);
 		
 		floating_image.surface = resize(surface, surface->width * vid_width / 1600, 
-			surface->height * vid_height / 1200, NULL);
+			surface->height * vid_height / 1200);
 
 		free_surface(surface);
 		
