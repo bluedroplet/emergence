@@ -338,16 +338,16 @@ float demo_start_time;
 int game_rendering = 1;
 
 
-int rail_inner_red = 0xff, rail_inner_green = 0xff, rail_inner_blue = 0xff;
-int rail_outer_red = 0, rail_outer_green = 0, rail_outer_blue = 0xff;
+int rail_inner_red = 25, rail_inner_green = 187, rail_inner_blue = 241;
+int rail_outer_red = 0, rail_outer_green = 86, rail_outer_blue = 217;
 
 int magic_smoke = 0;
-int smoke_start_red = 0xff, smoke_start_green = 0, smoke_start_blue = 0;
-int smoke_end_red = 0xff, smoke_end_green = 0xff, smoke_end_blue = 0xff;
+int smoke_start_red = 218, smoke_start_green = 210, smoke_start_blue = 45;
+int smoke_end_red = 97, smoke_end_green = 12, smoke_end_blue = 0;
 
-int plasma_red = 0, plasma_green = 0xff, plasma_blue = 0xff;
+int plasma_red = 187, plasma_green = 241, plasma_blue = 0xff;
 
-int shield_red = 0xff, shield_green = 0xff, shield_blue = 0xff;
+int shield_red = 56, shield_green = 23, shield_blue = 245;
 
 
 struct player_t
