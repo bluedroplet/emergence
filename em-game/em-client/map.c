@@ -204,6 +204,7 @@ int load_map(char *map_name)
 	}
 	
 	clear_floating_images();
+	clear_sgame();
 	
 	if(vid_width == 1600)
 	{
