@@ -1055,7 +1055,7 @@ void respawn_craft(struct entity_t *craft, struct player_t *responsibility)
 void schedule_respawn(struct pickup_spawn_point_t *spawn_point)
 {
 	spawn_point->respawn = 1;
-	spawn_point->respawn_tick = cgame_tick + spawn_point->respawn_delay / 10;	// terrible
+	spawn_point->respawn_tick = cgame_tick + spawn_point->respawn_delay / 5;	// terrible
 }
 
 
