@@ -851,15 +851,15 @@ void spawn_player(struct player_t *player)
 
 void respawn_craft(struct entity_t *craft, struct player_t *responsibility)
 {
-	if(responsibility)
-	{
-		if(responsibility == craft->craft_data.owner)
-			responsibility->frags--;
-		else
-			responsibility->frags++;
-		
-		responsibility->propagate_frags = 1;
-	}
+	if(!responsibility)
+		responsibility = craft->craft_data.owner;
+
+	if(responsibility == craft->craft_data.owner)
+		responsibility->frags--;
+	else
+		responsibility->frags++;
+	
+	responsibility->propagate_frags = 1;
 	
 	spawn_player(craft->craft_data.owner);
 }
