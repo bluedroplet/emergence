@@ -4233,7 +4233,7 @@ void update_demo()
 	
 	if(demo_first_tick)		// i.e. not the first event
 	{
-		tick = get_tick_from_wall_time() + demo_first_tick;
+		tick = (uint32_t)lround((get_wall_time() - demo_start_time) * 200.0) + demo_first_tick;
 	}
 	else
 	{
@@ -4257,7 +4257,6 @@ void update_demo()
 				demo_last_tick = demo_first_tick = 
 					tick = message_reader.event_tick;
 				
-				reset_tick_from_wall_time();	// demo_first_tick is being rendered now
 				init_fr();
 				demo_start_frame = frame;
 				demo_start_time = get_wall_time();
