@@ -3126,13 +3126,35 @@ void s_tick_rails(struct entity_t *rails)
 	
 	slow_entity(rails);
 
+	double xdis, ydis;
+	int restart = 0;
 	
 	while(1)
 	{
-		double xdis = rails->xdis + rails->xvel;
-		double ydis = rails->ydis + rails->yvel;
+		// see if our iterative collison technique has locked
 		
-		int restart = 0;
+		if(restart && rails->xdis == xdis && rails->ydis == ydis)
+		{
+			#ifdef EMSERVER
+			explode_rails(rails, NULL);
+		//	char *msg = "infinite iteration rails collison broken\n";
+		//	console_print(msg);
+		//	print_on_all_players(msg);
+			#endif
+			
+			#ifdef EMCLIENT
+			// try to prevent this happening again until the server 
+			// explodes the rails or history gets rewritten
+			rails->xvel = rails->yvel = 0.0;
+			#endif
+
+			return;
+		}
+		
+		xdis = rails->xdis + rails->xvel;
+		ydis = rails->ydis + rails->yvel;
+		
+		restart = 0;
 		
 		
 		// check for collision against wall
