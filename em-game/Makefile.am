@@ -1,4 +1,4 @@
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = gsub common em-client em-server stock-sounds base-maps \
+SUBDIRS = common gsub em-client em-server stock-sounds base-maps \
 	 stock-skins
 

@@ -106,7 +106,7 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = gsub common em-client em-server stock-sounds base-maps \
+SUBDIRS = common gsub em-client em-server stock-sounds base-maps \
 	 stock-skins
 
 subdir = .
