@@ -34,7 +34,7 @@ fi
 
 echo Building Emergence for $arch
 
-export CFLAGS="-march=$arch -O2 -pipe -fomit-frame-pointer"
+export CFLAGS="-march=$arch -O3 -pipe -fomit-frame-pointer"
 ln -sfn stage3-$stage3-2004.1 ../../stage3s/current-stage3 || exit
 
 
