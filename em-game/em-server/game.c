@@ -516,8 +516,8 @@ void spawn_plasma(struct entity_t *weapon, struct player_t *player)
 	double sin_theta, cos_theta;
 	sincos(weapon->weapon_data.theta, &sin_theta, &cos_theta);
 	
-	plasma->xvel = weapon->xvel - sin_theta * 8.0;
-	plasma->yvel = weapon->yvel + cos_theta * 8.0;
+	plasma->xvel = weapon->weapon_data.craft->xvel - sin_theta * 8.0;
+	plasma->yvel = weapon->weapon_data.craft->yvel + cos_theta * 8.0;
 	
 	plasma->plasma_data.in_weapon = 1;
 	plasma->plasma_data.weapon_id = weapon->index;
@@ -540,8 +540,8 @@ void spawn_bullet(struct entity_t *weapon, struct player_t *player)
 	double sin_theta, cos_theta;
 	sincos(weapon->weapon_data.theta, &sin_theta, &cos_theta);
 	
-	bullet->xvel = weapon->xvel - sin_theta * 24.0;
-	bullet->yvel = weapon->yvel + cos_theta * 24.0;
+	bullet->xvel = weapon->weapon_data.craft->xvel - sin_theta * 24.0;
+	bullet->yvel = weapon->weapon_data.craft->yvel + cos_theta * 24.0;
 	
 	bullet->bullet_data.in_weapon = 1;
 	bullet->bullet_data.weapon_id = weapon->index;
@@ -559,8 +559,8 @@ void spawn_rocket(struct entity_t *weapon, struct player_t *player)
 	rocket->xdis = weapon->xdis;
 	rocket->ydis = weapon->ydis;
 	
-	rocket->xvel = weapon->xvel;
-	rocket->yvel = weapon->yvel;
+	rocket->xvel = weapon->weapon_data.craft->xvel;
+	rocket->yvel = weapon->weapon_data.craft->yvel;
 	
 	rocket->rocket_data.theta = weapon->weapon_data.theta;
 	rocket->rocket_data.start_tick = game_tick;
@@ -717,7 +717,7 @@ void tick_player(struct player_t *player)
 
 void spawn_player(struct player_t *player)
 {
-	player->rails = 200;
+	player->rails = 5;
 	
 	struct spawn_point_t *spawn_point = spawn_point0;
 	
@@ -1029,12 +1029,12 @@ void game_process_join(uint32_t conn, uint32_t index, struct buffer_t *stream)
 	
 	if(num_players_active >= max_players_active)
 		spec = 1;
-	else
+/*	else
 	{
 		if(num_players_active > 1)
 			spec = 1;
 	}
-	
+*/	
 	struct string_t *name = buffer_read_string(stream);
 	
 	struct string_t *s = new_string_string(name);

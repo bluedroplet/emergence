@@ -9,9 +9,10 @@ all: $(OBJECTS)
 	oggenc $(OGGENCFLAGS) $<
 
 clean:
-	rm -f $(OBJECTS) Makefile
+	rm -f $(OBJECTS)
 
 distclean: clean
+	rm -f Makefile
 
 sounddatadir = $(pkgdatadir)/stock-sounds
 sounddata_DATA = $(OBJECTS)
