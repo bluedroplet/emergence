@@ -94,6 +94,7 @@ void run_curve_menu(struct curve_t *curve);
 
 
 void run_wall_properties_dialog(void *menu, struct curve_t *curve);
+void make_wall_texture_paths_relative();
 
 
 #endif	// _INC_CURVES

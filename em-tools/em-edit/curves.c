@@ -1609,7 +1609,10 @@ void on_wall_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 	gchar *strval;
 	g_object_get(G_OBJECT(editable), "text", &strval, NULL);
 	
-	curve->texture_filename = arb_abs2rel(strval, map_path->text);
+	if(map_filename->text[0])
+		curve->texture_filename = arb_abs2rel(strval, map_path->text);
+	else
+		curve->texture_filename = new_string_text(strval);
 	
 	g_free(strval);
 	
@@ -1652,6 +1655,24 @@ void run_wall_properties_dialog(void *menu, struct curve_t *curve)
 
 	gnome_color_picker_set_i8(GNOME_COLOR_PICKER(g_object_get_data(G_OBJECT(dialog), 
 		"solid_colorpicker")), curve->red, curve->green, curve->blue, curve->alpha);
+	
+	if(map_filename->text[0])
+	{
+		gnome_pixmap_entry_set_pixmap_subdir(GNOME_PIXMAP_ENTRY(g_object_get_data(G_OBJECT(dialog), 
+			"texture_pixmapentry")), map_path->text);
+	}
+	else
+	{
+		char *cwd = get_current_dir_name();
+		
+		struct string_t *s = new_string_text("%s/\n", cwd);
+		
+		gnome_pixmap_entry_set_pixmap_subdir(GNOME_PIXMAP_ENTRY(g_object_get_data(G_OBJECT(dialog), 
+			"texture_pixmapentry")), s->text);
+		
+		free(cwd);
+		free_string(s);
+	}
 	
 	if(curve->texture_filename)
 	{
@@ -1712,14 +1733,19 @@ void run_wall_properties_dialog(void *menu, struct curve_t *curve)
 
 
 
-
-
-
-
-
-
-
-
+void make_wall_texture_paths_relative()
+{
+	struct curve_t *ccurve = curve0;
+		
+	while(ccurve)
+	{
+		struct string_t *s = arb_abs2rel(ccurve->texture_filename->text, map_path->text);
+		free_string(ccurve->texture_filename);
+		ccurve->texture_filename = s;
+		
+		ccurve = ccurve->next;
+	}
+}
 
 
 

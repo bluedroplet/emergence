@@ -535,9 +535,17 @@ void save_dialog_ok(char *filename)
 */	
 	stop_working();
 	
+	int r = 0;
+	
+	if(!map_filename->text[0])
+		r = 1;
+
 	string_clear(map_filename);
 	string_cat_text(map_filename, filename);
 	set_map_path();
+	
+	if(r)
+		make_wall_texture_paths_relative();
 	
 	map_save();
 	
