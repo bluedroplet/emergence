@@ -318,19 +318,38 @@ int line_in_circle(double lx1, double ly1, double lx2, double ly2,
 
 	if(discr >= 0.0)
 	{
-		double thing = dx * sqrt(discr);
-
-		double x = (D * dy + thing) / dr2;
-		double t = (x + cx - lx1) / (lx2 - lx1);
-		
-		if(t > 0.0 && t < 1.0)
-			return 1;
-		
-		x = (D * dy - thing) / dr2;
-		t = (x + cx - lx1) / (lx2 - lx1);
-		
-		if(t > 0.0 && t < 1.0)
-			return 1;
+		if(fabs(dx) > fabs(dy))
+		{
+			double thing = dx * sqrt(discr);
+	
+			double x = (D * dy + thing) / dr2;
+			double t = (x + cx - lx1) / (lx2 - lx1);
+			
+			if(t > 0.0 && t < 1.0)
+				return 1;
+			
+			x = (D * dy - thing) / dr2;
+			t = (x + cx - lx1) / (lx2 - lx1);
+			
+			if(t > 0.0 && t < 1.0)
+				return 1;
+		}
+		else
+		{
+			double thing = dy * sqrt(discr);
+	
+			double y = -(D * dx + thing) / dr2;
+			double t = (y + cy - ly1) / (ly2 - ly1);
+			
+			if(t > 0.0 && t < 1.0)
+				return 1;
+			
+			y = -(D * dx - thing) / dr2;
+			t = (y + cy - ly1) / (ly2 - ly1);
+			
+			if(t > 0.0 && t < 1.0)
+				return 1;
+		}
 	}
 	
 	return 0;
@@ -368,26 +387,53 @@ int line_in_circle_with_coords(double lx1, double ly1, double lx2, double ly2,
 
 	if(discr >= 0.0)
 	{
-		double thing = dx * sqrt(discr);
-
-		double x = (D * dy - thing) / dr2;
-		double t = (x + cx - lx1) / (lx2 - lx1);
-		
-		if(t > 0.0 && t < 1.0)
+		if(fabs(dx) > fabs(dy))
 		{
-			*out_x = lx1 + t * (lx2 - lx1);
-			*out_y = ly1 + t * (ly2 - ly1);
-			return 1;
+			double thing = dx * sqrt(discr);
+	
+			double x = (D * dy - thing) / dr2;
+			double t = (x + cx - lx1) / (lx2 - lx1);
+			
+			if(t > 0.0 && t < 1.0)
+			{
+				*out_x = x + cx;
+				*out_y = ly1 + t * (ly2 - ly1);
+				return 1;
+			}
+			
+			x = (D * dy + thing) / dr2;
+			t = (x + cx - lx1) / (lx2 - lx1);
+			
+			if(t > 0.0 && t < 1.0)
+			{
+				*out_x = x + cx;
+				*out_y = ly1 + t * (ly2 - ly1);
+				return 1;
+			}
 		}
-		
-		x = (D * dy + thing) / dr2;
-		t = (x + cx - lx1) / (lx2 - lx1);
-		
-		if(t > 0.0 && t < 1.0)
+		else
 		{
-			*out_x = lx1 + t * (lx2 - lx1);
-			*out_y = ly1 + t * (ly2 - ly1);
-			return 1;
+			double thing = dy * sqrt(discr);
+	
+			double y = -(D * dx + thing) / dr2;
+			double t = (y + cy - ly1) / (ly2 - ly1);
+			
+			if(t > 0.0 && t < 1.0)
+			{
+				*out_x = lx1 + t * (lx2 - lx1);
+				*out_y = y + cy;
+				return 1;
+			}
+			
+			y = -(D * dx - thing) / dr2;
+			t = (y + cy - ly1) / (ly2 - ly1);
+			
+			if(t > 0.0 && t < 1.0)
+			{
+				*out_x = lx1 + t * (lx2 - lx1);
+				*out_y = y + cy;
+				return 1;
+			}
 		}
 	}
 	
@@ -1392,6 +1438,10 @@ void s_tick_craft(struct entity_t *craft)
 		// check for wall collision
 		
 		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, CRAFT_RADIUS);
+			
+		if(!node)
+			node = line_walk_bsp_tree(craft->xdis, craft->ydis, xdis, ydis);
+		
 		if(node)
 		{
 			#ifdef EMSERVER
@@ -1832,6 +1882,10 @@ void s_tick_weapon(struct entity_t *weapon)
 		// check for collision against wall
 		
 		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, WEAPON_RADIUS);
+			
+		if(!node)
+			node = line_walk_bsp_tree(weapon->xdis, weapon->ydis, xdis, ydis);
+		
 		if(node)
 		{
 			#ifdef EMSERVER
@@ -2211,17 +2265,24 @@ void s_tick_plasma(struct entity_t *plasma)
 	apply_gravity_acceleration(plasma);
 	
 	
-	plasma->xdis += plasma->xvel;
-	plasma->ydis += plasma->yvel;
+	double xdis = plasma->xdis + plasma->xvel;
+	double ydis = plasma->ydis + plasma->yvel;
 	
 	// check for collision against wall
 	
-	struct bspnode_t *node = circle_walk_bsp_tree(plasma->xdis, plasma->ydis, PLASMA_RADIUS);
+	struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, PLASMA_RADIUS);
+			
+	if(!node)
+		node = line_walk_bsp_tree(plasma->xdis, plasma->ydis, xdis, ydis);
+		
 	if(node)
 	{
 		plasma->kill_me = 1;
 		return;
 	}
+	
+	plasma->xdis = xdis;
+	plasma->ydis = ydis;
 	
 	
 	// check for collision with other entities
@@ -2529,6 +2590,10 @@ void s_tick_rocket(struct entity_t *rocket)
 		// check for collision against wall
 		
 		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, ROCKET_RADIUS);
+			
+		if(!node)
+			node = line_walk_bsp_tree(rocket->xdis, rocket->ydis, xdis, ydis);
+		
 		if(node)
 		{
 			explode_rocket(rocket);
@@ -2764,6 +2829,10 @@ void s_tick_mine(struct entity_t *mine)
 		// check for collision against wall
 		
 		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, MINE_RADIUS);
+			
+		if(!node)
+			node = line_walk_bsp_tree(mine->xdis, mine->ydis, xdis, ydis);
+		
 		if(node)
 		{
 			explode_mine(mine);
@@ -2974,6 +3043,10 @@ void s_tick_rails(struct entity_t *rails)
 		// check for collision against wall
 		
 		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, RAILS_RADIUS);
+			
+		if(!node)
+			node = line_walk_bsp_tree(rails->xdis, rails->ydis, xdis, ydis);
+		
 		if(node)
 		{
 			#ifdef EMSERVER
@@ -3189,6 +3262,10 @@ void s_tick_shield(struct entity_t *shield)
 		// check for collision against wall
 		
 		struct bspnode_t *node = circle_walk_bsp_tree(xdis, ydis, SHIELD_RADIUS);
+			
+		if(!node)
+			node = line_walk_bsp_tree(shield->xdis, shield->ydis, xdis, ydis);
+		
 		if(node)
 		{
 			destroy_shield(shield);
