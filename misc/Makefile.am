@@ -1,3 +1,3 @@
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = gsub common shield plasma
+SUBDIRS = common gsub shield plasma
 
