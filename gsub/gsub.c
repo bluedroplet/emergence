@@ -37,9 +37,6 @@
 #include "../common/vertex.h"
 #include "gsub.h"
 
-int vid_width, vid_height, vid_pitch, vid_byteswidth;
-uint16_t *vid_backbuffer;
-int vid_bbsize, vid_heightm1, vid_halfwidth, vid_halfheight, vid_halfheightm1;
 
 uint8_t *vid_alphalookup = NULL;
 uint16_t *vid_graylookup = NULL;
@@ -50,14 +47,14 @@ uint16_t *vid_bluealphalookup = NULL;
 
 int (*gsub_callback)();
 
-
+/*
 void clear_backbuffer()
 {
 //	printf("%u\n", (uint32_t)vid_backbuffer % 8);
 	
 	bb_clear_mmx(vid_backbuffer, (vid_pitch * vid_height) / 32, 0);//((vid_pitch * vid_height) % 16) / 2);
 	
-/*	if(vid_pitch == vid_width)
+	if(vid_pitch == vid_width)
 	{
 		memset(vid_backbuffer, 0, vid_width * vid_height * 2);
 	}
@@ -72,9 +69,9 @@ void clear_backbuffer()
 			dst += vid_pitch;
 		}
 	}
-	*/
-}
 
+}
+*/
 
 void make_lookup_tables()
 {

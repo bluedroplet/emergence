@@ -35,6 +35,7 @@
 #include "../gsub/gsub.h"
 #include "nodes.h"
 #include "interface.h"
+#include "main.h"
 
 int grid_granularity = 0;
 double grid_spacing = 20.0;

@@ -1435,6 +1435,7 @@ void left_button_down(int x, int y)
 	
 		if(node)
 		{
+
 			if(insert_straight_conn(joining_node, node))
 			{
 				map_saved = 0;

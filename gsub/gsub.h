@@ -28,23 +28,28 @@
 #define _INC_GSUB
 
 
-#define SURFACE_1BIT				0
-#define SURFACE_ALPHA8BIT			1
-#define SURFACE_16BIT				2
-#define SURFACE_16BITALPHA8BIT		3
-#define SURFACE_24BIT				4
-#define SURFACE_24BITALPHA8BIT		5
-#define SURFACE_FLOATS				6
-#define SURFACE_ALPHAFLOATS 		7
-#define SURFACE_FLOATSALPHAFLOATS	8
+#define SURFACE_ALPHA8BIT			0
+#define SURFACE_16BIT				1
+#define SURFACE_16BITALPHA8BIT		2
+#define SURFACE_24BIT				3
+#define SURFACE_24BITALPHA8BIT		4
+#define SURFACE_FLOATS				5
+#define SURFACE_ALPHAFLOATS 		6
+#define SURFACE_FLOATSALPHAFLOATS	7
 
 
 struct surface_t
 {
-	int flags, width, height;
-	void *buf;
-	void *alpha_buf;
+	int flags;
+	int pitch, alpha_pitch;
+	int width, height;
+	uint8_t *buf;
+	uint8_t *alpha_buf;
 };
+
+void *get_pixel_addr(struct surface_t *suface, int x, int y);
+void *get_alpha_pixel_addr(struct surface_t *suface, int x, int y);
+
 
 struct surface_t *new_surface(int flags, int width, int height);
 void clear_surface(struct surface_t *surface);
@@ -85,19 +90,12 @@ extern int (*gsub_callback)();
 
 
 
-extern uint16_t *vid_backbuffer;
-extern int vid_pitch;
-extern int vid_width;
-extern int vid_height;
-
 void fb_update_mmx(void*, void*, int, int, int) __attribute__ ((cdecl));
 void bb_clear_mmx(void*, int, int) __attribute__ ((cdecl));
 void convert_16bit_to_32bit_mmx(void*, void*, int) __attribute__ ((cdecl));
 
 void init_gsub();
 void kill_gsub();
-
-void clear_backbuffer();
 
 
 
@@ -107,8 +105,6 @@ extern uint16_t *vid_redalphalookup;
 extern uint16_t *vid_greenalphalookup;
 extern uint16_t *vid_bluealphalookup;
 
-extern int vid_bbsize, vid_width, vid_height, vid_heightm1,
-	vid_byteswidth, vid_halfwidth, vid_halfheight, vid_halfheightm1;
 
 extern uint16_t blit_colour;
 extern uint8_t blit_alpha;
@@ -117,6 +113,7 @@ extern uint8_t blit_alpha;
 // blit_ops.cpp
 
 extern struct surface_t *blit_source;
+extern struct surface_t *blit_dest;
 
 extern int blit_sourcex, blit_sourcey;
 extern int blit_destx, blit_desty;

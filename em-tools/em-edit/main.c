@@ -53,6 +53,8 @@ GdkImage *image;
 uint16_t *preimage;
 
 
+int vid_width, vid_height;
+
 void destroy_window()
 {
 	gtk_widget_destroy(window);
@@ -61,13 +63,13 @@ void destroy_window()
 
 void draw()
 {
-	clear_backbuffer();
+	clear_surface(blit_dest);
 
 	draw_all();
 
 	if(visual->depth == 24)
 	{
-		convert_16bit_to_32bit_mmx(image->mem, preimage, vid_width * vid_height / 32);
+		convert_16bit_to_32bit_mmx(image->mem, blit_dest->buf, vid_width * vid_height / 32);
 	}
 }	
 
@@ -229,8 +231,8 @@ gint on_configure(GtkWidget *widget, GdkEventConfigure *event, gpointer callback
 		
 		if(visual->depth == 24)
 		{
-			free(preimage);
-			preimage = NULL;
+			free_surface(blit_dest);
+			blit_dest = NULL;
 		}
 		
 		worker_thread_cont();
@@ -249,13 +251,13 @@ gint on_configure(GtkWidget *widget, GdkEventConfigure *event, gpointer callback
 
 	if(visual->depth == 24)
 	{
-		vid_backbuffer = preimage = realloc(preimage, vid_width * vid_height * 2);
-		vid_pitch = vid_width;
+		blit_dest = new_surface(SURFACE_16BIT, vid_width, vid_height);
 	}
 	else
 	{
-		vid_backbuffer = (uint16_t*)image->mem;
-		vid_pitch = image->bpl / 2;
+	//	vid_backbuffer = (uint16_t*)image->mem;
+	//	vid_pitch = image->bpl / 2;
+		;
 	}
 	
 	draw();

@@ -36,32 +36,30 @@
 
 void draw_horiz_run(uint16_t **dest, int xadvance, int runlength)
 {
-	int i;
-
 	uint16_t *cdest = *dest;
 
-	for(i = 0; i != runlength; i++)
+	while(runlength)
 	{
 		*cdest = blit_colour;
 		cdest += xadvance;
+		runlength--;
 	}
 
-	*dest = cdest + vid_pitch;
+	*dest = (uint16_t*)((uint8_t*)cdest + blit_dest->pitch);
 }
 
 
 void draw_vert_run(uint16_t **dest, int xadvance, int runlength)
 {
-	int i;
-
 	uint16_t *cdest = *dest;
 
-	for(i = 0; i != runlength; i++)
+	while(runlength)
 	{
 		*cdest = blit_colour;
-		cdest += vid_pitch;
+		(uint8_t*)cdest += blit_dest->pitch;
+		runlength--;
 	}
-
+	
 	*dest = cdest + xadvance;
 }
 
@@ -82,7 +80,7 @@ void draw_line(int x1, int y1, int x2, int y2)
 		x2 = temp;
 	}
 
-	if((y2 < 0) || (y1 >= vid_height))
+	if((y2 < 0) || (y1 >= blit_dest->height))
 		return;
 
 	if(y1 < 0)
@@ -91,15 +89,15 @@ void draw_line(int x1, int y1, int x2, int y2)
 		y1 = 0;
 	}
 
-	if(y2 >= vid_height)
+	if(y2 >= blit_dest->height)
 	{
-		x2 -= ((x2 - x1) * (y2 - vid_height + 1)) / (y2 - y1);
-		y2 = vid_height - 1;
+		x2 -= ((x2 - x1) * (y2 - blit_dest->height + 1)) / (y2 - y1);
+		y2 = blit_dest->height - 1;
 	}
 
 	if(x1 < x2)
 	{
-		if((x2 < 0) || (x1 >= vid_width))
+		if((x2 < 0) || (x1 >= blit_dest->width))
 			return;
 
 		if(x1 < 0)
@@ -108,15 +106,15 @@ void draw_line(int x1, int y1, int x2, int y2)
 			x1 = 0;
 		}
 
-		if(x2 >= vid_width)
+		if(x2 >= blit_dest->width)
 		{
-			y2 -= ((y2 - y1) * (x2 - vid_width + 1)) / (x2 - x1);
-			x2 = vid_width - 1;
+			y2 -= ((y2 - y1) * (x2 - blit_dest->width + 1)) / (x2 - x1);
+			x2 = blit_dest->width - 1;
 		}
 	}
 	else
 	{
-		if((x1 < 0) || (x2 >= vid_width))
+		if((x1 < 0) || (x2 >= blit_dest->width))
 			return;
 
 		if(x2 < 0)
@@ -125,14 +123,14 @@ void draw_line(int x1, int y1, int x2, int y2)
 			x2 = 0;
 		}
 
-		if(x1 >= vid_width)
+		if(x1 >= blit_dest->width)
 		{
-			y1 += ((y2 - y1) * (x1 - vid_width + 1)) / (x1 - x2);
-			x1 = vid_width - 1;
+			y1 += ((y2 - y1) * (x1 - blit_dest->width + 1)) / (x1 - x2);
+			x1 = blit_dest->width - 1;
 		}
 	}
 
-	uint16_t *dest = &vid_backbuffer[y1 * vid_pitch + x1];
+	uint16_t *dest = get_pixel_addr(blit_dest, x1, y1);
 
 	if((xdelta = x2 - x1) < 0)
 	{
@@ -151,7 +149,7 @@ void draw_line(int x1, int y1, int x2, int y2)
 		for(i = 0; i <= ydelta; i++)
 		{
 			*dest = blit_colour;
-			dest += vid_pitch;
+			(uint8_t*)dest += blit_dest->pitch;
 		}
 
 		return;
@@ -173,7 +171,7 @@ void draw_line(int x1, int y1, int x2, int y2)
 		for(i = 0; i <= xdelta; i++)
 		{
 			*dest = blit_colour;
-			dest += xadvance + vid_pitch;
+			(uint8_t*)dest += xadvance * 2 + blit_dest->pitch;
 		}
 
 		return;

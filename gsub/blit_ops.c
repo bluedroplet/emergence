@@ -30,6 +30,8 @@
 #endif
 
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "gsub.h"
 
@@ -42,6 +44,7 @@ void surface_blit_mmx() __attribute__ ((cdecl));
 
 struct surface_t *blit_source;
 int blit_sourcex, blit_sourcey;
+struct surface_t *blit_dest;
 int blit_destx, blit_desty;
 int blit_width, blit_height;
 
@@ -51,28 +54,28 @@ uint8_t blit_alpha;
 
 void rect_draw_c()
 {
-	uint16_t *dst = &vid_backbuffer[blit_desty * vid_pitch + blit_destx];
+	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
+	
+	int x, y = blit_height;
 
-	int x, y;
-
-	for(y = 0; y != blit_height; y++)
+	while(y)
 	{
 		for(x = 0; x != blit_width; x++)
-			dst[x] = blit_colour;
+			((uint16_t*)dst)[x] = blit_colour;
 
-		dst += vid_pitch;
+		dst += blit_dest->pitch;
+		y--;
 	}
 }
 
 
 void alpha_pixel_plot_c()
 {
-	uint16_t oldcolour = vid_backbuffer[blit_desty * vid_pitch + blit_destx];
-
+	uint16_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
+	uint16_t oldcolour = *dst;
 	uint8_t negalpha = ~blit_alpha;
 
-	vid_backbuffer[blit_desty * vid_pitch + blit_destx] = 
-		(vid_redalphalookup[((blit_colour & 0xf800) >> 3) | blit_alpha] + 
+	*dst = (vid_redalphalookup[((blit_colour & 0xf800) >> 3) | blit_alpha] + 
 		vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
 		(vid_greenalphalookup[((blit_colour & 0x7e0) << 3) | blit_alpha] +
 		vid_greenalphalookup[((oldcolour & 0x7e0) << 3) | negalpha]) |
@@ -83,7 +86,7 @@ void alpha_pixel_plot_c()
 
 void alpha_rect_draw_c()
 {
-	uint16_t *dst = &vid_backbuffer[blit_desty * vid_pitch + blit_destx];
+	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
 
 	uint16_t redalpha = vid_redalphalookup[((blit_colour & 0xf800) >> 3) | blit_alpha];
 	uint16_t greenalpha = vid_greenalphalookup[((blit_colour & 0x7e0) << 3) | blit_alpha];
@@ -91,62 +94,63 @@ void alpha_rect_draw_c()
 
 	uint8_t negalpha = ~blit_alpha;
 
-	int x, y;
+	int x, y = blit_height;
 	
-	for(y = 0; y != blit_height; y++)
+	while(y)
 	{
 		for(x = 0; x != blit_width; x++)
 		{
-			uint16_t oldcolour = dst[x];
+			uint16_t oldcolour = ((uint16_t*)dst)[x];
 
-			dst[x] = (redalpha + vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
+			((uint16_t*)dst)[x] = (redalpha + vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
 				(greenalpha + vid_greenalphalookup[((oldcolour & 0x7e0) << 3) | negalpha]) |
 				(bluealpha + vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
 		}
 
-		dst += vid_pitch;
+		dst += blit_dest->pitch;
+		y--;
 	}
 }
 
 
 void surface_blit_c()
 {
-	uint16_t *src = &((uint16_t*)blit_source->buf)[blit_sourcey * blit_source->width + blit_sourcex];
-	uint16_t *dst = &vid_backbuffer[blit_desty * vid_pitch + blit_destx];
+	uint8_t *src = get_pixel_addr(blit_source, blit_sourcex, blit_sourcey);
+	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
 
-	int x, y;
+	int y = blit_height;
 
-	for(y = 0; y != blit_height; y++)
+	while(y)
 	{
-		for(x = 0; x != blit_width; x++)
-			dst[x] = src[x];
+		memcpy(dst, src, blit_width * 2);
 
-		src += blit_source->width;
-		dst += vid_pitch;
+		src += blit_source->pitch;
+		dst += blit_dest->pitch;
+		y--;
 	}
 }
 
 
 void alpha_surface_blit_c()
 {
-	uint8_t *src = &((uint8_t*)blit_source->alpha_buf)[blit_sourcey * blit_source->width + blit_sourcex];
-	uint16_t *dst = &vid_backbuffer[blit_desty * vid_pitch + blit_destx];
+	uint8_t *src = get_alpha_pixel_addr(blit_source, blit_sourcex, blit_sourcey);
+	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
 
 	uint16_t red = (blit_colour & 0xf800) >> 3;
 	uint16_t green = (blit_colour & 0x7e0) << 3;
 	uint16_t blue = (blit_colour & 0x1f) << 8;
 
-	int x, y;
+	int x, y = blit_height;
 
-	for(y = 0; y != blit_height; y++)
+	while(y)
 	{
 		for(x = 0; x != blit_width; x++)
 		{
-			uint16_t oldcolour = dst[x];
+			uint16_t oldcolour = ((uint16_t*)dst)[x];
 			uint8_t alpha = src[x];
 			uint8_t negalpha = ~alpha;
 
-			dst[x] = (vid_redalphalookup[red | alpha] + 
+			((uint16_t*)dst)[x] = (vid_redalphalookup[red | alpha] + 
 				vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
 				(vid_greenalphalookup[green | alpha] +
 				vid_greenalphalookup[((oldcolour & 0x7e0) << 3) | negalpha]) |
@@ -154,32 +158,33 @@ void alpha_surface_blit_c()
 				vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
 		}
 
-		src += blit_source->width;
-		dst += vid_pitch;
+		src += blit_source->alpha_pitch;
+		dst += blit_dest->pitch;
+		y--;
 	}
 }
 
 
 void alpha_surface_alpha_blit_c()
 {
-	uint8_t *src = &((uint8_t*)blit_source->alpha_buf)[blit_sourcey * blit_source->width + blit_sourcex];
-	uint16_t *dst = &vid_backbuffer[blit_desty * vid_pitch + blit_destx];
+	uint8_t *src = get_alpha_pixel_addr(blit_source, blit_sourcex, blit_sourcey);
+	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
 
 	uint16_t red = (blit_colour & 0xf800) >> 3;
 	uint16_t green = (blit_colour & 0x7e0) << 3;
 	uint16_t blue = (blit_colour & 0x1f) << 8;
 
-	int x, y;
+	int x, y = blit_height;
 
-	for(y = 0; y != blit_height; y++)
+	while(y)
 	{
 		for(x = 0; x != blit_width; x++)
 		{
-			uint16_t oldcolour = dst[x];
+			uint16_t oldcolour = ((uint16_t*)dst)[x];
 			uint8_t alpha = ((int)src[x] * (int)blit_alpha) >> 8;
 			uint8_t negalpha = ~alpha;
 
-			dst[x] = (vid_redalphalookup[red | alpha] + 
+			((uint16_t*)dst)[x] = (vid_redalphalookup[red | alpha] + 
 				vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
 				(vid_greenalphalookup[green | alpha] +
 				vid_greenalphalookup[((oldcolour & 0x7e0) << 3) | negalpha]) |
@@ -187,29 +192,30 @@ void alpha_surface_alpha_blit_c()
 				vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
 		}
 
-		src += blit_source->width;
-		dst += vid_pitch;
+		src += blit_source->alpha_pitch;
+		dst += blit_dest->pitch;
+		y--;
 	}
 }
 
 
 void surface_alpha_blit_c()
 {
-	uint16_t *src = &((uint16_t*)blit_source->buf)[blit_sourcey * blit_source->width + blit_sourcex];
-	uint16_t *dst = &vid_backbuffer[blit_desty * vid_pitch + blit_destx];
+	uint8_t *src = get_pixel_addr(blit_source, blit_sourcex, blit_sourcey);
+	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
 
 	uint8_t negalpha = ~blit_alpha;
 
-	int x, y;
+	int x, y = blit_height;
 
-	for(y = 0; y != blit_height; y++)
+	while(y)
 	{
 		for(x = 0; x != blit_width; x++)
 		{
-			uint16_t oldcolour = dst[x];
-			uint16_t blendcolour = src[x];
+			uint16_t oldcolour = ((uint16_t*)dst)[x];
+			uint16_t blendcolour = ((uint16_t*)src)[x];
 
-			dst[x] = (vid_redalphalookup[((blendcolour & 0xf800) >> 3) | blit_alpha] + 
+			((uint16_t*)dst) = (vid_redalphalookup[((blendcolour & 0xf800) >> 3) | blit_alpha] + 
 				vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
 				(vid_greenalphalookup[((blendcolour & 0x7e0) << 3) | blit_alpha] +
 				vid_greenalphalookup[((oldcolour & 0x7e0) << 3) | negalpha]) |
@@ -217,21 +223,22 @@ void surface_alpha_blit_c()
 				vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
 		}
 
-		src += blit_source->width;
-		dst += vid_pitch;
+		src += blit_source->pitch;
+		dst += blit_dest->pitch;
+		y--;
 	}
 }
 
 
 void surface_alpha_surface_blit_c()
 {
-	uint8_t *alphasrc = &((uint8_t*)blit_source->alpha_buf)[blit_sourcey * blit_source->width + blit_sourcex];
-	uint16_t *src = &((uint16_t*)blit_source->buf)[blit_sourcey * blit_source->width + blit_sourcex];
-	uint16_t *dst = &vid_backbuffer[blit_desty * vid_pitch + blit_destx];
+	uint8_t *alphasrc = get_alpha_pixel_addr(blit_source, blit_sourcex, blit_sourcey);
+	uint8_t *src = get_pixel_addr(blit_source, blit_sourcex, blit_sourcey);
+	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
 
-	int x, y;
+	int x, y = blit_height;
 
-	for(y = 0; y != blit_height; y++)
+	while(y)
 	{
 		for(x = 0; x != blit_width; x++)
 		{
@@ -239,11 +246,11 @@ void surface_alpha_surface_blit_c()
 			if(alpha == 0)
 				continue;
 			
-			uint16_t oldcolour = dst[x];
+			uint16_t oldcolour = ((uint16_t*)dst)[x];
 			uint8_t negalpha = ~alpha;
-			uint16_t blendcolour = src[x];
+			uint16_t blendcolour = ((uint16_t*)src)[x];
 
-			dst[x] = (vid_redalphalookup[((blendcolour & 0xf800) >> 3) | alpha] + 
+			((uint16_t*)dst)[x] = (vid_redalphalookup[((blendcolour & 0xf800) >> 3) | alpha] + 
 				vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
 				(vid_greenalphalookup[((blendcolour & 0x7e0) << 3) | alpha] +
 				vid_greenalphalookup[((oldcolour & 0x7e0) << 3) | negalpha]) |
@@ -251,9 +258,10 @@ void surface_alpha_surface_blit_c()
 				vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
 		}
 
-		alphasrc += blit_source->width;
-		src += blit_source->width;
-		dst += vid_pitch;
+		alphasrc += blit_source->alpha_pitch;
+		src += blit_source->pitch;
+		dst += blit_dest->pitch;
+		y--;
 	}
 }
 
@@ -274,7 +282,7 @@ int clip_blit_coords()
 		return 0;
 
 	if((blit_destx + blit_width <= 0) || (blit_desty + blit_height <= 0) ||
-		(blit_destx >= vid_width) || (blit_desty >= vid_height))
+		(blit_destx >= blit_dest->width) || (blit_desty >= blit_dest->height))
 		return 0;
 
 	if(blit_destx < 0)
@@ -284,8 +292,8 @@ int clip_blit_coords()
 		blit_destx = 0;
 	}
 
-	if(blit_destx + blit_width > vid_width)
-		blit_width = vid_width - blit_destx;
+	if(blit_destx + blit_width > blit_dest->width)
+		blit_width = blit_dest->width - blit_destx;
 
 	if(blit_desty < 0)
 	{
@@ -294,8 +302,8 @@ int clip_blit_coords()
 		blit_desty = 0;
 	}
 
-	if(blit_desty + blit_height > vid_height)
-		blit_height = vid_height - blit_desty;
+	if(blit_desty + blit_height > blit_dest->height)
+		blit_height = blit_dest->height - blit_desty;
 
 	return 1;
 }
@@ -303,11 +311,12 @@ int clip_blit_coords()
 
 void plot_pixel()
 {
-	if(blit_destx < 0 || blit_destx >= vid_width ||
-		blit_desty < 0 || blit_desty >= vid_height)
+	if(blit_destx < 0 || blit_destx >= blit_dest->width ||
+		blit_desty < 0 || blit_desty >= blit_dest->height)
 		return;
 
-	vid_backbuffer[blit_desty * vid_pitch + blit_destx] = blit_colour;
+	uint16_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
+	*dst = blit_colour;
 }
 
 
@@ -322,8 +331,8 @@ void draw_rect()
 
 void plot_alpha_pixel()
 {
-	if(blit_destx < 0 || blit_destx >= vid_width ||
-		blit_desty < 0 || blit_desty >= vid_height)
+	if(blit_destx < 0 || blit_destx >= blit_dest->width ||
+		blit_desty < 0 || blit_desty >= blit_dest->height)
 		return;
 
 	alpha_pixel_plot();

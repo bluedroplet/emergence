@@ -29,6 +29,8 @@
 void update_client_area();
 void destroy_window();
 
+extern int vid_width, vid_height;
+
 #ifdef __GTK_H__
 extern GtkWidget *window;
 #endif

@@ -36,6 +36,7 @@
 #include "nodes.h"
 #include "map.h"
 #include "worker.h"
+#include "main.h"
 
 struct surface_t *s_cameron = NULL, *s_scaled_cameron = NULL;
 int cameron_width = 0, cameron_height = 0;
