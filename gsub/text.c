@@ -26,7 +26,9 @@
 
 #ifdef LINUX
 #define _GNU_SOURCE
+#ifndef _REENTRANT
 #define _REENTRANT
+#endif
 #endif
 
 #include <stdlib.h>

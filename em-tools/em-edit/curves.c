@@ -40,6 +40,8 @@
 #include <zlib.h>
 #include <gnome.h>
 
+#define USE_GDK_PIXBUF
+
 #include "../common/llist.h"
 #include "../common/vertex.h"
 #include "../common/polygon.h"
@@ -1031,7 +1033,7 @@ void update_curve_surface(struct curve_t *curve)		// always called when not work
 	if(!curve->pre_texture_surface)
 	{
 		struct string_t *string = arb_rel2abs(curve->texture_filename->text, map_path->text);
-		curve->pre_texture_surface = read_png_surface_as_24bitalpha8bit(string->text);
+		curve->pre_texture_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 		free_string(string);
 	}
 	

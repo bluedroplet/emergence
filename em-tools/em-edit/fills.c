@@ -38,6 +38,8 @@
 #include <zlib.h>
 #include <gnome.h>
 
+#define USE_GDK_PIXBUF
+
 #include "../common/llist.h"
 #include "../common/vertex.h"
 #include "../common/polygon.h"
@@ -829,7 +831,7 @@ void update_fill_surface(struct fill_t *fill)		// always called when not working
 	if(!fill->pre_texture)
 	{
 		struct string_t *string = arb_rel2abs(fill->texture_filename->text, map_path->text);
-		fill->pre_texture = read_png_surface_as_24bitalpha8bit(string->text);
+		fill->pre_texture = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 		free_string(string);
 	}
 	

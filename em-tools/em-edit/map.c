@@ -211,9 +211,14 @@ struct string_t *arb_rel2abs(char *path, char *base)
 	{
 		size *= 2;
 		
-		char *buffer = (char*)realloc(buffer, size);
-		if(!buffer)
+		char *new_buffer = (char*)realloc(buffer, size);
+		if(!new_buffer)
+		{
+			free(buffer);
 			return NULL;
+		}
+		
+		buffer = new_buffer;
 		
 		if(rel2abs(path, base, buffer, size) == buffer)
 		{
@@ -246,9 +251,14 @@ struct string_t *arb_abs2rel(char *path, char *base)
 	{
 		size *= 2;
 		
-		char *buffer = (char*)realloc(buffer, size);
-		if(!buffer)
+		char *new_buffer = (char*)realloc(buffer, size);
+		if(!new_buffer)
+		{
+			free(buffer);
 			return NULL;
+		}
+		
+		buffer = new_buffer;
 		
 		if(abs2rel(path, base, buffer, size) == buffer)
 		{

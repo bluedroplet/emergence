@@ -26,7 +26,9 @@
 
 #ifdef LINUX
 #define _GNU_SOURCE
+#ifndef _REENTRANT
 #define _REENTRANT
+#endif
 #endif
 
 #include <stdlib.h>
@@ -35,6 +37,10 @@
 
 #include <zlib.h>
 #include <png.h>
+
+#ifdef USE_GDK_PIXBUF
+#include <gdk-pixbuf/gdk-pixbuf.h>
+#endif
 
 #include "../common/stringbuf.h"
 #include "../common/vertex.h"
@@ -1387,6 +1393,129 @@ struct surface_t *read_png_surface_as_floatsalphafloats(char *filename)
 	convert_surface_to_floatsalphafloats(surface);
 	return surface;
 }
+
+
+#ifdef USE_GDK_PIXBUF
+
+struct surface_t *read_gdk_pixbuf_surface(char *filename)
+{
+	struct surface_t *surface = NULL;
+	GdkPixbuf *gdk_pixbuf = NULL;
+
+	gdk_pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
+	
+	if(!gdk_pixbuf)
+		goto error;
+	
+	if(gdk_pixbuf_get_bits_per_sample(gdk_pixbuf) != 8)
+		goto error;
+	
+	int width = gdk_pixbuf_get_width(gdk_pixbuf);
+	int height = gdk_pixbuf_get_height(gdk_pixbuf);
+	int pitch = gdk_pixbuf_get_rowstride(gdk_pixbuf);
+	uint8_t *gdk_pixbuf_pixels = gdk_pixbuf_get_pixels(gdk_pixbuf);
+		
+	uint8_t *dst, *alpha_dst;
+	int x, y;
+
+	if(gdk_pixbuf_get_has_alpha(gdk_pixbuf))
+	{
+		if(gdk_pixbuf_get_n_channels(gdk_pixbuf) != 4)
+			goto error;
+
+		surface = new_surface(SURFACE_24BITALPHA8BIT, width, height);
+		
+		if(!surface)
+			goto error;
+
+		dst = surface->buf;
+		alpha_dst = surface->alpha_buf;
+		
+		for(y = 0; y < height; y++)
+		{
+			uint8_t *src = &gdk_pixbuf_pixels[y * pitch];
+			
+			for(x = 0; x < width; x++)
+			{
+				*dst++ = *src++;
+				*dst++ = *src++;
+				*dst++ = *src++;
+				*alpha_dst++ = *src++;
+			}
+		}
+	}
+	else
+	{
+		if(gdk_pixbuf_get_n_channels(gdk_pixbuf) != 3)
+			goto error;
+
+		surface = new_surface(SURFACE_24BIT, width, height);
+		
+		if(!surface)
+			goto error;
+
+		dst = surface->buf;
+		
+		for(y = 0; y < height; y++)
+		{
+			uint8_t *src = &gdk_pixbuf_pixels[y * pitch];
+			
+			for(x = 0; x < width; x++)
+			{
+				*dst++ = *src++;
+				*dst++ = *src++;
+				*dst++ = *src++;
+			}
+		}
+	}
+	
+error:
+
+	g_object_unref(gdk_pixbuf);
+	return surface;
+}
+
+
+struct surface_t *read_gdk_pixbuf_surface_as_16bit(char *filename)
+{
+	struct surface_t *surface = read_gdk_pixbuf_surface(filename);
+	convert_surface_to_16bit(surface);
+	return surface;
+}
+
+
+struct surface_t *read_gdk_pixbuf_surface_as_16bitalpha8bit(char *filename)
+{
+	struct surface_t *surface = read_gdk_pixbuf_surface(filename);
+	convert_surface_to_16bitalpha8bit(surface);
+	return surface;
+}
+
+
+struct surface_t *read_gdk_pixbuf_surface_as_24bitalpha8bit(char *filename)
+{
+	struct surface_t *surface = read_gdk_pixbuf_surface(filename);
+	convert_surface_to_24bitalpha8bit(surface);
+	return surface;
+}
+
+
+struct surface_t *read_gdk_pixbuf_surface_as_floats(char *filename)
+{
+	struct surface_t *surface = read_gdk_pixbuf_surface(filename);
+	convert_surface_to_floats(surface);
+	return surface;
+}
+
+
+struct surface_t *read_gdk_pixbuf_surface_as_floatsalphafloats(char *filename)
+{
+	struct surface_t *surface = read_gdk_pixbuf_surface(filename);
+	convert_surface_to_floatsalphafloats(surface);
+	return surface;
+}
+
+#endif
 
 
 struct surface_t *gzread_raw_surface(gzFile file)

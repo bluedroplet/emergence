@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 1998-2002 Jonathan Brown
+	Copyright (C) 1998-2004 Jonathan Brown
 	
     This file is part of the gsub graphics library.
 	
@@ -126,6 +126,16 @@ struct surface_t *read_png_surface_as_16bitalpha8bit(char *filename);
 struct surface_t *read_png_surface_as_24bitalpha8bit(char *filename);
 struct surface_t *read_png_surface_as_floats(char *filename);
 struct surface_t *read_png_surface_as_floatsalphafloats(char *filename);
+	
+#ifdef USE_GDK_PIXBUF
+struct surface_t *read_gdk_pixbuf_surface(char *filename);
+struct surface_t *read_gdk_pixbuf_surface_as_16bit(char *filename);
+struct surface_t *read_gdk_pixbuf_surface_as_16bitalpha8bit(char *filename);
+struct surface_t *read_gdk_pixbuf_surface_as_24bitalpha8bit(char *filename);
+struct surface_t *read_gdk_pixbuf_surface_as_floats(char *filename);
+struct surface_t *read_gdk_pixbuf_surface_as_floatsalphafloats(char *filename);
+#endif
+
 struct surface_t *read_raw_surface(char *filename);
 int write_png_surface(struct surface_t *surface, char *filename);
 int write_raw_surface(struct surface_t *surface, char *filename);

@@ -38,6 +38,8 @@
 #include <zlib.h>
 #include <gnome.h>
 
+#define USE_GDK_PIXBUF
+
 #include "../common/prefix.h"
 
 #include "../common/llist.h"
@@ -400,7 +402,7 @@ void on_plasma_cannon_texture_entry_changed(GtkEditable *editable, gpointer user
 	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_PLASMACANNON].filename->text, map_path->text);
-	dynamic_objects[OBJECTTYPE_PLASMACANNON].texture = read_png_surface_as_24bitalpha8bit(string->text);
+	dynamic_objects[OBJECTTYPE_PLASMACANNON].texture = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object_type(OBJECTTYPE_PLASMACANNON);
@@ -557,7 +559,7 @@ void on_minigun_texture_entry_changed(GtkEditable *editable, gpointer user_data)
 	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_MINIGUN].filename->text, map_path->text);
-	dynamic_objects[OBJECTTYPE_MINIGUN].texture = read_png_surface_as_24bitalpha8bit(string->text);
+	dynamic_objects[OBJECTTYPE_MINIGUN].texture = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object_type(OBJECTTYPE_MINIGUN);
@@ -681,7 +683,7 @@ void on_rocket_launcher_texture_entry_changed(GtkEditable *editable, gpointer us
 	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].filename->text, map_path->text);
-	dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture = read_png_surface_as_24bitalpha8bit(string->text);
+	dynamic_objects[OBJECTTYPE_ROCKETLAUNCHER].texture = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object_type(OBJECTTYPE_ROCKETLAUNCHER);
@@ -812,7 +814,7 @@ void on_rails_texture_pixmapentry_changed(GtkEditable *editable, gpointer user_d
 	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_RAILS].filename->text, map_path->text);
-	dynamic_objects[OBJECTTYPE_RAILS].texture = read_png_surface_as_24bitalpha8bit(string->text);
+	dynamic_objects[OBJECTTYPE_RAILS].texture = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object_type(OBJECTTYPE_RAILS);
@@ -935,7 +937,7 @@ void on_shield_energy_texture_entry_changed(GtkEditable *editable, gpointer user
 	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(dynamic_objects[OBJECTTYPE_SHIELDENERGY].filename->text, map_path->text);
-	dynamic_objects[OBJECTTYPE_SHIELDENERGY].texture = read_png_surface_as_24bitalpha8bit(string->text);
+	dynamic_objects[OBJECTTYPE_SHIELDENERGY].texture = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object_type(OBJECTTYPE_SHIELDENERGY);
@@ -1063,7 +1065,7 @@ void on_spawn_point_texture_entry_changed(GtkEditable *editable, gpointer user_d
 	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(object->spawn_point_data.texture_filename->text, map_path->text);
-	object->spawn_point_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
+	object->spawn_point_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object(object);
@@ -1229,7 +1231,7 @@ void on_speedup_ramp_texture_entry_changed(GtkEditable *editable, gpointer user_
 	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(object->speedup_ramp_data.texture_filename->text, map_path->text);
-	object->speedup_ramp_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
+	object->speedup_ramp_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object(object);
@@ -1396,7 +1398,7 @@ void on_teleporter_texture_entry_changed(GtkEditable *editable, gpointer user_da
 	g_free(strval);
 	
 	struct string_t *string = arb_rel2abs(object->teleporter_data.texture_filename->text, map_path->text);
-	object->teleporter_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
+	object->teleporter_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object(object);
@@ -1657,7 +1659,7 @@ void on_gravity_well_texture_entry_changed(GtkEditable *editable, gpointer user_
 	g_free(strval);
 
 	struct string_t *string = arb_rel2abs(object->gravity_well_data.texture_filename->text, map_path->text);
-	object->gravity_well_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
+	object->gravity_well_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 	free_string(string);
 	
 	invalidate_object(object);
@@ -2344,7 +2346,7 @@ int gzread_objects(gzFile file)
 				goto error;
 			
 			string = arb_rel2abs(dynamic_objects[o].filename->text, map_path->text);
-			dynamic_objects[o].texture = read_png_surface_as_24bitalpha8bit(string->text);
+			dynamic_objects[o].texture = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 			
 			assert(dynamic_objects[o].texture);
@@ -2443,7 +2445,7 @@ int gzread_objects(gzFile file)
 				goto error;
 			
 			string = arb_rel2abs(object.spawn_point_data.texture_filename->text, map_path->text);
-			object.spawn_point_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
+			object.spawn_point_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 			
 			if(gzread(file, &object.spawn_point_data.width, 4) != 4)
@@ -2472,7 +2474,7 @@ int gzread_objects(gzFile file)
 				goto error;
 			
 			string = arb_rel2abs(object.speedup_ramp_data.texture_filename->text, map_path->text);
-			object.speedup_ramp_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
+			object.speedup_ramp_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 
 			if(gzread(file, &object.speedup_ramp_data.width, 4) != 4)
@@ -2501,7 +2503,7 @@ int gzread_objects(gzFile file)
 				goto error;
 			
 			string = arb_rel2abs(object.teleporter_data.texture_filename->text, map_path->text);
-			object.teleporter_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
+			object.teleporter_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 			
 			if(gzread(file, &object.teleporter_data.width, 4) != 4)
@@ -2545,7 +2547,7 @@ int gzread_objects(gzFile file)
 				goto error;
 			
 			string = arb_rel2abs(object.gravity_well_data.texture_filename->text, map_path->text);
-			object.gravity_well_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
+			object.gravity_well_data.texture_pre_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 			
 			if(gzread(file, &object.gravity_well_data.width, 4) != 4)

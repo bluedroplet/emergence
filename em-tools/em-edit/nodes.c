@@ -37,6 +37,7 @@
 #include <zlib.h>
 #include <gnome.h>
 
+#define USE_GDK_PIXBUF
 
 #include "../common/prefix.h"
 
@@ -1017,7 +1018,7 @@ void update_node_surface(struct node_t *node)		// always called when not working
 	if(!node->pre_texture_surface)
 	{
 		struct string_t *string = arb_rel2abs(node->texture_filename->text, map_path->text);
-		node->pre_texture_surface = read_png_surface_as_24bitalpha8bit(string->text);
+		node->pre_texture_surface = read_gdk_pixbuf_surface_as_24bitalpha8bit(string->text);
 		free_string(string);
 	}
 
