@@ -1951,10 +1951,14 @@ int game_process_fire_rail(struct player_t *player)
 			destroyed = craft_force(crail_entity->entity, RAIL_DAMAGE, player);
 			if(destroyed)
 				kills++;
+			else
+				propagate_entity(crail_entity->entity);
 			break;
 		
 		case ENT_WEAPON:
 			destroyed = weapon_force(crail_entity->entity, RAIL_DAMAGE, player);
+			if(!destroyed)
+				propagate_entity(crail_entity->entity);
 			break;
 		
 		case ENT_PLASMA:

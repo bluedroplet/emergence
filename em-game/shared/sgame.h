@@ -314,7 +314,7 @@ struct entity_t
 #define TELEPORTING_APPEARING		3
 
 #define PLASMA_DAMAGE	0.1
-#define BULLET_DAMAGE	0.05
+#define BULLET_DAMAGE	0.005
 #define RAIL_DAMAGE		0.5
 
 struct spawn_point_t
