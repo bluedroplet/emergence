@@ -54,8 +54,8 @@ void handle_sigio(int i)
 		if(sigio_process & SIGIO_PROCESS_NETWORK)
 			FD_SET(udp_socket, &set);
 		
-		if(sigio_process & SIGIO_PROCESS_INPUT)
-			FD_SET(input_fd, &set);
+	//	if(sigio_process & SIGIO_PROCESS_INPUT)
+	//		FD_SET(input_fd, &set);
 		
 		if(sigio_process & SIGIO_PROCESS_X)
 			FD_SET(x_fd, &set);
@@ -71,7 +71,7 @@ void handle_sigio(int i)
 			}
 		}
 		
-		if(sigio_process & SIGIO_PROCESS_INPUT)
+	/*	if(sigio_process & SIGIO_PROCESS_INPUT)
 		{
 			if(FD_ISSET(input_fd, &set))
 			{
@@ -79,7 +79,7 @@ void handle_sigio(int i)
 				continue;
 			}
 		}
-		
+	*/	
 		if(sigio_process & SIGIO_PROCESS_X)
 		{
 			if(FD_ISSET(x_fd, &set))

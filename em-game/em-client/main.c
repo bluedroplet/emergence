@@ -238,6 +238,7 @@ void init()
 
 	init_game();
 	
+	
 	render_frame();
 	
 /*	string = new_string_text("%s%s", home_dir->text, "/autoexec.cfg");

@@ -155,7 +155,6 @@ float offset_view_y;
 
 
 
-
 struct surface_t *s_plasma, *s_craft_shield, *s_weapon_shield;
 
 
@@ -1437,6 +1436,9 @@ void tick_rocket(struct entity_t *rocket, float xdis, float ydis)
 void render_entities()
 {
 	struct entity_t *entity = centity0;
+	struct blit_params_t params;
+	params.dest = s_backbuffer;
+			
 
 	while(entity)
 	{
@@ -1446,77 +1448,80 @@ void render_entities()
 		{
 		case ENT_CRAFT:
 			
-			blit_source = entity->craft_data.surface;
+				
+			params.source = entity->craft_data.surface;
 		
-			blit_sourcex = 0;
-			blit_sourcey = (lrint((entity->craft_data.theta / (2 * M_PI) + 0.5) * ROTATIONS) % ROTATIONS) * blit_source->width;
+			params.source_x = 0;
+			params.source_y = (lrint((entity->craft_data.theta / (2 * M_PI) + 0.5) * ROTATIONS) % ROTATIONS) * entity->craft_data.surface->width;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
-			blit_destx = x - blit_source->width / 2;
-			blit_desty = y - blit_source->width / 2;
+			params.dest_x = x - entity->craft_data.surface->width / 2;
+			params.dest_y = y - entity->craft_data.surface->width / 2;
 		
-			blit_width = blit_source->width;
-			blit_height = blit_source->width;
+			params.width = entity->craft_data.surface->width;
+			params.height = entity->craft_data.surface->width;
 		
-			alpha_surface_blit_surface_rect();
+			blit_partial_surface(&params);
 		
 		
 			if(!entity->craft_data.carcass)
 			{				
-				blit_source = s_craft_shield;
+				params.source = s_craft_shield;
 			
-				blit_destx = x - blit_source->width / 2;
-				blit_desty = y - blit_source->width / 2;
-				
-				blit_alpha = lrint(entity->craft_data.shield_flare * 255.0);
-				blit_colour = 0xff5f;
+				params.dest_x = x - s_craft_shield->width / 2;
+				params.dest_y = y - s_craft_shield->width / 2;
+
+				params.red = params.green = params.blue = 0xff;
+				params.alpha = lrint(entity->craft_data.shield_flare * 255.0);
 			
-				alpha_blit_alpha_surface();
+				blit_alpha_surface(&params);
 			}
 		
 			break;
 		
 		case ENT_WEAPON:
-			blit_source = entity->weapon_data.surface;
+			params.source = entity->weapon_data.surface;
 		
-			blit_sourcex = 0;
-			blit_sourcey = (lrint((entity->weapon_data.theta / (2 * M_PI) + 0.5) * ROTATIONS) % ROTATIONS) * blit_source->width;
+			params.source_x = 0;
+			params.source_y = (lrint((entity->weapon_data.theta / (2 * M_PI) + 0.5) * ROTATIONS) % ROTATIONS) * entity->weapon_data.surface->width;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
-			blit_destx = x - blit_source->width / 2;
-			blit_desty = y - blit_source->width / 2;
+			params.dest_x = x - entity->weapon_data.surface->width / 2;
+			params.dest_y = y - entity->weapon_data.surface->width / 2;
 		
-			blit_width = blit_source->width;
-			blit_height = blit_source->width;
+			params.width = entity->weapon_data.surface->width;
+			params.height = entity->weapon_data.surface->width;
 		
-			alpha_surface_blit_surface_rect();
+			blit_partial_surface(&params);
 		
-			blit_source = s_weapon_shield;
+			params.source = s_weapon_shield;
 		
-			blit_destx = x - blit_source->width / 2;
-			blit_desty = y - blit_source->width / 2;
+			params.dest_x = x - s_weapon_shield->width / 2;
+			params.dest_y = y - s_weapon_shield->width / 2;
 			
-			blit_alpha = lrint(entity->weapon_data.shield_flare * 255.0);
-			blit_colour = 0xfaf1;
+			params.red = params.green = params.blue = 0xff;
+			params.alpha = lrint(entity->weapon_data.shield_flare * 255.0);
 		
-			alpha_blit_alpha_surface();
+			blit_alpha_surface(&params);
 		
 			break;
 		
 		case ENT_BOGIE:
 
-			blit_source = s_plasma;
+			params.source = s_plasma;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
-			blit_colour = 0xf1ff;
+			params.red = 0x32;
+			params.green = 0x73;
+			params.blue = 0x71;
 			
-			blit_destx = x - blit_source->width / 2;
-			blit_desty = y - blit_source->width / 2;
+			params.dest_x = x - s_plasma->width / 2;
+			params.dest_y = y - s_plasma->width / 2;
 			
-			blit_alpha_surface();
+			blit_alpha_surface(&params);
 		
 			break;
 		
@@ -1525,16 +1530,18 @@ void render_entities()
 		
 		case ENT_ROCKET:
 			
-			blit_source = s_plasma;
+			params.source = s_plasma;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
-			blit_colour = 0xaf0f;
+			params.red = 0x32;
+			params.green = 0x73;
+			params.blue = 0x71;
 			
-			blit_destx = x - blit_source->width / 2;
-			blit_desty = y - blit_source->width / 2;
+			params.dest_x = x - s_plasma->width / 2;
+			params.dest_y = y - s_plasma->width / 2;
 			
-			blit_alpha_surface();
+			blit_alpha_surface(&params);
 		
 			break;
 		
@@ -1813,32 +1820,37 @@ void update_game()
 */
 
 
-void render_particle(float wx, float wy)
+void render_particle(float wx, float wy, uint8_t alpha, uint8_t red, uint8_t green, uint8_t blue)
 {
 	int x, y;
 	
 	world_to_screen(wx, wy, &x, &y);
+
+	struct blit_params_t params;
+	params.dest = s_backbuffer;
 	
-	blit_destx = x;
-	blit_desty = y;
+	params.dest_x = x;
+	params.dest_y = y;
 	
-	plot_alpha_pixel();
+	params.alpha = alpha;
 	
-	blit_alpha >>= 1;
+	plot_alpha_pixel(&params);
 	
-	blit_destx++;
-	plot_alpha_pixel();
+	params.alpha >>= 1;
 	
-	blit_destx--;
-	blit_desty++;
-	plot_alpha_pixel();
+	params.dest_x++;
+	plot_alpha_pixel(&params);
 	
-	blit_desty -= 2;
-	plot_alpha_pixel();
+	params.dest_x--;
+	params.dest_y++;
+	plot_alpha_pixel(&params);
 	
-	blit_destx--;
-	blit_desty++;
-	plot_alpha_pixel();
+	params.dest_y -= 2;
+	plot_alpha_pixel(&params);
+	
+	params.dest_x--;
+	params.dest_y++;
+	plot_alpha_pixel(&params);
 }
 
 
@@ -1883,15 +1895,15 @@ void render_rail_trails()
 			
 			double cx = rail_trail->x1 + (rail_trail->x2 - rail_trail->x1) * t;
 			double cy = rail_trail->y1 + (rail_trail->y2 - rail_trail->y1) * t;
-			
-			blit_colour = 0xffff;
-			
+
+			uint8_t alpha;
+
 			if(rail_time < 0.5)
-				blit_alpha  = 0xff;
+				alpha  = 0xff;
 			else
-				blit_alpha  = (uint8_t)(255 - floor((rail_time - 0.5) / 2.0 * 255.0f));
+				alpha  = (uint8_t)(255 - floor((rail_time - 0.5) / 2.0 * 255.0f));
 			
-			render_particle(cx, cy);
+			render_particle(cx, cy, alpha, 0xff, 0xff, 0xff);
 			
 			double theta = 30 * M_PI * t;
 			
@@ -1902,12 +1914,11 @@ void render_rail_trails()
 			cx -= deltay * nr;
 			cy += deltax * nr;
 	
-			blit_colour = 0x00ff;
 			if(rail_time < 0.5)
-				blit_alpha  = 0xff;
+				alpha  = 0xff;
 			else
-				blit_alpha  = (uint8_t)(255 - floor((rail_time - 0.5) / 2.0 * 255.0f));
-			render_particle(cx, cy);
+				alpha  = (uint8_t)(255 - floor((rail_time - 0.5) / 2.0 * 255.0f));
+			render_particle(cx, cy, alpha, 0, 7, 0xff);
 		}
 		
 		rail_trail = rail_trail->next;
@@ -1975,12 +1986,12 @@ void init_game()
 	
 	struct surface_t *temp = read_png_surface(PKGDATADIR "/stock-object-textures/plasma.png");
 		
-	s_plasma = resizea(temp, 14, 14, NULL);
+	s_plasma = resize(temp, 14, 14, NULL);
 	
 	temp = read_png_surface(PKGDATADIR "/stock-object-textures/craft-shield.png");
 	
-	s_craft_shield = resizea(temp, 57, 57, NULL);
-	s_weapon_shield = resizea(temp, 36, 36, NULL);
+	s_craft_shield = resize(temp, 57, 57, NULL);
+	s_weapon_shield = resize(temp, 36, 36, NULL);
 	
 }
 

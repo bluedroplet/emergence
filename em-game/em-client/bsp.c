@@ -48,8 +48,6 @@ void write_bsp_tree(FILE *file)
 
 void draw_bsp_node(struct bspnode_t *node)
 {
-	blit_colour = 0xffff;
-	
 	draw_world_clipped_line(node->x1 + node->dtstart * (node->x2 - node->x1), node->y1 + node->dtstart * (node->y2 - node->y1), 
 		node->x1 + node->dtend * (node->x2 - node->x1), node->y1 + node->dtend * (node->y2 - node->y1));
 

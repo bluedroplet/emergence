@@ -62,7 +62,7 @@ struct
 	{"enter",		NULL,	console_enter},
 	{"lctrl",		NULL,	NULL},
 	{"a",			NULL,	NULL},
-	{"s",			NULL,	screenshot},
+	{"s",			NULL,	NULL},//screenshot},
 	{"d",			NULL,	NULL},
 	{"f",			NULL,	NULL},
 	{"g",			NULL,	NULL},

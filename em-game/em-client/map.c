@@ -56,8 +56,8 @@ int load_map_tiles(gzFile gzfile)
 
 		tile.surface = gzread_raw_surface(gzfile);
 		
-		struct surface_t *surface = resize_16bitalpha8bit(tile.surface, tile.surface->width * vid_width / 1600, 
-			tile.surface->height * vid_height / 1200);
+		struct surface_t *surface = resize(tile.surface, tile.surface->width * vid_width / 1600, 
+			tile.surface->height * vid_height / 1200, NULL);
 
 		free_surface(tile.surface);
 		tile.surface = surface;
@@ -364,13 +364,13 @@ void render_map()
 		world_to_screen((double)tile->x, (double)tile->y, &x, &y);
 
 
-		blit_source = tile->surface;
+/*		blit_source = tile->surface;
 	
 		blit_destx = x;
 		blit_desty = y;
 	
 		alpha_surface_blit_surface();
-
+*/
 		tile = tile->next;
 	}
 	

@@ -100,11 +100,11 @@ void render_stars()
 			continue;
 		}
 
-		blit_colour = stars[s].colour;
+/*		blit_colour = stars[s].colour;
 		
 		blit_destx = x;
 		blit_desty = y;
 		
 		plot_pixel();
-	}
+*/	}
 }

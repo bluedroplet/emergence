@@ -89,5 +89,5 @@ void draw_world_clipped_line(double x1, double y1, double x2, double y2)
 	world_to_screen(x1, y1, &sx1, &sy1);
 	world_to_screen(x2, y2, &sx2, &sy2);
 	
-	draw_line(sx1, sy1, sx2, sy2);
+//	draw_line(sx1, sy1, sx2, sy2);
 }

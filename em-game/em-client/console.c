@@ -87,7 +87,7 @@ void render_console()
 
 		if(console_inputting)
 		{
-			blit_text(1, (vid_height - consoleheight * 14) + consoleline * 14 + 1, r_ConsoleActiveTextColour, console_input);
+			blit_text(1, (vid_height - consoleheight * 14) + consoleline * 14 + 1, console_input, 0xff, 0xff, 0xff, s_backbuffer);
 			consoleline--;
 		}
 
@@ -111,7 +111,7 @@ void render_console()
 
 			for(cline = console->numlines - 1; cline >= 0; cline--)
 			{
-				blit_text(1, (vid_height - consoleheight * 14) + consoleline * 14 + 1, r_ConsoleTextColour, console->line[cline]);
+				blit_text(1, (vid_height - consoleheight * 14) + consoleline * 14 + 1, console->line[cline], 0xff, 0xff, 0xff, s_backbuffer);
 				if(consoleline-- == 0)
 				{
 					stop = 1;
@@ -129,7 +129,7 @@ void render_console()
 		}
 	}
 
-	blit_destx = 0;
+/*	blit_destx = 0;
 	blit_desty = vid_height - consoleheight * 14;
 	blit_width = vid_width / 2;
 	blit_height = consoleheight * 14;
@@ -141,6 +141,7 @@ void render_console()
 		blit_colour = r_ConsoleColour;
 
 	draw_alpha_rect();
+*/
 }
 
 

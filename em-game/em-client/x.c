@@ -126,7 +126,7 @@ void init_x()
     xattr.colormap = DefaultColormap(xdisplay, xscreen);
 
     xwindow = XCreateWindow(xdisplay, RootWindow(xdisplay, xscreen), 0, 0, 800, 600, 0,
-			     16, InputOutput, DefaultVisual(xdisplay, xscreen),
+			     24, InputOutput, DefaultVisual(xdisplay, xscreen),
 			     CWOverrideRedirect | CWBackPixel | CWBorderPixel
 			     | CWColormap,
 			     &xattr);
@@ -146,15 +146,6 @@ void init_x()
 	vid_width = 800;
 	vid_height = 600;
 
-	vid_pitch = vid_width;
-	vid_halfwidth = vid_width / 2;
-	vid_heightm1 = vid_height - 1;
-	vid_halfheight = vid_height / 2;
-	vid_halfheightm1 = vid_halfheight - 1;
-	vid_byteswidth = vid_width * 2;
-	vid_bbsize = vid_byteswidth * vid_height;
-
-//	vid_backbuffer = (word*)malloc(vid_bbsize);
 	
 
       int ShmMajor,ShmMinor;
@@ -166,7 +157,7 @@ void init_x()
 
     memset(shmseginfo,0, sizeof(XShmSegmentInfo));
 
-	image=XShmCreateImage(xdisplay, DefaultVisual(xdisplay, xscreen), 16, ZPixmap,
+	image=XShmCreateImage(xdisplay, DefaultVisual(xdisplay, xscreen), 24, ZPixmap,
                                   NULL, shmseginfo, 800, 600);	
    
    	if(!image)
@@ -184,7 +175,11 @@ void init_x()
 		client_shutdown();
 	shmseginfo->readOnly=False;
 	
-	vid_backbuffer = (uint16_t*)image->data = shmseginfo->shmaddr;
+	
+	s_backbuffer = new_surface_no_buf(SURFACE_24BITPADDING8BIT, 800, 600);
+	
+	s_backbuffer->buf = image->data = shmseginfo->shmaddr;
+	s_backbuffer->pitch = image->bytes_per_line;
 	
 	XShmAttach(xdisplay, shmseginfo);
 

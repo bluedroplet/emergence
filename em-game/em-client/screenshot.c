@@ -19,7 +19,7 @@ void take_screenshot()
 	temp.flags = SURFACE_16BIT;
 	temp.width = 800;
 	temp.height = 600;
-	temp.buf = vid_backbuffer;
+	temp.buf = s_backbuffer;
 	
 	struct surface_t *shot = duplicate_surface_to_24bit(&temp);
 	

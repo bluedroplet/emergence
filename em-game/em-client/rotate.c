@@ -265,7 +265,7 @@ void do_rotate(struct rotate_t *rotate0, int width, int height, int frames)
 			*dst++ /= *src++;
 		}
 	
-		convert_surface_to_16bitalpha8bit(*rotate->out_surface);
+		convert_surface_to_24bitalpha8bit(*rotate->out_surface);
 		
 		rotate = rotate->next;
 	}

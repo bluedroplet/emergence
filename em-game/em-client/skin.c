@@ -89,11 +89,6 @@ int game_process_load_skin(struct buffer_t *stream)
 	
 	do_rotate(&plasma_cannon_rot, 25, 25, ROTATIONS);
 	
-	convert_surface_to_16bitalpha8bit(skin.craft);
-	convert_surface_to_16bitalpha8bit(skin.rocket_launcher);
-	convert_surface_to_16bitalpha8bit(skin.minigun);
-	convert_surface_to_16bitalpha8bit(skin.plasma_cannon);
-	
 	gzclose(gzfile);
 	LL_ADD(struct skin_t, &skin0, &skin);
 	

@@ -49,6 +49,8 @@ void create_input_cvars()
 
 void init_input()
 {
+	return;
+	
 	console_print("Opening input device: ");
 	
 	input_fd = open(get_cvar_string("input_dev"), O_RDONLY);

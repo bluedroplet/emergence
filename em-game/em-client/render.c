@@ -40,6 +40,10 @@ int screenshot_next_frame;
 
 double frame_time, last_frame_start_time;
 
+int vid_width, vid_height;
+
+struct surface_t *s_backbuffer;
+
 void calc_r_FPSColour()
 {
 	r_FPSColour = convert_24bit_to_16bit(r_FPSRed, r_FPSGreen, r_FPSBlue);
@@ -96,7 +100,7 @@ void render_fr()
 		fr_update_time = ((int)(time - fr_start_time) + 1) + fr_start_time;
 	}
 
-	blit_text(0, 0, r_FPSColour, fr_text->text);
+	blit_text(0, 0, fr_text->text, 0xff, 0xff, 0xff, s_backbuffer);
 }
 
 
@@ -158,7 +162,7 @@ void screenshot(int state)
 
 void render_frame()
 {
-	clear_backbuffer();
+	clear_surface(s_backbuffer);
 	
 	render_game();
 	

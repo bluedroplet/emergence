@@ -121,7 +121,7 @@ void render_upper_particles()
 			
 			world_to_screen(upper_particles[i].xpos, upper_particles[i].ypos, &x, &y);
 			
-			if(life < 0.1275)
+/*			if(life < 0.1275)
 				blit_colour = convert_24bit_to_16bit(255, (uint8_t)min(floor(life * 2000.0), 255), (uint8_t)min(floor(life * 2000.0), 255));
 			else
 				blit_colour = 0xffff;
@@ -148,7 +148,7 @@ void render_upper_particles()
 			blit_destx--;
 			blit_desty++;
 			plot_alpha_pixel();
-			
+*/			
 			upper_particles[i].last = time;
 		}
 	}
@@ -203,7 +203,7 @@ void render_lower_particles()
 			
 			world_to_screen(lower_particles[i].xpos, lower_particles[i].ypos, &x, &y);
 			
-			if(life < 0.1275)
+/*			if(life < 0.1275)
 				blit_colour = convert_24bit_to_16bit(255, (uint8_t)min(floor(life * 2000.0), 255), (uint8_t)min(floor(life * 2000.0), 255));
 			else
 				blit_colour = 0xffff;
@@ -230,7 +230,7 @@ void render_lower_particles()
 			blit_destx--;
 			blit_desty++;
 			plot_alpha_pixel();
-			
+*/			
 			lower_particles[i].last = time;
 		}
 	}
