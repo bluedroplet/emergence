@@ -1,4 +1,4 @@
-LDADD =   @GNOME_LIBS@  ../gsub/libgsub.a ../common/libcommon.a -lm -lpthread -lz -lpng
+LDADD =   @GNOME_LIBS@  ../gsub/libgsub.a ../common/libcommon.a -lm -lpthread -lz -lpng12
 AM_CPPFLAGS = $(BINRELOC_CFLAGS) @GNOME_CFLAGS@ -DLINUX -Wall
 
 bin_PROGRAMS = em-edit
