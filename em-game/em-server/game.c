@@ -592,6 +592,25 @@ void propagate_player_info_to_all_players(struct player_t *info_player)
 }
 
 
+void propagate_all_players_info_to_player(struct player_t *out_player)
+{
+	struct player_t *info_player = player0;
+		
+	while(info_player)
+	{
+		net_emit_uint8(out_player->conn, EMNETMSG_PLAYER_INFO);
+		net_emit_uint32(out_player->conn, info_player->index);
+		net_emit_string(out_player->conn, info_player->name->text);
+		net_emit_uint8(out_player->conn, info_player->ready);
+		net_emit_int(out_player->conn, info_player->frags);
+		
+		info_player = info_player->next;
+	}
+	
+	net_emit_end_of_stream(out_player->conn);
+}
+
+
 void remove_player_info(struct player_t *info_player)
 {
 	struct player_t *out_player = player0;
@@ -1501,6 +1520,7 @@ void game_process_play(struct player_t *player)
 		
 		player->state = PLAYER_STATE_PLAYING;
 		propagate_player_info_to_all_players(player);
+		propagate_all_players_info_to_player(player);
 		num_players++;
 		break;
 	
@@ -1519,6 +1539,7 @@ void game_process_play(struct player_t *player)
 		
 		player->state = PLAYER_STATE_PLAYING;
 		propagate_player_info_to_all_players(player);
+		propagate_all_players_info_to_player(player);
 		num_spectators--;
 		num_players++;
 		break;
