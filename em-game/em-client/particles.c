@@ -238,6 +238,8 @@ void render_upper_particles()
 			
 			float delta_time = cgame_time - upper_particles[i].last;
 			
+			upper_particles[i].last = cgame_time;
+			
 		//	double particle_time = delta_time;
 		//	int particle_ticks = 1;
 			
@@ -322,8 +324,6 @@ void render_upper_particles()
 				alpha_plot_pixel(&params);
 				break;
 			}
-			
-			upper_particles[i].last = cgame_time;
 		}
 	}
 }
@@ -353,6 +353,8 @@ void render_lower_particles()
 			}
 			
 			float delta_time = cgame_time - lower_particles[i].last;
+			
+			lower_particles[i].last = cgame_time;
 
 		//	double particle_time = delta_time;
 		//	int particle_ticks = 1;
@@ -437,8 +439,6 @@ void render_lower_particles()
 				alpha_plot_pixel(&params);
 				break;
 			}
-			
-			lower_particles[i].last = cgame_time;
 		}
 	}
 }
