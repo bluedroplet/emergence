@@ -740,11 +740,14 @@ void spawn_player(struct player_t *player)
 	struct spawn_point_t *spawn_point = spawn_point0;
 	
 	int respawn_index = 0;
+	int num_spawn_points = 0;
 	
 	while(spawn_point)
 	{
 		if(!spawn_point->teleport_only)
 		{
+			num_spawn_points++;
+			
 			struct entity_t *entity = entity0;
 			
 			int occluded = 0;
@@ -836,7 +839,7 @@ void spawn_player(struct player_t *player)
 	
 	if(respawn_index)
 	{
-		int i = (int)(drand48() * (respawn_index - 1));
+		int i = lrand48() % respawn_index;
 		
 		spawn_point = spawn_point0;
 		
@@ -851,11 +854,11 @@ void spawn_player(struct player_t *player)
 	}
 	else
 	{
-		int i = 0; //rand % num_spawn_points;
+		int i = lrand48() % num_spawn_points;
 		
 		spawn_point = spawn_point0;
 		
-		while(respawn_index != i)
+		while(i--)
 			spawn_point = spawn_point->next;
 		
 		player->craft->xdis = spawn_point->x;
