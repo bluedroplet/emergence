@@ -23,7 +23,7 @@
 
 
 
-#define NUMPARTICLES 8000
+#define NUMPARTICLES 80000
 #define MAX_PARTICLE_TIME 0.025
 
 
