@@ -18,7 +18,7 @@ cd ../em-tools
 
 make distcheck || exit
 
-cp em-tools-0.5.4-dev.tar.bz2 ../dist/em-tools-0.5.4-dev.tbz2
+cp em-tools-0.5.4.tar.bz2 ../dist/em-tools-0.5.4.tbz2
 
 cd ../dist
 
@@ -39,13 +39,13 @@ export CFLAGS="-march=$arch -O3 -pipe -fomit-frame-pointer"
 ln -sfn stage3-$stage3-2004.1 ../../stage3s/current-stage3 || exit
 
 
-rm -rf root
-mkdir -p root/usr
+rm -rf emergence
+mkdir -p emergence/usr
 
 cd ../em-game
 make clean
 
-D=`pwd`/../dist/root/
+D=`pwd`/../dist/emergence/
 
 ./configure --prefix=/usr || exit
 make || exit
@@ -57,10 +57,10 @@ make prefix=${D}/usr \
 		    sysconfdir=${D}/etc \
 		    install || exit
 
-cd ../dist/root
+cd ../dist/emergence
 
 strip usr/bin/* || exit
-tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-0.5.4-dev.bin.$arch.tbz2 * || exit
+tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-0.5.4.bin.$arch.tbz2 * || exit
 cd ..
 
 
@@ -78,11 +78,19 @@ cd ..
 #		    install || exit
 
 
-cd ../dist/root
+cd ../dist/emergence
 
 strip usr/bin/* || exit
 
-tar --owner=0 --group=0 --numeric-owner -cjf ../emergence-0.5.4-dev.bin.$arch.tbz2 * || exit
+tar --owner=0 --group=0 --numeric-owner -cjf ../emergence-0.5.4.bin.$arch.tbz2 * || exit
+
+cd ..
+
+tar --owner=0 --group=0 --numeric-owner -cjf emergence-0.5.4.bin.$arch.home.tbz2 emergence || exit
+
+cd emergence
+
+
 
 find * -type f -printf "/%h/%f\n">../tree
 
@@ -92,7 +100,7 @@ cd ..
 
 rpmbuild -bb emergence.spec
 
-cp ../../redhat/emergence/i386/emergence-0.5.4-dev-1.i386.rpm emergence-0.5.4-dev.$arch.rpm
+cp ../../redhat/emergence/i386/emergence-0.5.4-1.i386.rpm emergence-0.5.4.$arch.rpm
 
 
 done
