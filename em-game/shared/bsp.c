@@ -229,139 +229,104 @@ struct bspnode_t *circle_walk_bsp_tree(double xdis, double ydis, double r, doubl
 		return NULL;
 }
 
-/*
-struct bspnode_t * line_walk_bsp_node(struct bspnode_t *node, double x1, double y1, double x2, double y2)
-{
-	struct bspnode_t *cnode;
-		
-	double x1 = node->x1 - xdis;
-	double y1 = node->y1 - ydis;
-	double x2 = node->x2 - xdis;
-	double y2 = node->y2 - ydis;
-	
-	
-	// line-line intersection
-	
-	double dx = x2 - x1;
-	double dy = y2 - y1;
-	double dr2 = dx * dx + dy * dy;
-	double D = x1 * y2 - x2 * y1;
-	double discr = r * r * dr2 - D * D;
-	
-	if(discr >= 0.0)
-	{
-		double thing = dx * sqrt(discr);
 
-		double x = (D * dy + thing) / dr2;
-		double t = (x + xdis - node->x1) / (node->x2 - node->x1);
-		
-		if(t > node->tstart && t < node->tend)
-		{
-			if(t_out)
-				*t_out = t;
-			
-			return node;
-		}
-		
-		x = (D * dy - thing) / dr2;
-		t = (x + xdis - node->x1) / (node->x2 - node->x1);
-		
-		if(t > node->tstart && t < node->tend)
-		{
-			if(t_out)
-				*t_out = t;
-			
-			return node;
-		}
-		
-		if(node->front)
-		{
-			cnode = walk_bsp_node(node->front, xdis, ydis, r);
-			if(cnode)
-				return cnode;
-		}
+struct bspnode_t *line_walk_bsp_node(struct bspnode_t *node, double x1, double y1, 
+	double x2, double y2)
+{
+	// TODO: make this not brute force
 	
-		if(node->back)
-		{
-			cnode = walk_bsp_node(node->back, xdis, ydis, r);
-			if(cnode)
-				return cnode;
-		}
-	}
-	else
+	struct bspnode_t *anode;
+		
+	double nx = y1 - y2;
+	double ny = -(x1 - x2);
+	
+	double denom = (-nx) * (node->x2 - node->x1) + 
+		(-ny) * (node->y2 - node->y1);
+	
+	if(denom != 0.0)
 	{
-		int front;
+		double numer = nx * (node->x1 - x1) + 
+			ny * (node->y1 - y1);
 		
-		if(dy == 0.0)	// north or south
-		{
-			if(dx > 0.0)	// north
-			{				
-				if(x1 < 0.0)
-					front = 1;
-				else
-					front = 0;
-			}
-			else			// south
-			{
-				if(x1 > 0.0)
-					front = 1;
-				else
-					front = 0;
-			}
-		}
-		else if(dx == 0.0)	// east or west
-		{
-			if(dy > 0.0)	// east
-			{
-				if(y1 > 0.0)
-					front = 1;
-				else
-					front = 0;
-			}
-			else			// west
-			{
-				if(y1 < 0.0)
-					front = 1;
-				else
-					front = 0;
-			}
-		}
-		else	// diagonal
-		{
-			double x = x1 + (-y1 / dy) * dx;	// bad
-			
-			if(dy > 0.0)	// north
-			{
-				if(x < 0.0)
-					front = 1;
-				else
-					front = 0;
-			}
-			else			// south
-			{
-				if(x > 0.0)
-					front = 1;
-				else
-					front = 0;
-			}
-		}			
+		double t1 = numer / denom;
 		
-		if(front)
+		nx = node->y1 - node->y2;
+		ny = -(node->x1 - node->x2);
+		
+		denom = (-nx) * (x2 - x1) + 
+			(-ny) * (y2 - y1);
+		
+		if(denom != 0.0)
 		{
-			if(node->front)
+			double new_numer = nx * (x1 - node->x1) + 
+				ny * (y1 - node->y1);
+		
+			double t2 = new_numer / denom;
+		
+			if(t1 > node->tstart && t1 < node->tend)
 			{
-				cnode = walk_bsp_node(node->front, xdis, ydis, r);
-				if(cnode)
-					return cnode;
+				if(t2 > 0.0 && t2 < 1.0)
+				{
+					return node;
+				}
+				else
+				{
+				//	if(numer < 0.0)
+					{
+						if(node->front)
+						{
+							anode = line_walk_bsp_node(node->front, x1, y1, x2, y2);
+							if(anode)
+								return anode;
+						}
+					}
+				//	else
+					{
+						if(node->back)
+						{
+							anode = line_walk_bsp_node(node->back, x1, y1, x2, y2);
+							if(anode)
+								return anode;
+						}
+					}
+				}
 			}
-		}
-		else
-		{
-			if(node->back)
+			else
 			{
-				cnode = walk_bsp_node(node->back, xdis, ydis, r);
-				if(cnode)
-					return cnode;
+				if(t2 > 0.0 && t2 < 1.0)
+				{
+					if(node->front)
+					{
+						anode = line_walk_bsp_node(node->front, x1, y1, x2, y2);
+							
+						if(anode)
+							return anode;
+					}
+					
+					if(node->back)
+						return line_walk_bsp_node(node->back, x1, y1, x2, y2);
+				}
+				else
+				{
+				//	if(numer < 0.0)
+					{
+						if(node->front)
+						{
+							anode = line_walk_bsp_node(node->front, x1, y1, x2, y2);
+							if(anode)
+								return anode;
+						}
+					}
+				//	else
+					{
+						if(node->back)
+						{
+							anode = line_walk_bsp_node(node->back, x1, y1, x2, y2);
+							if(anode)
+								return anode;
+						}
+					}
+				}
 			}
 		}
 	}
@@ -369,11 +334,11 @@ struct bspnode_t * line_walk_bsp_node(struct bspnode_t *node, double x1, double 
 	return NULL;
 }
 
-*/
+
 struct bspnode_t *line_walk_bsp_tree(double x1, double y1, double x2, double y2)
 {
-//	if(bspnode0)
-//		return line_walk_bsp_node(bspnode0, x1, y1, x2, y2);
-//	else
+	if(bspnode0)
+		return line_walk_bsp_node(bspnode0, x1, y1, x2, y2);
+	else
 		return NULL;
 }

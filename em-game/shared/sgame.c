@@ -1050,7 +1050,7 @@ void s_tick_craft(struct entity_t *craft)
 		craft->yvel += craft->craft_data.acc * cos_theta;
 	}
 
-//	apply_gravity_acceleration(craft);
+	apply_gravity_acceleration(craft);
 	slow_entity(craft);
 
 	
@@ -1483,7 +1483,7 @@ void s_tick_weapon(struct entity_t *weapon)
 	}
 	else
 	{
-	//	apply_gravity_acceleration(weapon);
+		apply_gravity_acceleration(weapon);
 		slow_entity(weapon);
 	}
 	
