@@ -371,9 +371,12 @@ struct sample_t *load_sample(char *filename)
 	
 	int j = 0;
 	while(ov_read(&vf, (char*)&sample->buf[j], 2, 0, 2, 1, &current_section) > 0)
-		{
+	{
 		j++;
-		}
+			
+		if(j >= sample->len)
+			break;
+	}
 
 	ov_clear(&vf);
 		
