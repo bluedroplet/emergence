@@ -100,7 +100,7 @@ void render_fr()
 		fr_update_time = ((int)(time - fr_start_time) + 1) + fr_start_time;
 	}
 
-	blit_text(0, 0, fr_text->text, 0xff, 0xff, 0xff, s_backbuffer);
+	blit_text(0, 0, 0xff, 0xff, 0xff, s_backbuffer, fr_text->text);
 }
 
 

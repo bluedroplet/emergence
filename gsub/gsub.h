@@ -176,8 +176,10 @@ void alpha_blit_partial_surface(struct blit_params_t *params);
 void init_text();
 
 
-int blit_text(int x, int y, char *text, uint8_t red, uint8_t green, uint8_t blue, struct surface_t *dest);
-int blit_text_centered(int x, int y, char *text, uint8_t red, uint8_t green, uint8_t blue, struct surface_t *dest);
+int blit_text(int x, int y, uint8_t red, uint8_t green, uint8_t blue, 
+	struct surface_t *dest, const char *fmt, ...);
+void blit_text_centered(int x, int y, uint8_t red, uint8_t green, uint8_t blue, 
+	struct surface_t *dest, const char *fmt, ...);
 
 
 

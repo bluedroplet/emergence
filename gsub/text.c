@@ -30,6 +30,7 @@
 #endif
 
 #include <stdint.h>
+#include <stdarg.h>
 
 #include "../common/stringbuf.h"
 #include "../common/vertex.h"
@@ -82,8 +83,18 @@ void init_text()
 }
 
 
-int blit_text(int x, int y, char *text, uint8_t red, uint8_t green, uint8_t blue, struct surface_t *dest)
+int blit_text(int x, int y, uint8_t red, uint8_t green, uint8_t blue, 
+	struct surface_t *dest, const char *fmt, ...)
 {
+	char *text;
+	
+	va_list ap;
+	
+	va_start(ap, fmt);
+	vasprintf(&text, fmt, ap);
+	va_end(ap);
+	
+	
 	struct blit_params_t params;
 
 	params.red = red;
@@ -93,29 +104,42 @@ int blit_text(int x, int y, char *text, uint8_t red, uint8_t green, uint8_t blue
 	params.dest = dest;
 	
 	int w = 0;
-
-	while(*text)
+	char *c = text;
+	
+	while(*c)
 	{
-		params.source_x = ((int)*((uint8_t*)text)) << 3;
+		params.source_x = ((int)*((uint8_t*)c)) << 3;
 		params.source_y = 0;
 		params.dest_x = x + w;
 		params.dest_y = y;
 		params.height = 13;
-		params.width = charlengths[*((uint8_t*)text)];
+		params.width = charlengths[*((uint8_t*)c)];
 
 		w += params.width;
 
 		blit_partial_surface(&params);
 		
-		text++;
+		c++;
 	}
+	
+	free(text);
 
 	return w;
 }
 
 
-int blit_text_centered(int x, int y, char *text, uint8_t red, uint8_t green, uint8_t blue, struct surface_t *dest)
+void blit_text_centered(int x, int y, uint8_t red, uint8_t green, uint8_t blue, 
+	struct surface_t *dest, const char *fmt, ...)
 {
+	char *text;
+	
+	va_list ap;
+	
+	va_start(ap, fmt);
+	vasprintf(&text, fmt, ap);
+	va_end(ap);
+	
+	
 	int w = 0;
 	char *c = text;
 
@@ -124,6 +148,36 @@ int blit_text_centered(int x, int y, char *text, uint8_t red, uint8_t green, uin
 		w += charlengths[*((uint8_t*)c)];
 		c++;
 	}
+	
+	x -= w / 2;
 
-	blit_text(x - w/2, y, text, red, green, blue, dest);
+	
+	struct blit_params_t params;
+
+	params.red = red;
+	params.green = green;
+	params.blue = blue;
+	params.source = smallfont;
+	params.dest = dest;
+	
+	w = 0;
+	c = text;
+
+	while(*c)
+	{
+		params.source_x = ((int)*((uint8_t*)c)) << 3;
+		params.source_y = 0;
+		params.dest_x = x + w;
+		params.dest_y = y;
+		params.height = 13;
+		params.width = charlengths[*((uint8_t*)c)];
+
+		w += params.width;
+
+		blit_partial_surface(&params);
+		
+		c++;
+	}
+	
+	free(text);
 }

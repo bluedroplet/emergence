@@ -88,7 +88,8 @@ void render_console()
 
 		if(console_inputting)
 		{
-			blit_text(1, (vid_height - consoleheight * 14) + consoleline * 14 + 1, console_input, 0xff, 0xff, 0xff, s_backbuffer);
+			blit_text(1, (vid_height - consoleheight * 14) + consoleline * 14 + 1, 
+				0xff, 0xff, 0xff, s_backbuffer, console_input);
 			consoleline--;
 		}
 
@@ -112,7 +113,8 @@ void render_console()
 
 			for(cline = console->numlines - 1; cline >= 0; cline--)
 			{
-				blit_text(1, (vid_height - consoleheight * 14) + consoleline * 14 + 1, console->line[cline], 0xff, 0xff, 0xff, s_backbuffer);
+				blit_text(1, (vid_height - consoleheight * 14) + consoleline * 14 + 1, 
+					0xff, 0xff, 0xff, s_backbuffer, console->line[cline]);
 				if(consoleline-- == 0)
 				{
 					stop = 1;
