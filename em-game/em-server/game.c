@@ -32,6 +32,7 @@
 #include "console.h"
 #include "ping.h"
 #include "main.h"
+#include "entry.h"
 
 
 
@@ -1644,9 +1645,15 @@ void map(char *args)
 	if(game_state == GS_ALIVE)
 		return;
 	
-//	string_cat_text(map_filename, args);
+	struct string_t *filename = new_string_string(emergence_home_dir);
+	string_cat_text(filename, "/maps/");
+	string_cat_text(filename, args);
+	string_cat_text(filename, ".cmap");
 	
-	gzFile file = gzopen(args, "rb");
+	console_print(filename->text);
+	console_print("\n");
+	
+	gzFile file = gzopen(filename->text, "rb");
 	if(!file)
 	{
 		console_print("Map not found.\n");
@@ -1723,10 +1730,12 @@ void map(char *args)
 	
 	game_state = GS_ALIVE;
 	console_print("Map loaded.\n");
+	free_string(filename);
 	return;
 
 error:
 	
+	free_string(filename);
 	gzclose(file);
 	console_print("Map file is corrupt!\n");
 }
