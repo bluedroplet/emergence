@@ -62,6 +62,7 @@ struct event_weapon_data_t
 	int type;
 	float theta;
 	float shield_flare;
+	int detached;
 };
 
 
@@ -785,6 +786,7 @@ void add_spawn_ent_event(struct event_t *event)
 	
 	case ENT_WEAPON:
 		read_weapon_data(&event->ent_data.weapon_data);
+		event->ent_data.weapon_data.detached = message_reader_read_uint8();
 		break;
 	
 	case ENT_BOGIE:
@@ -831,6 +833,7 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->weapon_data.type = event->ent_data.weapon_data.type;
 		entity->weapon_data.theta = event->ent_data.weapon_data.theta;
 		entity->weapon_data.shield_flare = event->ent_data.weapon_data.shield_flare;
+		entity->weapon_data.detached = event->ent_data.weapon_data.detached;
 		entity->weapon_data.skin = event->ent_data.skin;
 
 		switch(entity->weapon_data.type)
@@ -1037,6 +1040,30 @@ void process_railtrail_event(struct event_t *event)
 }
 
 
+void add_detach_event(struct event_t *event)
+{
+	event->ent_data.index = message_reader_read_uint32();
+}
+
+
+void process_detach_event(struct event_t *event)
+{
+	struct entity_t *weapon = get_entity(centity0, event->ent_data.index);
+
+	if(!weapon)
+		return;
+
+	weapon->weapon_data.detached = 1;
+	
+	if(weapon->weapon_data.craft->craft_data.left_weapon == weapon)
+		weapon->weapon_data.craft->craft_data.left_weapon = NULL;
+	else
+		weapon->weapon_data.craft->craft_data.right_weapon = NULL;
+	
+	weapon->weapon_data.craft = NULL;
+}
+
+
 void process_tick_events(uint32_t tick)
 {
 	if(!event0)
@@ -1074,6 +1101,10 @@ void process_tick_events(uint32_t tick)
 			
 			case EMEVENT_RAILTRAIL:
 				process_railtrail_event(event);
+				break;
+			
+			case EMEVENT_DETACH:
+				process_detach_event(event);
 				break;
 			}
 			
@@ -1128,6 +1159,10 @@ int process_tick_events_do_not_remove(uint32_t tick)
 
 			case EMEVENT_RAILTRAIL:
 				process_railtrail_event(event);
+				break;
+
+			case EMEVENT_DETACH:
+				process_detach_event(event);
 				break;
 			}
 		}
@@ -1306,6 +1341,10 @@ int game_process_event_timed(uint32_t index, uint64_t *stamp)
 	case EMEVENT_RAILTRAIL:
 		add_railtrail_event(&event);
 		break;
+	
+	case EMEVENT_DETACH:
+		add_detach_event(&event);
+		break;
 	}
 	
 	if(!ooon)
@@ -1355,6 +1394,10 @@ int game_process_event_untimed(uint32_t index)
 	case EMEVENT_RAILTRAIL:
 		add_railtrail_event(&event);
 		break;
+	
+	case EMEVENT_DETACH:
+		add_detach_event(&event);
+		break;
 	}
 	
 	if(!ooon)
@@ -1400,6 +1443,10 @@ int game_process_event_timed_ooo(uint32_t index, uint64_t *stamp)
 	case EMEVENT_RAILTRAIL:
 		add_railtrail_event(&event);
 		break;
+	
+	case EMEVENT_DETACH:
+		add_detach_event(&event);
+		break;
 	}
 	
 	insert_event_in_order(&event);
@@ -1442,6 +1489,10 @@ int game_process_event_untimed_ooo(uint32_t index)
 	
 	case EMEVENT_RAILTRAIL:
 		add_railtrail_event(&event);
+		break;
+	
+	case EMEVENT_DETACH:
+		add_detach_event(&event);
 		break;
 	}
 	

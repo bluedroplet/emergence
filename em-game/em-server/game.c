@@ -288,6 +288,7 @@ void spawn_all_entities_on_player(struct player_t *player)
 		
 		case ENT_WEAPON:
 			write_weapon_data_to_net(player->conn, centity);
+			net_emit_uint8(player->conn, centity->weapon_data.detached);
 			break;
 		
 		case ENT_BOGIE:
@@ -344,6 +345,7 @@ void spawn_entity_on_all_players(struct entity_t *entity)
 		
 		case ENT_WEAPON:
 			write_weapon_data_to_net(player->conn, entity);
+			net_emit_uint8(player->conn, entity->weapon_data.detached);
 			break;
 		
 		case ENT_BOGIE:
@@ -1216,12 +1218,42 @@ int game_process_fire_rail(struct player_t *player)
 }
 
 
+void detach_weapon(struct entity_t *weapon)
+{
+	weapon->weapon_data.detached = 1;
+	if(weapon->weapon_data.craft->craft_data.left_weapon == weapon)
+		weapon->weapon_data.craft->craft_data.left_weapon = NULL;
+	else
+		weapon->weapon_data.craft->craft_data.right_weapon = NULL;
+	
+	weapon->weapon_data.craft = NULL;
+	
+	
+	struct player_t *player = player0;
+
+	while(player)
+	{
+		net_emit_uint8(player->conn, EMEVENT_DETACH);
+		net_emit_uint32(player->conn, game_tick);
+		net_emit_uint32(player->conn, weapon->index);
+		net_emit_end_of_stream(player->conn);
+		player = player->next;
+	}
+}
+
+
 int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 {
 	if(!player->craft->craft_data.left_weapon)
 		return 0;
 	
-	uint32_t state = buffer_read_uint8(stream);
+	uint8_t state = buffer_read_uint8(stream);
+	
+	if(state && !player->craft->craft_data.left_weapon->weapon_data.ammo)
+	{
+		detach_weapon(player->craft->craft_data.left_weapon);
+		return 1;
+	}
 	
 	switch(player->craft->craft_data.left_weapon->weapon_data.type)
 	{
@@ -1261,7 +1293,13 @@ int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 	if(!player->craft->craft_data.right_weapon)
 		return 0;
 	
-	uint32_t state = buffer_read_uint8(stream);
+	uint8_t state = buffer_read_uint8(stream);
+	
+	if(state && !player->craft->craft_data.right_weapon->weapon_data.ammo)
+	{
+		detach_weapon(player->craft->craft_data.right_weapon);
+		return 1;
+	}
 	
 	switch(player->craft->craft_data.right_weapon->weapon_data.type)
 	{

@@ -1752,7 +1752,7 @@ void s_tick_weapon(struct entity_t *weapon)
 	struct entity_t *craft = weapon->weapon_data.craft;
 	
 	
-	if(craft)
+	if(craft && !weapon->weapon_data.detached)
 	{
 		// rotate on spot
 		
@@ -2045,6 +2045,9 @@ void s_tick_weapon(struct entity_t *weapon)
 		
 		break;
 	}
+	
+	if(weapon->weapon_data.detached)
+		return;
 	
 	if(!craft)
 	{

@@ -50,6 +50,7 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 #define EMEVENT_FOLLOW_ME		(EMMSGCLASS_EVENT | 0x05)
 #define EMEVENT_CARCASS			(EMMSGCLASS_EVENT | 0x06)
 #define EMEVENT_RAILTRAIL		(EMMSGCLASS_EVENT | 0x07)
+#define EMEVENT_DETACH			(EMMSGCLASS_EVENT | 0x08)
 
 
 
@@ -107,6 +108,7 @@ struct weapon_data_t
 	
 	struct entity_t *craft;
 	float shield_flare;
+	int detached;
 	
 	#ifdef EMSERVER
 	int ammo;
