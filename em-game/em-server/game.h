@@ -112,11 +112,12 @@ void game_process_stream_untimed_ooo(uint32_t conn, uint32_t index, struct buffe
 void init_game();
 void kill_game();
 
-void print_on_all_players(char *text);
+void print_on_all_players(const char *fmt, ...);
 void remove_entity_from_all_players(struct entity_t *entity);
 void respawn_craft(struct entity_t *craft, struct player_t *responsibility);
 void make_carcass_on_all_players(struct entity_t *craft);
 void calculate_respawn_tick(struct pickup_spawn_point_t *spawn_point);
+void craft_telefragged(struct player_t *victim, struct player_t *telefragger);
 
 void emit_teleport_to_all_players();
 void emit_speedup_to_all_players();

@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
+#include <stdarg.h>
 
 #include <zlib.h>
 
@@ -457,15 +458,25 @@ void print_on_player(struct player_t *player, char *text)
 }
 
 
-void print_on_all_players(char *text)
+void print_on_all_players(const char *fmt, ...)
 {
+	char *msg;
+	
+	va_list ap;
+	
+	va_start(ap, fmt);
+	vasprintf(&msg, fmt, ap);
+	va_end(ap);
+
 	struct player_t *player = player0;
 		
 	while(player)
 	{
-		print_on_player(player, text);
+		print_on_player(player, msg);
 		player = player->next;
 	}
+	
+	free(msg);
 }
 
 
@@ -598,18 +609,10 @@ void weapon_destroyed(struct entity_t *weapon)
 }
 
 
-void craft_telefragged(struct entity_t *craft)
+void craft_telefragged(struct player_t *victim, struct player_t *telefragger)
 {
-	struct player_t *player = get_player_by_craft(craft);
-	assert(player);
-	
-//	print_on_all_clients("%s was telefragged.\n", player->name->text);
-}
-
-
-void weapon_telefragged(struct entity_t *weapon)
-{
-	;
+	print_on_all_players("%s was telefragged by %s.\n", victim->name->text, 
+		telefragger->name->text);
 }
 
 

@@ -842,6 +842,7 @@ void explode_rails(struct entity_t *rails, struct player_t *responsibility)
 }
 #endif
 
+
 void craft_craft_collision(struct entity_t *craft1, struct entity_t *craft2)
 {
 	#ifdef EMSERVER
@@ -1065,32 +1066,6 @@ void shield_shield_collision(struct entity_t *shield1, struct entity_t *shield2)
 }
 
 
-void telefrag_craft(struct entity_t *craft)
-{
-	#ifdef EMSERVER
-//	explode_craft(craft);
-//	craft_telefragged(craft);
-	#endif
-	
-	#ifdef EMCLIENT
-//		explode_craft(craft);
-	#endif
-}
-
-
-void telefrag_weapon(struct entity_t *weapon)
-{
-	#ifdef EMSERVER
-//	explode_weapon(weapon);
-//	weapon_telefragged(weapon);
-	#endif
-	
-	#ifdef EMCLIENT
-//		explode_weapon(weapon);
-	#endif
-}
-
-
 void get_teleporter_spawn_point(struct teleporter_t *teleporter, float *x, float *y)
 {
 	struct spawn_point_t *spawn_point = spawn_point0;
@@ -1171,6 +1146,83 @@ void s_tick_craft(struct entity_t *craft)
 		{
 			craft->xdis += craft->xvel;
 			craft->ydis += craft->yvel;
+			
+			
+			#ifdef EMSERVER
+			
+			// check for telefragging
+			
+			struct entity_t *entity = *sentity0;
+			while(entity)
+			{
+				if(entity == craft || entity->teleporting)
+				{
+					entity = entity->next;
+					continue;
+				}
+				
+				entity->in_tick = 1;
+				
+				switch(entity->type)
+				{
+				case ENT_CRAFT:
+					if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, CRAFT_RADIUS))
+					{
+						respawn_craft(entity, craft->craft_data.owner);
+						explode_craft(entity, craft->craft_data.owner);
+						craft_telefragged(entity->craft_data.owner, craft->craft_data.owner);
+					}
+					break;
+					
+				case ENT_WEAPON:
+					if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, WEAPON_RADIUS))
+						explode_weapon(entity, craft->craft_data.owner);
+					break;
+					
+				case ENT_PLASMA:
+					if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
+						entity->kill_me = 1;
+					break;
+					
+				#ifdef EMSERVER
+				case ENT_BULLET:
+					if(point_in_circle(entity->xdis, entity->ydis, craft->xdis, craft->ydis, CRAFT_RADIUS))
+						entity->kill_me = 1;
+					break;
+				#endif
+					
+				case ENT_ROCKET:
+					if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
+						explode_rocket(entity);
+					break;
+					
+				case ENT_MINE:
+					if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, MINE_RADIUS))
+						explode_mine(entity);
+					break;
+					
+			/*	case ENT_RAILS:
+					if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, RAILS_RADIUS))
+						telefrag_entity(entity);
+					break;
+					
+				case ENT_SHIELD:
+					if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, SHIELD_RADIUS))
+						telefrag_entity(entity);
+					break;
+			*/	}
+				
+				struct entity_t *next = entity->next;
+				
+				if(entity->kill_me)
+					remove_entity(sentity0, entity);
+				else
+					entity->in_tick = 0;
+	
+				entity = next;
+			}
+			
+			#endif
 		}
 		
 		if(craft->teleporting)
