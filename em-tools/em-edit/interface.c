@@ -1224,14 +1224,6 @@ void key_pressed(uint32_t key)
 		more_bsp();
 		update_client_area();
 		break;
-
-	case GDK_Shift_L:
-		shift |= LEFT_SHIFT;
-		break;
-		
-	case GDK_Shift_R:
-		shift |= RIGHT_SHIFT;
-		break;
 	}
 }
 
