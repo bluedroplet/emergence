@@ -203,7 +203,7 @@ void process_messages(struct buffer_t *msg_buf)
 
 void init()
 {
-	console_print("Emergence Client v0.4\n");
+	console_print("Emergence Client " VERSION "\n");
 	
 	init_network();
 	init_timer();

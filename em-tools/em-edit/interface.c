@@ -251,7 +251,7 @@ void run_about_box()
 	gtk_box_pack_start(GTK_BOX(vbox), logo_image, FALSE, FALSE, 0);
 	
 	GtkWidget *name_label = gtk_label_new(NULL);
-	gtk_label_set_markup(GTK_LABEL(name_label), "<span size=\"xx-large\" weight=\"bold\">Emergence Editor 0.2</span>");
+	gtk_label_set_markup(GTK_LABEL(name_label), "<span size=\"xx-large\" weight=\"bold\">Emergence Editor " VERSION "</span>");
 	gtk_label_set_selectable(GTK_LABEL(name_label), TRUE);
 	gtk_label_set_justify(GTK_LABEL(name_label), GTK_JUSTIFY_CENTER);
 	gtk_box_pack_start(GTK_BOX(vbox), name_label, FALSE, FALSE, 0);

@@ -77,7 +77,7 @@ void skin(char *skin)
 }
 	
 
-const char *argp_program_version = "em-skin 0.2";
+const char *argp_program_version = "em-skin " VERSION;
 const char *argp_program_bug_address = "<jbrown@emergence.uk.net";
 static char doc[] = "Generates Emergence skin files from exploded directories";
 static char args_doc[] = "directories";
