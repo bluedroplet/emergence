@@ -2052,6 +2052,44 @@ void detach_weapon(struct entity_t *weapon)
 }
 
 
+void propagate_minigun_start_firing(struct entity_t *entity)
+{
+	struct player_t *player = player0;
+
+	while(player)
+	{
+		if(player->propagate_events)
+		{
+			net_emit_uint8(player->conn, EMEVENT_MINIGUN_START_FIRING);
+			net_emit_uint32(player->conn, game_tick);
+			net_emit_uint32(player->conn, entity->index);
+			net_emit_end_of_stream(player->conn);
+		}
+		
+		player = player->next;
+	}
+}
+
+
+void propagate_minigun_stop_firing(struct entity_t *entity)
+{
+	struct player_t *player = player0;
+
+	while(player)
+	{
+		if(player->propagate_events)
+		{
+			net_emit_uint8(player->conn, EMEVENT_MINIGUN_STOP_FIRING);
+			net_emit_uint32(player->conn, game_tick);
+			net_emit_uint32(player->conn, entity->index);
+			net_emit_end_of_stream(player->conn);
+		}
+		
+		player = player->next;
+	}
+}
+
+
 int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 {
 	if(!player->craft->craft_data.left_weapon)
@@ -2083,14 +2121,22 @@ int game_process_fire_left(struct player_t *player, struct buffer_t *stream)
 	case WEAPON_MINIGUN:
 		player->firing_left = state;
 	
-		if(state && player->craft->craft_data.left_weapon->weapon_data.ammo)
+		if(state)
 		{
-			spawn_bullet(player->craft->craft_data.left_weapon, player);
-			player->firing_left_start = game_tick + 1;
-			player->left_fired = 0;
-			player->craft->craft_data.left_weapon->weapon_data.ammo--;
+			if(player->craft->craft_data.left_weapon->weapon_data.ammo)
+			{
+				spawn_bullet(player->craft->craft_data.left_weapon, player);
+				player->firing_left_start = game_tick + 1;
+				player->left_fired = 0;
+				player->craft->craft_data.left_weapon->weapon_data.ammo--;
+				propagate_minigun_start_firing(player->craft->craft_data.left_weapon);
+			}
 		}
-
+		else
+		{
+			propagate_minigun_stop_firing(player->craft->craft_data.left_weapon);
+		}
+	
 		break;
 	
 	case WEAPON_ROCKET_LAUNCHER:
@@ -2139,12 +2185,20 @@ int game_process_fire_right(struct player_t *player, struct buffer_t *stream)
 	case WEAPON_MINIGUN:
 		player->firing_right = state;
 	
-		if(state && player->craft->craft_data.right_weapon->weapon_data.ammo)
+		if(state)
 		{
-			spawn_bullet(player->craft->craft_data.right_weapon, player);
-			player->firing_right_start = game_tick + 1;
-			player->right_fired = 0;
-			player->craft->craft_data.right_weapon->weapon_data.ammo--;
+			if(player->craft->craft_data.right_weapon->weapon_data.ammo)
+			{
+				spawn_bullet(player->craft->craft_data.right_weapon, player);
+				player->firing_right_start = game_tick + 1;
+				player->right_fired = 0;
+				player->craft->craft_data.right_weapon->weapon_data.ammo--;
+				propagate_minigun_start_firing(player->craft->craft_data.right_weapon);
+			}
+		}
+		else
+		{
+			propagate_minigun_stop_firing(player->craft->craft_data.right_weapon);
 		}
 
 		break;
