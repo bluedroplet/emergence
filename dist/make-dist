@@ -1,6 +1,6 @@
 #!/bin/bash -v
 
-ver=0.5.5-dev
+ver=0.5.5
 
 cd ../em-tools
 make distclean
