@@ -3553,8 +3553,10 @@ void update_demo()
 		
 		if(!message_reader_new_message())
 		{
-			console_print("%f fps\n", (double)(frame - demo_start_frame) / 
-				(get_wall_time() - demo_start_time));
+			float s = get_wall_time() - demo_start_time;
+			
+			console_print("%u frames in %f seconds; %f fps\n", frame - demo_start_frame, 
+				s, (double)(frame - demo_start_frame) / s);
 			
 			clear_game();
 			game_conn = 0;
