@@ -252,13 +252,29 @@ void clear_game()
 	}
 	
 	LL_REMOVE_ALL(struct entity_t, &last_known_game_state.entity0);
+	memset(&last_known_game_state, 0, sizeof(last_known_game_state));
 	
 	LL_REMOVE_ALL(struct game_state_t, &game_state0);
+		
+	LL_REMOVE_ALL(struct rail_trail_t, &rail_trail0);
 	
 	clear_sgame();
 	clear_floating_images();
 	clear_ticks();
 	clear_skins();
+	
+	if(recording)
+	{
+		recording = 0;
+		gzclose(gzrecording);
+	}
+	
+	cgame_tick = 0;
+	cgame_time = 0.0;
+	
+	memset(&message_reader, 0, sizeof(message_reader));
+	
+	centity0 = NULL;
 }
 
 
@@ -729,6 +745,9 @@ void game_process_connection_failed()
 
 void game_process_disconnection(uint32_t conn)
 {
+	if(game_state == GAMESTATE_DEMO)
+		return;
+		
 	if(conn == game_conn)
 		game_state = GAMESTATE_DEAD;
 	
@@ -2069,18 +2088,28 @@ void cf_demo(char *c)
 	switch(game_state)
 	{
 	case GAMESTATE_DEAD:
-		gzdemo = gzopen(c, "rb");
-		game_state = GAMESTATE_DEMO;
-		message_reader.gzdemo = gzdemo;
-		message_reader.type = MESSAGE_READER_GZDEMO;
 		break;
-		
+	
 	case GAMESTATE_DEMO:
+		gzclose(gzdemo);
+		break;
+	
 	case GAMESTATE_CONNECTING:
 	case GAMESTATE_SPECTATING:
 	case GAMESTATE_PLAYING:
+		em_disconnect(game_conn);
 		break;
 	}
+	
+	clear_game();
+	
+	game_conn = 0;
+	gzdemo = gzopen(c, "rb");
+	game_state = GAMESTATE_DEMO;
+	message_reader.gzdemo = gzdemo;
+	message_reader.type = MESSAGE_READER_GZDEMO;
+	demo_first_tick = 0;
+	cgame_tick = 0;
 }
 
 
@@ -2092,6 +2121,8 @@ void cf_suicide(char *c)
 	case GAMESTATE_DEMO:
 	case GAMESTATE_CONNECTING:
 	case GAMESTATE_SPECTATING:
+		break;
+	
 	case GAMESTATE_PLAYING:
 		net_emit_uint8(game_conn, EMMSG_SUICIDE);
 		net_emit_end_of_stream(game_conn);
