@@ -11,6 +11,8 @@ all: $(OBJECTS)
 clean:
 	rm -f $(OBJECTS) 
 
+distclean: clean
+
 sounddatadir = $(pkgdatadir)/stock-sounds
 sounddata_DATA = $(OBJECTS)
 
