@@ -5,7 +5,8 @@ struct sample_t
 };
 
 
-void start_sample(struct sample_t *sample, uint32_t start_tick);
+uint32_t start_sample(struct sample_t *sample, uint32_t start_tick);
+void stop_sample(uint32_t index);
 void init_sound();
 void kill_sound();
 void process_alsa();

@@ -31,6 +31,7 @@ snd_pcm_t *playback_handle = NULL;
 
 struct queued_sample_t
 {
+	uint32_t index;
 	struct sample_t *sample;
 	uint32_t start_tick;
 	int begun;
@@ -40,6 +41,7 @@ struct queued_sample_t
 		
 } *queued_sample0 = NULL;
 
+uint32_t next_queued_sample_index = 0;
 
 int sound_kill_pipe[2];
 int sound_active = 0;
@@ -236,16 +238,40 @@ void process_alsa()	// check for off-by-ones
 }
 
 
-void start_sample(struct sample_t *sample, uint32_t start_tick)
+uint32_t start_sample(struct sample_t *sample, uint32_t start_tick)
 {
 	if(!sound_active)
 		return;
 	
 	struct queued_sample_t queued_sample = {
+		next_queued_sample_index++, 
 		sample, start_tick, 0};
 		
 	sound_mutex_lock();
 	LL_ADD(struct queued_sample_t, &queued_sample0, &queued_sample);
+	sound_mutex_unlock();
+	
+	return queued_sample.index;
+}
+
+
+void stop_sample(uint32_t index)
+{
+	sound_mutex_lock();
+	
+	struct queued_sample_t *cqueued_sample = queued_sample0;
+		
+	while(cqueued_sample)
+	{
+		if(cqueued_sample->index == index)
+		{
+			LL_REMOVE(struct queued_sample_t, &queued_sample0, cqueued_sample);		// inefficient
+			break;
+		}
+		
+		cqueued_sample = cqueued_sample->next;
+	}
+	
 	sound_mutex_unlock();
 }
 

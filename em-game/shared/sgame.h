@@ -187,6 +187,7 @@ struct rocket_data_t
 	struct surface_t *surface;
 	float particle;
 	uint32_t last_tick;
+	uint32_t sample;
 	#endif
 };
 

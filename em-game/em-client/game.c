@@ -296,6 +296,8 @@ struct sample_t *railgun_sample;
 struct sample_t *teleporter_sample;
 struct sample_t *speedup_ramp_sample;
 struct sample_t *explosion_sample;
+struct sample_t *plasma_cannon_sample;
+struct sample_t *rocket_sample;
 
 
 struct demo_t
@@ -1005,6 +1007,7 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->plasma_data.red = event->ent_data.plasma_data.red;
 		entity->plasma_data.green = event->ent_data.plasma_data.green;
 		entity->plasma_data.blue = event->ent_data.plasma_data.blue;
+		start_sample(plasma_cannon_sample, event->tick);
 		break;
 	
 	case ENT_ROCKET:
@@ -1022,6 +1025,7 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->rocket_data.smoke_end_red = event->ent_data.rocket_data.smoke_end_red;
 		entity->rocket_data.smoke_end_green = event->ent_data.rocket_data.smoke_end_green;
 		entity->rocket_data.smoke_end_blue = event->ent_data.rocket_data.smoke_end_blue;
+		entity->rocket_data.sample = start_sample(rocket_sample, event->tick);
 		break;
 	
 	case ENT_MINE:
@@ -1297,8 +1301,6 @@ void add_explosion_event(struct event_t *event)
 	event->explosion_data.end_red = message_reader_read_uint8();
 	event->explosion_data.end_green = message_reader_read_uint8();
 	event->explosion_data.end_blue = message_reader_read_uint8();
-
-	start_sample(explosion_sample, event->tick);
 }
 
 
@@ -1309,6 +1311,8 @@ void process_explosion_event(struct event_t *event)
 		event->explosion_data.start_red, event->explosion_data.start_green, 
 		event->explosion_data.start_blue, event->explosion_data.end_red, 
 		event->explosion_data.end_green, event->explosion_data.end_blue);
+
+	start_sample(explosion_sample, event->tick);
 }
 
 
@@ -4104,6 +4108,8 @@ void init_game()
 	teleporter_sample = load_sample(find_resource("stock-sounds/teleporter.ogg"));
 	speedup_ramp_sample = load_sample(find_resource("stock-sounds/speedup-ramp.ogg"));
 	explosion_sample = load_sample(find_resource("stock-sounds/explosion.ogg"));
+	plasma_cannon_sample = load_sample(find_resource("stock-sounds/plasma-cannon.ogg"));
+	rocket_sample = load_sample(find_resource("stock-sounds/rocket.ogg"));
 }
 
 

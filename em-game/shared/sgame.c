@@ -35,6 +35,7 @@
 #ifdef EMCLIENT
 #include "../game.h"
 #include "../console.h"
+#include "../sound.h"
 #endif
 
 struct spawn_point_t *spawn_point0 = NULL;
@@ -935,6 +936,10 @@ void destroy_rocket(struct entity_t *rocket)
 		rocket->rocket_data.smoke_start_red, rocket->rocket_data.smoke_start_green, 
 		rocket->rocket_data.smoke_start_blue, rocket->rocket_data.smoke_end_red, 
 		rocket->rocket_data.smoke_end_green, rocket->rocket_data.smoke_end_blue);
+	#endif
+	
+	#ifdef EMCLIENT
+	stop_sample(rocket->rocket_data.sample);
 	#endif
 	
 	if(!rocket->in_tick)
