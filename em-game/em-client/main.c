@@ -213,7 +213,7 @@ void init()
 	init_render_cvars();
 	init_map_cvars();
 	create_control_cvars();
-	create_input_cvars();
+//	create_input_cvars();
 	init_tick_cvars();
 
 	init_console();

@@ -80,21 +80,25 @@ void process_input()
 	}
 }
 
-
+/*
 void create_input_cvars()
 {
 	create_cvar_string("input_dev", "/dev/input/mice", 0);
 }
-
+*/
 
 void init_input()
 {
-	console_print("Opening input device: ");
+	console_print("Opening mouse device: ");
 	
-	input_fd = open(get_cvar_string("input_dev"), O_RDONLY);
+	input_fd = open("/dev/input/mice", O_RDONLY);
 	if(input_fd < 0)
-		goto error;
-
+	{
+		input_fd = open("/dev/psaux", O_RDONLY);
+		if(input_fd < 0)
+			goto error;
+	}
+	
 	if(fcntl(input_fd, F_SETFL, O_NONBLOCK) == -1)
 	{
 		close(input_fd);
