@@ -192,7 +192,7 @@ struct mine_data_t
 struct rails_data_t
 {
 	#ifdef EMSERVER
-//	int quantity;
+	int quantity;
 	#endif
 };
 
@@ -200,7 +200,7 @@ struct rails_data_t
 struct shield_data_t
 {
 	#ifdef EMSERVER
-//	double strength;
+	float strength;
 	#endif
 	
 	#ifdef EMCLIENT
@@ -354,6 +354,7 @@ void splash_force(double x, double y, double force, struct player_t *responsibil
 void explode_craft(struct entity_t *craft, struct player_t *responsibility);
 int craft_force(struct entity_t *craft, double force, struct player_t *responsibility);
 int weapon_force(struct entity_t *weapon, double force, struct player_t *responsibility);
+int plasma_rail_hit(struct entity_t *plasma);
 int rocket_force(struct entity_t *rocket, double force);
 int mine_force(struct entity_t *mine, double force);
 int rails_force(struct entity_t *rails, double force, struct player_t *responsibility);
@@ -384,6 +385,7 @@ int point_in_circle(double px, double py, double cx, double cy, double cr);
 
 #define CRAFT_MASS	100.0
 #define WEAPON_MASS	75.0
+#define RAILS_MASS	15.0
 
 
 #endif // _INC_SGAME

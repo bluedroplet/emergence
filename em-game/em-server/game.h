@@ -100,6 +100,7 @@ struct pickup_spawn_point_t
 #define PLAYER_STATE_ACTIVE		0
 #define PLAYER_STATE_SPECTATING	1
 
+#define CRAFT_MAX_RAILS	20
 
 void update_game();
 void game_process_join(uint32_t conn, uint32_t index, struct buffer_t *stream);

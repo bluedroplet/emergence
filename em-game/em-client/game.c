@@ -1098,6 +1098,10 @@ void process_kill_ent_event(struct event_t *event)
 		explosion(entity);
 		strip_craft_from_weapon(entity);
 		break;
+	
+	case ENT_RAILS:
+		explosion(entity);
+		break;
 	}
 	
 	remove_entity(&centity0, entity);

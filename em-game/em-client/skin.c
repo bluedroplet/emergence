@@ -287,8 +287,6 @@ void init_skin()
 		string_cat_string(c, a);
 		
 		system(c->text);
-		printf(c->text);
-		printf("\n");
 		
 		free_string(c);
 	}

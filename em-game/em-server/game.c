@@ -952,9 +952,6 @@ void tick_game()
 	s_tick_entities(&entity0);
 		
 	
-	// propagate unpredictable entity changes
-	
-	
 	struct player_t *player = player0;
 	while(player)
 	{
@@ -1455,7 +1452,7 @@ int game_process_fire_rail(struct player_t *player)
 	
 	while(crail_entity)
 	{
-		int destroyed;
+		int destroyed = 0;
 		
 		switch(crail_entity->entity->type)
 		{
@@ -1469,9 +1466,9 @@ int game_process_fire_rail(struct player_t *player)
 			destroyed = weapon_force(crail_entity->entity, RAIL_DAMAGE, player);
 			break;
 		
-	//	case ENT_PLASMA:
-	//		destroyed = plasma_force(crail_entity->entity, RAIL_DAMAGE);
-	//		break;
+		case ENT_PLASMA:
+			destroyed = plasma_rail_hit(crail_entity->entity);
+			break;
 		
 		case ENT_ROCKET:
 			destroyed = rocket_force(crail_entity->entity, RAIL_DAMAGE);
@@ -1502,12 +1499,8 @@ int game_process_fire_rail(struct player_t *player)
 	// calculate extra frags for multiple kills
 	// bear in mind that we have already got one frag per kill
 	
-	int extra_kill_frags = 0;
-	
 	while(kills--)
-		extra_kill_frags += kills;
-	
-	player->frags += extra_kill_frags;
+		player->frags += kills;
 
 	
 	if(crail_entity)
