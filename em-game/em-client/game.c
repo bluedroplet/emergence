@@ -2712,6 +2712,16 @@ void tick_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 		particle.end_green = craft->craft_data.smoke_end_green;
 		particle.end_blue = craft->craft_data.smoke_end_blue;
 	}
+	else
+	{
+		particle.start_red = lrand48();
+		particle.start_green = lrand48();
+		particle.start_blue = lrand48();
+	
+		particle.end_red = lrand48();
+		particle.end_green = lrand48();
+		particle.end_blue = lrand48();
+	}
 
 	if(craft->craft_data.carcass)
 	{
@@ -2863,6 +2873,17 @@ void tick_rocket(struct entity_t *rocket, float xdis, float ydis)
 		particle.end_green = rocket->rocket_data.smoke_end_green;
 		particle.end_blue = rocket->rocket_data.smoke_end_blue;
 	}
+	else
+	{
+		particle.start_red = lrand48();
+		particle.start_green = lrand48();
+		particle.start_blue = lrand48();
+	
+		particle.end_red = lrand48();
+		particle.end_green = lrand48();
+		particle.end_blue = lrand48();
+	}
+		
 	
 	int np = 0, p;
 	
@@ -3151,9 +3172,9 @@ void render_entities()
 		
 			if(entity->rocket_data.magic_smoke)
 			{
-				params.red = drand48();
-				params.green = drand48();
-				params.blue = drand48();
+				params.red = lrand48();
+				params.green = lrand48();
+				params.blue = lrand48();
 			}
 			else
 			{
