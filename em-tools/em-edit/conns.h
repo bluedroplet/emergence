@@ -32,12 +32,12 @@
 
 struct t_t
 {
-	double t1, t2;
-	double x1, y1, x2, y2;
-	double dist;	// distance between (x1, y1) and (x2, y2)
+	float t1, t2;
+	float x1, y1, x2, y2;
+	float dist;	// distance between (x1, y1) and (x2, y2)
 	
-	double deltax1, deltay1;
-	double deltax2, deltay2;
+	float deltax1, deltay1;
+	float deltax2, deltay2;
 
 	struct t_t *next;
 };
@@ -57,10 +57,10 @@ struct conn_t
 	struct t_t *bigt0;
 		
 	uint32_t t_count;
-	double t_length;
+	float t_length;
 	
 	uint32_t bigt_count;
-	double bigt_length;
+	float bigt_length;
 	
 	struct vertex_t *verts;		// calculated by generate_verticies
 
@@ -91,7 +91,7 @@ struct conn_t *get_conn_from_sat(struct node_t *node, int sat);
 void delete_conn(struct conn_t *conn);
 struct conn_t *get_conn_from_node(struct node_t *node);
 void draw_conn(struct conn_t *conn);
-void get_conn_limits(struct conn_t *conn, double *minx, double *maxx, double *miny, double *maxy);
+void get_conn_limits(struct conn_t *conn, float *minx, float *maxx, float *miny, float *maxy);
 int add_conn_pointer(struct conn_pointer_t **connp0, struct conn_t *conn);
 void delete_all_conns();
 void remove_conn_pointer(struct conn_pointer_t **connp0, struct conn_t *conn);

@@ -151,7 +151,7 @@ int node_in_node_pointer_list(struct node_pointer_t *nodep0, struct node_t *node
 }
 
 
-void insert_node(double x, double y)
+void insert_node(float x, float y)
 {
 	// no need to stop working
 	
@@ -561,7 +561,7 @@ void get_satellite(int x, int y, struct node_t **node, uint8_t *sat, int *xoffse
 }
 
 
-void get_width_sat_pos(struct node_t *node, uint8_t sat, double *x, double *y)
+void get_width_sat_pos(struct node_t *node, uint8_t sat, float *x, float *y)
 {
 	double theta = atan2(node->sats[0].y, node->sats[0].x);
 	double cos_theta, sin_theta;
@@ -599,13 +599,13 @@ void get_width_sat(int x, int y, struct node_t **node, uint8_t *sat, int *xoffse
 {
 	struct node_t *cnode = node0;
 	
-	double worldx, worldy;
+	float worldx, worldy;
 	int w;
 	screen_to_world(x, y, &worldx, &worldy);
 
 	while(cnode)
 	{
-		double satx = 0.0, saty = 0.0;
+		float satx = 0.0, saty = 0.0;
 
 		for(w = 0; w < 4; w++)
 		{
@@ -644,13 +644,13 @@ void get_width_sat(int x, int y, struct node_t **node, uint8_t *sat, int *xoffse
 }
 
 
-void set_width_sat(struct node_t *node, uint8_t sat, double x, double y)
+void set_width_sat(struct node_t *node, uint8_t sat, float x, float y)
 {
 	node->width[sat] = hypot(x, y);
 }
 
 
-void set_sat_dist(struct node_t *node, uint8_t sat, double x, double y)
+void set_sat_dist(struct node_t *node, uint8_t sat, float x, float y)
 {
 	double dist = hypot(x, y);
 	
@@ -744,13 +744,13 @@ void gzwrite_nodes(gzFile file)
 	while(cnode)
 	{
 		cnode->index = cnode_index++;
-		gzwrite(file, &cnode->x, 8);
-		gzwrite(file, &cnode->y, 8);
+		gzwrite(file, &cnode->x, 4);
+		gzwrite(file, &cnode->y, 4);
 		gzwrite(file, &cnode->sats, sizeof(struct sat_t) * 4);
-		gzwrite(file, &cnode->width[0], 8);
-		gzwrite(file, &cnode->width[1], 8);
-		gzwrite(file, &cnode->width[2], 8);
-		gzwrite(file, &cnode->width[3], 8);
+		gzwrite(file, &cnode->width[0], 4);
+		gzwrite(file, &cnode->width[1], 4);
+		gzwrite(file, &cnode->width[2], 4);
+		gzwrite(file, &cnode->width[3], 4);
 		gzwrite(file, &cnode->fill_type, 1);
 		gzwrite_string(file, cnode->texture_filename);
 		gzwrite(file, &cnode->texture_flip_horiz, 1);
@@ -781,25 +781,25 @@ int gzread_nodes(gzFile file)
 
 		cnode->index = cnode_index;
 
-		if(gzread(file, &cnode->x, 8) != 8)
+		if(gzread(file, &cnode->x, 4) != 4)
 			goto error;
 
-		if(gzread(file, &cnode->y, 8) != 8)
+		if(gzread(file, &cnode->y, 4) != 4)
 			goto error;
 
 		if(gzread(file, &cnode->sats, sizeof(struct sat_t) * 4) != sizeof(struct sat_t) * 4)
 			goto error;
 
-		if(gzread(file, &cnode->width[0], 8) != 8)
+		if(gzread(file, &cnode->width[0], 4) != 4)
 			goto error;
 
-		if(gzread(file, &cnode->width[1], 8) != 8)
+		if(gzread(file, &cnode->width[1], 4) != 4)
 			goto error;
 
-		if(gzread(file, &cnode->width[2], 8) != 8)
+		if(gzread(file, &cnode->width[2], 4) != 4)
 			goto error;
 
-		if(gzread(file, &cnode->width[3], 8) != 8)
+		if(gzread(file, &cnode->width[3], 4) != 4)
 			goto error;
 
 		if(gzread(file, &cnode->fill_type, 1) != 1)
@@ -965,7 +965,7 @@ void draw_width_sats()
 	while(cnode)
 	{
 		int x, y, n;
-		double worldx, worldy;
+		float worldx, worldy;
 		world_to_screen(cnode->x, cnode->y, &x, &y);
 
 		for(n = 0; n < 4; n++)

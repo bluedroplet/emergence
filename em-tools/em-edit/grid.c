@@ -44,9 +44,10 @@ void draw_grid()
 {
 	int startx, starty, endx, endy;
 
-	double this_grid_spacing = exp2(floor(log(1 / zoom) / log(2))) * grid_spacing * exp2(grid_granularity);
+	double this_grid_spacing = exp2(floor(log(1 / zoom) / log(2))) * 
+		grid_spacing * exp2(grid_granularity);
 
-	double world_x, world_y;
+	float world_x, world_y;
 
 	screen_to_world(0, vid_height - 1, &world_x, &world_y);
 
@@ -75,7 +76,7 @@ void draw_grid()
 }
 
 
-void snap_to_grid(double inx, double iny, double *outx, double *outy)
+void snap_to_grid(float inx, float iny, float *outx, float *outy)
 {
 	double this_grid_spacing = exp2(floor(log(1 / zoom) / log(2))) * grid_spacing * exp2(grid_granularity);
 	

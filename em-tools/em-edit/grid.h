@@ -23,6 +23,6 @@
 
 
 void draw_grid();
-void snap_to_grid(double inx, double iny, double *outx, double *outy);
+void snap_to_grid(float inx, float iny, float *outx, float *outy);
 void decrease_grid_granularity();
 void increase_grid_granularity();

@@ -26,24 +26,24 @@
 #ifndef _INC_INTERFACE
 #define _INC_INTERFACE
 
-extern double zoom;
+extern float zoom;
 
 extern int mouse_screenx, mouse_screeny;
-extern double mouse_worldx, mouse_worldy;
+extern float mouse_worldx, mouse_worldy;
 
 extern int left_button_down_screenx, left_button_down_screeny;
-extern double left_button_down_worldx, left_button_down_worldy;
+extern float left_button_down_worldx, left_button_down_worldy;
 
 extern int right_button_down_screenx, right_button_down_screeny;
-extern double right_button_down_worldx, right_button_down_worldy;
+extern float right_button_down_worldx, right_button_down_worldy;
 
 extern int right_button_down_rootx, right_button_down_rooty;
 
 
-void world_to_screen(double worldx, double worldy, int *screenx, int *screeny);
-void screen_to_world(int screenx, int screeny, double *worldx, double *worldy);
+void world_to_screen(float worldx, float worldy, int *screenx, int *screeny);
+void screen_to_world(int screenx, int screeny, float *worldx, float *worldy);
 
-void draw_world_clipped_line(double x1, double y1, double x2, double y2);
+void draw_world_clipped_line(float x1, float y1, float x2, float y2);
 
 
 #define VIEW_GRID				0x0001

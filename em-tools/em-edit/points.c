@@ -40,6 +40,7 @@
 
 #include "../common/llist.h"
 #include "../gsub/gsub.h"
+#include "conns.h"
 #include "bezier.h"
 #include "nodes.h"
 #include "conns.h"
@@ -104,7 +105,7 @@ int add_point_pointer(struct point_pointer_t **pointp0, struct point_t *point)
 }
 
 
-void insert_point(struct curve_t *curve, double x, double y)
+void insert_point(struct curve_t *curve, float x, float y)
 {
 	struct conn_pointer_t *connp = curve->connp0;
 	
@@ -402,7 +403,7 @@ struct point_t *get_point(int x, int y, int *xoffset, int *yoffset)
 }
 
 
-void move_point(struct point_t *point, double x, double y)
+void move_point(struct point_t *point, float x, float y)
 {
 	struct conn_pointer_t *connp = point->curve->connp0;
 	
@@ -616,7 +617,7 @@ void gzwrite_points(gzFile file)
 	{
 		cpoint->index = point_index++;
 		gzwrite(file, &cpoint->curve->index, 4);
-		gzwrite(file, &cpoint->pos, 8);
+		gzwrite(file, &cpoint->pos, 4);
 		
 		cpoint = cpoint->next;
 
@@ -646,7 +647,7 @@ int gzread_points(gzFile file)
 		if(!cpoint->curve)
 			goto error;
 
-		if(gzread(file, &cpoint->pos, 8) != 8)
+		if(gzread(file, &cpoint->pos, 4) != 4)
 			goto error;
 
 		cpoint_index++;

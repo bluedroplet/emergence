@@ -1093,7 +1093,7 @@ void gzwrite_curves(gzFile file)
 		gzwrite(file, &ccurve->fixed_reps, 1);
 		
 		gzwrite(file, &ccurve->reps, 4);
-		gzwrite(file, &ccurve->texture_length, 8);
+		gzwrite(file, &ccurve->texture_length, 4);
 		gzwrite(file, &ccurve->pixel_offset_horiz, 4);
 		gzwrite(file, &ccurve->pixel_offset_vert, 4);
 		
@@ -1160,7 +1160,7 @@ int gzread_curves(gzFile file)
 		if(gzread(file, &curve.reps, 4) != 4)
 			goto error;
 		
-		if(gzread(file, &curve.texture_length, 8) != 8)
+		if(gzread(file, &curve.texture_length, 4) != 4)
 			goto error;
 		
 		if(gzread(file, &curve.pixel_offset_horiz, 4) != 4)

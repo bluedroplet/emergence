@@ -163,7 +163,7 @@ int object_in_object_pointer_list(struct object_pointer_t *objectp0, struct obje
 }
 
 
-void insert_object(int type, double x, double y)
+void insert_object(int type, float x, float y)
 {
 	struct object_t object;
 	
@@ -2082,47 +2082,47 @@ void gzwrite_objects(gzFile file)
 	while(object)
 	{
 		gzwrite(file, &object->type, 1);
-		gzwrite(file, &object->x, 8);
-		gzwrite(file, &object->y, 8);
+		gzwrite(file, &object->x, 4);
+		gzwrite(file, &object->y, 4);
 		
 		switch(object->type)
 		{
 		case OBJECTTYPE_PLASMACANNON:
 			gzwrite(file, &object->plasma_cannon_data.plasmas, 4);
-			gzwrite(file, &object->plasma_cannon_data.angle, 8);
+			gzwrite(file, &object->plasma_cannon_data.angle, 4);
 			gzwrite(file, &object->plasma_cannon_data.respawn_delay, 4);
 			break;
 		
 		case OBJECTTYPE_MINIGUN:
 			gzwrite(file, &object->minigun_data.bullets, 4);
-			gzwrite(file, &object->minigun_data.angle, 8);
+			gzwrite(file, &object->minigun_data.angle, 4);
 			gzwrite(file, &object->minigun_data.respawn_delay, 4);
 			break;
 		
 		case OBJECTTYPE_ROCKETLAUNCHER:
 			gzwrite(file, &object->rocket_launcher_data.rockets, 4);
-			gzwrite(file, &object->rocket_launcher_data.angle, 8);
+			gzwrite(file, &object->rocket_launcher_data.angle, 4);
 			gzwrite(file, &object->rocket_launcher_data.respawn_delay, 4);
 			break;
 		
 		case OBJECTTYPE_RAILS:
 			gzwrite(file, &object->rails_data.quantity, 4);
-			gzwrite(file, &object->rails_data.angle, 8);
+			gzwrite(file, &object->rails_data.angle, 4);
 			gzwrite(file, &object->rails_data.respawn_delay, 4);
 			break;
 		
 		case OBJECTTYPE_SHIELDENERGY:
 			gzwrite(file, &object->shield_energy_data.energy, 4);
-			gzwrite(file, &object->shield_energy_data.angle, 8);
+			gzwrite(file, &object->shield_energy_data.angle, 4);
 			gzwrite(file, &object->shield_energy_data.respawn_delay, 4);
 			break;
 		
 		case OBJECTTYPE_SPAWNPOINT:
 			gzwrite(file, &object->spawn_point_data.non_default_texture, 4);
 			gzwrite_string(file, object->spawn_point_data.texture_filename);
-			gzwrite(file, &object->spawn_point_data.width, 8);
-			gzwrite(file, &object->spawn_point_data.height, 8);
-			gzwrite(file, &object->spawn_point_data.angle, 8);
+			gzwrite(file, &object->spawn_point_data.width, 4);
+			gzwrite(file, &object->spawn_point_data.height, 4);
+			gzwrite(file, &object->spawn_point_data.angle, 4);
 			gzwrite(file, &object->spawn_point_data.teleport_only, 4);
 			gzwrite(file, &object->spawn_point_data.index, 4);
 			break;
@@ -2130,35 +2130,35 @@ void gzwrite_objects(gzFile file)
 		case OBJECTTYPE_SPEEDUPRAMP:
 			gzwrite(file, &object->speedup_ramp_data.non_default_texture, 4);
 			gzwrite_string(file, object->speedup_ramp_data.texture_filename);
-			gzwrite(file, &object->speedup_ramp_data.width, 8);
-			gzwrite(file, &object->speedup_ramp_data.height, 8);
-			gzwrite(file, &object->speedup_ramp_data.angle, 8);
-			gzwrite(file, &object->speedup_ramp_data.activation_width, 8);
-			gzwrite(file, &object->speedup_ramp_data.boost, 8);
+			gzwrite(file, &object->speedup_ramp_data.width, 4);
+			gzwrite(file, &object->speedup_ramp_data.height, 4);
+			gzwrite(file, &object->speedup_ramp_data.angle, 4);
+			gzwrite(file, &object->speedup_ramp_data.activation_width, 4);
+			gzwrite(file, &object->speedup_ramp_data.boost, 4);
 			break;
 		
 		case OBJECTTYPE_TELEPORTER:
 			gzwrite(file, &object->teleporter_data.non_default_texture, 4);
 			gzwrite_string(file, object->spawn_point_data.texture_filename);
-			gzwrite(file, &object->teleporter_data.width, 8);
-			gzwrite(file, &object->teleporter_data.height, 8);
-			gzwrite(file, &object->teleporter_data.angle, 8);
-			gzwrite(file, &object->teleporter_data.radius, 8);
+			gzwrite(file, &object->teleporter_data.width, 4);
+			gzwrite(file, &object->teleporter_data.height, 4);
+			gzwrite(file, &object->teleporter_data.angle, 4);
+			gzwrite(file, &object->teleporter_data.radius, 4);
 			gzwrite(file, &object->teleporter_data.sparkles, 4);
 			gzwrite(file, &object->teleporter_data.spawn_point_index, 4);
 			gzwrite(file, &object->teleporter_data.rotation_type, 4);
-			gzwrite(file, &object->teleporter_data.rotation_angle, 8);
+			gzwrite(file, &object->teleporter_data.rotation_angle, 4);
 			gzwrite(file, &object->teleporter_data.divider, 4);
-			gzwrite(file, &object->teleporter_data.divider_angle, 8);
+			gzwrite(file, &object->teleporter_data.divider_angle, 4);
 			break;
 		
 		case OBJECTTYPE_GRAVITYWELL:
 			gzwrite(file, &object->gravity_well_data.non_default_texture, 4);
 			gzwrite_string(file, object->spawn_point_data.texture_filename);
-			gzwrite(file, &object->gravity_well_data.width, 8);
-			gzwrite(file, &object->gravity_well_data.height, 8);
-			gzwrite(file, &object->gravity_well_data.angle, 8);
-			gzwrite(file, &object->gravity_well_data.strength, 8);
+			gzwrite(file, &object->gravity_well_data.width, 4);
+			gzwrite(file, &object->gravity_well_data.height, 4);
+			gzwrite(file, &object->gravity_well_data.angle, 4);
+			gzwrite(file, &object->gravity_well_data.strength, 4);
 			gzwrite(file, &object->gravity_well_data.enclosed, 4);
 			break;
 		}		
@@ -2178,65 +2178,65 @@ void gzwrite_objects_compiled(gzFile file)
 	while(object)
 	{
 		gzwrite(file, &object->type, 1);
-		gzwrite(file, &object->x, 8);
-		gzwrite(file, &object->y, 8);
+		gzwrite(file, &object->x, 4);
+		gzwrite(file, &object->y, 4);
 		
 		switch(object->type)
 		{
 		case OBJECTTYPE_PLASMACANNON:
 			gzwrite(file, &object->plasma_cannon_data.plasmas, 4);
-			gzwrite(file, &object->plasma_cannon_data.angle, 8);
+			gzwrite(file, &object->plasma_cannon_data.angle, 4);
 			gzwrite(file, &object->plasma_cannon_data.respawn_delay, 4);
 			break;
 		
 		case OBJECTTYPE_MINIGUN:
 			gzwrite(file, &object->minigun_data.bullets, 4);
-			gzwrite(file, &object->minigun_data.angle, 8);
+			gzwrite(file, &object->minigun_data.angle, 4);
 			gzwrite(file, &object->minigun_data.respawn_delay, 4);
 			break;
 		
 		case OBJECTTYPE_ROCKETLAUNCHER:
 			gzwrite(file, &object->rocket_launcher_data.rockets, 4);
-			gzwrite(file, &object->rocket_launcher_data.angle, 8);
+			gzwrite(file, &object->rocket_launcher_data.angle, 4);
 			gzwrite(file, &object->rocket_launcher_data.respawn_delay, 4);
 			break;
 		
 		case OBJECTTYPE_RAILS:
 			gzwrite(file, &object->rails_data.quantity, 4);
-			gzwrite(file, &object->rails_data.angle, 8);
+			gzwrite(file, &object->rails_data.angle, 4);
 			gzwrite(file, &object->rails_data.respawn_delay, 4);
 			break;
 		
 		case OBJECTTYPE_SHIELDENERGY:
 			gzwrite(file, &object->shield_energy_data.energy, 4);
-			gzwrite(file, &object->shield_energy_data.angle, 8);
+			gzwrite(file, &object->shield_energy_data.angle, 4);
 			gzwrite(file, &object->shield_energy_data.respawn_delay, 4);
 			break;
 		
 		case OBJECTTYPE_SPAWNPOINT:
-			gzwrite(file, &object->spawn_point_data.angle, 8);
+			gzwrite(file, &object->spawn_point_data.angle, 4);
 			gzwrite(file, &object->spawn_point_data.teleport_only, 4);
 			gzwrite(file, &object->spawn_point_data.index, 4);
 			break;
 		
 		case OBJECTTYPE_SPEEDUPRAMP:
-			gzwrite(file, &object->speedup_ramp_data.angle, 8);
-			gzwrite(file, &object->speedup_ramp_data.activation_width, 8);
-			gzwrite(file, &object->speedup_ramp_data.boost, 8);
+			gzwrite(file, &object->speedup_ramp_data.angle, 4);
+			gzwrite(file, &object->speedup_ramp_data.activation_width, 4);
+			gzwrite(file, &object->speedup_ramp_data.boost, 4);
 			break;
 		
 		case OBJECTTYPE_TELEPORTER:
-			gzwrite(file, &object->teleporter_data.radius, 8);
+			gzwrite(file, &object->teleporter_data.radius, 4);
 			gzwrite(file, &object->teleporter_data.sparkles, 4);
 			gzwrite(file, &object->teleporter_data.spawn_point_index, 4);
 			gzwrite(file, &object->teleporter_data.rotation_type, 4);
-			gzwrite(file, &object->teleporter_data.rotation_angle, 8);
+			gzwrite(file, &object->teleporter_data.rotation_angle, 4);
 			gzwrite(file, &object->teleporter_data.divider, 4);
-			gzwrite(file, &object->teleporter_data.divider_angle, 8);
+			gzwrite(file, &object->teleporter_data.divider_angle, 4);
 			break;
 		
 		case OBJECTTYPE_GRAVITYWELL:
-			gzwrite(file, &object->gravity_well_data.strength, 8);
+			gzwrite(file, &object->gravity_well_data.strength, 4);
 			gzwrite(file, &object->gravity_well_data.enclosed, 4);
 			break;
 		}		
@@ -2276,8 +2276,8 @@ void gzwrite_object_floating_images(gzFile file)
 		switch(cobject->type)
 		{
 		case OBJECTTYPE_SPEEDUPRAMP:
-			gzwrite(file, &cobject->x, 8);
-			gzwrite(file, &cobject->y, 8);
+			gzwrite(file, &cobject->x, 4);
+			gzwrite(file, &cobject->y, 4);
 			gzwrite_raw_surface(file, cobject->texture_surface);
 			break;
 		}
@@ -2325,10 +2325,10 @@ int gzread_objects(gzFile file)
 		if(gzread(file, &object.type, 1) != 1)
 			goto error;
 
-		if(gzread(file, &object.x, 8) != 8)
+		if(gzread(file, &object.x, 4) != 4)
 			goto error;
 		
-		if(gzread(file, &object.y, 8) != 8)
+		if(gzread(file, &object.y, 4) != 4)
 			goto error;
 		
 		
@@ -2338,7 +2338,7 @@ int gzread_objects(gzFile file)
 			if(gzread(file, &object.plasma_cannon_data.plasmas, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.plasma_cannon_data.angle, 8) != 8)
+			if(gzread(file, &object.plasma_cannon_data.angle, 4) != 4)
 				goto error;
 			
 			if(gzread(file, &object.plasma_cannon_data.respawn_delay, 4) != 4)
@@ -2350,7 +2350,7 @@ int gzread_objects(gzFile file)
 			if(gzread(file, &object.minigun_data.bullets, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.minigun_data.angle, 8) != 8)
+			if(gzread(file, &object.minigun_data.angle, 4) != 4)
 				goto error;
 			
 			if(gzread(file, &object.minigun_data.respawn_delay, 4) != 4)
@@ -2362,7 +2362,7 @@ int gzread_objects(gzFile file)
 			if(gzread(file, &object.rocket_launcher_data.rockets, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.rocket_launcher_data.angle, 8) != 8)
+			if(gzread(file, &object.rocket_launcher_data.angle, 4) != 4)
 				goto error;
 			
 			if(gzread(file, &object.rocket_launcher_data.respawn_delay, 4) != 4)
@@ -2374,7 +2374,7 @@ int gzread_objects(gzFile file)
 			if(gzread(file, &object.rails_data.quantity, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.rails_data.angle, 8) != 8)
+			if(gzread(file, &object.rails_data.angle, 4) != 4)
 				goto error;
 			
 			if(gzread(file, &object.rails_data.respawn_delay, 4) != 4)
@@ -2386,7 +2386,7 @@ int gzread_objects(gzFile file)
 			if(gzread(file, &object.shield_energy_data.energy, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.shield_energy_data.angle, 8) != 8)
+			if(gzread(file, &object.shield_energy_data.angle, 4) != 4)
 				goto error;
 			
 			if(gzread(file, &object.shield_energy_data.respawn_delay, 4) != 4)
@@ -2406,13 +2406,13 @@ int gzread_objects(gzFile file)
 			object.spawn_point_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 			
-			if(gzread(file, &object.spawn_point_data.width, 8) != 8)
+			if(gzread(file, &object.spawn_point_data.width, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.spawn_point_data.height, 8) != 8)
+			if(gzread(file, &object.spawn_point_data.height, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.spawn_point_data.angle, 8) != 8)
+			if(gzread(file, &object.spawn_point_data.angle, 4) != 4)
 				goto error;
 			
 			if(gzread(file, &object.spawn_point_data.teleport_only, 4) != 4)
@@ -2435,19 +2435,19 @@ int gzread_objects(gzFile file)
 			object.speedup_ramp_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 
-			if(gzread(file, &object.speedup_ramp_data.width, 8) != 8)
+			if(gzread(file, &object.speedup_ramp_data.width, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.speedup_ramp_data.height, 8) != 8)
+			if(gzread(file, &object.speedup_ramp_data.height, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.speedup_ramp_data.angle, 8) != 8)
+			if(gzread(file, &object.speedup_ramp_data.angle, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.speedup_ramp_data.activation_width, 8) != 8)
+			if(gzread(file, &object.speedup_ramp_data.activation_width, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.speedup_ramp_data.boost, 8) != 8)
+			if(gzread(file, &object.speedup_ramp_data.boost, 4) != 4)
 				goto error;
 			
 			break;
@@ -2464,16 +2464,16 @@ int gzread_objects(gzFile file)
 			object.teleporter_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 			
-			if(gzread(file, &object.teleporter_data.width, 8) != 8)
+			if(gzread(file, &object.teleporter_data.width, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.teleporter_data.height, 8) != 8)
+			if(gzread(file, &object.teleporter_data.height, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.teleporter_data.angle, 8) != 8)
+			if(gzread(file, &object.teleporter_data.angle, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.teleporter_data.radius, 8) != 8)
+			if(gzread(file, &object.teleporter_data.radius, 4) != 4)
 				goto error;
 			
 			if(gzread(file, &object.teleporter_data.sparkles, 4) != 4)
@@ -2485,13 +2485,13 @@ int gzread_objects(gzFile file)
 			if(gzread(file, &object.teleporter_data.rotation_type, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.teleporter_data.rotation_angle, 8) != 8)
+			if(gzread(file, &object.teleporter_data.rotation_angle, 4) != 4)
 				goto error;
 			
 			if(gzread(file, &object.teleporter_data.divider, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.teleporter_data.divider_angle, 8) != 8)
+			if(gzread(file, &object.teleporter_data.divider_angle, 4) != 4)
 				goto error;
 			
 			break;
@@ -2508,16 +2508,16 @@ int gzread_objects(gzFile file)
 			object.gravity_well_data.texture_pre_surface = read_png_surface_as_24bitalpha8bit(string->text);
 			free_string(string);
 			
-			if(gzread(file, &object.gravity_well_data.width, 8) != 8)
+			if(gzread(file, &object.gravity_well_data.width, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.gravity_well_data.height, 8) != 8)
+			if(gzread(file, &object.gravity_well_data.height, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.gravity_well_data.angle, 8) != 8)
+			if(gzread(file, &object.gravity_well_data.angle, 4) != 4)
 				goto error;
 			
-			if(gzread(file, &object.gravity_well_data.strength, 8) != 8)
+			if(gzread(file, &object.gravity_well_data.strength, 4) != 4)
 				goto error;
 			
 			if(gzread(file, &object.gravity_well_data.enclosed, 4) != 4)

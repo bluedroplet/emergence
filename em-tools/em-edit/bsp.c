@@ -2251,6 +2251,7 @@ void generate_bsp_tree()
 	}
 }
 
+
 void generate_ui_bsp_tree()
 {
 	if(!worker_try_enter_main_lock())

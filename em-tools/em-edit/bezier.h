@@ -24,10 +24,10 @@
 
 struct bezier_t
 {
-	double x1, y1, x2, y2, x3, y3, x4, y4;
+	float x1, y1, x2, y2, x3, y3, x4, y4;
 };
 
-void BRZ(struct bezier_t *bezier, double t, double *x, double *y);
-void deltaBRZ(struct bezier_t *bezier, double t, double *x, double *y);
-int generate_bezier_ts(struct bezier_t *in_bezier, struct t_t **out_t0, int *out_count, double *out_length);
-void generate_bezier_bigts(struct bezier_t *in_bezier, struct t_t **out_t0, int *out_count, double *out_length);
+void BRZ(struct bezier_t *bezier, float t, float *x, float *y);
+void deltaBRZ(struct bezier_t *bezier, float t, float *x, float *y);
+int generate_bezier_ts(struct bezier_t *in_bezier, struct t_t **out_t0, int *out_count, float *out_length);
+void generate_bezier_bigts(struct bezier_t *in_bezier, struct t_t **out_t0, int *out_count, float *out_length);

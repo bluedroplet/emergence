@@ -1448,8 +1448,8 @@ void draw_conic_conn(struct conn_t *conn)
 
 void draw_bezier_conn_sub_left(struct conn_t *conn, struct bezier_t *bezier, double t1, double t2)
 {
-	double x1, y1, x2, y2;
-	double dx1, dy1, dx2, dy2;
+	float x1, y1, x2, y2;
+	float dx1, dy1, dx2, dy2;
 	int sx1, sy1, sx2, sy2;
 	
 	BRZ(bezier, t1, &x1, &y1);
@@ -1499,8 +1499,8 @@ void draw_bezier_conn_sub_left(struct conn_t *conn, struct bezier_t *bezier, dou
 
 void draw_bezier_conn_sub_right(struct conn_t *conn, struct bezier_t *bezier, double t1, double t2)
 {
-	double x1, y1, x2, y2;
-	double dx1, dy1, dx2, dy2;
+	float x1, y1, x2, y2;
+	float dx1, dy1, dx2, dy2;
 	int sx1, sy1, sx2, sy2;
 	
 	BRZ(bezier, t1, &x1, &y1);
@@ -1585,7 +1585,7 @@ void draw_conn(struct conn_t *conn)
 }
 
 
-void get_conn_limits(struct conn_t *conn, double *minx, double *maxx, double *miny, double *maxy)
+void get_conn_limits(struct conn_t *conn, float *minx, float *maxx, float *miny, float *maxy)
 {
 	// TODO : handle straight connections separately
 	
@@ -1604,8 +1604,8 @@ void get_conn_limits(struct conn_t *conn, double *minx, double *maxx, double *mi
 
 	get_width_sats(conn, &left1, &right1, &left2, &right2);
 
-	double x, y;
-	double deltax, deltay, leftx, lefty, rightx, righty;
+	float x, y, deltax, deltay;
+	double leftx, lefty, rightx, righty;
 
 	BRZ(&bezier, 0.0f, &x, &y);
 	deltaBRZ(&bezier, 0.0f, &deltax, &deltay);
@@ -2022,7 +2022,7 @@ int generate_t_values(struct conn_t *conn)
 
 	struct t_t *t0;
 	int count;
-	double length;
+	float length;
 
 	leave_main_lock();
 	
@@ -2156,7 +2156,7 @@ void generate_bigt_values(struct conn_t *conn)
 		
 			struct t_t *t0;
 			int count;
-			double length;
+			float length;
 		
 			generate_bezier_bigts(&bezier, &t0, &count, &length);
 			

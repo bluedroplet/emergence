@@ -147,7 +147,7 @@ void delete_line(struct line_t *line)
 }
 
 
-struct line_t *get_line(double x, double y)
+struct line_t *get_line(float x, float y)
 {
 	struct line_t *line = line0;
 
@@ -828,8 +828,8 @@ void gzwrite_lines(gzFile file)
 		gzwrite(file, &cline->door_blue, 1);
 		gzwrite(file, &cline->door_alpha, 1);
 
-		gzwrite(file, &cline->door_width, 8);
-		gzwrite(file, &cline->door_energy, 8);
+		gzwrite(file, &cline->door_width, 4);
+		gzwrite(file, &cline->door_energy, 4);
 		
 		gzwrite(file, &cline->door_initial_state, 1);
 		gzwrite(file, &cline->door_open_timeout, 2);
@@ -840,7 +840,7 @@ void gzwrite_lines(gzFile file)
 		gzwrite(file, &cline->switch_green, 1);
 		gzwrite(file, &cline->switch_blue, 1);
 		gzwrite(file, &cline->switch_alpha, 1);
-		gzwrite(file, &cline->switch_width, 8);
+		gzwrite(file, &cline->switch_width, 4);
 		
 		gzwrite_line_pointer_list(file, cline->switch_in_door_close_list);
 		gzwrite_line_pointer_list(file, cline->switch_in_door_open_list);
@@ -896,10 +896,10 @@ int gzread_lines(gzFile file)
 			goto error;
 
 		
-		if(gzread(file, &cline->door_width, 8) != 8)
+		if(gzread(file, &cline->door_width, 4) != 4)
 			goto error;
 
-		if(gzread(file, &cline->door_energy, 8) != 8)
+		if(gzread(file, &cline->door_energy, 4) != 4)
 			goto error;
 
 		
@@ -928,7 +928,7 @@ int gzread_lines(gzFile file)
 		if(gzread(file, &cline->switch_alpha, 1) != 1)
 			goto error;
 
-		if(gzread(file, &cline->switch_width, 8) != 8)
+		if(gzread(file, &cline->switch_width, 4) != 4)
 			goto error;
 
 

@@ -26,18 +26,18 @@
 
 struct sat_t
 {
-	double x, y;
+	float x, y;
 };
 
 struct node_t
 {
 	uint32_t index;	// for saving/loading
 
-	double x, y;
+	float x, y;
 
 	struct sat_t sats[4];
 
-	double width[4];	// wall
+	float width[4];	// wall
 	
 	uint8_t fill_type;
 	
@@ -49,7 +49,7 @@ struct node_t
 	
 	int texture_tiled;
 	
-	double effective_x[4], effective_y[4];
+	float effective_x[4], effective_y[4];
 	
 	uint8_t sat_conn_type[4];
 	int num_conns;
@@ -81,14 +81,14 @@ int node_in_node_pointer_list(struct node_pointer_t *nodep0, struct node_t *node
 
 void get_satellite(int x, int y, struct node_t **node, uint8_t *sat, int *xoffset, int *yoffset);
 void get_width_sat(int x, int y, struct node_t **node, uint8_t *sat, int *xoffset, int *yoffset);
-void set_width_sat(struct node_t *node, uint8_t sat, double x, double y);
-void get_width_sat_pos(struct node_t *node, uint8_t sat, double *x, double *y);
+void set_width_sat(struct node_t *node, uint8_t sat, float x, float y);
+void get_width_sat_pos(struct node_t *node, uint8_t sat, float *x, float *y);
 struct node_t *get_node(int x, int y, int *xoffset, int *y_offset);
 void fix_satellites(struct node_t *node, uint8_t setsat);
 void straighten_from_node(struct node_t *node);
 void make_node_effective(struct node_t *node);
-void set_sat_dist(struct node_t *node, uint8_t sat, double x, double y);
-void insert_node(double x, double y);
+void set_sat_dist(struct node_t *node, uint8_t sat, float x, float y);
+void insert_node(float x, float y);
 void delete_node(struct node_t *node);
 void delete_all_nodes();
 struct node_t *get_node_from_index(int index);

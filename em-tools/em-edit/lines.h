@@ -40,15 +40,15 @@ struct line_t
 	struct point_t *point1, *point2;
 	
 	uint8_t door_red, door_green, door_blue, door_alpha;
-	double door_width;
-	double door_energy;
+	float door_width;
+	float door_energy;
 	uint8_t door_initial_state;
 	uint16_t door_open_timeout;
 	uint16_t door_close_timeout;
 	uint16_t door_index;
 	
 	uint8_t switch_red, switch_green, switch_blue, switch_alpha;
-	double switch_width;
+	float switch_width;
 
 	struct line_pointer_t *switch_in_door_close_list, 
 		*switch_in_door_open_list, *switch_in_door_invert_list;
@@ -69,7 +69,7 @@ struct line_t
 
 void insert_line(struct point_t *point1, struct point_t *point2);
 void insert_follow_curve_line(struct point_t *point1, struct point_t *point2);
-struct line_t *get_line(double x, double y);
+struct line_t *get_line(float x, float y);
 void draw_some_lines();
 void draw_all_lines();
 void draw_switches_and_doors();

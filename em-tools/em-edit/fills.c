@@ -471,7 +471,7 @@ void draw_follow_curve_fill_left_edge_segment(struct conn_t *conn, double t1, do
 		bezier.y4 = conn->node1->effective_y[conn->sat1];
 	}
 	
-	double x, y, deltax, deltay;
+	float x, y, deltax, deltay;
 	
 	BRZ(&bezier, t1, &x, &y);
 	deltaBRZ(&bezier, t1, &deltax, &deltay);
@@ -545,7 +545,7 @@ void draw_follow_curve_fill_right_edge_segment(struct conn_t *conn, double t1, d
 		bezier.y4 = conn->node1->effective_y[conn->sat1];
 	}
 	
-	double x, y, deltax, deltay;
+	float x, y, deltax, deltay;
 	
 	BRZ(&bezier, t1, &x, &y);
 	deltaBRZ(&bezier, t1, &deltax, &deltay);
@@ -1360,19 +1360,19 @@ int gzread_fills(gzFile file)
 			goto error;
 
 
-		if(gzread(file, &cfill->stretch_horiz, 8) != 8)
+		if(gzread(file, &cfill->stretch_horiz, 4) != 4)
 			goto error;
 
-		if(gzread(file, &cfill->stretch_vert, 8) != 8)
+		if(gzread(file, &cfill->stretch_vert, 4) != 4)
 			goto error;
 
-		if(gzread(file, &cfill->offset_horiz, 8) != 8)
+		if(gzread(file, &cfill->offset_horiz, 4) != 4)
 			goto error;
 
-		if(gzread(file, &cfill->offset_vert, 8) != 8)
+		if(gzread(file, &cfill->offset_vert, 4) != 4)
 			goto error;
 
-		if(gzread(file, &cfill->friction, 8) != 8)
+		if(gzread(file, &cfill->friction, 4) != 4)
 			goto error;
 
 		
@@ -1442,12 +1442,12 @@ void gzwrite_fills(gzFile file)
 		gzwrite(file, &cfill->rotate_left, 1);
 		gzwrite(file, &cfill->rotate_right, 1);
 		
-		gzwrite(file, &cfill->stretch_horiz, 8);
-		gzwrite(file, &cfill->stretch_vert, 8);
-		gzwrite(file, &cfill->offset_horiz, 8);
-		gzwrite(file, &cfill->offset_vert, 8);
+		gzwrite(file, &cfill->stretch_horiz, 4);
+		gzwrite(file, &cfill->stretch_vert, 4);
+		gzwrite(file, &cfill->offset_horiz, 4);
+		gzwrite(file, &cfill->offset_vert, 4);
 
-		gzwrite(file, &cfill->friction, 8);
+		gzwrite(file, &cfill->friction, 4);
 		
 		uint32_t num_fill_edges = count_fill_edges(cfill->edge0);
 		gzwrite(file, &num_fill_edges, 4);
@@ -2653,7 +2653,7 @@ void add_follow_curve_fill_left_edge_segment(struct conn_t *conn, double t1, dou
 	{
 		if(ct->t2 >= t1 && ct->t1 <= t2)
 		{
-			double deltax, deltay;
+			float deltax, deltay;
 			deltaBRZ(&bezier, ct->t1, &deltax, &deltay);
 			
 			double l = hypot(deltax, deltay);
@@ -2719,7 +2719,7 @@ void add_follow_curve_fill_right_edge_segment(struct conn_t *conn, double t1, do
 	{
 		if(ct->t2 >= t1 && ct->t1 <= t2)
 		{
-			double deltax, deltay;
+			float deltax, deltay;
 			deltaBRZ(&bezier, ct->t1, &deltax, &deltay);
 			
 			double l = hypot(deltax, deltay);

@@ -44,13 +44,13 @@ struct curve_t
 	uint8_t fixed_reps;
 	
 	uint32_t reps;
-	double texture_length;
+	float texture_length;
 
 	int32_t pixel_offset_horiz;
 	int32_t pixel_offset_vert;
 	
 	uint8_t width_lock_on;
-	double width_lock;
+	float width_lock;
 	
 	struct curve_t *next;
 };

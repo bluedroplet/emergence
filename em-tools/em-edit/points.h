@@ -30,14 +30,14 @@ struct point_t
 
 	struct curve_t *curve;
 
-	double pos;		// 0..1
+	float pos;		// 0..1
 	
-	double x, y;
-	double deltax, deltay;
-	double left_width, right_width;
+	float x, y;
+	float deltax, deltay;
+	float left_width, right_width;
 	
 	struct conn_t *conn;
-	double t;
+	float t;
 	int t_index;
 	
 	struct point_t *next;
@@ -51,11 +51,11 @@ struct point_pointer_t
 	struct point_pointer_t *next;
 };
 
-void insert_point(struct curve_t *curve, double x, double y);
+void insert_point(struct curve_t *curve, float x, float y);
 void remove_point(struct point_t *point);
 int add_point_pointer(struct point_pointer_t **pointp0, struct point_t *point);
 void update_point_positions();
-void move_point(struct point_t *point, double x, double y);
+void move_point(struct point_t *point, float x, float y);
 struct point_t *get_point(int x, int y, int *xoffset, int *yoffset);
 
 uint32_t count_point_pointers(struct point_pointer_t *pointp0);

@@ -55,10 +55,10 @@ struct fill_t
 	uint8_t flip_horiz, flip_vert;
 	uint8_t rotate_left, rotate_right;
 	
-	double stretch_horiz, stretch_vert;
-	double offset_horiz, offset_vert;
+	float stretch_horiz, stretch_vert;
+	float offset_horiz, offset_vert;
 	
-	double friction;
+	float friction;
 	
 	struct fill_edge_t *edge0;
 			

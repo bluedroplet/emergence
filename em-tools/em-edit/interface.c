@@ -58,8 +58,8 @@
 #include "worker.h"
 #include "interface.h"
 
-double zoom = 1.0;
-double viewx = 0.0, viewy = 0.0;
+float zoom = 1.0;
+float viewx = 0.0, viewy = 0.0;
 
 
 
@@ -69,13 +69,13 @@ uint8_t view_sats_mode;
 
 
 int mouse_screenx, mouse_screeny;
-double mouse_worldx, mouse_worldy;
+float mouse_worldx, mouse_worldy;
 
 int left_button_down_screenx, left_button_down_screeny;
-double left_button_down_worldx, left_button_down_worldy;
+float left_button_down_worldx, left_button_down_worldy;
 
 int right_button_down_screenx, right_button_down_screeny;
-double right_button_down_worldx, right_button_down_worldy;
+float right_button_down_worldx, right_button_down_worldy;
 
 int right_button_down_rootx, right_button_down_rooty;
 
@@ -131,14 +131,14 @@ uint8_t shift = 0;
 struct surface_t *s_select;
 
 
-void world_to_screen(double worldx, double worldy, int *screenx, int *screeny)
+void world_to_screen(float worldx, float worldy, int *screenx, int *screeny)
 {
 	*screenx = (int)floor((worldx - viewx) * zoom) + vid_width / 2;
 	*screeny = vid_height / 2 - 1 - (int)floor((worldy - viewy) * zoom);
 }
 
 
-void screen_to_world(int screenx, int screeny, double *worldx, double *worldy)
+void screen_to_world(int screenx, int screeny, float *worldx, float *worldy)
 {
 	*worldx = ((double)(screenx - vid_width / 2) + 0.5) / zoom + viewx;
 	*worldy = (((double)(vid_height / 2 - 1 - screeny)) + 0.5) / zoom + viewy;
@@ -152,7 +152,7 @@ void GtkMenuPositionCallback(GtkMenu *menu, gint *x, gint *y, gpointer user_data
 }
 
 
-void draw_world_clipped_line(double x1, double y1, double x2, double y2)
+void draw_world_clipped_line(float x1, float y1, float x2, float y2)
 {
 	double temp;
 	
@@ -290,7 +290,7 @@ void menu_insert_plasma_cannon()
 {
 	if(view_state & VIEW_GRID)
 	{
-		double outx, outy;
+		float outx, outy;
 		snap_to_grid(right_button_down_worldx, right_button_down_worldy, &outx, &outy);
 		insert_object(OBJECTTYPE_PLASMACANNON, outx, outy);
 	}
@@ -307,7 +307,7 @@ void menu_insert_minigun()
 {
 	if(view_state & VIEW_GRID)
 	{
-		double outx, outy;
+		float outx, outy;
 		snap_to_grid(right_button_down_worldx, right_button_down_worldy, &outx, &outy);
 		insert_object(OBJECTTYPE_MINIGUN, outx, outy);
 	}
@@ -324,7 +324,7 @@ void menu_insert_rocket_launcher()
 {
 	if(view_state & VIEW_GRID)
 	{
-		double outx, outy;
+		float outx, outy;
 		snap_to_grid(right_button_down_worldx, right_button_down_worldy, &outx, &outy);
 		insert_object(OBJECTTYPE_ROCKETLAUNCHER, outx, outy);
 	}
@@ -341,7 +341,7 @@ void menu_insert_rails()
 {
 	if(view_state & VIEW_GRID)
 	{
-		double outx, outy;
+		float outx, outy;
 		snap_to_grid(right_button_down_worldx, right_button_down_worldy, &outx, &outy);
 		insert_object(OBJECTTYPE_RAILS, outx, outy);
 	}
@@ -358,7 +358,7 @@ void menu_insert_shield_energy()
 {
 	if(view_state & VIEW_GRID)
 	{
-		double outx, outy;
+		float outx, outy;
 		snap_to_grid(right_button_down_worldx, right_button_down_worldy, &outx, &outy);
 		insert_object(OBJECTTYPE_SHIELDENERGY, outx, outy);
 	}
@@ -375,7 +375,7 @@ void menu_insert_spawn_point()
 {
 	if(view_state & VIEW_GRID)
 	{
-		double outx, outy;
+		float outx, outy;
 		snap_to_grid(right_button_down_worldx, right_button_down_worldy, &outx, &outy);
 		insert_object(OBJECTTYPE_SPAWNPOINT, outx, outy);
 	}
@@ -392,7 +392,7 @@ void menu_insert_speedup_ramp()
 {
 	if(view_state & VIEW_GRID)
 	{
-		double outx, outy;
+		float outx, outy;
 		snap_to_grid(right_button_down_worldx, right_button_down_worldy, &outx, &outy);
 		insert_object(OBJECTTYPE_SPEEDUPRAMP, outx, outy);
 	}
@@ -409,7 +409,7 @@ void menu_insert_teleporter()
 {
 	if(view_state & VIEW_GRID)
 	{
-		double outx, outy;
+		float outx, outy;
 		snap_to_grid(right_button_down_worldx, right_button_down_worldy, &outx, &outy);
 		insert_object(OBJECTTYPE_TELEPORTER, outx, outy);
 	}
@@ -426,7 +426,7 @@ void menu_insert_gravity_well()
 {
 	if(view_state & VIEW_GRID)
 	{
-		double outx, outy;
+		float outx, outy;
 		snap_to_grid(right_button_down_worldx, right_button_down_worldy, &outx, &outy);
 		insert_object(OBJECTTYPE_GRAVITYWELL, outx, outy);
 	}
@@ -443,7 +443,7 @@ void menu_insert_node()
 {
 	if(view_state & VIEW_GRID)
 	{
-		double outx, outy;
+		float outx, outy;
 		snap_to_grid(right_button_down_worldx, right_button_down_worldy, &outx, &outy);
 		insert_node(outx, outy);
 	}
@@ -1625,7 +1625,7 @@ void left_button_up(int x, int y)
 		{
 			if(view_state & VIEW_GRID)
 			{
-				double outx, outy;
+				float outx, outy;
 				snap_to_grid(left_button_down_worldx, left_button_down_worldy, &outx, &outy);
 				insert_node(outx, outy);
 			}
@@ -1828,7 +1828,7 @@ void mouse_wheel_up(int x, int y)
 		return;
 	}
 
-	double wx, wy, nwx, nwy;
+	float wx, wy, nwx, nwy;
 	screen_to_world(x, y, &wx, &wy);
 
 	stop_working();
@@ -1864,7 +1864,7 @@ void mouse_wheel_down(int x, int y)
 		return;
 	}
 	
-	double wx, wy, nwx, nwy;
+	float wx, wy, nwx, nwy;
 	screen_to_world(x, y, &wx, &wy);
 
 	stop_working();
@@ -1952,7 +1952,7 @@ int mouse_move(int x, int y)
 	{
 		if(left_state == STATE_DRAGGING_VIEW)
 		{
-			double wx, wy, nwx, nwy;
+			float wx, wy, nwx, nwy;
 			screen_to_world(left_button_down_screenx, left_button_down_screeny, &wx, &wy);
 		
 			stop_working();
@@ -1970,7 +1970,7 @@ int mouse_move(int x, int y)
 		}
 		else
 		{
-			double wx, wy;
+			float wx, wy;
 			screen_to_world(x, y, &wx, &wy);
 			
 			viewx -= wx - right_button_down_worldx;
@@ -1983,7 +1983,7 @@ int mouse_move(int x, int y)
 	}
 	
 	int update = 0;
-	double worldx, worldy;
+	float worldx, worldy;
 	
 	
 	switch(left_state)
@@ -2211,7 +2211,7 @@ void scale_map_to_window()	// called while not working
 
 	struct conn_t *cconn = conn0;
 
-	double minx, miny, maxx, maxy;
+	float minx, miny, maxx, maxy;
 
 	get_conn_limits(cconn, &minx, &maxx, &miny, &maxy);
 
@@ -2219,7 +2219,7 @@ void scale_map_to_window()	// called while not working
 
 	while(cconn)
 	{
-		double cminx, cminy, cmaxx, cmaxy;
+		float cminx, cminy, cmaxx, cmaxy;
 	
 		get_conn_limits(cconn, &cminx, &cmaxx, &cminy, &cmaxy);
 		

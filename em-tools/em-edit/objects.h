@@ -33,14 +33,14 @@ struct object_t
 	struct surface_t *texture_surface;
 	struct surface_t *scaled_texture_surface;
 	
-	double x, y;
+	float x, y;
 	
 	union
 	{
 		struct
 		{
 			int plasmas;
-			double angle;
+			float angle;
 			int respawn_delay;
 			
 		} plasma_cannon_data;
@@ -48,7 +48,7 @@ struct object_t
 		struct
 		{
 			int bullets;
-			double angle;
+			float angle;
 			int respawn_delay;
 			
 		} minigun_data;
@@ -56,7 +56,7 @@ struct object_t
 		struct
 		{
 			int rockets;
-			double angle;
+			float angle;
 			int respawn_delay;
 			
 		} rocket_launcher_data;
@@ -64,7 +64,7 @@ struct object_t
 		struct
 		{
 			int quantity;
-			double angle;
+			float angle;
 			int respawn_delay;
 			
 		} rails_data;
@@ -72,7 +72,7 @@ struct object_t
 		struct
 		{
 			int energy;
-			double angle;
+			float angle;
 			int respawn_delay;
 			
 		} shield_energy_data;
@@ -82,8 +82,8 @@ struct object_t
 			int non_default_texture;
 			struct string_t *texture_filename;
 			struct surface_t *texture_pre_surface;
-			double width, height;
-			double angle;
+			float width, height;
+			float angle;
 			int teleport_only;
 			int index;
 			
@@ -94,10 +94,10 @@ struct object_t
 			int non_default_texture;
 			struct string_t *texture_filename;
 			struct surface_t *texture_pre_surface;
-			double width, height;
-			double angle;
-			double activation_width;
-			double boost;
+			float width, height;
+			float angle;
+			float activation_width;
+			float boost;
 			
 		} speedup_ramp_data;
 	
@@ -106,15 +106,15 @@ struct object_t
 			int non_default_texture;
 			struct string_t *texture_filename;
 			struct surface_t *texture_pre_surface;
-			double width, height;
-			double angle;
-			double radius;
+			float width, height;
+			float angle;
+			float radius;
 			int sparkles;
 			int spawn_point_index;
 			int rotation_type;
-			double rotation_angle;
+			float rotation_angle;
 			int divider;
-			double divider_angle;
+			float divider_angle;
 			
 		} teleporter_data;
 	
@@ -123,9 +123,9 @@ struct object_t
 			int non_default_texture;
 			struct string_t *texture_filename;
 			struct surface_t *texture_pre_surface;
-			double width, height;
-			double angle;
-			double strength;
+			float width, height;
+			float angle;
+			float strength;
 			int enclosed;
 			
 		} gravity_well_data;
@@ -162,7 +162,7 @@ extern struct object_t *object0;
 void init_objects();
 void kill_objects();
 void draw_objects();
-void insert_object(int type, double x, double y);
+void insert_object(int type, float x, float y);
 void invalidate_all_scaled_objects();
 void delete_object(struct object_t *object);
 void delete_all_objects();
