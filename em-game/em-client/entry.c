@@ -34,7 +34,7 @@ void terminate_process()
 	exit(EXIT_SUCCESS);
 }
 
-const char *argp_program_version = "em-client 0.2";
+const char *argp_program_version = "em-client " VERSION;
 const char *argp_program_bug_address = "<jbrown@emergence.uk.net>";
 
 static char doc[] = "Emergence Client";

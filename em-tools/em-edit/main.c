@@ -272,10 +272,10 @@ void on_worker_callback(gpointer data, gint source, GdkInputCondition condition)
 
 int main(int argc, char *argv[])
 {
-	gnome_program_init("Emergence Editor", "0.2", LIBGNOMEUI_MODULE,
-					  argc, argv,
-					  GNOME_PARAM_APP_DATADIR, PKGDATADIR,
-                      NULL);
+	gnome_program_init("Emergence Editor", VERSION, LIBGNOMEUI_MODULE,
+		argc, argv,
+		GNOME_PARAM_APP_DATADIR, PKGDATADIR,
+		NULL);
 	
 	init_user();
 	init_gsub();

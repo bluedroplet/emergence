@@ -49,7 +49,7 @@ void go_daemon()
 }
 
 
-const char *argp_program_version = "em-server 0.2";
+const char *argp_program_version = "em-server " VERSION;
 const char *argp_program_bug_address = "<jbrown@emergence.uk.net>";
 
 static char doc[] = "Emergence Server";
