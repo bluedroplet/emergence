@@ -394,7 +394,7 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 		curve.texture_flip_horiz = 0;
 		curve.texture_flip_vert = 0;
 		curve.fixed_reps = 1;
-		curve.texture_length = 0.0;
+		curve.texture_length = 40.0;
 		curve.reps = 1.0;
 		curve.pixel_offset_horiz = 0;
 		curve.pixel_offset_vert = 0;
