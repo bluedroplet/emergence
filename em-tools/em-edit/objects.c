@@ -229,7 +229,7 @@ void insert_object(int type, float x, float y)
 		break;
 	
 	case OBJECTTYPE_SHIELDENERGY:
-		object.shield_energy_data.energy = 10.0;
+		object.shield_energy_data.energy = 1.0;
 		object.shield_energy_data.angle = 0.0;
 		object.shield_energy_data.respawn_delay = 10000;
 		break;
@@ -973,7 +973,7 @@ void on_shield_energy_energy_spinbutton_value_changed(GtkSpinButton *spinbutton,
 	GtkWidget *dialog = gtk_widget_get_toplevel(GTK_WIDGET(spinbutton));
 	struct object_t *object = g_object_get_data(G_OBJECT(dialog), "object");
 		
-	object->shield_energy_data.energy = gtk_spin_button_get_value_as_int(spinbutton);
+	object->shield_energy_data.energy = gtk_spin_button_get_value(spinbutton) / 100.0;
 }
 
 
@@ -1027,7 +1027,7 @@ void run_shield_energy_properties_dialog(void *menu, struct object_t *object)
 			dynamic_objects[OBJECTTYPE_SHIELDENERGY].filename->text);
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
-		"energy_spinbutton")), (gfloat)object->shield_energy_data.energy);
+		"energy_spinbutton")), (gfloat)object->shield_energy_data.energy * 100.0);
 	
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(dialog), 
 		"angle_spinbutton")), radians_to_degrees(object->shield_energy_data.angle));

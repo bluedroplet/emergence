@@ -89,7 +89,7 @@ struct pickup_spawn_point_t
 		
 		struct
 		{
-			int shield_energy;
+			float shield_energy;
 			
 		} shield_energy_data;
 	};

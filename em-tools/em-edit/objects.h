@@ -71,7 +71,7 @@ struct object_t
 	
 		struct
 		{
-			int energy;
+			float energy;
 			float angle;
 			int respawn_delay;
 			
