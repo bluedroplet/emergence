@@ -2274,6 +2274,14 @@ void cf_demo(char *c)
 	
 	game_conn = 0;
 	gzdemo = gzopen(c, "rb");
+	
+	if(!gzdemo)
+	{
+		console_print("File not found.\n");
+		game_state = GAMESTATE_DEAD;
+		return;
+	}
+	
 	game_state = GAMESTATE_DEMO;
 	message_reader.gzdemo = gzdemo;
 	message_reader.type = MESSAGE_READER_GZDEMO;
