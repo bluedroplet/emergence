@@ -42,7 +42,7 @@ void go_daemon()
 
 	// Become session leader
 //	setsid();
-
+	
 //	fclose(stdin);
 	fclose(stdout);
 	fclose(stderr);
@@ -51,14 +51,21 @@ void go_daemon()
 }
 
 
+int arg_max_players = -1;
+struct string_t *arg_script = NULL;
+struct string_t *arg_map = NULL;
+
 const char *argp_program_version = "em-server " VERSION;
 const char *argp_program_bug_address = "<jbrown@emergence.uk.net>";
 
 static char doc[] = "Emergence Server";
 
 static struct argp_option options[] = {
-	{"daemon",	'd',	0,	0, "don't run in terminal"},
-	{"port",	'p',	"PORT",	0, "port to listen on"},
+	{"daemonize",	'd',	0,			0, "Run in the background"},
+	{"exec",		'e',	"SCRIPT",	0, "Execute a script on startup"},
+	{"map",			'm',	"NAME",		0, "Map to load (don't execute any script)"},
+	{"players",		'n',	"NUM",		0, "Maximum number of players"},
+	{"port",		'p',	"PORT",		0, "Port to listen on"},
 	{ 0 }
 };
 
@@ -69,6 +76,22 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 	{
 	case 'd':
 		as_daemon = 1;
+		break;
+	
+	case 'e':
+		if(arg_script)
+			free_string(arg_script);
+		arg_script = new_string_text(arg);
+		break;
+	
+	case 'm':
+		if(arg_map)
+			free_string(arg_map);
+		arg_map = new_string_text(arg);
+		break;
+	
+	case 'n':
+		arg_max_players = atoi(arg);
 		break;
 
 	case 'p':
@@ -93,7 +116,7 @@ int main(int argc, char *argv[])
 		go_daemon();
 	
 	init();
-	
+
 	main_thread();
 	
 	return 0;

@@ -553,16 +553,24 @@ void main_thread()
 {
 	struct pollfd *fds;
 	int fdcount;
+
+	if(!as_daemon)
+		fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
 	
-	fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
-	
-	fdcount = 3;
+	if(!as_daemon)
+		fdcount = 3;
+	else
+		fdcount = 2;
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
 	
-	fds[0].fd = STDIN_FILENO;		fds[0].events = POLLIN;
-	fds[1].fd = net_out_pipe[0];	fds[1].events = POLLIN;
-	fds[2].fd = key_out_pipe[0];	fds[2].events = POLLIN;
+	fds[0].fd = net_out_pipe[0];	fds[0].events = POLLIN;
+	fds[1].fd = key_out_pipe[0];	fds[1].events = POLLIN;
+	
+	if(!as_daemon)
+	{
+		fds[2].fd = STDIN_FILENO;		fds[2].events = POLLIN;
+	}
 	
 
 	while(1)
@@ -572,26 +580,29 @@ void main_thread()
 			perror("poll");
 			return;
 		}
-
-		if(fds[0].revents & POLLIN)
-		{
-			pthread_mutex_lock(&main_mutex);
-			process_console();
-			pthread_mutex_unlock(&main_mutex);
-		}
 		
-		if(fds[1].revents & POLLIN)
+		if(fds[0].revents & POLLIN)
 		{
 			pthread_mutex_lock(&main_mutex);
 			process_network();
 			pthread_mutex_unlock(&main_mutex);
 		}
 		
-		if(fds[2].revents & POLLIN)
+		if(fds[1].revents & POLLIN)
 		{
 			pthread_mutex_lock(&main_mutex);
 			process_key_out_pipe();
 			pthread_mutex_unlock(&main_mutex);
+		}
+
+		if(!as_daemon)
+		{
+			if(fds[2].revents & POLLIN)
+			{
+				pthread_mutex_lock(&main_mutex);
+				process_console();
+				pthread_mutex_unlock(&main_mutex);
+			}
 		}
 	}
 }
@@ -666,8 +677,24 @@ void init()
 //	create_cvar_command("daemonize", cf_go_daemon);
 	create_cvar_command("quit", cf_quit);
 	
-	struct string_t *string = new_string_text("%s%s", emergence_home_dir->text, "/server.autoexec");
-	if(!exec_config_file(string->text))
-		exec_config_file(find_resource("default-server.autoexec"));
-	free_string(string);
+	if(arg_map)
+	{
+		map(arg_map->text);
+	}
+	else
+	{
+		if(arg_script)
+		{
+			exec_config_file(arg_script->text);
+		}
+		else
+		{
+			struct string_t *string = new_string_text("%s%s", emergence_home_dir->text, "/server.autoexec");
+			if(!exec_config_file(string->text))
+				exec_config_file(find_resource("default-server.autoexec"));
+			free_string(string);
+		}
+	}
+	
+	max_players = arg_max_players;
 }

@@ -1328,10 +1328,27 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->craft_data.braking = event->ent_data.craft_data.braking;
 		entity->craft_data.rolling_left = event->ent_data.craft_data.rolling_left;
 		entity->craft_data.rolling_right = event->ent_data.craft_data.rolling_right;
-		entity->craft_data.left_weapon = get_entity(centity0, 
+	
+		entity->craft_data.left_weapon = NULL;
+	/*get_entity(centity0, 
 			event->ent_data.craft_data.left_weapon_index);
-		entity->craft_data.right_weapon = get_entity(centity0, 
+	
+		if(entity->craft_data.left_weapon)
+			entity->craft_data.left_weapon->weapon_data.craft = entity;
+		else
+			if(event->ent_data.craft_data.left_weapon_index != NO_ENT_INDEX)
+				console_print("left weapon not found\n");
+	
+	*/	entity->craft_data.right_weapon = NULL;
+	/*get_entity(centity0, 
 			event->ent_data.craft_data.right_weapon_index);
+	
+		if(entity->craft_data.right_weapon)
+			entity->craft_data.right_weapon->weapon_data.craft = entity;
+		else
+			if(event->ent_data.craft_data.right_weapon_index != NO_ENT_INDEX)
+				console_print("right weapon not found\n");
+	*/	
 		entity->craft_data.shield_flare = event->ent_data.craft_data.shield_flare;
 	
 		entity->craft_data.magic_smoke = event->ent_data.craft_data.magic_smoke;
@@ -1362,8 +1379,15 @@ void process_spawn_ent_event(struct event_t *event)
 	case ENT_WEAPON:
 		entity->weapon_data.type = event->ent_data.weapon_data.type;
 		entity->weapon_data.theta = event->ent_data.weapon_data.theta;
-		entity->weapon_data.craft = get_entity(centity0, 
+	
+		entity->weapon_data.craft = NULL;
+	/*get_entity(centity0, 
 			event->ent_data.weapon_data.craft_index);
+	
+		if(!entity->weapon_data.craft && event->ent_data.weapon_data.craft_index != NO_ENT_INDEX)
+			console_print("craft not found\n");
+		*/	
+	
 		entity->weapon_data.shield_flare = event->ent_data.weapon_data.shield_flare;
 	
 		entity->weapon_data.shield_red = event->ent_data.weapon_data.shield_red;
