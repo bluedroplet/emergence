@@ -138,7 +138,8 @@ void render_stars()
 		
 		plot_pixel(&params);
 		
-		params.alpha >>= 1;
+		params.red >>= 1;
+		params.green = params.blue = params.red;
 		
 		params.dest_x++;
 		plot_pixel(&params);
