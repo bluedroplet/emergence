@@ -17,5 +17,6 @@ AC_OUTPUT(Makefile common/Makefile gsub/Makefile  \
 	base-maps/Makefile  \
 	stock-skins/Makefile \
 	stock-object-textures/Makefile \
-	pixmaps/Makefile desktop/Makefile)
+	pixmaps/Makefile desktop/Makefile \
+	demos/Makefile)
 
