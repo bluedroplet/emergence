@@ -127,9 +127,9 @@ void render_upper_particles()
 			
 			
 			
-			float a = life * 2.0;
+			float a = life * 4.0;
 			
-			if(life < 0.5)
+			if(life < 0.25)
 			{
 				params.red = (uint8_t)floor(upper_particles[i].start_red * (1.0 - a) + 
 					upper_particles[i].end_red * a);
@@ -226,9 +226,9 @@ void render_lower_particles()
 			
 			world_to_screen(lower_particles[i].xpos, lower_particles[i].ypos, &x, &y);
 			
-			float a = life * 2.0;
+			float a = life * 4.0;
 			
-			if(life < 0.5)
+			if(life < 0.25)
 			{
 				params.red = (uint8_t)floor(lower_particles[i].start_red * (1.0 - a) + 
 					lower_particles[i].end_red * a);
