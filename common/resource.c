@@ -41,6 +41,15 @@ char *find_resource(char *resource)
 	
 	free_string(s);
 	s = new_string_text(bindir);
+	string_cat_text(s, "/../");
+	string_cat_text(s, resource);
+	
+	if(stat(s->text, &buf) == 0)
+		goto found;
+	
+	
+	free_string(s);
+	s = new_string_text(bindir);
 	string_cat_text(s, "/../share/");					// run from build dir
 	string_cat_text(s, resource);
 	
