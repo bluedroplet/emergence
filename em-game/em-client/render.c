@@ -119,6 +119,8 @@ void init_render_cvars()
 	create_cvar_int("r_FPSBlue", &r_FPSBlue, 0);
 	create_cvar_int("r_FPSColour", &r_FPSColour, 0);
 	create_cvar_int("frame", &frame, CVAR_PROTECTED);
+	
+	create_x_cvars();
 }
 
 
@@ -136,7 +138,7 @@ void init_render()
 
 void kill_render()
 {
-	;
+	kill_x();
 }
 
 

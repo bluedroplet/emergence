@@ -7,6 +7,8 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#include <math.h>
+
 #define __USE_X_SHAREDMEMORY__
 
 #include <X11/Xlib.h>
@@ -15,8 +17,10 @@
 #include <X11/Xatom.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XShm.h>
+#include <X11/extensions/Xrandr.h>
 
 #include "../common/types.h"
+#include "../common/llist.h"
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../gsub/gsub.h"
@@ -25,6 +29,7 @@
 #include "entry.h"
 #include "control.h"
 #include "render.h"
+#include "shared/cvar.h"
 
 Display *xdisplay;
 int xscreen;
@@ -36,6 +41,20 @@ GC gc;
 
 int x_fd;
 
+XRRScreenConfiguration *screen_config;
+int original_mode;
+
+struct vid_mode_t
+{
+	int width;
+	int height;
+	int index;
+	
+	struct vid_mode_t *next;
+		
+} *vid_mode0 = NULL;
+
+int vid_mode;
 
 void update_frame_buffer()
 {
@@ -165,6 +184,103 @@ Cursor create_blank_cursor()
 }
 
 
+void query_vid_modes()
+{
+	console_print("Querying available video modes\n");
+	
+	screen_config = XRRGetScreenInfo(xdisplay, xwindow);
+	
+	if(!screen_config)
+		client_error("XRRScreenConfig failed");
+	
+	int nsizes;
+	XRRScreenSize *screens = XRRConfigSizes(screen_config, &nsizes);
+	
+	
+	int n = 0;
+	int modes = 0;
+	while(nsizes)
+	{
+		int width = screens[n].width;
+		int height = screens[n].height;
+
+		n++;
+		nsizes--;
+		
+		if(width * 3 != height * 4)
+			continue;
+
+		double d;
+		if(modf((double)width / 8, &d) != 0.0)	// make sure 200x200 blocks scale to integer
+									//(change this to integer)
+			continue;
+			
+		modes++;
+		
+		struct vid_mode_t vid_mode = {width, height, n-1};
+		LL_ADD(struct vid_mode_t, &vid_mode0, &vid_mode);
+	}
+	
+	console_print("Found %u modes:\n", modes);
+	
+	// sort modes
+	
+	struct vid_mode_t *new_vid_mode0 = NULL;
+	
+	while(vid_mode0)
+	{
+		struct vid_mode_t *max_vid_mode = vid_mode0;
+		
+		struct vid_mode_t *nvid_mode = max_vid_mode->next;
+			
+		while(nvid_mode)
+		{
+			if(nvid_mode->width > max_vid_mode->width)
+				max_vid_mode = nvid_mode;
+			
+			nvid_mode = nvid_mode->next;
+		}
+		
+		console_print("%ux%u\n", max_vid_mode->width, max_vid_mode->height);
+		
+		LL_ADD_TAIL(struct vid_mode_t, &new_vid_mode0, max_vid_mode);
+		LL_REMOVE(struct vid_mode_t, &vid_mode0, max_vid_mode);
+	}
+	
+	vid_mode0 = new_vid_mode0;
+	
+	int i;
+	original_mode = XRRConfigCurrentConfiguration(screen_config, &i);
+}
+
+void set_vid_mode(int mode)
+{
+	struct vid_mode_t *cvid_mode = vid_mode0;
+		
+	while(mode)
+	{
+		mode--;
+		
+		cvid_mode = cvid_mode->next;
+		if(!cvid_mode)
+			return;
+	}
+	
+	
+	XRRSetScreenConfig (xdisplay, screen_config,
+			   xwindow,
+			   cvid_mode->index,
+			   RR_Rotate_0,
+			   CurrentTime);
+	
+}
+
+void create_x_cvars()
+{
+	create_cvar_int("vid_mode", &vid_mode, 0);
+}
+
+
 void init_x()
 {
 	// connect to X server 
@@ -174,7 +290,7 @@ void init_x()
 	
 	xscreen = DefaultScreen(xdisplay);
 	
- /*   screen_w = DisplayWidth(SDL_Display, SDL_Screen);
+	/*   screen_w = DisplayWidth(SDL_Display, SDL_Screen);
     screen_h = DisplayHeight(SDL_Display, SDL_Screen);
     get_real_resolution(this, &real_w, &real_h);
     if ( current_w > real_w ) {
@@ -213,6 +329,10 @@ void init_x()
 			     | CWColormap,
 			     &xattr);
 	
+
+	query_vid_modes();
+	
+
 //	xwindow = XCreateWindow(xdisplay, RootWindow(xdisplay, xscreen),
   //                                 0, 0, 800, 600, 0, 16, InputOutput,
 	//			   DefaultVisual(xdisplay, xscreen), 0, NULL);
@@ -261,7 +381,6 @@ void init_x()
 		client_shutdown();
 	shmseginfo->readOnly=False;
 	
-	
 	s_backbuffer = new_surface_no_buf(SURFACE_24BITPADDING8BIT, 800, 600);
 	
 	s_backbuffer->buf = image->data = shmseginfo->shmaddr;
@@ -269,6 +388,8 @@ void init_x()
 	
 	XShmAttach(xdisplay, shmseginfo);
 
+	set_vid_mode(vid_mode);
+	
 	sigio_process |= SIGIO_PROCESS_X;
 	
 	return;
@@ -276,4 +397,18 @@ void init_x()
 error:
 	
 	client_error("fail\n");
+}
+
+
+void kill_x()
+{
+	sigio_process &= ~SIGIO_PROCESS_X;
+	
+	XRRSetScreenConfig (xdisplay, screen_config,
+			   xwindow,
+			   original_mode,
+			   RR_Rotate_0,
+			   CurrentTime);
+	
+	XRRFreeScreenConfigInfo(screen_config);
 }
