@@ -4160,6 +4160,7 @@ void update_demo()
 					tick = message_reader.event_tick;
 				
 				reset_tick_from_wall_time();	// demo_first_tick is being rendered now
+				init_fr();
 				demo_start_frame = frame;
 				demo_start_time = get_wall_time();
 			}

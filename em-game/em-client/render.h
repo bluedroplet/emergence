@@ -1,7 +1,7 @@
 void init_render_cvars();
 void init_render();
 void kill_render();
-
+void init_fr();
 
 void render_frame();
 

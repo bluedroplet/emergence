@@ -71,6 +71,7 @@ void qc_r_FPSBlue(int val)
 
 void init_fr()
 {
+	last_frame_start_time = get_wall_time();
 	fr_old_frame = 0;
 	fr_old_time = fr_start_time = last_frame_start_time;
 	fr_update_time = fr_start_time + 1.0;
@@ -122,7 +123,6 @@ void init_render()
 	
 	frame = 0;
 	
-	last_frame_start_time = get_wall_time();
 	init_fr();
 }
 
