@@ -24,6 +24,6 @@
 */
 
 
-void exec_config_file(char *filename);
+int exec_config_file(char *filename);
 void write_config_file();
 void init_config();

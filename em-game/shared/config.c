@@ -26,13 +26,13 @@
 #include "../nfcl/win32/entry.h"
 #endif
 
-void exec_config_file(char *filename)
+int exec_config_file(char *filename)
 {
 	if(!filename)
-		return;
+		return 0;
 
 	if(!*filename)
-		return;
+		return 0;
 
 	FILE *file = fopen(filename, "r");
 
@@ -41,7 +41,7 @@ void exec_config_file(char *filename)
 		console_print("Could not execute file \"");
 		console_print(filename);
 		console_print("\"\n");
-		return;
+		return 0;
 	}
 
 	console_print("Executing \"");
@@ -72,6 +72,8 @@ void exec_config_file(char *filename)
 	fclose(file);
 
 	free_string(s);
+	
+	return 1;
 }
 
 

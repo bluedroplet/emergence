@@ -1,6 +1,6 @@
+OBJECTS = smallfont.png default-controls.config
+
 sharedatadir = $(datadir)/emergence/em-client
 
-sharedata_DATA = smallfont.png
-
-EXTRA_DIST = smallfont.png
-
+sharedata_DATA = $(OBJECTS)
+EXTRA_DIST = $(OBJECTS)

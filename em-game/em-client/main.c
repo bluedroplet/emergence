@@ -218,7 +218,8 @@ void init()
 	struct string_t *string = new_string_string(emergence_home_dir);
 	string_cat_text(string, "/client.config");
 	
-	exec_config_file(string->text);
+	if(!exec_config_file(string->text))
+		exec_config_file(PKGDATADIR "em-client/default-controls.config");
 	
 	free_string(string);
 	
