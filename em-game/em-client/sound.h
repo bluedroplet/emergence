@@ -10,4 +10,4 @@ void init_sound();
 void kill_sound();
 void process_alsa();
 
-extern struct sample_t railgun_sample;
+struct sample_t *load_sample(char *filename);

@@ -1337,6 +1337,8 @@ void s_tick_craft(struct entity_t *craft)
 					restart = 1;
 					craft->propagate_me = 1;
 					craft->speeding_up = 1;
+					
+					emit_speedup_to_all_players();
 					break;
 				}
 			}			
@@ -1377,6 +1379,7 @@ void s_tick_craft(struct entity_t *craft)
 				
 				craft->propagate_me = 1;
 				
+				emit_teleport_to_all_players();
 			//	restart = 1;
 				break;
 			}

@@ -234,6 +234,11 @@ struct rail_trail_t
 		
 } *rail_trail0;
 
+struct sample_t *railgun_sample;
+struct sample_t *teleporter_sample;
+struct sample_t *speedup_ramp_sample;
+
+
 
 
 
@@ -1145,7 +1150,7 @@ void process_railtrail_event(struct event_t *event)
 	rail_trail.y2 = event->railtrail_data.y2;
 	
 	LL_ADD(struct rail_trail_t, &rail_trail0, &rail_trail);
-	start_sample(&railgun_sample, event->tick);
+	start_sample(railgun_sample, event->tick);
 }
 
 
@@ -1170,6 +1175,18 @@ void process_detach_event(struct event_t *event)
 		weapon->weapon_data.craft->craft_data.right_weapon = NULL;
 	
 	weapon->weapon_data.craft = NULL;
+}
+
+
+void process_teleport_event(struct event_t *event)
+{
+	start_sample(teleporter_sample, event->tick);
+}
+
+
+void process_speedup_event(struct event_t *event)
+{
+	start_sample(speedup_ramp_sample, event->tick);
 }
 
 
@@ -1214,6 +1231,14 @@ void process_tick_events(uint32_t tick)
 			
 			case EMEVENT_DETACH:
 				process_detach_event(event);
+				break;
+			
+			case EMEVENT_TELEPORT:
+				process_teleport_event(event);
+				break;
+			
+			case EMEVENT_SPEEDUP:
+				process_speedup_event(event);
 				break;
 			}
 			
@@ -1272,6 +1297,14 @@ int process_tick_events_do_not_remove(uint32_t tick)
 
 			case EMEVENT_DETACH:
 				process_detach_event(event);
+				break;
+			
+			case EMEVENT_TELEPORT:
+				process_teleport_event(event);
+				break;
+			
+			case EMEVENT_SPEEDUP:
+				process_speedup_event(event);
 				break;
 			}
 		}
@@ -3313,6 +3346,11 @@ void init_game()
 	
 //	s_craft_shield = resize(temp, 73, 73, NULL);
 //	s_weapon_shield = resize(temp, 46, 46, NULL);
+
+	
+	railgun_sample = load_sample(PKGDATADIR "/stock-sounds/railgun.ogg");
+	teleporter_sample = load_sample(PKGDATADIR "/stock-sounds/teleporter.ogg");
+	speedup_ramp_sample = load_sample(PKGDATADIR "/stock-sounds/speedup-ramp.ogg");
 }
 
 

@@ -22,16 +22,10 @@
 #include "console.h"
 #include "entry.h"
 #include "tick.h"
+#include "sound.h"
 
 
 snd_pcm_t *playback_handle = NULL;
-
-
-struct sample_t
-{
-	int len;
-	int16_t *buf;
-};
 
 
 struct queued_sample_t
@@ -44,9 +38,6 @@ struct queued_sample_t
 	struct queued_sample_t *next;
 		
 } *queued_sample0 = NULL;
-
-
-struct sample_t railgun_sample;
 
 
 int sound_kill_pipe[2];
@@ -290,11 +281,11 @@ void *sound_thread(void *a)
 }
 
 
-void init_sound()
+struct sample_t *load_sample(char *filename)
 {
 	OggVorbis_File vf;
 
-	FILE *file = fopen(PKGDATADIR "/stock-sounds/railgun.ogg", "r");
+	FILE *file = fopen(filename, "r");
 	
 	if(ov_open(file, &vf, NULL, 0) < 0) {
 	console_print("Input does not appear to be an Ogg bitstream.\n");
@@ -302,22 +293,30 @@ void init_sound()
 	
 	vorbis_info *vi=ov_info(&vf,-1);
 	
-	railgun_sample.len = ov_pcm_total(&vf,-1);
+	struct sample_t *sample = malloc(sizeof(struct sample_t));
 	
-	console_print("%i\n", railgun_sample.len);
+	sample->len = ov_pcm_total(&vf,-1);
 	
-	railgun_sample.buf = malloc(railgun_sample.len * 2);
+	console_print("%i\n", sample->len);
+	
+	sample->buf = malloc(sample->len * 2);
 	
 	int current_section = 0;
 	
 	int j = 0;
-	while(ov_read(&vf, &railgun_sample.buf[j], 2, 0, 2, 1, &current_section) > 0)
+	while(ov_read(&vf, &sample->buf[j], 2, 0, 2, 1, &current_section) > 0)
 		{
 		j++;
 		}
 
 	ov_clear(&vf);
+		
+	return sample;
+}
 	
+
+void init_sound()
+{
 	int err;
 	snd_pcm_hw_params_t *hw_params;
 	

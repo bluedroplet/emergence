@@ -115,6 +115,8 @@ void respawn_craft(struct entity_t *craft);
 void make_carcass_on_all_players(struct entity_t *craft);
 void calculate_respawn_tick(struct pickup_spawn_point_t *spawn_point);
 
+void emit_teleport_to_all_players();
+void emit_speedup_to_all_players();
 
 extern uint32_t cgame_tick;
 
