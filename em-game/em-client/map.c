@@ -19,8 +19,10 @@
 #include "shared/bsp.h"
 #include "shared/objects.h"
 #include "shared/sgame.h"
+#include "shared/fileinfo.h"
 #include "../common/user.h"
 #include "shared/network.h"
+#include "shared/fileinfo.h"
 #include "../common/llist.h"
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
@@ -46,6 +48,9 @@ struct tile_t
 int r_DrawBSPTree = 0;
 
 struct string_t *map_name;
+int map_size;
+uint8_t map_hash[FILEINFO_DIGEST_SIZE];
+
 int downloading_map = 0;
 int map_loaded = 0;
 
@@ -188,12 +193,16 @@ void bypass_objects(gzFile gzfile)
 }
 
 
-int load_map(char *map_name)
+int load_map()
 {
+	int local_map_size;
+	uint8_t local_map_hash[FILEINFO_DIGEST_SIZE];
+	int r = 0;
+	
 	game_rendering = 0;
 	
 	console_print("Loading map ");
-	console_print(map_name);
+	console_print(map_name->text);
 	console_print("\n");
 	
 	render_frame();
@@ -201,29 +210,103 @@ int load_map(char *map_name)
 	
 	struct string_t *filename = new_string_string(emergence_home_dir);
 	string_cat_text(filename, "/maps/");
-	string_cat_text(filename, map_name);
+	string_cat_text(filename, map_name->text);
 	string_cat_text(filename, ".cmap");
 	
-	gzFile gzfile = gzopen(filename->text, "rb");
-
-	if(!gzfile)
+	if(!get_file_info(filename->text, &local_map_size, local_map_hash))
 	{
-		free_string(filename);
-		filename = new_string_text("stock-maps/");
-		string_cat_text(filename, map_name);
-		string_cat_text(filename, ".cmap");
-	
-		gzfile = gzopen(find_resource(filename->text), "rb");
-		if(!gzfile)
-		{
-			console_print("Could not find map locally.\n");
-			console_print("Attempting to download from server.\n");
-			render_frame();
-			download_map(map_name);
-			downloading_map = 1;	// suspend processing of messages from server
-			return 0;
-		}
+		r = 0;
+		goto next;
 	}
+	
+	if(local_map_size != map_size)
+	{
+		r = 1;
+		goto next;
+	}
+	
+	if(!compare_hashes(local_map_hash, map_hash))
+	{
+		r = 2;
+		goto next;
+	}
+	
+	goto okay;
+	
+	next:
+	free_string(filename);
+	struct string_t *temp = new_string_text("stock-maps/");
+	string_cat_text(temp, map_name->text);
+	string_cat_text(temp, ".cmap");
+	
+	filename = new_string(find_resource(temp->text));
+	free_string(temp);
+	
+	if(!get_file_info(filename->text, &local_map_size, local_map_hash))
+	{
+		goto fail;
+	}
+	
+	if(local_map_size != map_size)
+	{
+		if(!r)
+			r = 1;
+		free(local_map_hash);
+		goto fail;
+	}
+	
+	if(!compare_hashes(local_map_hash, map_hash))
+	{
+		if(!r)
+			r = 2;
+		free(local_map_hash);
+		goto fail;
+	}
+	
+	goto okay;
+	
+	
+	fail:
+	
+	switch(r)
+	{
+	case 0:
+		console_print("Could not find map locally.\n");
+		break;
+	
+	case 1:
+		console_print("Map found locally has wrong filesize.\n");
+		break;
+	
+	case 2:
+		console_print("Map found locally has wrong checksum.\n");
+		break;
+	}
+	
+	console_print("Attempting to download from server.\n");
+	render_frame();
+	
+	struct string_t *command = new_string_text("rm ");
+	string_cat_string(command, emergence_home_dir);
+	string_cat_text(command, "/maps/");
+	string_cat_text(command, map_name->text);
+	string_cat_text(temp, ".cmap.cache*");
+	
+	console_print("%s\n", command->text);
+	system(command->text);
+	free_string(command);
+	
+	download_map(map_name->text);
+	downloading_map = 1;	// suspend processing of messages from server
+	return 0;
+
+	okay:;
+	
+	gzFile gzfile;
+
+	gzfile = gzopen(filename->text, "rb");
+
+
 
 	console_print(filename->text);
 	console_print("\n");
@@ -257,7 +340,7 @@ int load_map(char *map_name)
 	{
 		struct string_t *cached_filename = new_string_string(emergence_home_dir);
 		string_cat_text(cached_filename, "/maps/");
-		string_cat_text(cached_filename, map_name);
+		string_cat_text(cached_filename, map_name->text);
 		string_cat_text(cached_filename, ".cmap");
 		string_cat_text(cached_filename, "%s%u", ".cache", vid_width);
 		
@@ -268,6 +351,30 @@ int load_map(char *map_name)
 		gzFile gzcachedfile = gzopen(cached_filename->text, "rb");
 		if(gzcachedfile)
 		{
+			if(gzread(gzcachedfile, &local_map_size, 4) != 4)
+			{
+				gzclose(gzcachedfile);
+				goto cache;
+			}
+			
+			if(local_map_size != map_size)
+			{
+				gzclose(gzcachedfile);
+				goto cache;
+			}
+			
+			if(gzread(gzcachedfile, local_map_hash, FILEINFO_DIGEST_SIZE) != FILEINFO_DIGEST_SIZE)
+			{
+				gzclose(gzcachedfile);
+				goto cache;
+			}
+			
+			if(!compare_hashes(local_map_hash, map_hash))
+			{
+				gzclose(gzcachedfile);
+				goto cache;
+			}
+			
 			console_print("Loading cached scaled map tiles\n");
 			render_frame();
 			
@@ -277,12 +384,17 @@ int load_map(char *map_name)
 		}
 		else
 		{
+			cache:;
+			
 			gzFile gzcachedfile = gzopen(cached_filename->text, "w9b");
 			if(!gzcachedfile)
 				return 0;
 			
 			console_print("Scaling and caching map tiles\n");
 			render_frame();
+			
+			gzwrite(gzcachedfile, &map_size, 4);
+			gzwrite(gzcachedfile, map_hash, FILEINFO_DIGEST_SIZE);
 			
 			bypass_objects(gzfile);
 			
@@ -291,10 +403,9 @@ int load_map(char *map_name)
 			
 			if(!generate_and_write_scaled_floating_images(gzfile, gzcachedfile))
 				return 0;
-			
-			gzclose(gzcachedfile);
 		}
 		
+		gzclose(gzcachedfile);
 		free_string(cached_filename);
 	}
 	
@@ -315,8 +426,13 @@ int game_process_load_map()
 {
 	map_loaded = 0;
 	map_name = message_reader_read_string();
+	map_size = message_reader_read_uint32();
 	
-	load_map(map_name->text);
+	int i;
+	for(i = 0; i < FILEINFO_DIGEST_SIZE; i++)
+		map_hash[i] = message_reader_read_uint8();
+	
+	load_map();
 	
 	return 1;
 }
@@ -325,7 +441,7 @@ int game_process_load_map()
 void game_process_map_downloaded()
 {
 	downloading_map = 0;
-	load_map(map_name->text);
+	load_map();
 }
 
 

@@ -32,6 +32,7 @@
 #include "shared/sgame.h"
 #include "shared/objects.h"
 #include "shared/bsp.h"
+#include "shared/fileinfo.h"
 #include "game.h"
 #include "console.h"
 #include "ping.h"
@@ -45,6 +46,10 @@ struct pickup_spawn_point_t *pickup_spawn_point0 = NULL;
 
 struct string_t *map_filename = NULL;
 struct string_t *mapname = NULL;
+	
+int map_size;
+uint8_t map_hash[FILEINFO_DIGEST_SIZE];
+
 
 uint32_t game_tick;
 uint32_t cgame_tick;
@@ -305,6 +310,8 @@ void load_map_on_player(struct player_t *player)
 {
 	net_emit_uint8(player->conn, EMMSG_LOADMAP);
 	net_emit_string(player->conn, mapname->text);
+	net_emit_uint32(player->conn, map_size);
+	net_emit_buf(player->conn, map_hash, FILEINFO_DIGEST_SIZE);
 }
 
 
@@ -2861,17 +2868,18 @@ void map(char *args)
 	string_cat_text(filename, args);
 	string_cat_text(filename, ".cmap");
 	
-	gzFile file = gzopen(filename->text, "rb");
-
-	if(!file)
+	
+	if(!get_file_info(filename->text, &map_size, map_hash))
 	{
 		free_string(filename);
-		filename = new_string_text("stock-maps/");
-		string_cat_text(filename, args);
-		string_cat_text(filename, ".cmap");
-	
-		file = gzopen(find_resource(filename->text), "rb");
-		if(!file)
+		struct string_t *temp = new_string_text("stock-maps/");
+		string_cat_text(temp, args);
+		string_cat_text(temp, ".cmap");
+		
+		filename = new_string(find_resource(temp->text));
+		free_string(temp);
+		
+		if(!get_file_info(filename->text, &map_size, map_hash))
 		{
 			console_print("Could not load map: %s\n", args);
 			free_string(filename);
@@ -2879,6 +2887,8 @@ void map(char *args)
 		}
 	}
 
+	gzFile file = gzopen(filename->text, "rb");
+	
 	console_print(filename->text);
 	console_print("\n");
 	
@@ -2938,11 +2948,11 @@ void status()
 	;
 }
 
+
 void leave()
 {
 	;
 }
-
 
 
 void init_game()
