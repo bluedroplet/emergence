@@ -236,12 +236,9 @@ void init()
 	
 	render_frame();
 	
-/*	string = new_string_text("%s%s", home_dir->text, "/autoexec");
-	
+	string = new_string_text("%s%s", emergence_home_dir->text, "/client.autoexec");
 	exec_config_file(string->text);
-	
 	free_string(string);
-*/
 }
 
 
