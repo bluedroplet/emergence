@@ -1566,6 +1566,7 @@ void process_carcass_event(struct event_t *event)
 		return;		// due to ooo
 
 	craft->craft_data.carcass = 1;
+	craft->craft_data.braking = 0;
 	craft->craft_data.particle = 0.0;
 	
 	strip_weapons_from_craft(craft);

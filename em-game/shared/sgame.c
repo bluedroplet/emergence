@@ -688,6 +688,8 @@ void craft_force(struct entity_t *craft, double force)
 void explode_craft(struct entity_t *craft, struct player_t *responsibility);
 int craft_force(struct entity_t *craft, double force, struct player_t *responsibility)
 {
+	assert(!craft->kill_me);
+	
 	craft->craft_data.shield_strength -= force;
 	if(craft->craft_data.shield_strength < 0.0)
 	{
@@ -698,6 +700,7 @@ int craft_force(struct entity_t *craft, double force, struct player_t *responsib
 			if(craft->craft_data.shield_strength > -0.25)
 			{
 				craft->craft_data.carcass = 1;
+				craft->craft_data.braking = 0;
 				strip_weapons_from_craft(craft);
 				make_carcass_on_all_players(craft);
 				return 0;
@@ -1116,9 +1119,12 @@ void craft_rails_collision(struct entity_t *craft, struct entity_t *rails)
 void craft_shield_collision(struct entity_t *craft, struct entity_t *shield)
 {
 	#ifdef EMSERVER
-	craft->craft_data.shield_strength = min(1.0, 
-		craft->craft_data.shield_strength + shield->shield_data.strength);
-	update_player_shield_strengths(craft->craft_data.owner);
+	if(!craft->craft_data.carcass)
+	{
+		craft->craft_data.shield_strength = min(1.0, 
+			craft->craft_data.shield_strength + shield->shield_data.strength);
+		update_player_shield_strengths(craft->craft_data.owner);
+	}
 	#endif
 	
 	destroy_shield(shield);
