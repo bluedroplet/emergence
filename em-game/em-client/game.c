@@ -2099,7 +2099,7 @@ void write_rocket_data_to_demo(struct entity_t *rocket)
 
 void write_mine_data_to_demo(struct entity_t *mine)
 {
-	;
+	gzwrite(gzrecording, &mine->mine_data.craft_id, 4);
 }
 
 
