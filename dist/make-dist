@@ -6,6 +6,13 @@ aclocal-1.8 || exit
 automake-1.8 || exit
 autoconf-2.58 || exit
 
+cd ../em-game
+make distclean
+aclocal-1.8 || exit
+automake-1.8 || exit
+autoconf-2.58 || exit
+
+cd ../em-tools
 
 ./configure || exit
 
@@ -28,17 +35,14 @@ fi
 echo Building Emergence for $arch
 
 export CFLAGS="-march=$arch -O2 -pipe -fomit-frame-pointer"
-ln -sf stage3-$stage3-2004.1 ../../stage3s/current-stage3 || exit
+ln -sfn stage3-$stage3-2004.1 ../../stage3s/current-stage3 || exit
 
 
 rm -rf root
 mkdir -p root/usr
 
 cd ../em-game
-make distclean
-aclocal-1.8 || exit
-automake-1.8 || exit
-autoconf-2.58 || exit
+make clean
 
 D=`pwd`/../dist/root/
 
@@ -60,6 +64,7 @@ cd ..
 
 
 cd ../em-tools
+make clean
 
 ./configure --prefix=/usr || exit
 make || exit
