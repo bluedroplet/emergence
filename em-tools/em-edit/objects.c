@@ -221,7 +221,7 @@ void insert_object(int type, double x, double y)
 		object.speedup_ramp_data.width = 128.0;
 		object.speedup_ramp_data.height = 64.0;
 		object.speedup_ramp_data.angle = 0.0;
-		object.speedup_ramp_data.activation_width = 64.0;
+		object.speedup_ramp_data.activation_width = 128.0;
 		object.speedup_ramp_data.boost = 60.0;
 		break;
 	
