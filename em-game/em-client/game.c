@@ -2500,11 +2500,11 @@ void render_entities()
 				switch(entity->teleporting)
 				{
 				case TELEPORTING_DISAPPEARING:
-					params.alpha = -lround(time / TELEPORT_FADE_TIME * 255.0);
+					params.alpha = 255 - min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
 					break;
 				
 				case TELEPORTING_APPEARING:
-					params.alpha = lround(time / TELEPORT_FADE_TIME * 255.0);
+					params.alpha = min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
 					break;
 				}
 				
@@ -2563,11 +2563,11 @@ void render_entities()
 				switch(entity->teleporting)
 				{
 				case TELEPORTING_DISAPPEARING:
-					params.alpha = -lround(time / TELEPORT_FADE_TIME * 255.0);
+					params.alpha = 255 - min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
 					break;
 				
 				case TELEPORTING_APPEARING:
-					params.alpha = lround(time / TELEPORT_FADE_TIME * 255.0);
+					params.alpha = min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
 					break;
 				}
 				
@@ -2611,11 +2611,11 @@ void render_entities()
 				switch(entity->teleporting)
 				{
 				case TELEPORTING_DISAPPEARING:
-					params.alpha = -lround(time / TELEPORT_FADE_TIME * 255.0);
+					params.alpha = 255 - min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
 					break;
 				
 				case TELEPORTING_APPEARING:
-					params.alpha = lround(time / TELEPORT_FADE_TIME * 255.0);
+					params.alpha = min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
 					break;
 				}
 				
@@ -2649,7 +2649,7 @@ void render_entities()
 				switch(entity->teleporting)
 				{
 				case TELEPORTING_DISAPPEARING:
-					params.alpha = -lround(time / TELEPORT_FADE_TIME * 255.0);
+					params.alpha = 255 - min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
 					alpha_blit_surface(&params);
 					break;
 				
@@ -2657,7 +2657,7 @@ void render_entities()
 					break;
 					
 				case TELEPORTING_APPEARING:
-					params.alpha = lround(time / TELEPORT_FADE_TIME * 255.0);
+					params.alpha = min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
 					alpha_blit_surface(&params);
 					break;
 				}
