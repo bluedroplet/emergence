@@ -1,6 +1,7 @@
 SUBDIRS = shared share
-LDADD = -L/usr/X11R6/lib ../gsub/libgsub.a shared/libshared.a ../common/libcommon.a -lm -lz -lpng -lX11 -lXext -lXrandr -lssl -lcrypto -lvorbisfile -lvorbis -logg -lasound -lpthread
+LDADD = ../gsub/libgsub.a shared/libshared.a ../common/libcommon.a ../../../stage3s/current-stage3/usr/lib/libssl.a ../../../stage3s/current-stage3/usr/lib/libcrypto.a
 AM_CPPFLAGS = -DLINUX -DEMCLIENT -Wall -I/usr/X11R6/include/X11/extensions/ -DPKGDATADIR=\""$(datadir)/emergence/"\"
+AM_LDFLAGS = -L/usr/X11R6/lib -lvorbisfile -lvorbis -logg -lpthread -lz -lX11 -lXext -lXrandr -lasound -logg -lvorbisfile -lpng
 bin_PROGRAMS = em-client
 
 em_client_SOURCES = bsp.c entry.c game.c main.c map.h ping.h stars.h \
