@@ -4820,15 +4820,15 @@ void render_health_and_ammo()
 
 void render_help()
 {
+	if(server_discovery_started)
+		return;
+	
 	if(!display_help)
 	{
 		blit_text_centered(vid_width / 2, 0, 0xff, 0xff, 0xff, 
 			s_backbuffer, "Press F1 for controls");
 		return;
 	}
-	
-	if(server_discovery_started)
-		return;
 	
 	blit_text_centered(vid_width / 3, vid_height / 6, 0xef, 0x6f, 0xff, 
 		s_backbuffer, "mouse");

@@ -599,7 +599,7 @@ void render_servers()
 					params.dest = s_backbuffer;
 					params.dest_x = 48;
 					params.dest_y = vid_height / 6 + i * 32 - 2;
-					params.width = 450;
+					params.width = 475;
 					params.height = 32;
 				
 					alpha_draw_rect(&params);
