@@ -794,8 +794,12 @@ void update_player_shield_strengths(struct player_t *player)
 {
 	net_emit_uint8(player->conn, EMEVENT_SHIELD_STRENGTHS);
 	net_emit_uint32(player->conn, game_tick);
-	net_emit_float(player->conn, player->craft->craft_data.shield_strength);
 	
+	if(player->craft)
+		net_emit_float(player->conn, player->craft->craft_data.shield_strength);
+	else
+		net_emit_float(player->conn, 0.0f);
+
 	if(player->craft->craft_data.left_weapon)
 		net_emit_float(player->conn, 
 			player->craft->craft_data.left_weapon->weapon_data.shield_strength);
