@@ -270,7 +270,7 @@ void process_console_pipe()
 		if(c == 0)
 		{
 			parse_command(s->text);
-			string_clear(c);
+			string_clear(s);
 		}
 		else
 			string_cat_char(s, c);
