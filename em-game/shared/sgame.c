@@ -2111,6 +2111,9 @@ void s_tick_weapon(struct entity_t *weapon)
 			{
 				if(craft)
 				{
+					weapon->xvel = craft->xvel;
+					weapon->yvel = craft->yvel;
+				
 					weapon->weapon_data.craft->propagate_me = 1;
 					strip_craft_from_weapon(weapon);
 				}
@@ -2197,6 +2200,9 @@ void s_tick_weapon(struct entity_t *weapon)
 	}
 	else
 	{
+		weapon->xvel = craft->xvel;
+		weapon->yvel = craft->yvel;
+		
 		if(!point_in_circle(weapon->xdis, weapon->ydis, 
 			craft->xdis, craft->ydis, MAX_CRAFT_WEAPON_DIST))
 		{
