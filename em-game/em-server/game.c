@@ -2848,31 +2848,33 @@ void map(char *args)
 	
 	mapname = new_string_text(args);
 	
-
-
-	struct string_t *filename = new_string_text("stock-maps/");
+	struct string_t *filename = new_string_string(emergence_home_dir);
+	string_cat_text(filename, "/maps/");
 	string_cat_text(filename, args);
 	string_cat_text(filename, ".cmap");
+	
+	gzFile file = gzopen(filename->text, "rb");
 
-	gzFile file = gzopen(find_resource(filename->text), "rb");
 	if(!file)
 	{
 		free_string(filename);
-		filename = new_string_string(emergence_home_dir);
-		string_cat_text(filename, "/maps/");
+		filename = new_string_text("stock-maps/");
 		string_cat_text(filename, args);
 		string_cat_text(filename, ".cmap");
 	
-		gzFile file = gzopen(filename->text, "rb");
+		file = gzopen(find_resource(filename->text), "rb");
 		if(!file)
 		{
 			console_print("Could not load map: %s\n", args);
+			free_string(filename);
 			return;
 		}
 	}
 
 	console_print(filename->text);
 	console_print("\n");
+	
+	free_string(filename);
 	
 //	uint16_t format_id;
 	
@@ -2911,12 +2913,10 @@ void map(char *args)
 	
 	game_state = GS_ALIVE;
 	console_print("Map loaded.\n");
-	free_string(filename);
 	return;
 
 error:
 	
-	free_string(filename);
 	gzclose(file);
 	console_print("Map file is corrupt!\n");
 }
