@@ -1060,7 +1060,9 @@ void process_update_ent_event(struct event_t *event)
 	
 	if(entity->type == ENT_CRAFT &&
 		old_teleporting == TELEPORTING_FINISHED &&
-		entity->teleporting == TELEPORTING_DISAPPEARING)
+		entity->teleporting == TELEPORTING_DISAPPEARING &&
+		((game_state == GAMESTATE_DEMO && entity->index == demo_follow_me) ||
+		(game_state == GAMESTATE_PLAYING && entity->index == cgame_state->follow_me)))
 	{
 		get_spawn_point_coords(entity->teleport_spawn_index, &teleporter_x, &teleporter_y);
 			
