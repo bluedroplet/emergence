@@ -1806,6 +1806,23 @@ void cf_demo(char *c)
 	}
 }
 
+
+void cf_suicide(char *c)
+{
+	switch(game_state)
+	{
+	case GAMESTATE_DEAD:
+	case GAMESTATE_DEMO:
+	case GAMESTATE_CONNECTING:
+	case GAMESTATE_SPECTATING:
+	case GAMESTATE_PLAYING:
+		net_emit_uint8(game_conn, EMMSG_SUICIDE);
+		net_emit_end_of_stream(game_conn);
+		break;
+	}
+}
+
+
 void roll_left(uint32_t state)
 {
 //	if(game_state != GAMESTATE_ALIVE)
@@ -2842,6 +2859,7 @@ void init_game()
 	
 	set_string_cvar_qc_function("name", qc_name);
 	
+	create_cvar_command("suicide", cf_suicide);
 	
 	struct surface_t *temp = read_png_surface(PKGDATADIR "/stock-object-textures/plasma.png");
 		
@@ -2849,11 +2867,11 @@ void init_game()
 	
 	temp = read_png_surface(PKGDATADIR "/stock-object-textures/craft-shield.png");
 	
-//	s_craft_shield = resize(temp, 57, 57, NULL);
-//	s_weapon_shield = resize(temp, 36, 36, NULL);
+	s_craft_shield = resize(temp, 57, 57, NULL);
+	s_weapon_shield = resize(temp, 36, 36, NULL);
 	
-	s_craft_shield = resize(temp, 73, 73, NULL);
-	s_weapon_shield = resize(temp, 46, 46, NULL);
+//	s_craft_shield = resize(temp, 73, 73, NULL);
+//	s_weapon_shield = resize(temp, 46, 46, NULL);
 }
 
 

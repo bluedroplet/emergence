@@ -74,6 +74,7 @@ break backward compatibility, EM_PROTO_VER must be incremented accordingly
 #define EMMSG_RCONMSG			0x0e
 #define EMMSG_STATUS			0x0f
 #define EMMSG_NAMECNGE			0x10
+#define EMMSG_SUICIDE			0x11
 
 
 
@@ -319,6 +320,7 @@ void s_tick_entities(struct entity_t **entity0);
 void splash_force(double x, double y, double force);
 void strip_weapons_from_craft(struct entity_t *craft);
 void strip_craft_from_weapon(struct entity_t *weapon);
+void explode_craft(struct entity_t *craft);
 
 
 #define CRAFT_RADIUS	56.569

@@ -1118,6 +1118,23 @@ int game_process_name_change(struct player_t *player, struct buffer_t *stream)
 }
 
 
+int game_process_suicide(struct player_t *player)
+{
+	struct entity_t *old_craft = player->craft;
+	respawn_craft(old_craft);
+	explode_craft(old_craft);
+	remove_entity(&entity0, old_craft);
+	
+	struct string_t *s = new_string_string(player->name);
+		
+	string_cat_text(s, " decided to end it all.\n");
+	console_print(s->text);
+	print_on_all_players(s->text);
+	free_string(s);
+	return 1;
+}
+
+
 int game_process_thrust(struct player_t *player, struct buffer_t *stream)
 {
 	float thrust = buffer_read_float(stream);
@@ -1414,6 +1431,11 @@ void game_process_stream(uint32_t conn, uint32_t index, struct buffer_t *stream)
 		
 		case EMMSG_NAMECNGE:
 			if(!game_process_name_change(player, stream))
+				return;
+			break;
+
+		case EMMSG_SUICIDE:
+			if(!game_process_suicide(player))
 				return;
 			break;
 
