@@ -110,8 +110,8 @@ struct surface_t *resize_a8(struct surface_t *src_texture, int dst_width, int ds
 			int min_src_x = min_src_xs[dst_x];
 			int max_src_x = max_src_xs[dst_x];
 			
-			uint8_t *src = get_pixel_addr(src_texture, min_src_x, min_src_y);
-			int addon = src_texture->width - (max_src_x - min_src_x + 1);
+			uint8_t *src = get_alpha_pixel_addr(src_texture, min_src_x, min_src_y);
+			int addon = src_texture->alpha_pitch - (max_src_x - min_src_x + 1);
 			
 			for(src_y = min_src_y; src_y <= max_src_y; src_y++)
 			{
@@ -730,6 +730,9 @@ struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_h
 	
 	switch(src_texture->flags)
 	{
+	case SURFACE_ALPHA8BIT:
+		return resize_a8(src_texture, dst_width, dst_height, callback);
+	
 	case SURFACE_24BIT:
 		return resize_888(src_texture, dst_width, dst_height, callback);
 	
