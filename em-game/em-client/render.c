@@ -18,6 +18,7 @@
 #include "entry.h"
 #include "x.h"
 #include "screenshot.h"
+#include "ris.h"
 
 
 int g_VidMode = 2;

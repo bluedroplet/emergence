@@ -59,9 +59,11 @@ struct dynamic_object_texture_t
 
 
 struct surface_t *s_unowned_plasma_cannon, *s_unowned_minigun, *s_unowned_rocket_launcher;
-struct surface_t *s_rails, *s_shield_energy;
-struct surface_t *s_spawn_point_placeholder, *s_teleporter_placeholder, *s_gravity_well_placeholder;
-struct surface_t *s_scaled_spawn_point_placeholder, *s_scaled_teleporter_placeholder, *s_scaled_gravity_well_placeholder;
+struct surface_t *s_rails;
+struct surface_t *s_spawn_point_placeholder, *s_teleporter_placeholder, 
+	*s_gravity_well_placeholder, *s_shield_energy;
+struct surface_t *s_scaled_spawn_point_placeholder, *s_scaled_teleporter_placeholder, 
+	*s_scaled_gravity_well_placeholder, *s_scaled_shield_energy;
 struct surface_t *s_stock_speedup_ramp;
 
 
@@ -77,7 +79,8 @@ int object_scale_job;
 #define OBJECT_SCALE_JOB_SPAWN_POINT	0
 #define OBJECT_SCALE_JOB_TELEPORTER		1
 #define OBJECT_SCALE_JOB_GRAVITY_WELL	2
-#define OBJECT_SCALE_JOB_SPECIFIC		3
+#define OBJECT_SCALE_JOB_SHIELD_ENERGY	3
+#define OBJECT_SCALE_JOB_SPECIFIC		4
 
 
 #define OBJECT_THRESHOLD 15
@@ -1903,6 +1906,18 @@ void draw_objects()
 				}
 				break;
 			
+			case OBJECTTYPE_SHIELDENERGY:
+				
+				if(s_shield_energy)
+				{
+					params.source = s_shield_energy;
+					params.dest_x = x - s_shield_energy->width / 2;
+					params.dest_y = y - s_shield_energy->height / 2;
+					params.red = params.green = params.blue = 0xff;
+					blit_surface(&params);
+				}
+				break;
+
 			normal:
 			default:
 				if(object->texture_surface)
@@ -1958,6 +1973,18 @@ void draw_objects()
 				}
 				break;
 			
+			case OBJECTTYPE_SHIELDENERGY:
+				
+				if(s_scaled_shield_energy)
+				{
+					params.source = s_scaled_shield_energy;
+					params.dest_x = x - s_scaled_shield_energy->width / 2;
+					params.dest_y = y - s_scaled_shield_energy->height / 2;
+					params.red = params.green = params.blue = 0xff;
+					blit_surface(&params);
+				}
+				break;
+			
 			normal_zoomed:
 			default:
 				if(object->scaled_texture_surface)
@@ -2000,6 +2027,9 @@ void invalidate_all_scaled_objects()	// always called fom main thread while not 
 	
 	free_surface(s_scaled_gravity_well_placeholder);
 	s_scaled_gravity_well_placeholder = NULL;
+	
+	free_surface(s_scaled_shield_energy);
+	s_scaled_shield_energy = NULL;
 	
 	struct object_t *object = object0;
 		
@@ -2540,15 +2570,15 @@ void init_objects()
 		
 	s_rails = read_png_surface(PKGDATADIR 
 		"/stock-object-textures/rails.png");
-	s_shield_energy = read_png_surface(PKGDATADIR 
-		"/stock-object-textures/shield.png");
-	
 	s_spawn_point_placeholder = read_png_surface(PKGDATADIR 
 		"/em-edit/spawn-point-placeholder.png");
 	s_teleporter_placeholder = read_png_surface(PKGDATADIR 
 		"/em-edit/teleporter-placeholder.png");
 	s_gravity_well_placeholder = read_png_surface(PKGDATADIR 
 		"/em-edit/gravity-well-placeholder.png");
+	s_shield_energy = read_png_surface(PKGDATADIR 
+		"/stock-object-textures/shield-pickup.png");
+	
 		
 	s_stock_speedup_ramp = read_png_surface(PKGDATADIR "/em-edit/stock-speedup-ramp.png");
 }
@@ -2654,16 +2684,16 @@ int check_for_unscaled_objects()
 			return 1;
 		}
 		
+		if(s_shield_energy && !s_scaled_shield_energy)
+		{
+			object_scale_job = OBJECT_SCALE_JOB_SHIELD_ENERGY;
+			return 1;
+		}
+		
 		struct object_t *cobject = object0;
 		
 		while(cobject)
 		{
-			if(cobject->type == OBJECTTYPE_SHIELDENERGY)
-			{
-				cobject = cobject->next;
-				continue;
-			}
-			
 			if(cobject->texture_surface && !cobject->scaled_texture_surface)
 			{
 				working_object = cobject;
@@ -2693,6 +2723,10 @@ void finished_scaling_object()
 	
 	case OBJECT_SCALE_JOB_GRAVITY_WELL:
 		s_scaled_gravity_well_placeholder = working_object_surface;
+		break;
+	
+	case OBJECT_SCALE_JOB_SHIELD_ENERGY:
+		s_scaled_shield_energy = working_object_surface;
 		break;
 	
 	case OBJECT_SCALE_JOB_SPECIFIC:
@@ -2775,21 +2809,6 @@ void resample_object()
 		break;
 	
 		
-	case OBJECTTYPE_SHIELDENERGY:
-		
-		if(dynamic_objects[OBJECTTYPE_SHIELDENERGY].non_default && dynamic_objects[OBJECTTYPE_SHIELDENERGY].texture)
-		{
-			working_object_surface = rotate_surface(dynamic_objects[OBJECTTYPE_SHIELDENERGY].texture, 
-				64, 64, working_object->shield_energy_data.angle);
-		}
-		else
-		{
-			working_object_surface = rotate_surface(s_shield_energy, 64, 64, 
-				working_object->shield_energy_data.angle);
-		}
-		break;
-	
-		
 	case OBJECTTYPE_SPAWNPOINT:
 		working_object_surface = rotate_surface(working_object->spawn_point_data.texture_pre_surface, 
 			working_object->spawn_point_data.width, 
@@ -2855,6 +2874,12 @@ void scale_object()
 		working_object_surface = resize(s_gravity_well_placeholder, 
 			lround((double)s_gravity_well_placeholder->width * zoom), 
 			lround((double)s_gravity_well_placeholder->height * zoom), NULL);
+		break;
+	
+	case OBJECT_SCALE_JOB_SHIELD_ENERGY:
+		working_object_surface = resize(s_shield_energy, 
+			lround((double)s_shield_energy->width * zoom), 
+			lround((double)s_shield_energy->height * zoom), NULL);
 		break;
 	
 	case OBJECT_SCALE_JOB_SPECIFIC:

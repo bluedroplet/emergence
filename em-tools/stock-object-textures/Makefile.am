@@ -1,4 +1,4 @@
-OBJECTS = rails.png  shield.png  unowned-minigun.png \
+OBJECTS = rails.png  shield-pickup.png  unowned-minigun.png \
 	unowned-plasma-cannon.png  unowned-rocket-launcher.png
 
 sharedatadir = $(datadir)/emergence/stock-object-textures

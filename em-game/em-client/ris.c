@@ -10,16 +10,10 @@
 #include "../common/llist.h"
 #include "../common/stringbuf.h"
 #include "../gsub/gsub.h"
+#include "ris.h"
 
 
-struct ris_t
-{
-	struct string_t *filename;
-	struct surface_t *surface;
-		
-	struct ris_t *next;
-		
-} *ris0 = NULL;
+struct ris_t *ris0 = NULL;
 
 float ris_multiplier = 1.0;
 	
@@ -46,7 +40,7 @@ void set_ri_surface_multiplier(float m)
 }
 
 
-struct surface_t *load_ri_surface(char *filename)
+struct ris_t *load_ri_surface(char *filename)
 {
 	struct ris_t ris;
 		
@@ -62,26 +56,16 @@ struct surface_t *load_ri_surface(char *filename)
 	
 	LL_ADD(struct ris_t, &ris0, &ris);
 		
-	return ris.surface;
+	return ris0;
 }
 
 
-void free_ri_surface(struct surface_t *ris)
+void free_ri_surface(struct ris_t *ris)
 {
-	free_surface(ris);
+	free_string(ris->filename);
+	free_surface(ris->surface);
 	
-	struct ris_t *cris = ris0;
-		
-	while(cris)
-	{
-		if(cris->surface == ris)
-		{
-			LL_REMOVE(struct ris_t, &ris0, cris);
-			break;
-		}
-
-		cris = cris->next;
-	}
+	LL_REMOVE(struct ris_t, &ris0, ris);
 }
 
 
@@ -89,6 +73,7 @@ void kill_ris()
 {
 	while(ris0)
 	{
+		free_string(ris0->filename);
 		free_surface(ris0->surface);
 		
 		LL_REMOVE(struct ris_t, &ris0, ris0);

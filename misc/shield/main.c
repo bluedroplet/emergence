@@ -37,7 +37,7 @@
 
 
 
-#define WIDTH 80
+#define WIDTH 58
 #define MAX_DIST ((double)WIDTH / 2.0)
 
 #define SUB 100

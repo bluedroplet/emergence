@@ -37,6 +37,7 @@
 #include "entry.h"
 #include "sound.h"
 #include "floats.h"
+#include "ris.h"
 
 #ifdef LINUX
 #include "shared/timer.h"
@@ -208,8 +209,8 @@ float offset_view_y;
 float teleporting_start_x, teleporting_start_y;
 
 
-struct surface_t *s_plasma, *s_craft_shield, *s_weapon_shield, *s_mine;
-
+struct ris_t *ris_plasma, *ris_craft_shield, *ris_weapon_shield, 
+	*ris_shield_pickup, *ris_mine;
 
 uint32_t game_conn;
 
@@ -1928,6 +1929,7 @@ void game_process_stream_untimed_ooo(uint32_t conn, uint32_t index, struct buffe
 
 void game_resolution_change()
 {
+	set_ri_surface_multiplier((double)vid_width / 1600.0);
 	reload_map();
 	reload_skins();
 	
@@ -2577,12 +2579,12 @@ void render_entities()
 		{
 		case ENT_MINE:
 			
-			params.source = s_mine;
+			params.source = ris_mine->surface;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
-			params.dest_x = x - s_plasma->width / 2;
-			params.dest_y = y - s_plasma->width / 2;
+			params.dest_x = x - ris_mine->surface->width / 2;
+			params.dest_y = y - ris_mine->surface->height / 2;
 			
 			if(entity->teleporting)
 			{
@@ -2671,10 +2673,10 @@ void render_entities()
 		
 			if(!entity->teleporting && !entity->craft_data.carcass)
 			{				
-				params.source = s_craft_shield;
+				params.source = ris_craft_shield->surface;
 			
-				params.dest_x = x - s_craft_shield->width / 2;
-				params.dest_y = y - s_craft_shield->width / 2;
+				params.dest_x = x - ris_craft_shield->surface->width / 2;
+				params.dest_y = y - ris_craft_shield->surface->height / 2;
 
 				params.red = params.green = params.blue = 0xff;
 				params.alpha = lrint(entity->craft_data.shield_flare * 255.0);
@@ -2733,10 +2735,10 @@ void render_entities()
 		
 			if(!entity->teleporting)
 			{				
-				params.source = s_weapon_shield;
+				params.source = ris_weapon_shield->surface;
 			
-				params.dest_x = x - s_weapon_shield->width / 2;
-				params.dest_y = y - s_weapon_shield->width / 2;
+				params.dest_x = x - ris_weapon_shield->surface->width / 2;
+				params.dest_y = y - ris_weapon_shield->surface->height / 2;
 				
 				params.red = params.green = params.blue = 0xff;
 				params.alpha = lrint(entity->weapon_data.shield_flare * 255.0);
@@ -2748,7 +2750,7 @@ void render_entities()
 		
 		case ENT_PLASMA:
 
-			params.source = s_plasma;
+			params.source = ris_plasma->surface;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
@@ -2756,8 +2758,8 @@ void render_entities()
 			params.green = 0x73;
 			params.blue = 0x71;
 			
-			params.dest_x = x - s_plasma->width / 2;
-			params.dest_y = y - s_plasma->width / 2;
+			params.dest_x = x - ris_plasma->surface->width / 2;
+			params.dest_y = y - ris_plasma->surface->width / 2;
 			
 			if(entity->teleporting)
 			{
@@ -2786,9 +2788,8 @@ void render_entities()
 		
 		case ENT_RAILS:
 		case ENT_ROCKET:
-		case ENT_SHIELD:
 			
-			params.source = s_plasma;
+			params.source = ris_plasma->surface;
 		
 			world_to_screen(entity->xdis, entity->ydis, &x, &y);
 		
@@ -2796,8 +2797,8 @@ void render_entities()
 			params.green = 0x73;
 			params.blue = 0x71;
 			
-			params.dest_x = x - s_plasma->width / 2;
-			params.dest_y = y - s_plasma->width / 2;
+			params.dest_x = x - ris_plasma->surface->width / 2;
+			params.dest_y = y - ris_plasma->surface->height / 2;
 			
 			if(entity->teleporting)
 			{
@@ -2826,10 +2827,45 @@ void render_entities()
 		
 /*		case ENT_RAILS:
 			break;
-		
+*/			
 		case ENT_SHIELD:
+			
+			params.source = ris_shield_pickup->surface;
+		
+			world_to_screen(entity->xdis, entity->ydis, &x, &y);
+		
+			params.red = 0xff;
+			params.green = 0xff;
+			params.blue = 0xff;
+			
+			params.dest_x = x - ris_shield_pickup->surface->width / 2;
+			params.dest_y = y - ris_shield_pickup->surface->height / 2;
+			
+			if(entity->teleporting)
+			{
+				time = (double)(cgame_tick - entity->teleporting_tick) / 200.0;
+				
+				switch(entity->teleporting)
+				{
+				case TELEPORTING_DISAPPEARING:
+					params.alpha = 255 - min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
+					alpha_blit_surface(&params);
+					break;
+				
+				case TELEPORTING_TRAVELLING:
+					break;
+					
+				case TELEPORTING_APPEARING:
+					params.alpha = min(lround(time / TELEPORT_FADE_TIME * 255.0), 255);
+					alpha_blit_surface(&params);
+					break;
+				}
+			}
+			else
+				blit_surface(&params);
+		
 			break;
-*/		}
+		}
 
 		entity = entity->next;
 	}
@@ -3472,6 +3508,8 @@ void cf_disconnect()
 
 void init_game()
 {
+	set_ri_surface_multiplier((double)vid_width / 1600.0);
+	
 	init_stars();
 	init_particles();
 	
@@ -3491,21 +3529,11 @@ void init_game()
 	
 	create_cvar_command("suicide", cf_suicide);
 	
-	struct surface_t *temp = read_png_surface(PKGDATADIR "/stock-object-textures/plasma.png");
-		
-	s_plasma = resize(temp, 14, 14, NULL);
-	
-	temp = read_png_surface(PKGDATADIR "/stock-object-textures/shield.png");
-	
-//	s_craft_shield = resize(temp, 57, 57, NULL);
-//	s_weapon_shield = resize(temp, 36, 36, NULL);
-	
-	s_craft_shield = resize(temp, 46, 46, NULL);
-	s_weapon_shield = resize(temp, 28, 28, NULL);
-
-	temp = read_png_surface(PKGDATADIR "/stock-object-textures/mine.png");
-	
-	s_mine = resize(temp, 13, 13, NULL);
+	ris_plasma = load_ri_surface(PKGDATADIR "/stock-object-textures/plasma.png");
+	ris_craft_shield = load_ri_surface(PKGDATADIR "/stock-object-textures/craft-shield.png");
+	ris_weapon_shield = load_ri_surface(PKGDATADIR "/stock-object-textures/weapon-shield.png");
+	ris_shield_pickup = load_ri_surface(PKGDATADIR "/stock-object-textures/shield-pickup.png");
+	ris_mine = load_ri_surface(PKGDATADIR "/stock-object-textures/mine.png");
 	
 	railgun_sample = load_sample(PKGDATADIR "/stock-sounds/railgun.ogg");
 	teleporter_sample = load_sample(PKGDATADIR "/stock-sounds/teleporter.ogg");
