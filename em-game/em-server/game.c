@@ -40,6 +40,7 @@ struct pickup_spawn_point_t *pickup_spawn_point0 = NULL;
 
 
 struct string_t *map_filename = NULL;
+struct string_t *mapname = NULL;
 
 uint32_t game_tick;
 uint32_t cgame_tick;
@@ -271,7 +272,7 @@ void propagate_entity(struct entity_t *entity)
 void load_map_on_player(struct player_t *player)
 {
 	net_emit_uint8(player->conn, EMMSG_LOADMAP);
-	net_emit_string(player->conn, "default");
+	net_emit_string(player->conn, mapname->text);
 }
 
 
@@ -1922,6 +1923,8 @@ void map(char *args)
 {
 	if(game_state == GS_ALIVE)
 		return;
+	
+	mapname = new_string_text(args);
 	
 	struct string_t *filename = new_string_string(emergence_home_dir);
 	string_cat_text(filename, "/maps/");
