@@ -1,7 +1,7 @@
 SUBDIRS = shared
 LDADD = ../common/libcommon.a shared/libshared.a -lm -lz -lssl -lcrypto
 AM_CPPFLAGS = -DLINUX -Wall -DEMSERVER -DPKGDATADIR=\""$(datadir)/emergence/"\"
-AM_LDFLAGS = -rdynamic
+AM_LDFLAGS = -rdynamic -static
 
 bin_PROGRAMS = em-server
 
