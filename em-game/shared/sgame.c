@@ -884,7 +884,7 @@ void respawn_weapon(struct entity_t *weapon)
 	if(weapon->weapon_data.respawned)
 		return;
 	
-	calculate_respawn_tick(weapon->weapon_data.spawn_point);
+	schedule_respawn(weapon->weapon_data.spawn_point);
 	weapon->weapon_data.respawned = 1;
 }
 
@@ -916,7 +916,7 @@ void explode_rails(struct entity_t *rails, struct player_t *responsibility)
 	splash_force(rails->xdis, rails->ydis, RAILS_SPLASH_FORCE, responsibility);
 	emit_explosion(rails->xdis, rails->ydis, RAILS_EXPLOSION_SIZE, 0, 
 		0xff, 0, 0, 0xff, 0xff, 0xff);
-	calculate_respawn_tick(rails->rails_data.spawn_point);
+	schedule_respawn(rails->rails_data.spawn_point);
 	
 	if(!rails->in_tick)
 		remove_entity(sentity0, rails);
@@ -965,7 +965,7 @@ void destroy_shield(struct entity_t *shield)
 	shield->kill_me = 1;
 	
 	#ifdef EMSERVER
-	calculate_respawn_tick(shield->shield_data.spawn_point);
+	schedule_respawn(shield->shield_data.spawn_point);
 	#endif
 	
 	if(!shield->in_tick)
@@ -1031,7 +1031,7 @@ void craft_rails_collision(struct entity_t *craft, struct entity_t *rails)
 	craft->craft_data.owner->rails = min(CRAFT_MAX_RAILS, 
 		craft->craft_data.owner->rails + rails->rails_data.quantity);
 	
-	calculate_respawn_tick(rails->rails_data.spawn_point);
+	schedule_respawn(rails->rails_data.spawn_point);
 	#endif
 	
 	rails->kill_me = 1;
@@ -2710,7 +2710,6 @@ void s_tick_weapon(struct entity_t *weapon)
 					craft = entity;
 					
 					#ifdef EMSERVER
-					respawn_weapon(weapon);
 					if(!weapon->weapon_data.original_ownership_defined)
 					{
 						weapon->weapon_data.shield_red = 
@@ -2761,7 +2760,6 @@ void s_tick_weapon(struct entity_t *weapon)
 					craft = entity;
 					
 					#ifdef EMSERVER
-					respawn_weapon(weapon);
 					if(!weapon->weapon_data.original_ownership_defined)
 					{
 						weapon->weapon_data.shield_red = 
