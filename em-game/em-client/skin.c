@@ -45,6 +45,11 @@ int load_skin(struct skin_t *skin)
 	string_cat_text(filename, ".skin.cache");
 	string_cat_int(filename, vid_width);
 	
+//	console_print(filename->text);
+//	console_print("\n");
+	
+//	console_print("skin: %i\n", skin->index);
+	
 	gzFile gzfile = gzopen(filename->text, "rb");
 	if(gzfile)
 	{

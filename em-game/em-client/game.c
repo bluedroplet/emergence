@@ -2064,17 +2064,64 @@ void game_process_stream_untimed_ooo(uint32_t conn, uint32_t index, struct buffe
 
 void game_resolution_change()
 {
+	struct game_state_t *cgame_state;
+	struct entity_t *entity;
+	
 	set_ri_surface_multiplier((double)vid_width / 1600.0);
 	reload_map();
 	reload_skins();
 	
-	// getting entities' new surfaces
 	
-	struct game_state_t *game_state = game_state0;
-		
-	while(game_state)
+	switch(game_state)
 	{
-		struct entity_t *entity = game_state->entity0;
+	case GAMESTATE_PLAYING:
+		
+		// getting entities' new surfaces
+		
+		cgame_state = game_state0;
+			
+		while(cgame_state)
+		{
+			struct entity_t *entity = cgame_state->entity0;
+		
+			while(entity)
+			{
+				switch(entity->type)
+				{
+				case ENT_CRAFT:
+					entity->craft_data.surface = skin_get_craft_surface(entity->craft_data.skin);
+					break;
+				
+				case ENT_WEAPON:
+					switch(entity->weapon_data.type)
+					{
+					case WEAPON_PLASMA_CANNON:
+						entity->weapon_data.surface = 
+							skin_get_plasma_cannon_surface(entity->weapon_data.skin);
+						break;
+					
+					case WEAPON_MINIGUN:
+						entity->weapon_data.surface = 
+							skin_get_minigun_surface(entity->weapon_data.skin);
+						break;
+					
+					case WEAPON_ROCKET_LAUNCHER:
+						entity->weapon_data.surface = 
+							skin_get_rocket_launcher_surface(entity->weapon_data.skin);
+						break;
+					}
+		
+					break;
+				}
+				
+				entity = entity->next;
+			}
+			
+			cgame_state = cgame_state->next;
+		}
+	
+		
+		entity = last_known_game_state.entity0;
 	
 		while(entity)
 		{
@@ -2109,43 +2156,47 @@ void game_resolution_change()
 			entity = entity->next;
 		}
 		
-		game_state = game_state->next;
-	}
-
-	
-	struct entity_t *entity = last_known_game_state.entity0;
-
-	while(entity)
-	{
-		switch(entity->type)
-		{
-		case ENT_CRAFT:
-			entity->craft_data.surface = skin_get_craft_surface(entity->craft_data.skin);
-			break;
+		break;
 		
-		case ENT_WEAPON:
-			switch(entity->weapon_data.type)
+		
+	case GAMESTATE_DEMO:
+		
+		// getting entities' new surfaces
+		
+		entity = centity0;
+	
+		while(entity)
+		{
+			switch(entity->type)
 			{
-			case WEAPON_PLASMA_CANNON:
-				entity->weapon_data.surface = 
-					skin_get_plasma_cannon_surface(entity->weapon_data.skin);
+			case ENT_CRAFT:
+				entity->craft_data.surface = skin_get_craft_surface(entity->craft_data.skin);
 				break;
 			
-			case WEAPON_MINIGUN:
-				entity->weapon_data.surface = 
-					skin_get_minigun_surface(entity->weapon_data.skin);
-				break;
-			
-			case WEAPON_ROCKET_LAUNCHER:
-				entity->weapon_data.surface = 
-					skin_get_rocket_launcher_surface(entity->weapon_data.skin);
+			case ENT_WEAPON:
+				switch(entity->weapon_data.type)
+				{
+				case WEAPON_PLASMA_CANNON:
+					entity->weapon_data.surface = 
+						skin_get_plasma_cannon_surface(entity->weapon_data.skin);
+					break;
+				
+				case WEAPON_MINIGUN:
+					entity->weapon_data.surface = 
+						skin_get_minigun_surface(entity->weapon_data.skin);
+					break;
+				
+				case WEAPON_ROCKET_LAUNCHER:
+					entity->weapon_data.surface = 
+						skin_get_rocket_launcher_surface(entity->weapon_data.skin);
+					break;
+				}
+	
 				break;
 			}
-
-			break;
+			
+			entity = entity->next;
 		}
-		
-		entity = entity->next;
 	}
 }
 
@@ -2294,7 +2345,7 @@ void write_entity_to_demo(struct entity_t *entity)
 	uint32_t skin = 0;
 	
 	gzwrite(gzrecording, &msg, 1);
-	gzwrite(gzrecording, &cgame_tick, 4);
+	gzwrite(gzrecording, &last_known_game_state.tick, 4);
 	gzwrite(gzrecording, &entity->index, 4);
 	gzwrite(gzrecording, &entity->type, 1);
 	gzwrite(gzrecording, &skin, 4);		// skin
@@ -2373,7 +2424,7 @@ void write_entity_to_demo(struct entity_t *entity)
 
 void write_all_entities_to_demo()
 {
-	struct entity_t *centity = centity0;
+	struct entity_t *centity = last_known_game_state.entity0;
 
 	while(centity)
 	{
@@ -2432,8 +2483,8 @@ void cf_record(char *c)
 
 		msg = EMEVENT_FOLLOW_ME;
 		gzwrite(gzrecording, &msg, 1);
-		gzwrite(gzrecording, &cgame_tick, 4);
-		gzwrite(gzrecording, &cgame_state->follow_me, 4);
+		gzwrite(gzrecording, &last_known_game_state.tick, 4);
+		gzwrite(gzrecording, &last_known_game_state.follow_me, 4);
 		
 		console_print("Recording...\n");
 		break;
