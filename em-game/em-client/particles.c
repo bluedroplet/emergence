@@ -75,6 +75,144 @@ void create_lower_particle(struct particle_t *p)
 }
 
 
+/*
+	switch(params->dest->flags)
+	{
+	case SURFACE_24BITPADDING8BIT:
+	case SURFACE_24BIT:
+	case SURFACE_24BITALPHA8BIT:
+		pixel_alpha_plot_888(params);
+		break;
+	
+	case SURFACE_16BIT:
+	case SURFACE_16BITALPHA8BIT:
+		pixel_alpha_plot_565(params);
+		break;
+	}
+
+void pixel_alpha_plot_565_c(struct blit_params_t *params)
+{
+	uint16_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
+	uint16_t colour = convert_24bit_to_16bit(params->red, 
+		params->green, params->blue);	// error probably induced here
+	uint16_t oldcolour = *dst;
+	uint8_t negalpha = ~params->alpha;
+
+	*dst = (vid_redalphalookup[((colour & 0xf800) >> 3) | params->alpha] + 
+		vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
+		(vid_greenalphalookup[((colour & 0x7e0) << 3) | params->alpha] +
+		vid_greenalphalookup[((oldcolour & 0x7e0) << 3) | negalpha]) |
+		(vid_bluealphalookup[((colour & 0x1f) << 8) | params->alpha] + 
+		vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
+}
+
+*/
+
+
+void plot_particle(struct blit_params_t *params)
+{
+	uint8_t full_alpha = params->alpha;
+	uint8_t neg_full_alpha = 255 - full_alpha;
+	uint8_t half_alpha = full_alpha >> 1;
+	uint8_t neg_half_alpha = 255 - half_alpha;
+	
+	uint8_t half_blended_blue = (params->blue * half_alpha) >> 8;
+	uint8_t half_blended_green = (params->green * half_alpha) >> 8;
+	uint8_t half_blended_red = (params->red * half_alpha) >> 8;
+	
+	
+	uint8_t *dst = &params->dest->buf[(params->dest_y - 1) * params->dest->pitch + 
+		params->dest_x * 4];
+
+	if(dst[0] == 0)
+		dst[0] = half_blended_blue;
+	else
+		dst[0] = half_blended_blue + ((dst[0] * neg_half_alpha) >> 8);
+	
+	if(dst[1] == 0)
+		dst[1] = half_blended_green;
+	else
+		dst[1] = half_blended_green + ((dst[1] * neg_half_alpha) >> 8);
+	
+	if(dst[2] == 0)
+		dst[2] = half_blended_red;
+	else
+		dst[2] = half_blended_red + ((dst[2] * neg_half_alpha) >> 8);
+
+
+	dst += params->dest->pitch - 4;
+
+	if(dst[0] == 0)
+		dst[0] = half_blended_blue;
+	else
+		dst[0] = half_blended_blue + ((dst[0] * neg_half_alpha) >> 8);
+	
+	if(dst[1] == 0)
+		dst[1] = half_blended_green;
+	else
+		dst[1] = half_blended_green + ((dst[1] * neg_half_alpha) >> 8);
+	
+	if(dst[2] == 0)
+		dst[2] = half_blended_red;
+	else
+		dst[2] = half_blended_red + ((dst[2] * neg_half_alpha) >> 8);
+
+
+	dst += 4;
+
+	if(dst[0] == 0)
+		dst[0] = (params->blue * full_alpha) >> 8;
+	else
+		dst[0] = (params->blue * full_alpha + dst[0] * neg_full_alpha) >> 8;
+	
+	if(dst[1] == 0)
+		dst[1] = (params->green * full_alpha) >> 8;
+	else
+		dst[1] = (params->green * full_alpha + dst[1] * neg_full_alpha) >> 8;
+	
+	if(dst[2] == 0)
+		dst[2] = (params->red * full_alpha) >> 8;
+	else
+		dst[2] = (params->red * full_alpha + dst[2] * neg_full_alpha) >> 8;
+
+
+	dst += 4;
+
+	if(dst[0] == 0)
+		dst[0] = half_blended_blue;
+	else
+		dst[0] = half_blended_blue + ((dst[0] * neg_half_alpha) >> 8);
+	
+	if(dst[1] == 0)
+		dst[1] = half_blended_green;
+	else
+		dst[1] = half_blended_green + ((dst[1] * neg_half_alpha) >> 8);
+	
+	if(dst[2] == 0)
+		dst[2] = half_blended_red;
+	else
+		dst[2] = half_blended_red + ((dst[2] * neg_half_alpha) >> 8);
+
+
+	dst += params->dest->pitch - 4;
+
+	if(dst[0] == 0)
+		dst[0] = half_blended_blue;
+	else
+		dst[0] = half_blended_blue + ((dst[0] * neg_half_alpha) >> 8);
+	
+	if(dst[1] == 0)
+		dst[1] = half_blended_green;
+	else
+		dst[1] = half_blended_green + ((dst[1] * neg_half_alpha) >> 8);
+	
+	if(dst[2] == 0)
+		dst[2] = half_blended_red;
+	else
+		dst[2] = half_blended_red + ((dst[2] * neg_half_alpha) >> 8);
+}
+		
+
 void render_upper_particles()
 {
 	int p;
@@ -90,7 +228,7 @@ void render_upper_particles()
 
 		if(upper_pinuse[i])
 		{
-			double life = cgame_time - upper_particles[i].creation;
+			float life = cgame_time - upper_particles[i].creation;
 			
 			if(life > 1.0f)
 			{
@@ -98,10 +236,10 @@ void render_upper_particles()
 				continue;
 			}
 			
-			double delta_time = cgame_time - upper_particles[i].last;
+			float delta_time = cgame_time - upper_particles[i].last;
 			
-			double particle_time = delta_time;
-			int particle_ticks = 1;
+		//	double particle_time = delta_time;
+		//	int particle_ticks = 1;
 			
 		//	while(particle_time > MAX_PARTICLE_TIME)
 		//		particle_time /= 2, particle_ticks++;
@@ -109,22 +247,28 @@ void render_upper_particles()
 
 		//	while(particle_ticks--)
 			{
-				upper_particles[i].xvel += (drand48() - 0.5) * 2400 * particle_time;
-				upper_particles[i].yvel += (drand48() - 0.5) * 2400 * particle_time;
+				upper_particles[i].xvel += (drand48() - 0.5) * 2400 * delta_time;
+				upper_particles[i].yvel += (drand48() - 0.5) * 2400 * delta_time;
 				
-				double dampening = exp(-8.0f * particle_time);
+				float dampening = exp(-8.0f * delta_time);
 				
 				upper_particles[i].xvel *= dampening;
 				upper_particles[i].yvel *= dampening;
 	
-				upper_particles[i].xpos += upper_particles[i].xvel * particle_time;
-				upper_particles[i].ypos += upper_particles[i].yvel * particle_time;
+				upper_particles[i].xpos += upper_particles[i].xvel * delta_time;
+				upper_particles[i].ypos += upper_particles[i].yvel * delta_time;
 			}
 
 			int x, y;
 			
 			world_to_screen(upper_particles[i].xpos, upper_particles[i].ypos, &x, &y);
 			
+			
+			// determine if we are visible
+			
+			if(x - 1 < 0 || x + 2 > vid_width - 1 || y - 1 < 0 || y + 1 > vid_height - 1)
+				continue;
+
 			
 			
 			float a = life * 4.0;
@@ -152,23 +296,32 @@ void render_upper_particles()
 			params.dest_x = x;
 			params.dest_y = y;
 			
-			alpha_plot_pixel(&params);
+			switch(s_backbuffer->flags)
+			{
+			case SURFACE_24BITPADDING8BIT:
+			case SURFACE_24BIT:
+				plot_particle(&params);
+				break;
 			
-			params.alpha >>= 1;
+			case SURFACE_16BIT:
+				alpha_plot_pixel(&params);
 			
-			params.dest_x++;
-			alpha_plot_pixel(&params);
-			
-			params.dest_x--;
-			params.dest_y++;
-			alpha_plot_pixel(&params);
-			
-			params.dest_y -= 2;
-			alpha_plot_pixel(&params);
-			
-			params.dest_x--;
-			params.dest_y++;
-			alpha_plot_pixel(&params);
+				params.alpha >>= 1;
+				params.dest_y--;
+				alpha_plot_pixel(&params);
+
+				params.dest_x--;
+				params.dest_y++;
+				alpha_plot_pixel(&params);
+
+				params.dest_x += 2;
+				alpha_plot_pixel(&params);
+
+				params.dest_x--;
+				params.dest_y++;
+				alpha_plot_pixel(&params);
+				break;
+			}
 			
 			upper_particles[i].last = cgame_time;
 		}
@@ -191,7 +344,7 @@ void render_lower_particles()
 
 		if(lower_pinuse[i])
 		{
-			double life = cgame_time - lower_particles[i].creation;
+			float life = cgame_time - lower_particles[i].creation;
 			
 			if(life > 1.0f)
 			{
@@ -199,10 +352,10 @@ void render_lower_particles()
 				continue;
 			}
 			
-			double delta_time = cgame_time - lower_particles[i].last;
+			float delta_time = cgame_time - lower_particles[i].last;
 
-			double particle_time = delta_time;
-			int particle_ticks = 1;
+		//	double particle_time = delta_time;
+		//	int particle_ticks = 1;
 			
 		//	while(particle_time > MAX_PARTICLE_TIME)
 		//		particle_time /= 2, particle_ticks++;
@@ -210,21 +363,28 @@ void render_lower_particles()
 
 		//	while(particle_ticks--)
 			{
-				lower_particles[i].xvel += (drand48() - 0.5) * 2400 * particle_time;
-				lower_particles[i].yvel += (drand48() - 0.5) * 2400 * particle_time;
+				lower_particles[i].xvel += (drand48() - 0.5) * 2400 * delta_time;
+				lower_particles[i].yvel += (drand48() - 0.5) * 2400 * delta_time;
 				
-				double dampening = exp(-8.0f * particle_time);
+				float dampening = exp(-8.0f * delta_time);
 				
 				lower_particles[i].xvel *= dampening;
 				lower_particles[i].yvel *= dampening;
 				
-				lower_particles[i].xpos += lower_particles[i].xvel * particle_time;
-				lower_particles[i].ypos += lower_particles[i].yvel * particle_time;
+				lower_particles[i].xpos += lower_particles[i].xvel * delta_time;
+				lower_particles[i].ypos += lower_particles[i].yvel * delta_time;
 			}
 
 			int x, y;
 			
 			world_to_screen(lower_particles[i].xpos, lower_particles[i].ypos, &x, &y);
+			
+			// determine if we are visible
+			
+			if(x - 1 < 0 || x + 2 > vid_width - 1 || y - 1 < 0 || y + 1 > vid_height - 1)
+				continue;
+
+			
 			
 			float a = life * 4.0;
 			
@@ -251,23 +411,32 @@ void render_lower_particles()
 			params.dest_x = x;
 			params.dest_y = y;
 			
-			alpha_plot_pixel(&params);
+			switch(s_backbuffer->flags)
+			{
+			case SURFACE_24BITPADDING8BIT:
+			case SURFACE_24BIT:
+				plot_particle(&params);
+				break;
 			
-			params.alpha >>= 1;
+			case SURFACE_16BIT:
+				alpha_plot_pixel(&params);
 			
-			params.dest_x++;
-			alpha_plot_pixel(&params);
-			
-			params.dest_x--;
-			params.dest_y++;
-			alpha_plot_pixel(&params);
-			
-			params.dest_y -= 2;
-			alpha_plot_pixel(&params);
-			
-			params.dest_x--;
-			params.dest_y++;
-			alpha_plot_pixel(&params);
+				params.alpha >>= 1;
+				params.dest_y--;
+				alpha_plot_pixel(&params);
+
+				params.dest_x--;
+				params.dest_y++;
+				alpha_plot_pixel(&params);
+
+				params.dest_x += 2;
+				alpha_plot_pixel(&params);
+
+				params.dest_x--;
+				params.dest_y++;
+				alpha_plot_pixel(&params);
+				break;
+			}
 			
 			lower_particles[i].last = cgame_time;
 		}
