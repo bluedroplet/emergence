@@ -3580,8 +3580,8 @@ void render_game()
 	
 	blit_text_centered(vid_width / 2, vid_height / 6, 0xff, 0x60, 0x0f, s_backbuffer, "%i", frags);
 	
-	blit_text(((vid_width * 2) / 3) + (vid_width / 200), 
-		vid_height / 6, 0xef, 0x6f, 0xff, s_backbuffer, "[virus] where are you?");
+//	blit_text(((vid_width * 2) / 3) + (vid_width / 200), 
+//		vid_height / 6, 0xef, 0x6f, 0xff, s_backbuffer, "[virus] where are you?");
 }
 
 
