@@ -94,6 +94,7 @@ struct craft_data_t
 	#endif
 	
 	#ifdef EMCLIENT
+	float old_theta;
 	int skin;
 	struct surface_t *surface;
 	float particle;

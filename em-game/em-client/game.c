@@ -837,7 +837,8 @@ void process_spawn_ent_event(struct event_t *event)
 	{
 	case ENT_CRAFT:
 		entity->craft_data.acc = event->ent_data.craft_data.acc;
-		entity->craft_data.theta = event->ent_data.craft_data.theta;
+		entity->craft_data.old_theta = entity->craft_data.theta = 
+			event->ent_data.craft_data.theta;
 		entity->craft_data.braking = event->ent_data.craft_data.braking;
 		entity->craft_data.left_weapon = get_entity(centity0, 
 			event->ent_data.craft_data.left_weapon_index);
@@ -954,6 +955,7 @@ void process_update_ent_event(struct event_t *event)
 	{
 	case ENT_CRAFT:
 		entity->craft_data.acc = event->ent_data.craft_data.acc;
+		entity->craft_data.old_theta = entity->craft_data.theta;
 		entity->craft_data.theta = event->ent_data.craft_data.theta;
 		entity->craft_data.braking = event->ent_data.craft_data.braking;
 		entity->craft_data.left_weapon = get_entity(centity0, 
@@ -2060,16 +2062,27 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis)
 				break;
 			}
 			
+			
+			double delta_theta = craft->craft_data.theta - craft->craft_data.old_theta;
+			
+			if(delta_theta > M_PI)
+				delta_theta -= 2 * M_PI;
+			else if(delta_theta < -M_PI)
+				delta_theta += 2 * M_PI;
+			
+			double theta = craft->craft_data.old_theta + 
+				(delta_theta) * (double)(p + 1) / (double)np;
+			
 		
 			particle.xpos = nxdis + sin_theta * 25;
 			particle.ypos = nydis - cos_theta * 25;
 	
-			sincos(craft->craft_data.theta + M_PI / 2, &sin_theta, &cos_theta);
+			sincos(theta + M_PI / 2, &sin_theta, &cos_theta);
 			
 			particle.xpos -= sin_theta * 15;
 			particle.ypos += cos_theta * 15;
 			
-			sincos(craft->craft_data.theta + (drand48() - 0.5) * 0.1, &sin_theta, &cos_theta);
+			sincos(theta + (drand48() - 0.5) * 0.1, &sin_theta, &cos_theta);
 			particle.xvel = craft->xvel + craft->craft_data.acc * sin_theta * 100000 * r;
 			particle.yvel = craft->yvel + -craft->craft_data.acc * cos_theta * 100000 * r;
 				
@@ -2078,12 +2091,12 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis)
 			particle.xpos = nxdis + sin_theta * 25;
 			particle.ypos = nydis - cos_theta * 25;
 	
-			sincos(craft->craft_data.theta + M_PI / 2, &sin_theta, &cos_theta);
+			sincos(theta + M_PI / 2, &sin_theta, &cos_theta);
 			
 			particle.xpos += sin_theta * 15;
 			particle.ypos -= cos_theta * 15;
 			
-			sincos(craft->craft_data.theta + (drand48() - 0.5) * 0.1, &sin_theta, &cos_theta);
+			sincos(theta + (drand48() - 0.5) * 0.1, &sin_theta, &cos_theta);
 			particle.xvel = craft->xvel + craft->craft_data.acc * sin_theta * 100000 * r;
 			particle.yvel = craft->yvel + -craft->craft_data.acc * cos_theta * 100000 * r;
 				
