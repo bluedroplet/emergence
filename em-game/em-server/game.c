@@ -2876,7 +2876,7 @@ void map(char *args)
 		string_cat_text(temp, args);
 		string_cat_text(temp, ".cmap");
 		
-		filename = new_string(find_resource(temp->text));
+		filename = new_string_text(find_resource(temp->text));
 		free_string(temp);
 		
 		if(!get_file_info(filename->text, &map_size, map_hash))

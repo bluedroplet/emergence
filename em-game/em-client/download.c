@@ -69,6 +69,8 @@ int start_downloading_map(char *map_name)
 	
 	if(connect(download_net_fd, &sockaddr, sizeof(struct sockaddr_in)) < 0)
 	{
+		printf("a\n");
+		perror(NULL);
 		_stop_downloading_map();
 		return 0;
 	}

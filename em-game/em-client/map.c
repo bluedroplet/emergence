@@ -239,7 +239,7 @@ int load_map()
 	string_cat_text(temp, map_name->text);
 	string_cat_text(temp, ".cmap");
 	
-	filename = new_string(find_resource(temp->text));
+	filename = new_string_text(find_resource(temp->text));
 	free_string(temp);
 	
 	if(!get_file_info(filename->text, &local_map_size, local_map_hash))
@@ -251,7 +251,6 @@ int load_map()
 	{
 		if(!r)
 			r = 1;
-		free(local_map_hash);
 		goto fail;
 	}
 	
@@ -259,7 +258,6 @@ int load_map()
 	{
 		if(!r)
 			r = 2;
-		free(local_map_hash);
 		goto fail;
 	}
 	
@@ -286,7 +284,7 @@ int load_map()
 	console_print("Attempting to download from server.\n");
 	render_frame();
 	
-	struct string_t *command = new_string_text("rm ");
+/*	struct string_t *command = new_string_text("rm ");
 	string_cat_string(command, emergence_home_dir);
 	string_cat_text(command, "/maps/");
 	string_cat_text(command, map_name->text);
@@ -295,7 +293,7 @@ int load_map()
 	console_print("%s\n", command->text);
 	system(command->text);
 	free_string(command);
-	
+*/	
 	download_map(map_name->text);
 	downloading_map = 1;	// suspend processing of messages from server
 	return 0;
@@ -347,6 +345,7 @@ int load_map()
 		console_print("Loading BSP tree\n");
 		render_frame();
 		load_bsp_tree(gzfile);
+		bypass_objects(gzfile);
 		
 		gzFile gzcachedfile = gzopen(cached_filename->text, "rb");
 		if(gzcachedfile)
@@ -378,7 +377,6 @@ int load_map()
 			console_print("Loading cached scaled map tiles\n");
 			render_frame();
 			
-			bypass_objects(gzfile);
 			load_map_tiles(gzcachedfile);
 			gzread_floating_images(gzcachedfile);
 		}
@@ -386,7 +384,7 @@ int load_map()
 		{
 			cache:;
 			
-			gzFile gzcachedfile = gzopen(cached_filename->text, "w9b");
+			gzcachedfile = gzopen(cached_filename->text, "w9b");
 			if(!gzcachedfile)
 				return 0;
 			
@@ -395,8 +393,6 @@ int load_map()
 			
 			gzwrite(gzcachedfile, &map_size, 4);
 			gzwrite(gzcachedfile, map_hash, FILEINFO_DIGEST_SIZE);
-			
-			bypass_objects(gzfile);
 			
 			if(!generate_and_write_scaled_tiles(gzfile, gzcachedfile))
 				return 0;

@@ -69,6 +69,7 @@ void client_shutdown()
 {
 	console_print("Shutting down...\n");
 	
+	kill_download();
 	kill_key();
 	kill_openssl();
 	kill_sound();
@@ -78,6 +79,7 @@ void client_shutdown()
 //	kill_input();
 	dump_console();
 	kill_console();
+	kill_control();
 	write_config_file();
 	
 	SDL_Quit();

@@ -1073,7 +1073,10 @@ void process_udp_data()
 	if(net_shutting_down)
 	{
 		if(all_connections_disconnected())
+		{
+			pthread_mutex_unlock(&net_mutex);
 			pthread_exit(NULL);
+		}
 	}
 }
 
@@ -1256,7 +1259,10 @@ void network_alarm()
 	if(net_shutting_down)
 	{
 		if(all_connections_disconnected())
+		{
+			pthread_mutex_unlock(&net_mutex);
 			pthread_exit(NULL);
+		}
 	}
 }
 
