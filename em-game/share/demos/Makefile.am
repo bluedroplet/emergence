@@ -1,4 +1,4 @@
-OBJECTS = Jonny.demo spaceLem.demo
+OBJECTS = fun2.demo fun4.demo insane2.demo
 
 sharedatadir = $(pkgdatadir)/demos
 
