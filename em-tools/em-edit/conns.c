@@ -551,6 +551,9 @@ int insert_conic_conn(struct node_t *node1, struct node_t *node2)
 	make_node_effective(node1);
 	make_node_effective(node2);
 
+	LL_REMOVE_ALL(struct t_t, &conn->bigt0);
+	generate_conic_bigts(conn);
+	
 	invalidate_bsp_tree();
 	
 	start_working();
@@ -1153,8 +1156,8 @@ void invalidate_conns_with_node(struct node_t *node)		// always called while not
 			while(cconnp)
 			{
 				LL_REMOVE_ALL(struct t_t, &cconnp->conn->t0);
-			//	LL_REMOVE_ALL(struct t_t, &cconnp->conn->bigt0);
-			//	generate_bigt_values(cconnp->conn);
+				LL_REMOVE_ALL(struct t_t, &cconnp->conn->bigt0);
+				generate_bigt_values(cconnp->conn);
 			
 				free(cconnp->conn->verts);
 				cconnp->conn->verts = NULL;

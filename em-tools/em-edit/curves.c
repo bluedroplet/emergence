@@ -655,6 +655,8 @@ void add_conn_to_curves(struct conn_t *conn)		// always called while not working
 			LL_REMOVE_ALL(struct t_t, &cconnp->conn->bigt0);
 				
 			generate_bigt_values(cconnp->conn);
+			free(cconnp->conn->verts);
+			cconnp->conn->verts = NULL;
 			
 			if(cconnp->conn->squished_texture)
 			{
