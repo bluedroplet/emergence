@@ -2817,13 +2817,13 @@ void tick_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 		
 			sincos(theta, &sin_theta, &cos_theta);
 			
-			particle.xpos = nxdis + sin_theta * 25;
-			particle.ypos = nydis - cos_theta * 25;
+			particle.xpos = nxdis + sin_theta * 25.52;
+			particle.ypos = nydis - cos_theta * 25.52;
 	
 			sincos(theta + M_PI / 2, &sin_theta, &cos_theta);
 			
-			particle.xpos -= sin_theta * 15;
-			particle.ypos += cos_theta * 15;
+			particle.xpos -= sin_theta * 13;
+			particle.ypos += cos_theta * 13;
 			
 			sincos(theta + (drand48() - 0.5) * 0.1, &sin_theta, &cos_theta);
 			particle.xvel = craft->xvel + craft->craft_data.acc * sin_theta * 100000 * r;
@@ -2831,13 +2831,13 @@ void tick_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 				
 			create_lower_particle(&particle);
 	
-			particle.xpos = nxdis + sin_theta * 25;
-			particle.ypos = nydis - cos_theta * 25;
+			particle.xpos = nxdis + sin_theta * 25.52;
+			particle.ypos = nydis - cos_theta * 25.52;
 	
 			sincos(theta + M_PI / 2, &sin_theta, &cos_theta);
 			
-			particle.xpos += sin_theta * 15;
-			particle.ypos -= cos_theta * 15;
+			particle.xpos += sin_theta * 13;
+			particle.ypos -= cos_theta * 13;
 			
 			sincos(theta + (drand48() - 0.5) * 0.1, &sin_theta, &cos_theta);
 			particle.xvel = craft->xvel + craft->craft_data.acc * sin_theta * 100000 * r;
