@@ -1,6 +1,7 @@
 #!/bin/bash
 
-export CFLAGS="-march=pentium3 -O2 -pipe -fomit-frame-pointer -fprefetch-loop-arrays"
+ln -sf stage3-pentium3-2004.1 ../stage3s/current-stage3
+export CFLAGS="-march=pentium3 -O2 -pipe -g -fomit-frame-pointer -fprefetch-loop-arrays"
 
 
 cd em-game
