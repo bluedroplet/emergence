@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <zlib.h>
+#include <math.h>
 
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
@@ -17,31 +18,27 @@
 #include "console.h"
 #include "rotate.h"
 #include "game.h"
+#include "render.h"
 
 struct skin_t *skin0 = NULL;
 
-int game_process_load_skin(struct buffer_t *stream)
+
+int load_skin(struct skin_t *skin)
 {
-	struct skin_t skin;
-		
-	struct string_t *skin_name = buffer_read_string(stream);
-	skin.index = buffer_read_uint32(stream);
-		
 	struct string_t *filename = new_string_string(emergence_home_dir);
 	string_cat_text(filename, "/skins/");	
-	string_cat_string(filename, skin_name);
+	string_cat_string(filename, skin->name);
 	string_cat_text(filename, ".skin.cache");
+	string_cat_int(filename, vid_width);
 	
 	gzFile gzfile = gzopen(filename->text, "rb");
 	if(gzfile)
 	{
-		skin.craft = gzread_raw_surface(gzfile);
-		skin.plasma_cannon = gzread_raw_surface(gzfile);
-		skin.minigun = gzread_raw_surface(gzfile);
-		skin.rocket_launcher = gzread_raw_surface(gzfile);
+		skin->craft = gzread_raw_surface(gzfile);
+		skin->plasma_cannon = gzread_raw_surface(gzfile);
+		skin->minigun = gzread_raw_surface(gzfile);
+		skin->rocket_launcher = gzread_raw_surface(gzfile);
 		gzclose(gzfile);
-		LL_ADD(struct skin_t, &skin0, &skin);
-		free_string(skin_name);
 		free_string(filename);
 		return 1;
 	}
@@ -50,7 +47,7 @@ int game_process_load_skin(struct buffer_t *stream)
 	
 	filename = new_string_string(emergence_home_dir);
 	string_cat_text(filename, "/skins/");	
-	string_cat_string(filename, skin_name);
+	string_cat_string(filename, skin->name);
 	string_cat_text(filename, ".skin");
 	
 	gzfile = gzopen(filename->text, "rb");
@@ -58,7 +55,6 @@ int game_process_load_skin(struct buffer_t *stream)
 	{
 		console_print("Could not load skin: %s\n", filename->text);
 		free_string(filename);
-		free_string(skin_name);
 		return 0;
 	}
 	
@@ -67,50 +63,98 @@ int game_process_load_skin(struct buffer_t *stream)
 
 	struct rotate_t craft_rot;
 	craft_rot.in_surface = gzread_raw_surface(gzfile);
-	craft_rot.out_surface = &skin.craft;
+	craft_rot.out_surface = &skin->craft;
 	craft_rot.next = NULL;
 	
-	do_rotate(&craft_rot, 52, 52, ROTATIONS);
+	int width = (int)ceil((double)vid_width / 20.0);
+	
+	do_rotate(&craft_rot, width, width, ROTATIONS);
 	
 	struct rotate_t rocket_launcher_rot;
 	rocket_launcher_rot.in_surface = gzread_raw_surface(gzfile);
-	rocket_launcher_rot.out_surface = &skin.rocket_launcher;
+	rocket_launcher_rot.out_surface = &skin->rocket_launcher;
 	rocket_launcher_rot.next = NULL;
 	
 	struct rotate_t minigun_rot;
 	minigun_rot.in_surface = gzread_raw_surface(gzfile);
-	minigun_rot.out_surface = &skin.minigun;
+	minigun_rot.out_surface = &skin->minigun;
 	minigun_rot.next = &rocket_launcher_rot;
 	
 	struct rotate_t plasma_cannon_rot;
 	plasma_cannon_rot.in_surface = gzread_raw_surface(gzfile);
-	plasma_cannon_rot.out_surface = &skin.plasma_cannon;
+	plasma_cannon_rot.out_surface = &skin->plasma_cannon;
 	plasma_cannon_rot.next = &minigun_rot;
 	
-	do_rotate(&plasma_cannon_rot, 32, 32, ROTATIONS);
+	width = (int)ceil((double)vid_width / 32.0);
+
+	do_rotate(&plasma_cannon_rot, width, width, ROTATIONS);
 	
 	gzclose(gzfile);
-	LL_ADD(struct skin_t, &skin0, &skin);
 	
 	filename = new_string_string(emergence_home_dir);
 	string_cat_text(filename, "/skins/");	
-	string_cat_string(filename, skin_name);
+	string_cat_string(filename, skin->name);
 	string_cat_text(filename, ".skin.cache");
+	string_cat_int(filename, vid_width);
 	
 	gzfile = gzopen(filename->text, "wb9");
 	if(!gzfile)
 		return 0;
 
-	gzwrite_raw_surface(gzfile, skin.craft);
-	gzwrite_raw_surface(gzfile, skin.plasma_cannon);
-	gzwrite_raw_surface(gzfile, skin.minigun);
-	gzwrite_raw_surface(gzfile, skin.rocket_launcher);
+	gzwrite_raw_surface(gzfile, skin->craft);
+	gzwrite_raw_surface(gzfile, skin->plasma_cannon);
+	gzwrite_raw_surface(gzfile, skin->minigun);
+	gzwrite_raw_surface(gzfile, skin->rocket_launcher);
 	gzclose(gzfile);
 	
 	free_string(filename);
 	
-	free_string(skin_name);
 	return 1;
+}
+
+
+int game_process_load_skin(struct buffer_t *stream)
+{
+	struct skin_t skin;
+		
+	skin.name = buffer_read_string(stream);
+	skin.index = buffer_read_uint32(stream);
+	
+	if(load_skin(&skin))
+	{
+		LL_ADD(struct skin_t, &skin0, &skin);
+		return 1;
+	}
+	
+	return 0;
+}
+
+
+void reload_skins()
+{
+	struct skin_t *cskin = skin0;
+		
+	while(cskin)
+	{
+		free_surface(cskin->craft);
+		cskin->craft = NULL;
+		free_surface(cskin->rocket_launcher);
+		cskin->rocket_launcher = NULL;
+		free_surface(cskin->minigun);
+		cskin->minigun = NULL;
+		free_surface(cskin->plasma_cannon);
+		cskin->plasma_cannon = NULL;
+	/*	free_surface(cskin->plasma);
+		cskin->plasma = NULL;
+		free_surface(cskin->rocket);
+		cskin->rocket = NULL;
+	*/	
+		load_skin(cskin);
+		
+		cskin = cskin->next;
+	}
+	
+	console_print("reloaded skins\n");
 }
 
 

@@ -463,6 +463,7 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->craft_data.theta = event->ent_data.craft_data.theta;
 		entity->craft_data.braking = event->ent_data.craft_data.braking;
 		entity->craft_data.shield_flare = event->ent_data.craft_data.shield_flare;
+		entity->craft_data.skin = event->ent_data.skin;
 		entity->craft_data.surface = skin_get_craft_surface(event->ent_data.skin);
 		entity->craft_data.particle = 0.0;
 		break;
@@ -471,7 +472,8 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->weapon_data.type = event->ent_data.weapon_data.type;
 		entity->weapon_data.theta = event->ent_data.weapon_data.theta;
 		entity->weapon_data.shield_flare = event->ent_data.weapon_data.shield_flare;
-	
+		entity->weapon_data.skin = event->ent_data.skin;
+
 		switch(entity->weapon_data.type)
 		{
 		case WEAPON_PLASMA_CANNON:
@@ -1098,6 +1100,54 @@ void game_process_stream_untimed_ooo(uint32_t index, struct buffer_t *stream)
 		default:
 			return;
 		}
+	}
+}
+
+
+void game_resolution_change()
+{
+	reload_map();
+	reload_skins();
+	
+	// getting entities' new surfaces
+	
+	struct game_state_t *game_state = game_state0;
+		
+	while(game_state)
+	{
+		struct entity_t *entity = game_state->entity0;
+	
+		while(entity)
+		{
+			switch(entity->type)
+			{
+			case ENT_CRAFT:
+				entity->craft_data.surface = skin_get_craft_surface(entity->craft_data.skin);
+				break;
+			
+			case ENT_WEAPON:
+				switch(entity->weapon_data.type)
+				{
+				case WEAPON_PLASMA_CANNON:
+					entity->weapon_data.surface = skin_get_plasma_cannon_surface(entity->weapon_data.skin);
+					break;
+				
+				case WEAPON_MINIGUN:
+					entity->weapon_data.surface = skin_get_minigun_surface(entity->weapon_data.skin);
+					break;
+				
+				case WEAPON_ROCKET_LAUNCHER:
+					entity->weapon_data.surface = skin_get_rocket_launcher_surface(entity->weapon_data.skin);
+					break;
+				}
+	
+				break;
+			}
+			
+			entity = entity->next;
+		}
+		
+		game_state = game_state->next;
 	}
 }
 

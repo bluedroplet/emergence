@@ -30,6 +30,7 @@
 #include "control.h"
 #include "render.h"
 #include "map.h"
+#include "game.h"
 #include "shared/cvar.h"
 
 Display *xdisplay;
@@ -254,6 +255,7 @@ void query_vid_modes()
 	original_mode = XRRConfigCurrentConfiguration(screen_config, &i);
 }
 
+
 void set_vid_mode(int mode)
 {
 	struct vid_mode_t *cvid_mode = vid_mode0;
@@ -349,10 +351,9 @@ void set_vid_mode(int mode)
 
 void vid_mode_qc(int mode)
 {
-	console_print("dsa\n");
 	vid_mode = mode;
 	set_vid_mode(mode);
-	reload_map();
+	game_resolution_change();
 }
 
 

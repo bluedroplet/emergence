@@ -5,6 +5,9 @@ void game_process_stream_timed_ooo(uint32_t index, uint64_t *stamp, struct buffe
 void game_process_stream_untimed_ooo(uint32_t index, struct buffer_t *stream);
 #endif
 
+void game_resolution_change();
+
+
 void game_process_conn_lost();
 void game_process_connection();
 void game_process_disconnection();
@@ -38,4 +41,4 @@ extern double viewx, viewy;
 void update_game();
 
 
-#define ROTATIONS 400
+#define ROTATIONS 40

@@ -4,6 +4,7 @@
 struct skin_t
 {
 	uint32_t index;
+	struct string_t *name;
 	
 	struct surface_t *craft;
 	struct surface_t *rocket_launcher;
@@ -19,6 +20,7 @@ struct skin_t
 int game_process_load_skin(struct buffer_t *stream);
 
 struct skin_t *get_skin(uint32_t index);
+void reload_skins();
 void flush_all_skins();
 	
 struct surface_t *skin_get_craft_surface(uint32_t index);
