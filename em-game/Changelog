@@ -1,4 +1,19 @@
 
+2004-09-03 - Emergence 0.7
+----------------------------------------
+minigun visualisation and sound
+health/ammo visualisation
+proper timed matches
+player rankings always visible on right hand side
+explosions now have initial velocity of body exploding
+only propagate unpredictible shield flaring
+default-server.autoexec - autoload map3 on startup
+brighter default plasmas
+key authentication for Internet play is implemented
+bandwidth reductions
+more bugfixes
+
+
 2004-07-05 - Emergence 0.6.1
 ----------------------------------------
 fixed default demo playback on startup
