@@ -1739,9 +1739,12 @@ void make_wall_texture_paths_relative()
 		
 	while(ccurve)
 	{
-		struct string_t *s = arb_abs2rel(ccurve->texture_filename->text, map_path->text);
-		free_string(ccurve->texture_filename);
-		ccurve->texture_filename = s;
+		if(ccurve->texture_filename)
+		{
+			struct string_t *s = arb_abs2rel(ccurve->texture_filename->text, map_path->text);
+			free_string(ccurve->texture_filename);
+			ccurve->texture_filename = s;
+		}
 		
 		ccurve = ccurve->next;
 	}
