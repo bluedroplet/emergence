@@ -37,6 +37,8 @@ int control_kill_pipe[2];
 pthread_mutex_t control_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 pthread_t control_thread_id;
 
+float mouse_speed = 1.0;
+
 struct
 {
 	char *name;
@@ -408,7 +410,7 @@ void action_brake(uint32_t state)
 
 void action_roll(float val)
 {
-	roll += val;
+	roll += val * mouse_speed;
 	roll_changed = 1;
 }
 
@@ -1039,6 +1041,8 @@ void create_control_cvars()
 	create_cvar_command("bind", cf_bind);
 	create_cvar_command("controls", cf_controls);
 	create_cvar_command("actions", cf_actions);
+	
+	create_cvar_float("mouse_speed", &mouse_speed, 0);
 }
 
 
