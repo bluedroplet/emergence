@@ -2073,20 +2073,31 @@ void map(char *args)
 	
 	mapname = new_string_text(args);
 	
-	struct string_t *filename = new_string_string(emergence_home_dir);
-	string_cat_text(filename, "/maps/");
+
+
+	struct string_t *filename = new_string_text(PKGDATADIR "stock-maps/");
 	string_cat_text(filename, args);
 	string_cat_text(filename, ".cmap");
-	
-	console_print(filename->text);
-	console_print("\n");
-	
+
 	gzFile file = gzopen(filename->text, "rb");
 	if(!file)
 	{
-		console_print("Map not found.\n");
-		return;
+		free_string(filename);
+		filename = new_string_string(emergence_home_dir);
+		string_cat_text(filename, "/maps/");
+		string_cat_text(filename, args);
+		string_cat_text(filename, ".cmap");
+	
+		gzFile file = gzopen(filename->text, "rb");
+		if(!file)
+		{
+			console_print("Could not load map: %s\n", args);
+			return;
+		}
 	}
+
+	console_print(filename->text);
+	console_print("\n");
 	
 //	uint16_t format_id;
 	

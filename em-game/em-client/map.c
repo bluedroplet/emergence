@@ -187,7 +187,7 @@ int load_map(char *map_name)
 	console_print("\n");
 	
 	
-	struct string_t *map_filename = new_string_text(PKGDATADIR "/stock-maps/");
+	struct string_t *map_filename = new_string_text(PKGDATADIR "stock-maps/");
 	string_cat_text(map_filename, map_name);
 	string_cat_text(map_filename, ".cmap");
 
@@ -208,6 +208,9 @@ int load_map(char *map_name)
 		}
 	}
 	
+	
+	console_print(map_filename->text);
+	console_print("\n");
 	
 	clear_floating_images();
 	clear_sgame();
