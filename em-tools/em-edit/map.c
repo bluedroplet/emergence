@@ -459,8 +459,8 @@ void run_open_dialog()
 {
 	GtkWidget *file_chooser = gtk_file_chooser_dialog_new("Open Map", GTK_WINDOW(window), 
 		GTK_FILE_CHOOSER_ACTION_OPEN,
-				      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+		GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
 	
 	gtk_dialog_set_default_response (GTK_DIALOG (file_chooser), GTK_RESPONSE_ACCEPT);
 
@@ -556,8 +556,8 @@ int run_save_dialog()	// returns 0 if user canceled
 {
 	GtkWidget *file_chooser = gtk_file_chooser_dialog_new("Open Map", GTK_WINDOW(window), 
 		GTK_FILE_CHOOSER_ACTION_SAVE,
-				      GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+		GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
 	
 	gtk_dialog_set_default_response (GTK_DIALOG (file_chooser), GTK_RESPONSE_ACCEPT);
 
