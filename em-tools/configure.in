@@ -17,7 +17,7 @@ AC_SUBST(pkgdatadir)
 
 
 AC_OUTPUT(Makefile common/Makefile gsub/Makefile em-edit/Makefile \
-#	em-skin/Makefile \
+dnl	em-skin/Makefile \
 
 	share/Makefile \
 	share/em-edit/Makefile \
