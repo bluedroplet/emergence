@@ -1818,10 +1818,11 @@ void run_curve_menu(struct curve_t *curve)
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
 
-	menu_items = gtk_menu_item_new_with_label("Insert Point");
+/*	menu_items = gtk_menu_item_new_with_label("Insert Point");
 	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_point), curve);
 	gtk_menu_append(GTK_MENU(menu), menu_items);
 	gtk_widget_show(menu_items);
+*/
 	
 	menu_items = gtk_menu_item_new_with_label("Remove Wall");
 //	gtk_signal_connect(GTK_OBJECT(menu_items), "activate", GTK_SIGNAL_FUNC(menu_insert_point), curve);
