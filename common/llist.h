@@ -119,3 +119,5 @@
 			*node0 = temp;\
 		}\
 	}
+	
+#define LL_NEXT(node) node = node->next
