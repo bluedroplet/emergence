@@ -1823,7 +1823,7 @@ void s_tick_weapon(struct entity_t *weapon)
 		double xdis = weapon->xdis;// + craft->xvel;
 		double ydis = weapon->ydis;// + craft->yvel;
 		
-		double theta_side = -M_PI / 4.0;
+		double theta_side = -M_PI / 4.0;	// inconsistency visualization
 		
 		if(craft->craft_data.left_weapon == weapon)
 			theta_side = M_PI / 2.0;
@@ -1879,7 +1879,8 @@ void s_tick_weapon(struct entity_t *weapon)
 			weapon->ydis = ydis;
 		}
 		
-		weapon->xvel = weapon->yvel = 0.0;
+		weapon->xvel = craft->xvel;
+		weapon->yvel = craft->yvel;
 	}
 	else
 	{
@@ -1914,8 +1915,16 @@ void s_tick_weapon(struct entity_t *weapon)
 			return;
 		}
 		
-		xdis = weapon->xdis + weapon->xvel;
-		ydis = weapon->ydis + weapon->yvel;
+		if(craft)
+		{
+			xdis = weapon->xdis;
+			ydis = weapon->ydis;
+		}
+		else
+		{
+			xdis = weapon->xdis + weapon->xvel;
+			ydis = weapon->ydis + weapon->yvel;
+		}
 		
 		restart = 0;
 		
@@ -1931,10 +1940,10 @@ void s_tick_weapon(struct entity_t *weapon)
 		{
 			#ifdef EMSERVER
 			
-			if(craft)
-				weapon_force(weapon, hypot(craft->xvel, craft->yvel) * VELOCITY_FORCE_MULTIPLIER, 
-					owner);
-			else
+		//	if(craft)
+		//		weapon_force(weapon, hypot(craft->xvel, craft->yvel) * VELOCITY_FORCE_MULTIPLIER, 
+		//			owner);
+		//	else
 				weapon_force(weapon, hypot(weapon->xvel, weapon->yvel) * VELOCITY_FORCE_MULTIPLIER, 
 					owner);
 			
@@ -1975,7 +1984,8 @@ void s_tick_weapon(struct entity_t *weapon)
 					entity->xdis, entity->ydis, CRAFT_RADIUS))
 				{
 					craft_weapon_collision(entity, weapon);
-					restart = 1;
+					if(!craft) 
+						restart = 1;
 				}
 				break;
 				
@@ -1984,7 +1994,7 @@ void s_tick_weapon(struct entity_t *weapon)
 					entity->xdis, entity->ydis, WEAPON_RADIUS))
 				{
 					weapon_weapon_collision(weapon, entity);
-					restart = 1;
+					if(!craft) restart = 1;
 				}
 				break;
 				
@@ -1996,7 +2006,7 @@ void s_tick_weapon(struct entity_t *weapon)
 						entity->plasma_data.weapon_id != weapon->index)
 					{
 						weapon_plasma_collision(weapon, entity);
-						restart = 1;
+						if(!craft) restart = 1;
 					}
 				}
 				break;
@@ -2010,7 +2020,7 @@ void s_tick_weapon(struct entity_t *weapon)
 						entity->bullet_data.weapon_id != weapon->index)
 					{
 						weapon_bullet_collision(craft, entity);
-						restart = 1;
+						if(!craft) restart = 1;
 					}
 				}
 				break;
@@ -2024,7 +2034,7 @@ void s_tick_weapon(struct entity_t *weapon)
 						entity->rocket_data.weapon_id != weapon->index)
 					{
 						destroy_rocket(entity);
-						restart = 1;
+						if(!craft) restart = 1;
 					}
 				}
 				break;
@@ -2034,7 +2044,7 @@ void s_tick_weapon(struct entity_t *weapon)
 					entity->xdis, entity->ydis, MINE_RADIUS))
 				{
 					destroy_mine(entity);
-					restart = 1;
+					if(!craft) restart = 1;
 				}
 				break;
 				
@@ -2043,7 +2053,7 @@ void s_tick_weapon(struct entity_t *weapon)
 					entity->xdis, entity->ydis, RAILS_RADIUS))
 				{
 					weapon_rails_collision(weapon, entity);
-					restart = 1;
+					if(!craft) restart = 1;
 				}
 				break;
 				
@@ -2124,9 +2134,6 @@ void s_tick_weapon(struct entity_t *weapon)
 			{
 				if(craft)
 				{
-					weapon->xvel = craft->xvel;
-					weapon->yvel = craft->yvel;
-				
 					weapon->weapon_data.craft->propagate_me = 1;
 					strip_craft_from_weapon(weapon);
 				}
@@ -2213,9 +2220,6 @@ void s_tick_weapon(struct entity_t *weapon)
 	}
 	else
 	{
-		weapon->xvel = craft->xvel;
-		weapon->yvel = craft->yvel;
-		
 		if(!point_in_circle(weapon->xdis, weapon->ydis, 
 			craft->xdis, craft->ydis, MAX_CRAFT_WEAPON_DIST))
 		{
