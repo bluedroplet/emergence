@@ -2,12 +2,12 @@ AC_INIT(emergence, 0.5.5-dev)
 AC_CONFIG_SRCDIR(em-client/main.c)
 AM_INIT_AUTOMAKE
 
-AM_BINRELOC
-
 AM_PROG_AS
 AC_PROG_CC
 AC_PROG_RANLIB
  
+AM_BINRELOC
+AM_NONAUTHENTICATING
 
 
 AC_OUTPUT(Makefile common/Makefile gsub/Makefile  \
@@ -20,4 +20,3 @@ AC_OUTPUT(Makefile common/Makefile gsub/Makefile  \
 	stock-object-textures/Makefile \
 	pixmaps/Makefile desktop/Makefile \
 	demos/Makefile stock-maps/Makefile)
-

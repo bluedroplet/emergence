@@ -1,6 +1,6 @@
 SUBDIRS = shared
 
-AM_CPPFLAGS = $(BINRELOC_CFLAGS) -DLINUX -Wall -DEMSERVER
+AM_CPPFLAGS = $(BINRELOC_CFLAGS) $(NONAUTHENTICATING_CFLAGS) -DLINUX -Wall -DEMSERVER
 LDADD = shared/libshared.a ../common/libcommon.a ../../../stage3s/current-stage3/usr/lib/libssl.a ../../../stage3s/current-stage3/usr/lib/libcrypto.a
 AM_LDFLAGS = -L../../../stage3s/current-stage3/lib -L../../../stage3s/current-stage3/usr/lib -lpthread -lz -lm
 

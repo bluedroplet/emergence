@@ -26,7 +26,7 @@ cd ../dist
 
 
 for arch in i686 pentiumpro pentium2 pentium3 pentium4 athlon athlon-tbird athlon-xp athlon-mp
-#for arch in i686
+#for arch in pentium3
 do
 
 stage3=i686
@@ -106,3 +106,37 @@ cp ../../redhat/emergence/i386/emergence-$ver-1.i386.rpm emergence-$ver.$arch.rp
 
 
 done
+
+arch=pentium3
+stage3=pentium3
+
+echo Building Nonauthenticating Emergence for $arch
+
+export CFLAGS="-march=$arch -O3 -pipe -fomit-frame-pointer"
+ln -sfn stage3-$stage3-2004.1 ../../stage3s/current-stage3 || exit
+
+
+rm -rf emergence
+mkdir -p emergence/usr
+
+cd ../em-game
+make clean
+
+D=`pwd`/../dist/emergence/
+
+./configure --prefix=/usr --enable-nonauthenticating || exit
+make || exit
+make prefix=${D}/usr \
+		    datadir=${D}/usr/share \
+		    infodir=${D}/usr/share/info \
+		    localstatedir=${D}/var/lib \
+		    mandir=${D}/usr/share/man \
+		    sysconfdir=${D}/etc \
+		    install || exit
+
+cd ../dist/emergence
+
+strip usr/bin/* || exit
+tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-$ver.nonauth.bin.$arch.tbz2 * || exit
+cd ..
+

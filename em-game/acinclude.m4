@@ -1,8 +1,34 @@
-# Check for binary relocation support
+AC_DEFUN([AM_NONAUTHENTICATING],
+[
+AC_ARG_ENABLE(nonauthenticating,
+	[  --enable-nonauthenticating  compile nonauthenticating server],
+	enable_nonauthenticating=$enableval,enable_nonauthenticating=no)
+
+
+NONAUTHENTICATING_CFLAGS=
+
+AC_MSG_CHECKING(whether the server should be nonauthenticating)
+if test "$enable_nonauthenticating" = "yes"; then
+	AC_MSG_RESULT(yes)
+	NONAUTHENTICATING_CFLAGS=-DNONAUTHENTICATING
+
+elif test "$enable_nonauthenticating" = "no"; then
+	AC_MSG_RESULT(no)
+else
+	AC_MSG_RESULT(no (unknown value "$enable_nonauthenticating"))
+	enable_nonauthenticating=no
+fi
+
+AC_SUBST(NONAUTHENTICATING_CFLAGS)
+])
+
+
+
+# Check for binary relocation support (binreloc-1.3)
 # Hongli Lai
 # http://autopackage.org/
 
-AC_DEFUN(AM_BINRELOC,
+AC_DEFUN([AM_BINRELOC],
 [
 AC_ARG_ENABLE(binreloc,
 	[  --enable-binreloc       compile with binary relocation support

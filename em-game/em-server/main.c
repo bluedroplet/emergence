@@ -130,13 +130,16 @@ void process_connection(uint32_t conn, int type)
 		break;
 	
 	case CONN_TYPE_PUBLIC:
-	//	printf("New internet connection.\n");
-	
+	#ifdef NONAUTHENTICATING
+		printf("New internet connection.\n");
+		break;
+	#else
 		net_emit_uint8(conn, EMNETMSG_PRINT);
 		net_emit_string(conn, "This server is not enabled for Internet play.\n");
 		net_emit_end_of_stream(conn);
 		em_disconnect(conn);
 		return;
+	#endif
 	}
 
 	struct conn_state_t conn_state = 
