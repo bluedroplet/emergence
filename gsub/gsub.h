@@ -102,6 +102,7 @@ void *get_alpha_pixel_addr(struct surface_t *suface, int x, int y);
 
 
 struct surface_t *new_surface(int flags, int width, int height);
+struct surface_t *new_surface_no_buf(int flags, int width, int height);
 void clear_surface(struct surface_t *surface);
 void convert_surface_to_alpha8bit(struct surface_t *surface);
 void convert_surface_to_16bit(struct surface_t *in);
