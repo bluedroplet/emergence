@@ -902,31 +902,7 @@ void delete_conn(struct conn_t *conn)		// always called while not working
 	conn->node2->sat_conn_type[conn->sat2] = SAT_CONN_TYPE_UNCONN;
 	conn->node2->num_conns--;
 	
-	struct conn_t *temp, *cconn;
-
-	if(!conn0)
-		return;
-
-	if(conn0 == conn)
-	{
-		temp = conn0->next;
-		free(conn0);
-		conn0 = temp;
-		return;
-	}
-
-	cconn = conn0;
-	
-	while(cconn->next)
-	{
-		if(cconn->next == conn)
-		{
-			temp = cconn->next->next;
-			free(cconn->next);
-			cconn->next = temp;
-			break;
-		}
-	}
+	LL_REMOVE(struct conn_t, &conn0, conn);
 }
 
 
