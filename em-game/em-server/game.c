@@ -60,6 +60,7 @@ int num_players = 0;
 int num_spectators = 0;
 int max_players = 3;
 int max_spectators = 5;
+int spawn_points = 0;
 
 int match_duration = 10;
 
@@ -1529,7 +1530,7 @@ void game_process_play(struct player_t *player)
 	{
 	case PLAYER_STATE_ASLEEP:
 
-		if(num_players >= max_players || match_begun)
+		if(num_players >= max_players || num_players >= spawn_points || match_begun)
 		{
 		//	if(num_spectators >= max_spectators)
 			{
@@ -1555,7 +1556,7 @@ void game_process_play(struct player_t *player)
 	
 	case PLAYER_STATE_SPECTATING:
 		
-		if(num_players >= max_players)
+		if(num_players >= max_players || num_players >= spawn_points)
 		{
 			net_emit_uint8(player->conn, EMNETMSG_PRINT);
 			net_emit_string(player->conn, "No room!\n");
@@ -2840,6 +2841,7 @@ int read_object(gzFile file)
 		case OBJECTTYPE_SPAWNPOINT:
 			if(!read_spawn_point(file))
 				goto error;
+			spawn_points++;
 			break;
 			
 		case OBJECTTYPE_SPEEDUPRAMP:
@@ -2868,6 +2870,8 @@ error:
 
 void map(char *args)
 {
+	spawn_points = 0;
+	
 	if(game_state == GS_ALIVE)
 	{
 		struct player_t *player = player0, *next;
