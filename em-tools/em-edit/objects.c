@@ -210,7 +210,7 @@ void insert_object(int type, double x, double y)
 		object.spawn_point_data.width = 64.0;
 		object.spawn_point_data.height = 64.0;
 		object.spawn_point_data.angle = 0.0;
-		object.spawn_point_data.teleport_only = 1;
+		object.spawn_point_data.teleport_only = 0;
 		object.spawn_point_data.index = next_spawn_index++;
 		break;
 	
@@ -232,8 +232,8 @@ void insert_object(int type, double x, double y)
 		object.teleporter_data.width = 64.0;
 		object.teleporter_data.height = 64.0;
 		object.teleporter_data.angle = 0.0;
-		object.teleporter_data.radius = 20.0;
-		object.teleporter_data.sparkles = 0;
+		object.teleporter_data.radius = 100.0;
+		object.teleporter_data.sparkles = 400;
 		object.teleporter_data.spawn_point_index = 0;
 		object.teleporter_data.rotation_type = TELEPORTER_ROTATION_TYPE_ABS;
 		object.teleporter_data.rotation_angle = 0.0;
@@ -2197,7 +2197,7 @@ void gzwrite_objects_compiled(gzFile file)
 		
 		case OBJECTTYPE_TELEPORTER:
 			gzwrite(file, &object->teleporter_data.radius, 8);
-		//	gzwrite(file, &object->teleporter_data.sparkles, 4);
+			gzwrite(file, &object->teleporter_data.sparkles, 4);
 			gzwrite(file, &object->teleporter_data.spawn_point_index, 4);
 			gzwrite(file, &object->teleporter_data.rotation_type, 4);
 			gzwrite(file, &object->teleporter_data.rotation_angle, 8);

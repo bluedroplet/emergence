@@ -153,6 +153,17 @@ void write_craft_data_to_net(uint32_t conn, struct entity_t *craft)
 	net_emit_float(conn, craft->craft_data.acc);
 	net_emit_float(conn, craft->craft_data.theta);
 	net_emit_int(conn, craft->craft_data.braking);
+	
+	if(craft->craft_data.left_weapon)
+		net_emit_uint32(conn, craft->craft_data.left_weapon->index);
+	else
+		net_emit_uint32(conn, NO_ENT_INDEX);
+	
+	if(craft->craft_data.right_weapon)
+		net_emit_uint32(conn, craft->craft_data.right_weapon->index);
+	else
+		net_emit_uint32(conn, NO_ENT_INDEX);
+	
 	net_emit_float(conn, craft->craft_data.shield_flare);
 }
 
@@ -161,6 +172,12 @@ void write_weapon_data_to_net(uint32_t conn, struct entity_t *weapon)
 {
 	net_emit_int(conn, weapon->weapon_data.type);
 	net_emit_float(conn, weapon->weapon_data.theta);
+	
+	if(weapon->weapon_data.craft)
+		net_emit_uint32(conn, weapon->weapon_data.craft->index);
+	else
+		net_emit_uint32(conn, NO_ENT_INDEX);
+		
 	net_emit_float(conn, weapon->weapon_data.shield_flare);
 }
 
@@ -210,6 +227,9 @@ void propagate_entity(struct entity_t *entity)
 		net_emit_float(player->conn, entity->ydis);
 		net_emit_float(player->conn, entity->xvel);
 		net_emit_float(player->conn, entity->yvel);
+		net_emit_int(player->conn, entity->teleporting);
+		net_emit_uint32(player->conn, entity->teleporting_tick);
+		net_emit_uint32(player->conn, entity->teleport_spawn_index);
 		
 		switch(entity->type)
 		{
@@ -263,60 +283,67 @@ void load_all_skins_on_player(struct player_t *player)
 }
 
 
+void emit_spawn_entity(uint32_t conn, struct entity_t *entity)
+{
+	net_emit_uint8(conn, EMEVENT_SPAWN_ENT);
+	net_emit_uint32(conn, game_tick);
+	net_emit_uint32(conn, entity->index);
+	net_emit_uint8(conn, entity->type);
+	net_emit_uint32(conn, 0);		// skin
+	net_emit_float(conn, entity->xdis);
+	net_emit_float(conn, entity->ydis);
+	net_emit_float(conn, entity->xvel);
+	net_emit_float(conn, entity->yvel);
+	net_emit_int(conn, entity->teleporting);
+	net_emit_uint32(conn, entity->teleporting_tick);
+	net_emit_uint32(conn, entity->teleport_spawn_index);
+	
+	switch(entity->type)
+	{
+	case ENT_CRAFT:
+		write_craft_data_to_net(conn, entity);
+		net_emit_uint8(conn, entity->craft_data.carcass);
+		break;
+	
+	case ENT_WEAPON:
+		write_weapon_data_to_net(conn, entity);
+		net_emit_uint8(conn, entity->weapon_data.detached);
+		break;
+	
+	case ENT_PLASMA:
+		write_plasma_data_to_net(conn, entity);
+		break;
+	
+	case ENT_ROCKET:
+		write_rocket_data_to_net(conn, entity);
+		break;
+	
+	case ENT_MINE:
+		write_mine_data_to_net(conn, entity);
+		break;
+	
+	case ENT_RAILS:
+		write_rails_data_to_net(conn, entity);
+		break;
+	
+	case ENT_SHIELD:
+		write_shield_data_to_net(conn, entity);
+		break;
+	}
+}
+
+
 void spawn_all_entities_on_player(struct player_t *player)
 {
 	struct entity_t *centity = entity0;
 
 	while(centity)
 	{
-		net_emit_uint8(player->conn, EMEVENT_SPAWN_ENT);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint32(player->conn, centity->index);
-		net_emit_uint8(player->conn, centity->type);
-		net_emit_uint32(player->conn, 0);		// skin
-		net_emit_float(player->conn, centity->xdis);
-		net_emit_float(player->conn, centity->ydis);
-		net_emit_float(player->conn, centity->xvel);
-		net_emit_float(player->conn, centity->yvel);
-		
-		switch(centity->type)
-		{
-		case ENT_CRAFT:
-			write_craft_data_to_net(player->conn, centity);
-			net_emit_uint8(player->conn, centity->craft_data.carcass);
-			break;
-		
-		case ENT_WEAPON:
-			write_weapon_data_to_net(player->conn, centity);
-			net_emit_uint8(player->conn, centity->weapon_data.detached);
-			break;
-		
-		case ENT_PLASMA:
-			write_plasma_data_to_net(player->conn, centity);
-			break;
-		
-		case ENT_ROCKET:
-			write_rocket_data_to_net(player->conn, centity);
-			break;
-		
-		case ENT_MINE:
-			write_mine_data_to_net(player->conn, centity);
-			break;
-		
-		case ENT_RAILS:
-			write_rails_data_to_net(player->conn, centity);
-			break;
-		
-		case ENT_SHIELD:
-			write_shield_data_to_net(player->conn, centity);
-			break;
-		}
-		
+		emit_spawn_entity(player->conn, centity);
 		centity = centity->next;
 	}
 	
 	net_emit_end_of_stream(player->conn);
-
 }
 
 
@@ -326,49 +353,7 @@ void spawn_entity_on_all_players(struct entity_t *entity)
 		
 	while(player)
 	{
-		net_emit_uint8(player->conn, EMEVENT_SPAWN_ENT);
-		net_emit_uint32(player->conn, game_tick);
-		net_emit_uint32(player->conn, entity->index);
-		net_emit_uint8(player->conn, entity->type);
-		net_emit_uint32(player->conn, 0);		// skin
-		net_emit_float(player->conn, entity->xdis);
-		net_emit_float(player->conn, entity->ydis);
-		net_emit_float(player->conn, entity->xvel);
-		net_emit_float(player->conn, entity->yvel);
-		
-		switch(entity->type)
-		{
-		case ENT_CRAFT:
-			write_craft_data_to_net(player->conn, entity);
-			net_emit_uint8(player->conn, entity->craft_data.carcass);
-			break;
-		
-		case ENT_WEAPON:
-			write_weapon_data_to_net(player->conn, entity);
-			net_emit_uint8(player->conn, entity->weapon_data.detached);
-			break;
-		
-		case ENT_PLASMA:
-			write_plasma_data_to_net(player->conn, entity);
-			break;
-		
-		case ENT_ROCKET:
-			write_rocket_data_to_net(player->conn, entity);
-			break;
-		
-		case ENT_MINE:
-			write_mine_data_to_net(player->conn, entity);
-			break;
-		
-		case ENT_RAILS:
-			write_rails_data_to_net(player->conn, entity);
-			break;
-		
-		case ENT_SHIELD:
-			write_shield_data_to_net(player->conn, entity);
-			break;
-		}
-		
+		emit_spawn_entity(player->conn, entity);
 		net_emit_end_of_stream(player->conn);
 		player = player->next;
 	}
@@ -627,7 +612,7 @@ void spawn_player(struct player_t *player)
 	
 	while(spawn_point)
 	{
-	//	if(!spawn_point->teleport_only)
+		if(!spawn_point->teleport_only)
 		{
 			struct entity_t *entity = entity0;
 			
@@ -790,6 +775,8 @@ struct entity_t *spawn_pickup(struct pickup_spawn_point_t *spawn_point)
 		entity->type = ENT_WEAPON;
 		entity->xdis = spawn_point->x;
 		entity->ydis = spawn_point->y;
+		entity->teleporting = TELEPORTING_APPEARING;
+		entity->teleporting_tick = game_tick;
 		entity->weapon_data.type = WEAPON_PLASMA_CANNON;
 		entity->weapon_data.ammo = 400;
 		entity->weapon_data.shield_strength = 1.0;
@@ -801,6 +788,8 @@ struct entity_t *spawn_pickup(struct pickup_spawn_point_t *spawn_point)
 		entity->type = ENT_WEAPON;
 		entity->xdis = spawn_point->x;
 		entity->ydis = spawn_point->y;
+		entity->teleporting = TELEPORTING_APPEARING;
+		entity->teleporting_tick = game_tick;
 		entity->weapon_data.type = WEAPON_MINIGUN;
 		entity->weapon_data.ammo = 400;
 		entity->weapon_data.shield_strength = 1.0;
@@ -812,6 +801,8 @@ struct entity_t *spawn_pickup(struct pickup_spawn_point_t *spawn_point)
 		entity->type = ENT_WEAPON;
 		entity->xdis = spawn_point->x;
 		entity->ydis = spawn_point->y;
+		entity->teleporting = TELEPORTING_APPEARING;
+		entity->teleporting_tick = game_tick;
 		entity->weapon_data.type = WEAPON_ROCKET_LAUNCHER;
 		entity->weapon_data.ammo = 10;
 		entity->weapon_data.shield_strength = 1.0;
@@ -1177,13 +1168,16 @@ int game_process_roll(struct player_t *player, struct buffer_t *stream)
 	player->last_control_change = index;
 */
 	
-	float roll = buffer_read_float(stream);
-	
-//	roll = max(roll, -1.0);
-//	roll = min(roll, 1.0);
-	player->craft->craft_data.theta += -roll * 0.015;
-	
-	propagate_entity(player->craft);
+	if(!player->craft->teleporting)
+	{
+		float roll = buffer_read_float(stream);
+		
+	//	roll = max(roll, -1.0);
+	//	roll = min(roll, 1.0);
+		player->craft->craft_data.theta += -roll * 0.015;
+		
+		propagate_entity(player->craft);
+	}
 	
 	return 1;
 }

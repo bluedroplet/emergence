@@ -147,6 +147,9 @@ int read_teleporter(gzFile file)
 	if(gzread(file, &teleporter.radius, 8) != 8)
 		goto error;
 	
+	if(gzread(file, &teleporter.sparkles, 4) != 4)
+		goto error;
+	
 	if(gzread(file, &teleporter.spawn_index, 4) != 4)
 		goto error;
 	
@@ -247,6 +250,9 @@ void remove_entity(struct entity_t **entity0, struct entity_t *entity)
 
 struct entity_t *get_entity(struct entity_t *entity0, uint32_t index)
 {
+	if(index == NO_ENT_INDEX)
+		return NULL;
+	
 	struct entity_t *entity = entity0;
 	
 	while(entity)
@@ -583,6 +589,12 @@ void splash_force(double x, double y, double force)
 	
 	while(entity)
 	{
+		if(entity->teleporting)
+		{
+			entity = entity->next;
+			continue;
+		}
+		
 		if(line_walk_bsp_tree(x, y, entity->xdis, entity->ydis))
 		{
 			entity = entity->next;
@@ -955,443 +967,20 @@ void get_teleporter_spawn_point(struct teleporter_t *teleporter, float *x, float
 }
 
 
-void check_craft_teleportation(struct entity_t *craft)
+void get_spawn_point_coords(uint32_t index, float *x, float *y)
 {
-	// check for overlap with other entities
-	
-	struct entity_t *entity = sentity0;
-	while(entity)
+	struct spawn_point_t *spawn_point = spawn_point0;
+		
+	while(spawn_point)
 	{
-		if(entity == craft)
+		if(spawn_point->index == index)
 		{
-			entity = entity->next;
-			continue;
-		}
-		
-		entity->in_tick = 1;
-		
-		switch(entity->type)
-		{
-		case ENT_CRAFT:
-			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, CRAFT_RADIUS))
-			{
-				telefrag_craft(entity);
-			}
-			break;
-			
-		case ENT_WEAPON:
-			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, WEAPON_RADIUS))
-			{
-				telefrag_weapon(entity);
-			}
-			break;
-			
-		case ENT_PLASMA:
-			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
-			{
-				craft_plasma_collision(craft, entity);
-			}
-			break;
-			
-		case ENT_BULLET:
-			if(point_in_circle(entity->xdis, entity->ydis, craft->xdis, craft->ydis, CRAFT_RADIUS))
-			{
-				craft_bullet_collision(craft, entity);
-			}
-			break;
-			
-		case ENT_ROCKET:
-			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
-			{
-				explode_rocket(entity);
-			}
-			break;
-			
-		case ENT_MINE:
-			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, MINE_RADIUS))
-			{
-				explode_mine(entity);
-			}
-			break;
-			
-		case ENT_RAILS:
-			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, RAILS_RADIUS))
-			{
-				explode_rails(entity);
-			}
-			break;
-			
-		case ENT_SHIELD:
-			if(circles_intersect(craft->xdis, craft->ydis, CRAFT_RADIUS, entity->xdis, entity->ydis, SHIELD_RADIUS))
-			{
-				craft_shield_collision(craft, entity);
-			}
-			break;
-		}
-		
-		struct entity_t *next = entity->next;
-		
-		if(entity->kill_me)
-;//			remove_entity(entity);
-		else
-			entity->in_tick = 0;
-		
-		if(craft->kill_me)
+			*x = spawn_point->x;
+			*y = spawn_point->y;
 			return;
-		
-		entity = next;
-	}
-}
-
-
-void check_weapon_teleportation(struct entity_t *weapon)
-{
-	// check for overlap with other entities
-	
-	struct entity_t *entity = sentity0;
-	while(entity)
-	{
-		if(entity == weapon)
-		{
-			entity = entity->next;
-			continue;
 		}
 		
-		entity->in_tick = 1;
-		
-		switch(entity->type)
-		{
-		case ENT_CRAFT:
-			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, CRAFT_RADIUS))
-			{
-				telefrag_craft(entity);
-			}
-			break;
-			
-		case ENT_WEAPON:
-			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, WEAPON_RADIUS))
-			{
-				telefrag_weapon(entity);
-			}
-			break;
-			
-		case ENT_PLASMA:
-			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
-			{
-				weapon_plasma_collision(weapon, entity);
-			}
-			break;
-			
-		case ENT_BULLET:
-			if(point_in_circle(entity->xdis, entity->ydis, weapon->xdis, weapon->ydis, WEAPON_RADIUS))
-			{
-				weapon_bullet_collision(weapon, entity);
-			}
-			break;
-			
-		case ENT_ROCKET:
-			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
-			{
-				explode_rocket(entity);
-			}
-			break;
-			
-		case ENT_MINE:
-			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, MINE_RADIUS))
-			{
-				explode_mine(entity);
-			}
-			break;
-			
-		case ENT_RAILS:
-			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, RAILS_RADIUS))
-			{
-				explode_rails(entity);
-			}
-			break;
-			
-		case ENT_SHIELD:
-			if(circles_intersect(weapon->xdis, weapon->ydis, WEAPON_RADIUS, entity->xdis, entity->ydis, SHIELD_RADIUS))
-			{
-				weapon_shield_collision(weapon, entity);
-			}
-		}
-		
-		struct entity_t *next = entity->next;
-		
-		if(entity->kill_me)
-;//			remove_entity(entity);
-		else
-			entity->in_tick = 0;
-		
-		if(weapon->kill_me)
-			return;
-		
-		entity = next;
-	}
-}
-
-
-void check_rocket_teleportation(struct entity_t *rocket)
-{
-	// check for overlap with other entities
-	
-	struct entity_t *entity = sentity0;
-	while(entity)
-	{
-		if(entity == rocket)
-		{
-			entity = entity->next;
-			continue;
-		}
-		
-		entity->in_tick = 1;
-		
-		switch(entity->type)
-		{
-		case ENT_CRAFT:
-			if(circles_intersect(rocket->xdis, rocket->ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, CRAFT_RADIUS))
-			{
-				explode_rocket(rocket);
-			}
-			break;
-			
-		case ENT_WEAPON:
-			if(circles_intersect(rocket->xdis, rocket->ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, WEAPON_RADIUS))
-			{
-				explode_rocket(rocket);
-			}
-			break;
-			
-		case ENT_PLASMA:
-			if(circles_intersect(rocket->xdis, rocket->ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
-			{
-				plasma_rocket_collision(entity, rocket);
-			}
-			break;
-			
-		case ENT_BULLET:
-			if(point_in_circle(entity->xdis, entity->ydis, rocket->xdis, rocket->ydis, ROCKET_RADIUS))
-			{
-				bullet_rocket_collision(entity, rocket);
-			}
-			break;
-			
-		case ENT_ROCKET:
-			if(circles_intersect(rocket->xdis, rocket->ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
-			{
-				rocket_rocket_collision(rocket, entity);
-			}
-			break;
-			
-		case ENT_MINE:
-			if(circles_intersect(rocket->xdis, rocket->ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, MINE_RADIUS))
-			{
-				rocket_mine_collision(rocket, entity);
-			}
-			break;
-			
-		case ENT_RAILS:
-			if(circles_intersect(rocket->xdis, rocket->ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, RAILS_RADIUS))
-			{
-				rocket_rails_collision(rocket, entity);
-			}
-			break;
-			
-		case ENT_SHIELD:
-			if(circles_intersect(rocket->xdis, rocket->ydis, ROCKET_RADIUS, entity->xdis, entity->ydis, SHIELD_RADIUS))
-			{
-				entity->kill_me = 1;		
-			}
-		}
-		
-		struct entity_t *next = entity->next;
-		
-		if(entity->kill_me)
-;//			remove_entity(entity);
-		else
-			entity->in_tick = 0;
-		
-		if(rocket->kill_me)
-			return;
-		
-		entity = next;
-	}
-}
-
-
-void check_mine_teleportation(struct entity_t *mine)
-{
-	// check for overlap with other entities
-	
-	struct entity_t *entity = sentity0;
-	while(entity)
-	{
-		if(entity == mine)
-		{
-			entity = entity->next;
-			continue;
-		}
-		
-		entity->in_tick = 1;
-		
-		switch(entity->type)
-		{
-		case ENT_CRAFT:
-			if(circles_intersect(mine->xdis, mine->ydis, MINE_RADIUS, entity->xdis, entity->ydis, CRAFT_RADIUS))
-			{
-				explode_mine(mine);
-			}
-			break;
-			
-		case ENT_WEAPON:
-			if(circles_intersect(mine->xdis, mine->ydis, MINE_RADIUS, entity->xdis, entity->ydis, WEAPON_RADIUS))
-			{
-				explode_mine(mine);
-			}
-			break;
-			
-		case ENT_PLASMA:
-			if(circles_intersect(mine->xdis, mine->ydis, MINE_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
-			{
-				plasma_mine_collision(entity, mine);
-			}
-			break;
-			
-		case ENT_BULLET:
-			if(point_in_circle(entity->xdis, entity->ydis, mine->xdis, mine->ydis, MINE_RADIUS))
-			{
-				bullet_mine_collision(entity, mine);
-			}
-			break;
-			
-		case ENT_ROCKET:
-			if(circles_intersect(mine->xdis, mine->ydis, MINE_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
-			{
-				rocket_mine_collision(entity, mine);
-			}
-			break;
-			
-		case ENT_MINE:
-			if(circles_intersect(mine->xdis, mine->ydis, MINE_RADIUS, entity->xdis, entity->ydis, MINE_RADIUS))
-			{
-				mine_mine_collision(mine, entity);
-			}
-			break;
-			
-		case ENT_RAILS:
-			if(circles_intersect(mine->xdis, mine->ydis, MINE_RADIUS, entity->xdis, entity->ydis, RAILS_RADIUS))
-			{
-				mine_rails_collision(mine, entity);
-			}
-			break;
-			
-		case ENT_SHIELD:
-			if(circles_intersect(mine->xdis, mine->ydis, MINE_RADIUS, entity->xdis, entity->ydis, SHIELD_RADIUS))
-			{
-				entity->kill_me = 1;
-			}
-		}
-		
-		struct entity_t *next = entity->next;
-		
-		if(entity->kill_me)
-;//			remove_entity(entity);
-		else
-			entity->in_tick = 0;
-		
-		if(mine->kill_me)
-			return;
-		
-		entity = next;
-	}
-}
-
-
-void check_rails_teleportation(struct entity_t *rails)
-{
-	// check for overlap with other entities
-	
-	struct entity_t *entity = sentity0;
-	while(entity)
-	{
-		if(entity == rails)
-		{
-			entity = entity->next;
-			continue;
-		}
-		
-		entity->in_tick = 1;
-		
-		switch(entity->type)
-		{
-		case ENT_CRAFT:
-			if(circles_intersect(rails->xdis, rails->ydis, RAILS_RADIUS, entity->xdis, entity->ydis, CRAFT_RADIUS))
-			{
-				explode_rails(rails);
-			}
-			break;
-			
-		case ENT_WEAPON:
-			if(circles_intersect(rails->xdis, rails->ydis, RAILS_RADIUS, entity->xdis, entity->ydis, WEAPON_RADIUS))
-			{
-				explode_rails(rails);
-			}
-			break;
-			
-		case ENT_PLASMA:
-			if(circles_intersect(rails->xdis, rails->ydis, RAILS_RADIUS, entity->xdis, entity->ydis, PLASMA_RADIUS))
-			{
-				plasma_rails_collision(entity, rails);
-			}
-			break;
-			
-		case ENT_BULLET:
-			if(point_in_circle(entity->xdis, entity->ydis, rails->xdis, rails->ydis, RAILS_RADIUS))
-			{
-				bullet_rails_collision(entity, rails);
-			}
-			break;
-			
-		case ENT_ROCKET:
-			if(circles_intersect(rails->xdis, rails->ydis, RAILS_RADIUS, entity->xdis, entity->ydis, ROCKET_RADIUS))
-			{
-				rocket_rails_collision(entity, rails);
-			}
-			break;
-			
-		case ENT_MINE:
-			if(circles_intersect(rails->xdis, rails->ydis, RAILS_RADIUS, entity->xdis, entity->ydis, MINE_RADIUS))
-			{
-				mine_rails_collision(entity, rails);
-			}
-			break;
-			
-		case ENT_RAILS:
-			if(circles_intersect(rails->xdis, rails->ydis, RAILS_RADIUS, entity->xdis, entity->ydis, RAILS_RADIUS))
-			{
-				rails_rails_collision(rails, entity);
-			}
-			break;
-			
-		case ENT_SHIELD:
-			if(circles_intersect(rails->xdis, rails->ydis, RAILS_RADIUS, entity->xdis, entity->ydis, SHIELD_RADIUS))
-			{
-				entity->kill_me = 1;
-			}
-		}
-		
-		struct entity_t *next = entity->next;
-		
-		if(entity->kill_me)
-;//			remove_entity(entity);
-		else
-			entity->in_tick = 0;
-		
-		if(rails->kill_me)
-			return;
-		
-		entity = next;
+		spawn_point = spawn_point->next;
 	}
 }
 
@@ -1399,6 +988,52 @@ void check_rails_teleportation(struct entity_t *rails)
 void s_tick_craft(struct entity_t *craft)
 {
 	craft->craft_data.shield_flare = max(0.0, craft->craft_data.shield_flare - 0.005);
+	
+	if(craft->teleporting)
+	{
+		float teleporter_x, teleporter_y;
+		double time = (double)(cgame_tick - craft->teleporting_tick) / 200.0;
+
+		switch(craft->teleporting)
+		{
+		case TELEPORTING_DISAPPEARING:
+			if(time > TELEPORT_FADE_TIME)
+			{
+				craft->teleporting = TELEPORTING_TRAVELLING;
+				craft->teleporting_tick = cgame_tick;
+			}
+			break;
+		
+		case TELEPORTING_TRAVELLING:
+			if(time > TELEPORT_TRAVEL_TIME - TELEPORT_FADE_TIME * 2.0)
+			{
+				craft->teleporting = TELEPORTING_APPEARING;
+				craft->teleporting_tick = cgame_tick;
+				
+				get_spawn_point_coords(craft->teleport_spawn_index, &teleporter_x, &teleporter_y);
+			
+				// this should really use descrete ticks
+				craft->xdis = teleporter_x - craft->xvel * TELEPORT_FADE_TIME * 200.0;
+				craft->ydis = teleporter_y - craft->yvel * TELEPORT_FADE_TIME * 200.0;
+			}
+			break;
+
+		case TELEPORTING_APPEARING:
+			if(time > TELEPORT_FADE_TIME)
+				craft->teleporting = TELEPORTING_FINISHED;
+			break;
+		}
+
+		if(craft->teleporting == TELEPORTING_DISAPPEARING ||
+			craft->teleporting == TELEPORTING_APPEARING)
+		{
+			craft->xdis += craft->xvel;
+			craft->ydis += craft->yvel;
+		}
+		
+		if(craft->teleporting)
+			return;
+	}
 	
 	while(craft->craft_data.theta >= M_PI)
 		craft->craft_data.theta -= 2 * M_PI;
@@ -1424,11 +1059,12 @@ void s_tick_craft(struct entity_t *craft)
 		craft->xvel *= BRAKE_FRICTION;
 		craft->yvel *= BRAKE_FRICTION;
 	}
-		
+	
 
 	int restart = 0;
 	double xdis;
 	double ydis;
+	
 	
 	while(1)
 	{
@@ -1484,7 +1120,7 @@ void s_tick_craft(struct entity_t *craft)
 		struct entity_t *entity = sentity0;
 		while(entity)
 		{
-			if(entity == craft)
+			if(entity == craft || entity->teleporting)
 			{
 				entity = entity->next;
 				continue;
@@ -1563,6 +1199,9 @@ void s_tick_craft(struct entity_t *craft)
 			entity = next;
 		}
 		
+		
+		#ifdef EMSERVER
+		
 	/*	
 		// check for collision with speedup ramp
 		
@@ -1612,78 +1251,35 @@ void s_tick_craft(struct entity_t *craft)
 			if(circle_in_circle(xdis, ydis, CRAFT_RADIUS, 
 				teleporter->x, teleporter->y, teleporter->radius))
 			{
-				float teleporter_x, teleporter_y;
-				get_teleporter_spawn_point(teleporter, &teleporter_x, &teleporter_y);
-				
 				if(craft->craft_data.left_weapon)
 				{
-					craft->craft_data.left_weapon->xdis += teleporter_x - craft->xdis;
-					craft->craft_data.left_weapon->ydis += teleporter_y - craft->ydis;
+					craft->craft_data.left_weapon->propagate_me = 1;
+					craft->craft_data.left_weapon->weapon_data.craft = NULL;
+					craft->craft_data.left_weapon = NULL;
 				}
 				
 				if(craft->craft_data.right_weapon)
 				{
-					craft->craft_data.right_weapon->xdis += teleporter_x - craft->xdis;
-					craft->craft_data.right_weapon->ydis += teleporter_y - craft->ydis;
+					craft->craft_data.right_weapon->propagate_me = 1;
+					craft->craft_data.right_weapon->weapon_data.craft = NULL;
+					craft->craft_data.right_weapon = NULL;
 				}
 				
-				craft->xdis = teleporter_x;
-				craft->ydis = teleporter_y;
+				craft->teleport_spawn_index = teleporter->spawn_index;
 				
-				#ifdef EMCLIENT
-				start_moving_view(viewx, viewy, teleporter_x, teleporter_y);
-				#endif
+				craft->teleporting = TELEPORTING_DISAPPEARING;
+				craft->teleporting_tick = cgame_tick;
 				
-				check_craft_teleportation(craft);
+				craft->propagate_me = 1;
 				
-				if(craft->craft_data.left_weapon)
-				{
-					craft->craft_data.left_weapon->in_tick = 1;
-					check_weapon_teleportation(craft->craft_data.left_weapon);
-					
-					if(craft->craft_data.left_weapon->kill_me)
-					{
-;//						remove_entity(craft->craft_data.left_weapon);
-						craft->craft_data.left_weapon = NULL;
-					}
-					else
-					{
-						craft->craft_data.left_weapon->in_tick = 0;
-					}
-				}
-				
-				if(craft->craft_data.right_weapon)
-				{
-					craft->craft_data.right_weapon->in_tick = 1;
-					check_weapon_teleportation(craft->craft_data.right_weapon);
-					
-					if(craft->craft_data.right_weapon->kill_me)
-					{
-;//						remove_entity(craft->craft_data.right_weapon);
-						craft->craft_data.right_weapon = NULL;
-					}
-					else
-					{
-						craft->craft_data.right_weapon->in_tick = 0;
-					}
-					
-				}
-				
-				#ifdef EMSERVER
-				if(craft->kill_me)
-				{
-;//					remove_entity(craft);
-					return;
-				}
-				#endif
-				
-				restart = 1;
+			//	restart = 1;
 				break;
 			}
 			
 			teleporter = teleporter->next;
 		}
 		
+		#endif
 		
 		
 		if(restart)
@@ -1718,7 +1314,7 @@ int check_weapon_placement(double xdis, double ydis, struct entity_t *weapon)
 	struct entity_t *entity = sentity0;
 	while(entity)
 	{
-		if(entity == weapon)
+		if(entity == weapon || entity->teleporting)
 		{
 			entity = entity->next;
 			continue;
@@ -1773,9 +1369,41 @@ void s_tick_weapon(struct entity_t *weapon)
 {
 	weapon->weapon_data.shield_flare = max(0.0, weapon->weapon_data.shield_flare - 0.005);
 	
+	if(weapon->teleporting)
+	{
+		float teleporter_x, teleporter_y;
+		double time = (double)(cgame_tick - weapon->teleporting_tick) / 200.0;
+		if(time > TELEPORT_FADE_TIME)
+		{
+			switch(weapon->teleporting)
+			{
+			case TELEPORTING_DISAPPEARING:
+				weapon->teleporting = TELEPORTING_APPEARING;
+				weapon->teleporting_tick = cgame_tick;
+			
+				get_spawn_point_coords(weapon->teleport_spawn_index, &teleporter_x, &teleporter_y);
+			
+				// this should really use descrete ticks
+				weapon->xdis = teleporter_x - weapon->xvel * TELEPORT_FADE_TIME * 200.0;
+				weapon->ydis = teleporter_y - weapon->yvel * TELEPORT_FADE_TIME * 200.0;
+				break;
+			
+			case TELEPORTING_APPEARING:
+				weapon->teleporting = TELEPORTING_FINISHED;
+				break;
+			}
+		}
+		
+		if(weapon->teleporting)
+		{
+			weapon->xdis += weapon->xvel;
+			weapon->ydis += weapon->yvel;
+			return;
+		}
+	}
+
 	struct entity_t *craft = weapon->weapon_data.craft;
-	
-	
+
 	if(craft && !weapon->weapon_data.detached)
 	{
 		// rotate on spot
@@ -1803,7 +1431,7 @@ void s_tick_weapon(struct entity_t *weapon)
 		double xdis = weapon->xdis + craft->xvel;
 		double ydis = weapon->ydis + craft->yvel;
 		
-		double theta_side = 0.0;
+		double theta_side = -M_PI / 4.0;
 		
 		if(craft->craft_data.left_weapon == weapon)
 			theta_side = M_PI / 2.0;
@@ -1916,7 +1544,7 @@ void s_tick_weapon(struct entity_t *weapon)
 		struct entity_t *entity = sentity0;
 		while(entity)
 		{
-			if(entity == weapon)
+			if(entity == weapon || entity->teleporting)
 			{
 				entity = entity->next;
 				continue;
@@ -2003,61 +1631,64 @@ void s_tick_weapon(struct entity_t *weapon)
 			entity = next;
 		}
 		
-	
-		if(!craft)
+
+		#ifdef EMSERVER
+		
+		
+		// check for collision with speedup ramp
+		
+/*		struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
+		while(speedup_ramp)
 		{
-			// check for collision with speedup ramp
+			double sin_theta, cos_theta;
+			sincos(speedup_ramp->theta + M_PI / 2.0, &sin_theta, &cos_theta);
 			
-			struct speedup_ramp_t *speedup_ramp = speedup_ramp0;
-			while(speedup_ramp)
+			if(line_in_circle(speedup_ramp->x + cos_theta * speedup_ramp->width / 2.0, 
+				speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
+				speedup_ramp->x - cos_theta * speedup_ramp->width / 2.0, 
+				speedup_ramp->y - sin_theta * speedup_ramp->width / 2.0,
+				xdis, ydis, WEAPON_RADIUS))
 			{
-				double sin_theta, cos_theta;
-				sincos(speedup_ramp->theta + M_PI / 2.0, &sin_theta, &cos_theta);
+				sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
 				
-				if(line_in_circle(speedup_ramp->x + cos_theta * speedup_ramp->width / 2.0, 
-					speedup_ramp->y + sin_theta * speedup_ramp->width / 2.0, 
-					speedup_ramp->x - cos_theta * speedup_ramp->width / 2.0, 
-					speedup_ramp->y - sin_theta * speedup_ramp->width / 2.0,
-					xdis, ydis, WEAPON_RADIUS))
-				{
-					sincos(speedup_ramp->theta, &sin_theta, &cos_theta);
-					
-					weapon->xvel += speedup_ramp->boost * sin_theta;
-					weapon->yvel += speedup_ramp->boost * cos_theta;
-					
-					restart = 1;
-				}			
+				weapon->xvel += speedup_ramp->boost * sin_theta;
+				weapon->yvel += speedup_ramp->boost * cos_theta;
 				
-				speedup_ramp = speedup_ramp->next;
-			}
+				restart = 1;
+			}			
 			
-			
-			// check for collision with teleporter
-			
-			struct teleporter_t *teleporter = teleporter0;
-			while(teleporter)
+			speedup_ramp = speedup_ramp->next;
+		}
+*/		
+		
+		// check for collision with teleporter
+		
+		struct teleporter_t *teleporter = teleporter0;
+		while(teleporter)
+		{
+			if(circle_in_circle(xdis, ydis, WEAPON_RADIUS, teleporter->x, teleporter->y, teleporter->radius))
 			{
-				if(circle_in_circle(xdis, ydis, WEAPON_RADIUS, teleporter->x, teleporter->y, teleporter->radius))
+				if(craft)
 				{
-					get_teleporter_spawn_point(teleporter, &weapon->xdis, &weapon->ydis);
-					
-					check_weapon_teleportation(weapon);
-					
-					#ifdef EMSERVER
-					if(weapon->kill_me)
-					{
-;//						remove_entity(weapon);
-						return;
-					}
-					#endif
-					
-					restart = 1;
-					break;
+					weapon->weapon_data.craft->propagate_me = 1;
+					strip_craft_from_weapon(weapon);
 				}
 				
-				teleporter = teleporter->next;
+				weapon->teleport_spawn_index = teleporter->spawn_index;
+				
+				weapon->teleporting = TELEPORTING_DISAPPEARING;
+				weapon->teleporting_tick = cgame_tick;
+				
+				weapon->propagate_me = 1;
+				
+//				restart = 1;
+				return;
 			}
+			
+			teleporter = teleporter->next;
 		}
+		
+		#endif
 
 		
 		if(restart)
@@ -2078,7 +1709,7 @@ void s_tick_weapon(struct entity_t *weapon)
 		struct entity_t *entity = sentity0;
 		while(entity)
 		{
-			if(entity->type == ENT_CRAFT && !entity->craft_data.carcass && 
+			if(entity->type == ENT_CRAFT && !entity->craft_data.carcass && !entity->teleporting &&
 				entity->craft_data.left_weapon != weapon && entity->craft_data.right_weapon != weapon)
 			{
 				if(point_in_circle(weapon->xdis, weapon->ydis, entity->xdis, entity->ydis, MAX_CRAFT_WEAPON_DIST))
@@ -2175,6 +1806,39 @@ void s_tick_weapon(struct entity_t *weapon)
 
 void s_tick_plasma(struct entity_t *plasma)
 {
+	if(plasma->teleporting)
+	{
+		float teleporter_x, teleporter_y;
+		double time = (double)(cgame_tick - plasma->teleporting_tick) / 200.0;
+		if(time > TELEPORT_FADE_TIME)
+		{
+			switch(plasma->teleporting)
+			{
+			case TELEPORTING_DISAPPEARING:
+				plasma->teleporting = TELEPORTING_APPEARING;
+				plasma->teleporting_tick = cgame_tick;
+			
+				get_spawn_point_coords(plasma->teleport_spawn_index, &teleporter_x, &teleporter_y);
+			
+				// this should really use descrete ticks
+				plasma->xdis = teleporter_x - plasma->xvel * TELEPORT_FADE_TIME * 200.0;
+				plasma->ydis = teleporter_y - plasma->yvel * TELEPORT_FADE_TIME * 200.0;
+				break;
+			
+			case TELEPORTING_APPEARING:
+				plasma->teleporting = TELEPORTING_FINISHED;
+				break;
+			}
+		}
+		
+		if(plasma->teleporting)
+		{
+			plasma->xdis += plasma->xvel;
+			plasma->ydis += plasma->yvel;
+			return;
+		}
+	}
+	
 	// see if we have left the cannon
 	
 	if(plasma->plasma_data.in_weapon)
@@ -2219,7 +1883,7 @@ void s_tick_plasma(struct entity_t *plasma)
 		struct entity_t *entity = sentity0;
 		while(entity)
 		{
-			if(entity == plasma)
+			if(entity == plasma || entity->teleporting)
 			{
 				entity = entity->next;
 				continue;
@@ -2294,8 +1958,10 @@ void s_tick_plasma(struct entity_t *plasma)
 		{
 			if(circle_in_circle(plasma->xdis, plasma->ydis, PLASMA_RADIUS, teleporter->x, teleporter->y, teleporter->radius))
 			{
-				get_teleporter_spawn_point(teleporter, &plasma->xdis, &plasma->ydis);
-				restart = 1;
+				plasma->teleport_spawn_index = teleporter->spawn_index;
+				
+				plasma->teleporting = TELEPORTING_DISAPPEARING;
+				plasma->teleporting_tick = cgame_tick;
 				break;
 			}
 			
@@ -2309,6 +1975,8 @@ void s_tick_plasma(struct entity_t *plasma)
 	}
 }
 
+
+#ifdef EMSERVER
 
 void s_tick_bullet(struct entity_t *bullet)
 {
@@ -2338,7 +2006,7 @@ void s_tick_bullet(struct entity_t *bullet)
 		struct entity_t *entity = sentity0;
 		while(entity)
 		{
-			if(entity == bullet)
+			if(entity == bullet || entity->teleporting)
 			{
 				entity = entity->next;
 				continue;
@@ -2431,9 +2099,45 @@ void s_tick_bullet(struct entity_t *bullet)
 	}
 }
 
+#endif
+
 
 void s_tick_rocket(struct entity_t *rocket)
 {
+	if(rocket->teleporting)
+	{
+		float teleporter_x, teleporter_y;
+		double time = (double)(cgame_tick - rocket->teleporting_tick) / 200.0;
+		if(time > TELEPORT_FADE_TIME)
+		{
+			switch(rocket->teleporting)
+			{
+			case TELEPORTING_DISAPPEARING:
+				rocket->teleporting = TELEPORTING_APPEARING;
+				rocket->teleporting_tick = cgame_tick;
+
+				get_spawn_point_coords(rocket->teleport_spawn_index, &teleporter_x, &teleporter_y);
+			
+				// this should really use descrete ticks
+				rocket->xdis = teleporter_x - rocket->xvel * TELEPORT_FADE_TIME * 200.0;
+				rocket->ydis = teleporter_y - rocket->yvel * TELEPORT_FADE_TIME * 200.0;
+				break;
+			
+			case TELEPORTING_APPEARING:
+				rocket->teleporting = TELEPORTING_FINISHED;
+				break;
+			}
+		}
+		
+		if(rocket->teleporting)
+		{
+			rocket->xdis += rocket->xvel;
+			rocket->ydis += rocket->yvel;
+			return;
+		}
+	}
+	
+	
 	// see if we have left the launcher
 	
 	if(rocket->rocket_data.in_weapon)
@@ -2488,7 +2192,7 @@ void s_tick_rocket(struct entity_t *rocket)
 		struct entity_t *entity = sentity0;
 		while(entity)
 		{
-			if(entity == rocket)
+			if(entity == rocket || entity->teleporting)
 			{
 				entity = entity->next;
 				continue;
@@ -2596,17 +2300,10 @@ void s_tick_rocket(struct entity_t *rocket)
 		{
 			if(circle_in_circle(xdis, ydis, ROCKET_RADIUS, teleporter->x, teleporter->y, teleporter->radius))
 			{
-				get_teleporter_spawn_point(teleporter, &rocket->xdis, &rocket->ydis);
+				rocket->teleport_spawn_index = teleporter->spawn_index;
 				
-				check_rocket_teleportation(rocket);
-				
-				if(rocket->kill_me)
-				{
-;//					remove_entity(rocket);
-					return;
-				}
-				
-				restart = 1;
+				rocket->teleporting = TELEPORTING_DISAPPEARING;
+				rocket->teleporting_tick = cgame_tick;
 				break;
 			}
 			
@@ -2636,6 +2333,33 @@ void s_tick_rocket(struct entity_t *rocket)
 
 void s_tick_mine(struct entity_t *mine)
 {
+	if(mine->teleporting)
+	{
+		double time = (double)(cgame_tick - mine->teleporting_tick) / 200.0;
+		if(time > TELEPORT_FADE_TIME)
+		{
+			switch(mine->teleporting)
+			{
+			case TELEPORTING_DISAPPEARING:
+				mine->teleporting = TELEPORTING_APPEARING;
+				mine->teleporting_tick = cgame_tick;
+				break;
+			
+			case TELEPORTING_APPEARING:
+				mine->teleporting = TELEPORTING_FINISHED;
+				break;
+			}
+		}
+		
+		if(mine->teleporting)
+		{
+			mine->xdis += mine->xvel;
+			mine->ydis += mine->yvel;
+			return;
+		}
+	}
+
+	
 	apply_gravity_acceleration(mine);
 	
 	slow_entity(mine);
@@ -2664,7 +2388,7 @@ void s_tick_mine(struct entity_t *mine)
 		struct entity_t *entity = sentity0;
 		while(entity)
 		{
-			if(entity == mine)
+			if(entity == mine || entity->teleporting)
 			{
 				entity = entity->next;
 				continue;
@@ -2773,14 +2497,6 @@ void s_tick_mine(struct entity_t *mine)
 			{
 				get_teleporter_spawn_point(teleporter, &mine->xdis, &mine->ydis);
 				
-				check_mine_teleportation(mine);
-				
-				if(mine->kill_me)
-				{
-;//					remove_entity(mine);
-					return;
-				}
-				
 				restart = 1;
 				break;
 			}
@@ -2802,6 +2518,33 @@ void s_tick_mine(struct entity_t *mine)
 
 void s_tick_rails(struct entity_t *rails)
 {
+	if(rails->teleporting)
+	{
+		double time = (double)(cgame_tick - rails->teleporting_tick) / 200.0;
+		if(time > TELEPORT_FADE_TIME)
+		{
+			switch(rails->teleporting)
+			{
+			case TELEPORTING_DISAPPEARING:
+				rails->teleporting = TELEPORTING_APPEARING;
+				rails->teleporting_tick = cgame_tick;
+				break;
+			
+			case TELEPORTING_APPEARING:
+				rails->teleporting = TELEPORTING_FINISHED;
+				break;
+			}
+		}
+		
+		if(rails->teleporting)
+		{
+			rails->xdis += rails->xvel;
+			rails->ydis += rails->yvel;
+			return;
+		}
+	}
+
+	
 	apply_gravity_acceleration(rails);
 	
 	slow_entity(rails);
@@ -2831,7 +2574,7 @@ void s_tick_rails(struct entity_t *rails)
 		struct entity_t *entity = sentity0;
 		while(entity)
 		{
-			if(entity == rails)
+			if(entity == rails || entity->teleporting)
 			{
 				entity = entity->next;
 				continue;
@@ -2936,14 +2679,6 @@ void s_tick_rails(struct entity_t *rails)
 			{
 				get_teleporter_spawn_point(teleporter, &rails->xdis, &rails->ydis);
 				
-				check_rails_teleportation(rails);
-				
-				if(rails->kill_me)
-				{
-;//					remove_entity(rails);
-					return;
-				}
-				
 				restart = 1;
 				break;
 			}
@@ -2965,6 +2700,33 @@ void s_tick_rails(struct entity_t *rails)
 
 void s_tick_shield(struct entity_t *shield)
 {
+	if(shield->teleporting)
+	{
+		double time = (double)(cgame_tick - shield->teleporting_tick) / 200.0;
+		if(time > TELEPORT_FADE_TIME)
+		{
+			switch(shield->teleporting)
+			{
+			case TELEPORTING_DISAPPEARING:
+				shield->teleporting = TELEPORTING_APPEARING;
+				shield->teleporting_tick = cgame_tick;
+				break;
+			
+			case TELEPORTING_APPEARING:
+				shield->teleporting = TELEPORTING_FINISHED;
+				break;
+			}
+		}
+		
+		if(shield->teleporting)
+		{
+			shield->xdis += shield->xvel;
+			shield->ydis += shield->yvel;
+			return;
+		}
+	}
+
+	
 	apply_gravity_acceleration(shield);
 	
 	slow_entity(shield);
@@ -2992,7 +2754,7 @@ void s_tick_shield(struct entity_t *shield)
 		struct entity_t *entity = sentity0;
 		while(entity)
 		{
-			if(entity == shield)
+			if(entity == shield || entity->teleporting)
 			{
 				entity = entity->next;
 				continue;
@@ -3138,9 +2900,11 @@ void s_tick_entities(struct entity_t **entity0)
 			s_tick_rocket(centity);
 			break;
 			
+		#ifdef EMSERVER
 		case ENT_BULLET:
 			s_tick_bullet(centity);
 			break;
+		#endif
 			
 		case ENT_MINE:
 			s_tick_mine(centity);

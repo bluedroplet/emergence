@@ -98,7 +98,6 @@ struct craft_data_t
 	struct surface_t *surface;
 	float particle;
 	uint32_t last_tick;
-	float spawn_time;
 	#endif
 };
 
@@ -121,7 +120,6 @@ struct weapon_data_t
 	#ifdef EMCLIENT
 	int skin;
 	struct surface_t *surface;
-	float spawn_time;
 	#endif
 };
 
@@ -214,6 +212,10 @@ struct entity_t
 	float xdis, ydis;
 	float xvel, yvel;
 	
+	int teleporting;
+	uint32_t teleporting_tick;
+	uint32_t teleport_spawn_index;
+	
 	union
 	{
 		struct craft_data_t craft_data;
@@ -233,6 +235,7 @@ struct entity_t
 	struct entity_t *next;
 };
 
+#define NO_ENT_INDEX	-1
 
 #define ENT_CRAFT		0
 #define ENT_WEAPON		1
@@ -246,6 +249,14 @@ struct entity_t
 #define WEAPON_PLASMA_CANNON	0
 #define WEAPON_MINIGUN			1
 #define WEAPON_ROCKET_LAUNCHER	2
+
+#define TELEPORT_FADE_TIME		0.125
+#define TELEPORT_TRAVEL_TIME	1.0
+
+#define TELEPORTING_FINISHED		0
+#define TELEPORTING_DISAPPEARING	1
+#define TELEPORTING_TRAVELLING		2
+#define TELEPORTING_APPEARING		3
 
 
 struct spawn_point_t
@@ -266,6 +277,7 @@ struct teleporter_t
 	double x, y;
 	double radius;
 	uint16_t colour;
+	int sparkles;
 	int spawn_index;
 	
 	int rotation_type;
@@ -274,7 +286,7 @@ struct teleporter_t
 	double divider_angle;
 	
 	#ifdef EMCLIENT
-	struct particle_t particles[800];
+	struct particle_t particles[1000];
 	float particle_power;
 	int next_particle;
 	#endif
@@ -328,6 +340,7 @@ void splash_force(double x, double y, double force);
 void strip_weapons_from_craft(struct entity_t *craft);
 void strip_craft_from_weapon(struct entity_t *weapon);
 void explode_craft(struct entity_t *craft);
+void get_spawn_point_coords(uint32_t index, float *x, float *y);
 
 
 #define CRAFT_RADIUS	56.569

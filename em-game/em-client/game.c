@@ -51,6 +51,8 @@ struct event_craft_data_t
 	float acc;
 	float theta;
 	int braking;
+	uint32_t left_weapon_index;
+	uint32_t right_weapon_index;
 	float shield_flare;
 	
 	int carcass;	// handled sepatately
@@ -61,6 +63,7 @@ struct event_weapon_data_t
 {
 	int type;
 	float theta;
+	uint32_t craft_index;
 	float shield_flare;
 	int detached;
 };
@@ -97,6 +100,10 @@ struct event_t
 			
 			float xdis, ydis;
 			float xvel, yvel;
+			
+			int teleporting;
+			uint32_t teleporting_tick;
+			uint32_t teleport_spawn_index;
 			
 			union
 			{
@@ -186,6 +193,7 @@ float moving_view_ya;
 float offset_view_x;
 float offset_view_y;
 
+float teleporting_start_x, teleporting_start_y;
 
 
 struct surface_t *s_plasma, *s_craft_shield, *s_weapon_shield;
@@ -303,9 +311,7 @@ void start_moving_view(float x1, float y1, float x2, float y2)
 
 void add_moving_view()
 {
-	double time = cgame_time;
-	
-	time -= moving_view_time;
+	double time = cgame_time - moving_view_time;
 	
 	if(time > MOVING_VIEW_TRAVEL_TIME)
 		return;
@@ -494,6 +500,8 @@ void read_craft_data(struct event_craft_data_t *craft_data)
 	craft_data->acc = message_reader_read_float();
 	craft_data->theta = message_reader_read_float();
 	craft_data->braking = message_reader_read_int();
+	craft_data->left_weapon_index = message_reader_read_uint32();
+	craft_data->right_weapon_index = message_reader_read_uint32();
 	craft_data->shield_flare = message_reader_read_float();
 }
 
@@ -502,6 +510,7 @@ void read_weapon_data(struct event_weapon_data_t *weapon_data)
 {
 	weapon_data->type = message_reader_read_int();
 	weapon_data->theta = message_reader_read_float();
+	weapon_data->craft_index = message_reader_read_uint32();
 	weapon_data->shield_flare = message_reader_read_float();
 }
 
@@ -776,6 +785,9 @@ void add_spawn_ent_event(struct event_t *event)
 	event->ent_data.ydis = message_reader_read_float();
 	event->ent_data.xvel = message_reader_read_float();
 	event->ent_data.yvel = message_reader_read_float();
+	event->ent_data.teleporting = message_reader_read_int();
+	event->ent_data.teleporting_tick = message_reader_read_uint32();
+	event->ent_data.teleport_spawn_index = message_reader_read_uint32();
 	
 	switch(event->ent_data.type)
 	{
@@ -817,6 +829,9 @@ void process_spawn_ent_event(struct event_t *event)
 	entity->ydis = event->ent_data.ydis;
 	entity->xvel = event->ent_data.xvel;
 	entity->yvel = event->ent_data.yvel;
+	entity->teleporting = event->ent_data.teleporting;
+	entity->teleporting_tick = event->ent_data.teleporting_tick;
+	entity->teleport_spawn_index = event->ent_data.teleport_spawn_index;
 	
 	switch(entity->type)
 	{
@@ -824,17 +839,22 @@ void process_spawn_ent_event(struct event_t *event)
 		entity->craft_data.acc = event->ent_data.craft_data.acc;
 		entity->craft_data.theta = event->ent_data.craft_data.theta;
 		entity->craft_data.braking = event->ent_data.craft_data.braking;
+		entity->craft_data.left_weapon = get_entity(centity0, 
+			event->ent_data.craft_data.left_weapon_index);
+		entity->craft_data.right_weapon = get_entity(centity0, 
+			event->ent_data.craft_data.right_weapon_index);
 		entity->craft_data.shield_flare = event->ent_data.craft_data.shield_flare;
 		entity->craft_data.carcass = event->ent_data.craft_data.carcass;
 		entity->craft_data.skin = event->ent_data.skin;
 		entity->craft_data.surface = skin_get_craft_surface(event->ent_data.skin);
 		entity->craft_data.particle = 0.0;
-		entity->craft_data.spawn_time = cgame_time;
 		break;
 	
 	case ENT_WEAPON:
 		entity->weapon_data.type = event->ent_data.weapon_data.type;
 		entity->weapon_data.theta = event->ent_data.weapon_data.theta;
+		entity->weapon_data.craft = get_entity(centity0, 
+			event->ent_data.weapon_data.craft_index);
 		entity->weapon_data.shield_flare = event->ent_data.weapon_data.shield_flare;
 		entity->weapon_data.detached = event->ent_data.weapon_data.detached;
 		entity->weapon_data.skin = event->ent_data.skin;
@@ -854,7 +874,6 @@ void process_spawn_ent_event(struct event_t *event)
 			break;
 		}
 		
-		entity->weapon_data.spawn_time = cgame_time;
 		break;
 	
 	case ENT_PLASMA:
@@ -883,6 +902,9 @@ void add_update_ent_event(struct event_t *event)
 	event->ent_data.ydis = message_reader_read_float();
 	event->ent_data.xvel = message_reader_read_float();
 	event->ent_data.yvel = message_reader_read_float();
+	event->ent_data.teleporting = message_reader_read_int();
+	event->ent_data.teleporting_tick = message_reader_read_uint32();
+	event->ent_data.teleport_spawn_index = message_reader_read_uint32();
 	
 	switch(event->ent_data.type)
 	{
@@ -911,17 +933,22 @@ void add_update_ent_event(struct event_t *event)
 void process_update_ent_event(struct event_t *event)
 {
 	struct entity_t *entity = get_entity(centity0, event->ent_data.index);
+	int old_teleporting = entity->teleporting;
+	float teleporter_x, teleporter_y;
 
 	if(!entity)
 	{
 		printf("consistency error in process_update_ent_event\n");
-		return;		// due to ooo
+		return;		// possibly due to ooo
 	}
 	
 	entity->xdis = event->ent_data.xdis;
 	entity->ydis = event->ent_data.ydis;
 	entity->xvel = event->ent_data.xvel;
 	entity->yvel = event->ent_data.yvel;
+	entity->teleporting = event->ent_data.teleporting;
+	entity->teleporting_tick = event->ent_data.teleporting_tick;
+	entity->teleport_spawn_index = event->ent_data.teleport_spawn_index;
 	
 	switch(entity->type)
 	{
@@ -929,10 +956,16 @@ void process_update_ent_event(struct event_t *event)
 		entity->craft_data.acc = event->ent_data.craft_data.acc;
 		entity->craft_data.theta = event->ent_data.craft_data.theta;
 		entity->craft_data.braking = event->ent_data.craft_data.braking;
+		entity->craft_data.left_weapon = get_entity(centity0, 
+			event->ent_data.craft_data.left_weapon_index);
+		entity->craft_data.right_weapon = get_entity(centity0, 
+			event->ent_data.craft_data.right_weapon_index);
 		entity->craft_data.shield_flare = event->ent_data.craft_data.shield_flare;
 		break;
 	
 	case ENT_WEAPON:
+		entity->weapon_data.craft = get_entity(centity0, 
+			event->ent_data.weapon_data.craft_index);
 		entity->weapon_data.shield_flare = event->ent_data.weapon_data.shield_flare;
 		break;
 	
@@ -944,6 +977,18 @@ void process_update_ent_event(struct event_t *event)
 	
 	case ENT_MINE:
 		break;
+	}
+	
+	if(entity->type == ENT_CRAFT &&
+		old_teleporting == TELEPORTING_FINISHED &&
+		entity->teleporting == TELEPORTING_DISAPPEARING)
+	{
+		get_spawn_point_coords(entity->teleport_spawn_index, &teleporter_x, &teleporter_y);
+			
+		start_moving_view(viewx, viewy, teleporter_x, teleporter_y);	// violates gamestate scheme
+		
+		teleporting_start_x = teleporter_x;
+		teleporting_start_y = teleporter_y;
 	}
 }
 
@@ -1924,6 +1969,9 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis)
 	if(cgame_tick <= craft->craft_data.last_tick)
 		return;
 	
+	if(craft->teleporting)
+		return;
+	
 	craft->craft_data.last_tick = cgame_tick;
 	
 	int np = 0, p;
@@ -2050,6 +2098,9 @@ void tick_rocket(struct entity_t *rocket, float xdis, float ydis)
 	if(cgame_tick <= rocket->rocket_data.last_tick)
 		return;
 	
+	if(rocket->teleporting)
+		return;
+	
 	rocket->rocket_data.last_tick = cgame_tick;
 	
 	rocket->rocket_data.particle += 15.0;
@@ -2109,7 +2160,7 @@ void render_entities()
 	struct entity_t *entity = centity0;
 	struct blit_params_t params;
 	params.dest = s_backbuffer;
-			
+	double time;
 
 	while(entity)
 	{
@@ -2133,16 +2184,28 @@ void render_entities()
 			params.width = entity->craft_data.surface->width;
 			params.height = entity->craft_data.surface->width;
 		
-			if(cgame_time - entity->craft_data.spawn_time < 1.0)
+			if(entity->teleporting)
 			{
-				params.alpha = lround((cgame_time - entity->craft_data.spawn_time) * 255.0);
+				time = (double)(cgame_tick - entity->teleporting_tick) / 200.0;
+				
+				switch(entity->teleporting)
+				{
+				case TELEPORTING_DISAPPEARING:
+					params.alpha = -lround(time / TELEPORT_FADE_TIME * 255.0);
+					break;
+				
+				case TELEPORTING_APPEARING:
+					params.alpha = lround(time / TELEPORT_FADE_TIME * 255.0);
+					break;
+				}
+				
 				alpha_blit_partial_surface(&params);
 			}
 			else
 				blit_partial_surface(&params);
 		
 		
-			if(!entity->craft_data.carcass)
+			if(!entity->teleporting && !entity->craft_data.carcass)
 			{				
 				params.source = s_craft_shield;
 			
@@ -2172,23 +2235,38 @@ void render_entities()
 			params.width = entity->weapon_data.surface->width;
 			params.height = entity->weapon_data.surface->width;
 		
-			if(cgame_time - entity->weapon_data.spawn_time < 1.0)
+			if(entity->teleporting)
 			{
-				params.alpha = lround((cgame_time - entity->weapon_data.spawn_time) * 255.0);
+				time = (double)(cgame_tick - entity->teleporting_tick) / 200.0;
+				
+				switch(entity->teleporting)
+				{
+				case TELEPORTING_DISAPPEARING:
+					params.alpha = -lround(time / TELEPORT_FADE_TIME * 255.0);
+					break;
+				
+				case TELEPORTING_APPEARING:
+					params.alpha = lround(time / TELEPORT_FADE_TIME * 255.0);
+					break;
+				}
+				
 				alpha_blit_partial_surface(&params);
 			}
 			else
 				blit_partial_surface(&params);
 		
-			params.source = s_weapon_shield;
-		
-			params.dest_x = x - s_weapon_shield->width / 2;
-			params.dest_y = y - s_weapon_shield->width / 2;
+			if(!entity->teleporting)
+			{				
+				params.source = s_weapon_shield;
 			
-			params.red = params.green = params.blue = 0xff;
-			params.alpha = lrint(entity->weapon_data.shield_flare * 255.0);
-		
-			alpha_blit_surface(&params);
+				params.dest_x = x - s_weapon_shield->width / 2;
+				params.dest_y = y - s_weapon_shield->width / 2;
+				
+				params.red = params.green = params.blue = 0xff;
+				params.alpha = lrint(entity->weapon_data.shield_flare * 255.0);
+			
+				alpha_blit_surface(&params);
+			}
 		
 			break;
 		
@@ -2205,7 +2283,25 @@ void render_entities()
 			params.dest_x = x - s_plasma->width / 2;
 			params.dest_y = y - s_plasma->width / 2;
 			
-			blit_surface(&params);
+			if(entity->teleporting)
+			{
+				time = (double)(cgame_tick - entity->teleporting_tick) / 200.0;
+				
+				switch(entity->teleporting)
+				{
+				case TELEPORTING_DISAPPEARING:
+					params.alpha = -lround(time / TELEPORT_FADE_TIME * 255.0);
+					break;
+				
+				case TELEPORTING_APPEARING:
+					params.alpha = lround(time / TELEPORT_FADE_TIME * 255.0);
+					break;
+				}
+				
+				alpha_blit_surface(&params);
+			}
+			else
+				blit_surface(&params);
 		
 			break;
 		
@@ -2225,7 +2321,28 @@ void render_entities()
 			params.dest_x = x - s_plasma->width / 2;
 			params.dest_y = y - s_plasma->width / 2;
 			
-			blit_surface(&params);
+			if(entity->teleporting)
+			{
+				time = (double)(cgame_tick - entity->teleporting_tick) / 200.0;
+				
+				switch(entity->teleporting)
+				{
+				case TELEPORTING_DISAPPEARING:
+					params.alpha = -lround(time / TELEPORT_FADE_TIME * 255.0);
+					alpha_blit_surface(&params);
+					break;
+				
+				case TELEPORTING_TRAVELLING:
+					break;
+					
+				case TELEPORTING_APPEARING:
+					params.alpha = lround(time / TELEPORT_FADE_TIME * 255.0);
+					alpha_blit_surface(&params);
+					break;
+				}
+			}
+			else
+				blit_surface(&params);
 		
 			break;
 		
@@ -2701,7 +2818,7 @@ void render_teleporters()
 		
 	while(cteleporter)
 	{
-		cteleporter->particle_power += frame_time * 400.0;
+		cteleporter->particle_power += frame_time * cteleporter->sparkles;
 		
 		int p, np = 0;
 		
@@ -2743,11 +2860,11 @@ void render_teleporters()
 			}
 			
 			++cteleporter->next_particle;
-			cteleporter->next_particle %= 800;
+			cteleporter->next_particle %= 1000;
 		}
 		
 		
-		for(p = 0; p < 800; p++)
+		for(p = 0; p < 1000; p++)
 		{
 			double age = cgame_time - cteleporter->particles[p].creation;
 			
@@ -2786,7 +2903,7 @@ void create_teleporter_sparkles()
 		
 	while(cteleporter)
 	{
-		memset(cteleporter->particles, 0, sizeof(struct particle_t) * 800);
+		memset(cteleporter->particles, 0, sizeof(struct particle_t) * 1000);
 		cteleporter->particle_power = 0.0;
 		cteleporter->next_particle = 0;
 		
@@ -2817,8 +2934,16 @@ void render_game()
 	
 	if(entity)
 	{
-		viewx = entity->xdis;
-		viewy = entity->ydis;
+		if(entity->teleporting)
+		{
+			viewx = teleporting_start_x;
+			viewy = teleporting_start_y;
+		}
+		else
+		{
+			viewx = entity->xdis;
+			viewy = entity->ydis;
+		}
 	}
 	else
 	{
