@@ -4373,6 +4373,64 @@ void render_match_time()
 }
 
 
+void render_match_info()
+{
+	if(!match_begun)
+	{
+		if(!ready)
+		{
+			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
+				s_backbuffer, "The match has not yet started.");
+			blit_text_centered(vid_width / 2, vid_height / 6 + 14, 0xef, 0x6f, 0xff, 
+				s_backbuffer, "Press [Enter] when you are ready,");
+			blit_text_centered(vid_width / 2, vid_height / 6 + 28, 0xef, 0x6f, 0xff, 
+				s_backbuffer, "or wait for more people to join.");
+		}
+		else
+		{
+			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
+				s_backbuffer, "The match will start when everyone is ready.");
+		}
+	}
+	
+	
+	struct player_t *cplayer;
+	struct string_t *s;
+	
+	if(match_over)
+	{
+		switch(winner_type)
+		{
+		case WINNER_YOU:
+			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
+				s_backbuffer, "You have won the match!");
+			break;
+		
+		case WINNER_INDEX:
+			
+			cplayer = player0;
+			
+			while(cplayer)
+			{
+				if(cplayer->index == winner_index)
+					break;
+				
+				cplayer = cplayer->next;
+			}
+			
+			s = new_string_string(cplayer->name);
+			string_cat_text(s, " has won the match!");
+			
+			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
+				s_backbuffer, s->text);
+			
+			free_string(s);
+			break;
+		}
+	}
+}
+
+
 void render_game()
 {
 	if(!game_rendering)
@@ -4429,63 +4487,11 @@ void render_game()
 	render_recording();
 	render_player_info();
 	render_match_time();
+	render_match_info();
 	
 //	blit_text(((vid_width * 2) / 3) + (vid_width / 200), 
 //		vid_height / 6, 0xef, 0x6f, 0xff, s_backbuffer, "[virus] where are you?");
 
-	if(!match_begun)
-	{
-		if(!ready)
-		{
-			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
-				s_backbuffer, "The match has not yet started.");
-			blit_text_centered(vid_width / 2, vid_height / 6 + 14, 0xef, 0x6f, 0xff, 
-				s_backbuffer, "Press [Enter] when you are ready,");
-			blit_text_centered(vid_width / 2, vid_height / 6 + 28, 0xef, 0x6f, 0xff, 
-				s_backbuffer, "or wait for more people to join.");
-		}
-		else
-		{
-			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
-				s_backbuffer, "The match will start when everyone is ready.");
-		}
-	}
-	
-	
-	struct player_t *cplayer;
-	struct string_t *s;
-	
-	if(match_over)
-	{
-		switch(winner_type)
-		{
-		case WINNER_YOU:
-			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
-				s_backbuffer, "You have won the match!");
-			break;
-		
-		case WINNER_INDEX:
-			
-			cplayer = player0;
-			
-			while(cplayer)
-			{
-				if(cplayer->index == winner_index)
-					break;
-				
-				cplayer = cplayer->next;
-			}
-			
-			s = new_string_string(cplayer->name);
-			string_cat_text(s, " has won the match!");
-			
-			blit_text_centered(vid_width / 2, vid_height / 6, 0xef, 0x6f, 0xff, 
-				s_backbuffer, s->text);
-			
-			free_string(s);
-			break;
-		}
-	}
 }
 
 
