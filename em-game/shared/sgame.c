@@ -1436,9 +1436,9 @@ void s_tick_craft(struct entity_t *craft)
 			#ifdef EMSERVER
 			respawn_craft(craft, craft->craft_data.owner);
 			explode_craft(craft, craft->craft_data.owner);
-			char *msg = "infinite iteration craft collison broken\n";
-			console_print(msg);
-			print_on_all_players(msg);
+		//	char *msg = "infinite iteration craft collison broken\n";
+		//	console_print(msg);
+		//	print_on_all_players(msg);
 			#endif
 			
 			#ifdef EMCLIENT
@@ -1890,9 +1890,9 @@ void s_tick_weapon(struct entity_t *weapon)
 		{
 			#ifdef EMSERVER
 			explode_weapon(weapon, owner);
-			char *msg = "infinite iteration weapon collison broken\n";
-			console_print(msg);
-			print_on_all_players(msg);
+		//	char *msg = "infinite iteration weapon collison broken\n";
+		//	console_print(msg);
+		//	print_on_all_players(msg);
 			#endif
 			
 			#ifdef EMCLIENT
