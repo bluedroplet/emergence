@@ -2219,6 +2219,7 @@ void respawn_weapon(struct entity_t *weapon)
 void detach_weapon(struct entity_t *weapon)
 {
 	weapon->weapon_data.detached = 1;
+	weapon->weapon_data.firing = 0;
 	
 	weapon->xvel = weapon->weapon_data.craft->xvel;
 	weapon->yvel = weapon->weapon_data.craft->yvel;

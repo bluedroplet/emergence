@@ -1964,57 +1964,6 @@ int try_advance_weapon(struct entity_t *weapon, float old_xdis, float old_ydis)
 		return !restart;	// inconsistency
 	#endif
 
-	
-	if(!point_in_circle(weapon->xdis, weapon->ydis, 
-		craft->xdis, craft->ydis, MAX_CRAFT_WEAPON_DIST))
-	{
-		if(craft->craft_data.left_weapon == weapon)
-			craft->craft_data.left_weapon = NULL;
-		else
-			craft->craft_data.right_weapon = NULL;
-		
-		weapon->weapon_data.craft = NULL;
-		weapon->weapon_data.firing = 0;
-		craft = NULL;
-	}
-	else
-	{
-		if(craft->craft_data.left_weapon == weapon)
-		{
-			double delta = atan2(-(weapon->xdis - craft->xdis), weapon->ydis - craft->ydis) 
-				- craft->craft_data.theta;
-			
-			while(delta >= M_PI)
-				delta -= M_PI * 2.0;
-			while(delta < -M_PI)
-				delta += M_PI * 2.0;
-			
-			if(delta < 0.0)
-			{
-				craft->craft_data.left_weapon = NULL;
-				weapon->weapon_data.craft = NULL;
-				weapon->weapon_data.firing = 0;
-			}
-		}
-		else
-		{
-			double delta = atan2(-(weapon->xdis - craft->xdis), weapon->ydis - craft->ydis) 
-				- craft->craft_data.theta;
-			
-			while(delta >= M_PI)
-				delta -= M_PI * 2.0;
-			while(delta < -M_PI)
-				delta += M_PI * 2.0;
-			
-			if(delta > 0.0)
-			{
-				craft->craft_data.right_weapon = NULL;
-				weapon->weapon_data.craft = NULL;
-				weapon->weapon_data.firing = 0;
-			}
-		}
-	}
-	
 	return !restart;
 }
 
@@ -2612,14 +2561,25 @@ void s_tick_weapon(struct entity_t *weapon)
 		if(!point_in_circle(weapon->xdis, weapon->ydis, 
 			craft->xdis, craft->ydis, MAX_CRAFT_WEAPON_DIST))
 		{
-			if(craft->craft_data.left_weapon == weapon)
-				craft->craft_data.left_weapon = NULL;
+			#ifdef EMSERVER
+			if(!weapon->weapon_data.ammo)
+			{
+				detach_weapon(weapon);
+			}
 			else
-				craft->craft_data.right_weapon = NULL;
+			#endif
 			
-			weapon->weapon_data.craft = NULL;
-			weapon->weapon_data.firing = 0;
-			craft = NULL;
+			{
+				if(craft->craft_data.left_weapon == weapon)
+					craft->craft_data.left_weapon = NULL;
+				else
+					craft->craft_data.right_weapon = NULL;
+				
+				weapon->xvel = weapon->weapon_data.craft->xvel;
+				weapon->yvel = weapon->weapon_data.craft->yvel;
+				weapon->weapon_data.craft = NULL;
+				weapon->weapon_data.firing = 0;
+			}
 		}
 		else
 		{
@@ -2635,9 +2595,21 @@ void s_tick_weapon(struct entity_t *weapon)
 				
 				if(delta < 0.0)
 				{
-					craft->craft_data.left_weapon = NULL;
-					weapon->weapon_data.craft = NULL;
-					weapon->weapon_data.firing = 0;
+					#ifdef EMSERVER
+					if(!weapon->weapon_data.ammo)
+					{
+						detach_weapon(weapon);
+					}
+					else
+					#endif
+					
+					{
+						craft->craft_data.left_weapon = NULL;
+						weapon->xvel = weapon->weapon_data.craft->xvel;
+						weapon->yvel = weapon->weapon_data.craft->yvel;
+						weapon->weapon_data.craft = NULL;
+						weapon->weapon_data.firing = 0;
+					}
 				}
 			}
 			else
@@ -2652,9 +2624,21 @@ void s_tick_weapon(struct entity_t *weapon)
 				
 				if(delta > 0.0)
 				{
-					craft->craft_data.right_weapon = NULL;
-					weapon->weapon_data.craft = NULL;
-					weapon->weapon_data.firing = 0;
+					#ifdef EMSERVER
+					if(!weapon->weapon_data.ammo)
+					{
+						detach_weapon(weapon);
+					}
+					else
+					#endif
+					
+					{
+						craft->craft_data.right_weapon = NULL;
+						weapon->xvel = weapon->weapon_data.craft->xvel;
+						weapon->yvel = weapon->weapon_data.craft->yvel;
+						weapon->weapon_data.craft = NULL;
+						weapon->weapon_data.firing = 0;
+					}
 				}
 			}
 		}

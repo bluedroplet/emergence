@@ -133,6 +133,7 @@ void respawn_weapon(struct entity_t *weapon);
 void update_player_shield_strengths(struct player_t *player);
 void update_player_ammo_levels(struct player_t *player);
 void propagate_weapon_stop_firing(struct entity_t *entity);
+void detach_weapon(struct entity_t *weapon);
 
 
 void emit_teleport_to_all_players();
