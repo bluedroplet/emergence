@@ -107,12 +107,12 @@ struct conn_t
 #define NETSTATE_DISCONNECTING	2	// the connection has been terminated this end
 #define NETSTATE_DISCONNECTED	3	// we keep the conn info for a while so we can resend acks
 
-#define OUT_OF_ORDER_RECV_AHEAD		10
+#define OUT_OF_ORDER_RECV_AHEAD		500
 #define CONNECTION_COOKIE_TIMEOUT	4.0
 #define CONNECTION_TIMEOUT			5.0
 #define CONNECTION_MAX_OUT_PACKETS	400
 #define CONNECT_RESEND_DELAY		0.5
-#define STREAM_RESEND_DELAY			0.1
+#define STREAM_RESEND_DELAY			0.05
 
 pthread_t network_thread_id;
 pthread_mutex_t net_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
@@ -585,6 +585,8 @@ void process_out_of_order_stream(struct conn_t *conn, struct in_packet_ll_t *sta
 			untimed = 1;
 			
 		buffer_cat_buf(buf, (char*)&cpacket->packet.payload, cpacket->payload_size);
+		
+		cpacket = cpacket->next;
 	}
 
 	if(cpacket->packet.header & EMNETFLAG_STREAMRESNT)
@@ -755,6 +757,10 @@ void process_udp_data()
 			
 		if(size == -1)
 			break;
+		
+		
+	//	if(drand48() > 0.75)
+	//		continue;
 
 		
 		// check packet has a header
@@ -1022,7 +1028,7 @@ void process_udp_data()
 
 			if(insert_in_packet(conn, &packet, size))
 				check_stream(conn);		// see if this packet has completed a stream
-			
+				
 			break;
 			
 			
