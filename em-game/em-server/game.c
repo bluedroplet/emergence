@@ -22,6 +22,7 @@
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../shared/parse.h"
+#include "../shared/user.h"
 #include "../shared/timer.h"
 #include "../shared/network.h"
 #include "../shared/sgame.h"

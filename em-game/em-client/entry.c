@@ -9,7 +9,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
-#include <pwd.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/time.h>
@@ -18,6 +17,7 @@
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../shared/timer.h"
+#include "../shared/user.h"
 #include "main.h"
 #include "render.h"
 #include "input.h"
@@ -30,7 +30,6 @@
 volatile int sigio_process = 0;
 volatile int sigalrm_process = 0;
 
-struct string_t *username = NULL, *home_dir = NULL, *emergence_home_dir = NULL;
 struct buffer_t *msg_buf = NULL;
 	
 struct timeval timeout = 
@@ -169,20 +168,6 @@ void mask_sigs()
 void unmask_sigs()
 {
 	sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
-}
-
-
-void init_user()
-{
-	struct passwd *passwd =  getpwuid(getuid());
-	if(!passwd)
-		client_libc_error("Couldn't find user");
-	
-	username = new_string_text(passwd->pw_name);
-	console_print("User: %s%c", username->text, '\n');
-	home_dir = new_string_text(passwd->pw_dir);
-	console_print("Home Directory: %s%c", home_dir->text, '\n');
-	emergence_home_dir = new_string_text("%s/.emergence", passwd->pw_dir);
 }
 
 

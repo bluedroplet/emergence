@@ -5,7 +5,6 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <pwd.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <signal.h>
@@ -16,13 +15,12 @@
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../shared/timer.h"
+#include "../shared/user.h"
 #include "../shared/cvar.h"
 #include "main.h"
 #include "network.h"
 #include "game.h"
 #include "console.h"
-
-struct string_t *username = NULL, *home_dir = NULL, *emergence_home_dir = NULL;
 
 struct buffer_t *msg_buf = NULL;
 int as_daemon = 0;
@@ -180,20 +178,6 @@ void go_daemon()
 	
 	stdout = fopen("nfsv.log", "w");
 }
-
-void init_user()
-{
-	struct passwd *passwd =  getpwuid(getuid());
-//	if(!passwd)
-//		client_libc_error("Couldn't find user");
-	
-	username = new_string_text(passwd->pw_name);
-	console_print("User: %s%c", username->text, '\n');
-	home_dir = new_string_text(passwd->pw_dir);
-	console_print("Home Directory: %s%c", home_dir->text, '\n');
-	emergence_home_dir = new_string_text("%s/.emergence", passwd->pw_dir);
-}
-
 
 
 const char *argp_program_version = "em-server 0.2";

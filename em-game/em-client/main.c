@@ -15,6 +15,7 @@
 #include "../common/buffer.h"
 #include "../shared/cvar.h"
 #include "../shared/config.h"
+#include "../shared/user.h"
 #include "../shared/timer.h"
 #include "render.h"
 #include "network.h"

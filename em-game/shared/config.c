@@ -11,6 +11,7 @@
 #include "../../common/stringbuf.h"
 #include "parse.h"
 #include "cvar.h"
+#include "user.h"
 #include "../console.h"
 
 #ifdef EMCLIENT

@@ -9,8 +9,6 @@
 void init_user();
 void terminate_process();
 
-extern struct string_t *username, *home_dir, *emergence_home_dir;
-
 extern volatile int sigio_process;
 extern volatile int sigalrm_process;
 extern struct buffer_t *msg_buf;

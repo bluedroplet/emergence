@@ -110,7 +110,7 @@ AM_CPPFLAGS = -DLINUX -DEMSERVER -Wall
 noinst_LIBRARIES = libshared.a
 libshared_a_SOURCES = bsp.c  network.h parse.h sgame.c timer.h \
 	bsp.h cvar.c objects.h rdtsc.h sgame.h cvar.h \
-	parse.c rdtsc.S timer.c
+	parse.c rdtsc.S timer.c user.h user.c
 
 
 BUILT_SOURCES = $(libshared_a_SOURCES)
@@ -124,7 +124,7 @@ LIBRARIES = $(noinst_LIBRARIES)
 libshared_a_AR = $(AR) cru
 libshared_a_LIBADD =
 am_libshared_a_OBJECTS = bsp.$(OBJEXT) sgame.$(OBJEXT) cvar.$(OBJEXT) \
-	parse.$(OBJEXT) rdtsc.$(OBJEXT) timer.$(OBJEXT)
+	parse.$(OBJEXT) rdtsc.$(OBJEXT) timer.$(OBJEXT) user.$(OBJEXT)
 libshared_a_OBJECTS = $(am_libshared_a_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
@@ -132,7 +132,7 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/bsp.Po ./$(DEPDIR)/cvar.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/parse.Po ./$(DEPDIR)/sgame.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/timer.Po
+@AMDEP_TRUE@	./$(DEPDIR)/timer.Po ./$(DEPDIR)/user.Po
 CCASCOMPILE = $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS)
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -173,6 +173,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgame.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/user.Po@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)

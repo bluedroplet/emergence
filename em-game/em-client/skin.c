@@ -12,6 +12,7 @@
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../common/llist.h"
+#include "shared/user.h"
 #include "../gsub/gsub.h"
 #include "entry.h"
 #include "skin.h"
