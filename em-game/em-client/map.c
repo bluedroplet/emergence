@@ -281,7 +281,11 @@ int load_map()
 		break;
 	}
 	
-	if(game_state != GAMESTATE_DEMO)
+	if(game_state == GAMESTATE_DEMO)
+	{
+		game_state = GAMESTATE_DEAD;
+	}
+	else
 	{
 		console_print("Attempting to download from server.\n");
 		render_frame();
