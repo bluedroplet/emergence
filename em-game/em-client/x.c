@@ -281,6 +281,7 @@ void query_vid_modes()
 	
 	Rotation r;
 	original_mode = XRRConfigCurrentConfiguration(screen_config, &r);
+	XRRFreeScreenConfigInfo(screen_config);
 }
 
 
@@ -297,7 +298,6 @@ void set_vid_mode(int mode)	// use goto error crap
 	
 	Window oldwindow = xwindow;
 
-	
 	struct vid_mode_t *cvid_mode = vid_mode0;
 		
 	while(mode)
@@ -309,16 +309,6 @@ void set_vid_mode(int mode)	// use goto error crap
 			return;
 	}
 	
-	XRRSetScreenConfig (xdisplay, screen_config,
-			   RootWindow(xdisplay, xscreen),
-			   cvid_mode->index,
-			   RR_Rotate_0,
-			   CurrentTime);
-	
-//	system("killall gnome-panel > /dev/null  2> /dev/null");
-	
-	
-
 
     XSetWindowAttributes xattr;
 
@@ -339,14 +329,14 @@ void set_vid_mode(int mode)	// use goto error crap
 	XMapRaised(xdisplay, xwindow);
 
 		
-	XSelectInput(xdisplay, xwindow, KeyPressMask | KeyReleaseMask | ExposureMask);
+	XSelectInput(xdisplay, xwindow, KeyPressMask | KeyReleaseMask);
    
 	XSetInputFocus(xdisplay, xwindow, RevertToNone, CurrentTime);
 
 	
 	Cursor xcursor = create_blank_cursor();
 	
-	XDefineCursor(xdisplay, xwindow, xcursor);
+//	XDefineCursor(xdisplay, xwindow, xcursor);
 	
   gc=XCreateGC(xdisplay, xwindow, 0, NULL);	
 	
@@ -397,6 +387,14 @@ void set_vid_mode(int mode)	// use goto error crap
 	
 	XShmAttach(xdisplay, shmseginfo);
 
+	screen_config = XRRGetScreenInfo(xdisplay, RootWindow(xdisplay, xscreen));
+	XRRSetScreenConfig (xdisplay, screen_config,
+			   RootWindow(xdisplay, xscreen),
+			   cvid_mode->index,
+			   RR_Rotate_0,
+			   CurrentTime);
+	XRRFreeScreenConfigInfo(screen_config);
+	
 	if(oldwindow)
 	{
 		XDestroyWindow(xdisplay, oldwindow);
@@ -416,7 +414,8 @@ void vid_mode_qc(int mode)
 	
 	game_resolution_change();
 	
-//	render_frame();
+	char c;
+	write(x_render_pipe[1], &c, 1);
 }
 
 
@@ -522,6 +521,7 @@ void kill_x()
 	
 	XAutoRepeatOn(xdisplay);
 	
+	screen_config = XRRGetScreenInfo(xdisplay, RootWindow(xdisplay, xscreen));
 	XRRSetScreenConfig (xdisplay, screen_config,
 			   RootWindow(xdisplay, xscreen),
 			   original_mode,
@@ -531,6 +531,4 @@ void kill_x()
 	XRRFreeScreenConfigInfo(screen_config);
 	
 	XCloseDisplay(xdisplay);
-	
-//	system("killall gnome-panel > /dev/null  2> /dev/null");
 }
