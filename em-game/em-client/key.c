@@ -91,7 +91,6 @@ void *key_thread(void *a)
 		case KEY_THREAD_IN_SHUTDOWN:
 			SSL_CTX_free(ctx);
 			pthread_exit(NULL);
-			break;
 		
 		case KEY_THREAD_IN_NEW_SESSION:
 		
@@ -190,6 +189,10 @@ void kill_key()
 	uint8_t msg = KEY_THREAD_IN_SHUTDOWN;
 	write(key_in_pipe[1], &msg, 1);
 	pthread_join(key_thread_id, NULL);
+	close(key_in_pipe[0]);
+	close(key_in_pipe[1]);
+	close(key_out_pipe[0]);
+	close(key_out_pipe[1]);
 }
 
 

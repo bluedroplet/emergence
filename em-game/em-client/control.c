@@ -983,9 +983,9 @@ void *control_thread(void *a)
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
 	
-	fds[0].fd = input_fd; fds[0].events |= POLLIN;
-	fds[1].fd = control_timer_fd; fds[1].events |= POLLIN;
-	fds[2].fd = control_kill_pipe[0]; fds[2].events |= POLLIN;
+	fds[0].fd = input_fd; 				fds[0].events = POLLIN;
+	fds[1].fd = control_timer_fd;		fds[1].events = POLLIN;
+	fds[2].fd = control_kill_pipe[0];	fds[2].events = POLLIN;
 	
 
 	while(1)
@@ -1085,4 +1085,6 @@ void kill_control()
 	char c;
 	write(control_kill_pipe[1], &c, 1);
 	pthread_join(control_thread_id, NULL);
+	close(control_kill_pipe[0]);
+	close(control_kill_pipe[1]);
 }

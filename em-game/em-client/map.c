@@ -31,6 +31,8 @@
 #include "console.h"
 #include "entry.h"
 #include "floats.h"
+#include "download.h"
+
 
 struct tile_t
 {
@@ -44,6 +46,7 @@ struct tile_t
 int r_DrawBSPTree = 0;
 
 struct string_t *map_name;
+int downloading_map = 0;
 
 
 int load_map_tiles(gzFile gzfile)
@@ -213,8 +216,11 @@ int load_map(char *map_name)
 		gzfile = gzopen(find_resource(filename->text), "rb");
 		if(!gzfile)
 		{
-			console_print("Could not load map: %s\n", map_name);
-			free_string(filename);
+			console_print("Could not find map locally.\n");
+			console_print("Attempting to download from server.\n");
+			render_frame();
+			download_map(map_name);
+			downloading_map = 1;	// suspend processing of messages from server
 			return 0;
 		}
 	}
@@ -231,11 +237,11 @@ int load_map(char *map_name)
 	if(vid_width == 1600)
 	{
 		console_print("Loading BSP tree\n");
-	render_frame();
+		render_frame();
 		load_bsp_tree(gzfile);
 		bypass_objects(gzfile);
 		console_print("Loading map tiles\n");
-	render_frame();
+		render_frame();
 		load_map_tiles(gzfile);
 		gzread_floating_images(gzfile);
 	}
@@ -248,14 +254,14 @@ int load_map(char *map_name)
 		string_cat_text(cached_filename, "%s%u", ".cache", vid_width);
 		
 		console_print("Loading BSP tree\n");
-	render_frame();
+		render_frame();
 		load_bsp_tree(gzfile);
 		
 		gzFile gzcachedfile = gzopen(cached_filename->text, "rb");
 		if(gzcachedfile)
 		{
 			console_print("Loading cached scaled map tiles\n");
-	render_frame();
+			render_frame();
 			
 			bypass_objects(gzfile);
 			load_map_tiles(gzcachedfile);
@@ -268,7 +274,7 @@ int load_map(char *map_name)
 				return 0;
 			
 			console_print("Scaling and caching map tiles\n");
-	render_frame();
+			render_frame();
 			
 			bypass_objects(gzfile);
 			
@@ -300,7 +306,22 @@ int game_process_load_map()
 {
 	map_name = message_reader_read_string();
 	
-	return load_map(map_name->text);
+	load_map(map_name->text);
+	
+	return 1;
+}
+
+
+void game_process_map_downloaded()
+{
+	load_map(map_name->text);
+	downloading_map = 0;
+}
+
+
+void game_process_map_download_failed()
+{
+	;
 }
 
 

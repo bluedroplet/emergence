@@ -1570,6 +1570,9 @@ void game_process_play(struct player_t *player)
 //	print_on_player(player, "Welcome to this server.\n");
 	
 	load_map_on_player(player);
+	net_emit_end_of_stream(player->conn);	// this is important if the client 
+											// needs to download the map
+
 	load_all_skins_on_player(player);
 	
 	if(player->state == PLAYER_STATE_PLAYING)

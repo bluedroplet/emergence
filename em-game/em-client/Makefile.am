@@ -13,4 +13,4 @@ em_client_SOURCES = bsp.c entry.c game.c main.c map.h ping.h stars.h \
 	render.h control.h line.h map.c ping.c stars.c rotate.c rotate.h \
 	skin.c skin.h particles.c particles.h screenshot.c screenshot.h \
 	x.c x.h ris.c ris.h sound.c sound.h floats.c floats.h \
-	key.c key.h
+	key.c key.h download.c download.h

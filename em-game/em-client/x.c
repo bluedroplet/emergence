@@ -672,8 +672,8 @@ void *x_thread(void *a)
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
 	
-	fds[0].fd = x_fd; fds[0].events |= POLLIN;
-	fds[1].fd = x_kill_pipe[0]; fds[1].events |= POLLIN;
+	fds[0].fd = x_fd;			fds[0].events = POLLIN;
+	fds[1].fd = x_kill_pipe[0];	fds[1].events = POLLIN;
 	
 
 	while(1)
@@ -788,6 +788,8 @@ void kill_x()
 	char c;
 	write(x_kill_pipe[1], &c, 1);
 	pthread_join(x_thread_id, NULL);
+	close(x_kill_pipe[0]);
+	close(x_kill_pipe[1]);
 	
 	if(image)
 	{

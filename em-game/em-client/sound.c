@@ -286,8 +286,8 @@ void *sound_thread(void *a)
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
 	
-	fds[0].fd = alsa_fd; fds[0].events |= POLLIN;
-	fds[1].fd = sound_kill_pipe[0]; fds[1].events |= POLLIN;
+	fds[0].fd = alsa_fd;			fds[0].events = POLLIN;
+	fds[1].fd = sound_kill_pipe[0];	fds[1].events = POLLIN;
 	
 
 	while(1)
@@ -531,6 +531,8 @@ void kill_sound()
 	char c;
 	write(sound_kill_pipe[1], &c, 1);
 	pthread_join(sound_thread_id, NULL);
+	close(sound_kill_pipe[0]);
+	close(sound_kill_pipe[1]);
 
 	if(playback_handle)
 	{

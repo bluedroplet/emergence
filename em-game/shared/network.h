@@ -61,7 +61,11 @@ struct packet_t
 void init_network();
 void kill_network();
 
-struct string_t *get_text_addr(void *conn);
+struct string_t *get_text_addr(uint32_t conn);
+	
+#ifdef _NETINET_IN_H
+void get_sockaddr_in_from_conn(uint32_t conn, struct sockaddr_in *sockaddr);
+#endif
 
 #define CONN_TYPE_LOCAL		0
 #define CONN_TYPE_PRIVATE	1

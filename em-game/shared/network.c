@@ -19,7 +19,7 @@
 #include <sys/time.h>
 #include <sys/epoll.h>
 #include <sys/poll.h>
-
+#include <netinet/in.h>
 #include <arpa/inet.h>
 
 #include "../../common/types.h"
@@ -1074,12 +1074,28 @@ void process_udp_data()
 }
 
 
-struct string_t *get_text_addr(void *conn)
+struct string_t *get_text_addr(uint32_t conn)
 {
+	pthread_mutex_lock(&net_mutex);
+	
 	assert(conn);
 	
 	return new_string_text("%s:%u", inet_ntoa(((struct conn_t*)conn)->sockaddr.sin_addr), 
 		((struct conn_t*)conn)->sockaddr.sin_port);
+	
+	pthread_mutex_unlock(&net_mutex);
+}
+
+
+void get_sockaddr_in_from_conn(uint32_t conn, struct sockaddr_in *sockaddr)
+{
+	pthread_mutex_lock(&net_mutex);
+	
+	assert(conn);
+
+	memcpy(sockaddr, &((struct conn_t*)conn)->sockaddr, sizeof(struct sockaddr_in));
+	
+	pthread_mutex_unlock(&net_mutex);
 }
 
 
@@ -1216,6 +1232,7 @@ void network_alarm()
 		
 			
 		case NETSTATE_DISCONNECTED:
+			
 			// check if conn has timed out
 			
 			if(time - conn->last_time > CONNECTION_TIMEOUT)
@@ -1249,9 +1266,9 @@ void *network_thread(void *a)
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
 	
-	fds[0].fd = udp_fd; fds[0].events |= POLLIN;
-	fds[1].fd = net_timer_fd; fds[1].events |= POLLIN;
-	fds[2].fd = net_kill_pipe[0]; fds[2].events |= POLLIN;
+	fds[0].fd = udp_fd;				fds[0].events = POLLIN;
+	fds[1].fd = net_timer_fd;		fds[1].events = POLLIN;
+	fds[2].fd = net_kill_pipe[0];	fds[2].events = POLLIN;
 	
 	
 	while(1)
@@ -1280,11 +1297,14 @@ void *network_thread(void *a)
 		
 		if(fds[2].revents & POLLIN)
 		{
+			pthread_mutex_lock(&net_mutex);
 			if(all_connections_disconnected())
 			{
 				free(fds);
+				pthread_mutex_unlock(&net_mutex);
 				pthread_exit(NULL);
 			}
+			pthread_mutex_unlock(&net_mutex);
 		}
 	}
 }
@@ -1792,6 +1812,9 @@ void init_network()
 	if(bind(udp_fd, (struct sockaddr *) &name, sizeof (name)) < 0)
 		server_libc_error("bind failure");
 	#endif
+	
+	// TODO : use connect()??
+	
 
 	fcntl(udp_fd, F_SETFL, O_NONBLOCK);
 	
@@ -1834,6 +1857,8 @@ void kill_network()		// FIXME
 	char c;
 	write(net_kill_pipe[1], &c, 1);
 	pthread_join(network_thread_id, NULL);
+	close(net_kill_pipe[0]);
+	close(net_kill_pipe[1]);
 	
 	delete_all_conns();
 	close(udp_fd);

@@ -45,6 +45,7 @@
 #include "x.h"
 #include "skin.h"
 #include "key.h"
+#include "download.h"
 
 #ifdef LINUX
 #include "entry.h"
@@ -224,6 +225,7 @@ void init()
 	init_network();
 	init_timer();
 	init_key();
+	init_download();
 
 	create_cvars();
 	init_console_cvars();
@@ -332,21 +334,27 @@ void main_thread()
 	struct pollfd *fds;
 	int fdcount;
 	
-	fdcount = 4;
+	fdcount = 5;
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
 	
-	fds[0].fd = x_render_pipe[0]; fds[0].events |= POLLIN;
-	fds[1].fd = net_out_pipe[0]; fds[1].events |= POLLIN;
-	fds[2].fd = console_pipe[0]; fds[2].events |= POLLIN;
-	fds[3].fd = key_out_pipe[0]; fds[3].events |= POLLIN;
+	fds[0].fd = x_render_pipe[0];		fds[0].events = POLLIN;
+	fds[1].fd = console_pipe[0];		fds[1].events = POLLIN;
+	fds[2].fd = key_out_pipe[0];		fds[2].events = POLLIN;
+	fds[3].fd = download_out_pipe[0];	fds[3].events = POLLIN;
+	fds[4].fd = net_out_pipe[0];	fds[4].events = POLLIN;
 	
 
 	while(1)
 	{
+		if(downloading_map)
+			fdcount = 4;
+		else
+			fdcount = 5;
+		
 		if(poll(fds, fdcount, -1) == -1)
 		{
-			if(errno == EINTR)	// why is this necessary
+			if(errno == EINTR)	// why is this necessary?
 				continue;
 			
 			return;
@@ -356,13 +364,19 @@ void main_thread()
 			process_x_render_pipe();
 		
 		if(fds[1].revents & POLLIN)
-			process_network();
-		
-		if(fds[2].revents & POLLIN)
 			process_console_pipe();
 		
-		if(fds[3].revents & POLLIN)
+		if(fds[2].revents & POLLIN)
 			process_key_out_pipe();
+		
+		if(fds[3].revents & POLLIN)
+			process_download_out_pipe();
+		
+		if(!downloading_map)
+		{
+			if(fds[4].revents & POLLIN)
+				process_network();
+		}
 	}
 }
 

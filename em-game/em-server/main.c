@@ -36,6 +36,7 @@
 #include "main.h"
 #include "entry.h"
 #include "key.h"
+#include "download.h"
 
 
 struct conn_state_t
@@ -64,6 +65,7 @@ void server_shutdown()
 {
 	console_print("Shutting down...\n");
 
+	kill_download();
 	kill_key();
 	kill_network();
 	kill_game();
@@ -534,10 +536,10 @@ void main_thread()
 	
 	fds = calloc(sizeof(struct pollfd), fdcount);
 	
-	fds[0].fd = STDIN_FILENO; fds[0].events |= POLLIN;
-	fds[1].fd = net_out_pipe[0]; fds[1].events |= POLLIN;
-	fds[2].fd = game_timer_fd; fds[2].events |= POLLIN;
-	fds[3].fd = key_out_pipe[0]; fds[3].events |= POLLIN;
+	fds[0].fd = STDIN_FILENO;		fds[0].events = POLLIN;
+	fds[1].fd = net_out_pipe[0];	fds[1].events = POLLIN;
+	fds[2].fd = game_timer_fd;		fds[2].events = POLLIN;
+	fds[3].fd = key_out_pipe[0];	fds[3].events = POLLIN;
 	
 
 	while(1)
@@ -625,6 +627,7 @@ void init()
 	init_alarm();
 	init_game();
 	init_key();
+	init_download();
 	
 	game_timer_fd = create_alarm_listener();
 
