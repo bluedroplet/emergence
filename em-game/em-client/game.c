@@ -2264,6 +2264,12 @@ void cf_demo(char *c)
 		LL_REMOVE(struct demo_t, &demo0, demo0)
 	}
 	
+	if(gzdemo)
+	{
+		gzclose(gzdemo);
+		gzdemo = NULL;
+	}
+	
 	switch(game_state)
 	{
 	case GAMESTATE_DEAD:
@@ -3178,6 +3184,7 @@ void update_demo()
 			else
 				cdemo = demo0;
 			
+			gzclose(gzdemo);
 			gzdemo = gzopen(cdemo->filename->text, "rb");
 			
 			if(!gzdemo)
