@@ -684,7 +684,8 @@ void remove_conn_from_its_curve(struct conn_t *conn)		// always called while not
 			free_surface(cconnp->conn->squished_texture);
 			cconnp->conn->squished_texture = NULL;
 		}
-
+		
+		cconnp->conn->tiled = 0;
 		remove_conn_from_tiles(cconnp->conn);
 
 		cconnp = cconnp->next;
