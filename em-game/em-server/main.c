@@ -190,7 +190,7 @@ void process_virgin_stream(uint32_t conn, uint32_t index, struct buffer_t *strea
 		
 		#ifndef NONAUTHENTICATING
 	
-	//	if(cstate->type == CONN_TYPE_PUBLIC)
+		if(cstate->type == CONN_TYPE_PUBLIC)
 		{
 			console_print("Requiring authentication\n");
 			
@@ -198,15 +198,19 @@ void process_virgin_stream(uint32_t conn, uint32_t index, struct buffer_t *strea
 			net_emit_end_of_stream(conn);
 			cstate->state = CONN_STATE_AUTHENTICATING;
 		}
-	//	else
+		else
 			
 		#endif
 		
-	/*	{
+		{
 			cstate->state = CONN_STATE_JOINED;
+			
+			net_emit_uint8(conn, EMNETMSG_JOINED);
+			net_emit_end_of_stream(conn);
+			
 			game_process_joined(conn);
 		}
-	*/	
+		
 		break;
 		
 		
