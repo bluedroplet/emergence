@@ -32,8 +32,8 @@
 #include <pwd.h>
 #include <unistd.h>
 
-#include "../../common/types.h"
-#include "../../common/stringbuf.h"
+#include "../common/types.h"
+#include "../common/stringbuf.h"
 
 #ifdef EMGAME
 #include "../em-client/console.h"
