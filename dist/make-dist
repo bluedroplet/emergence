@@ -25,11 +25,15 @@ cp em-tools-$ver.tar.bz2 ../dist/em-tools-$ver.tbz2
 cd ../dist
 
 
-for arch in i686 pentiumpro pentium2 pentium3 pentium4 athlon athlon-tbird athlon-xp athlon-mp
+for arch in i386 i686 pentiumpro pentium2 pentium3 pentium4 athlon athlon-tbird athlon-xp athlon-mp
 #for arch in pentium3
 do
 
 stage3=i686
+
+if  [ $arch == i386 ] 
+	then stage3=x86
+fi
 
 if  [ $arch == pentium3  -o  $arch == pentium4  -o $arch == athlon-xp ] 
 	then stage3=$arch
