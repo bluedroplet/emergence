@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -v
 
 cd ../em-tools
 make distclean
@@ -16,6 +16,20 @@ cp em-tools-0.5.0.tar.bz2 ../dist
 cd ../dist
                                                                                                                                
 
+for arch in pentiumpro pentium2 pentium3 pentium4 athlon athlon-tbird athlon-xp athlon-mp
+do
+
+stage3=i686
+
+if  [ $arch == pentium3  -o  $arch == pentium4  -o $arch == athlon-xp ] 
+	then stage3=$arch
+fi
+
+echo Building Emergence for $arch
+
+export CFLAGS="-march=$arch -O2 -pipe -fomit-frame-pointer"
+ln -sf stage3-$stage3-2004.1 ../../stage3s/current-stage3 || exit
+
 
 rm -rf root
 mkdir -p root/usr
@@ -28,7 +42,7 @@ autoconf-2.58 || exit
 
 D=`pwd`/../dist/root/
 
-./configure CFLAGS="-march=pentium3 -O2 -pipe -fomit-frame-pointer -fprefetch-loop-arrays" --prefix=/usr || exit
+./configure --prefix=/usr || exit
 make || exit
 make prefix=${D}/usr \
 		    datadir=${D}/usr/share \
@@ -41,13 +55,13 @@ make prefix=${D}/usr \
 cd ../dist/root
 
 strip usr/bin/* || exit
-tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-0.5.0-bin.tar.bz2 * || exit
+tar --owner=0 --group=0 --numeric-owner -cjf ../em-game-0.5.0.bin.$arch.tar.bz2 * || exit
 cd ..
 
 
 cd ../em-tools
 
-./configure CFLAGS="-march=pentium3 -O2 -pipe -fomit-frame-pointer -fprefetch-loop-arrays" --prefix=/usr || exit
+./configure --prefix=/usr || exit
 make || exit
 make prefix=${D}/usr \
 		    datadir=${D}/usr/share \
@@ -62,10 +76,17 @@ cd ../dist/root
 
 strip usr/bin/* || exit
 
-tar --owner=0 --group=0 --numeric-owner -cjf ../emergence-0.5.0-bin.tar.bz2 * || exit
+tar --owner=0 --group=0 --numeric-owner -cjf ../emergence-0.5.0.bin.$arch.tar.bz2 * || exit
+
+find * -type f -printf "/%h/%f\n">../tree
+
 cd ..
 
 
-#rpmbuild -bb emergence-0.4.spec
 
-#cp /home/jonny/redhat/emergence/i386/emergence-0.4-1.i386.rpm .
+rpmbuild -bb emergence.spec
+
+cp ../../redhat/emergence/i386/emergence-0.5.0-1.i386.rpm emergence-0.5.0.$arch.rpm
+
+
+done
