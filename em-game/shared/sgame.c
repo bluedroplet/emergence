@@ -1559,7 +1559,7 @@ int try_advance_craft(struct entity_t *craft, float old_xdis, float old_ydis)
 	struct entity_t *entity = *sentity0;
 	while(entity)
 	{
-		if(entity == craft || entity->teleporting)
+		if(entity == craft || entity->teleporting || entity->kill_me)
 		{
 			entity = entity->next;
 			continue;
@@ -2027,7 +2027,7 @@ void s_tick_craft(struct entity_t *craft)
 			struct entity_t *entity = *sentity0;
 			while(entity)
 			{
-				if(entity == craft || entity->teleporting || entity->kill_me)
+				if(entity == craft || entity->teleporting)
 				{
 					entity = entity->next;
 					continue;
