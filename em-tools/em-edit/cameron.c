@@ -92,10 +92,14 @@ void draw_cameron()
 {
 	if(s_scaled_cameron)
 	{
-		blit_destx = (vid_width - s_scaled_cameron->width) / 2;
-		blit_desty = (vid_height - s_scaled_cameron->height) / 2;
-		blit_source = s_scaled_cameron;
-		blit_surface();
+		struct blit_params_t params;
+			
+		params.source = s_scaled_cameron;
+		params.dest = s_backbuffer;
+		params.dest_x = (vid_width - s_scaled_cameron->width) / 2;
+		params.dest_y = (vid_height - s_scaled_cameron->height) / 2;
+		
+		blit_surface(&params);
 	}
 }
 

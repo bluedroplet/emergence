@@ -308,8 +308,6 @@ void draw_bsp_node(bsp_node_t *node, int depth)
 
 void draw_bsp_tree()
 {
-	blit_colour = 0xffff;
-	
 	if(bsp_tree)
 		draw_bsp_node(bsp_tree, bsp_draw_depth);
 }

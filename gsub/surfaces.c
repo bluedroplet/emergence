@@ -201,6 +201,9 @@ int get_pitch(int flags, int width)
 	case SURFACE_24BITALPHA8BIT:
 		return width * 3;
 
+	case SURFACE_24BITPADDING8BIT:
+		return width * 4;
+	
 	case SURFACE_FLOATS:
 	case SURFACE_FLOATSALPHAFLOATS:
 		return width * 12;
@@ -242,6 +245,9 @@ int get_size(int flags, int width, int height)
 	case SURFACE_24BITALPHA8BIT:
 		return width * height * 3;
 
+	case SURFACE_24BITPADDING8BIT:
+		return width * height * 4;
+	
 	case SURFACE_FLOATS:
 	case SURFACE_FLOATSALPHAFLOATS:
 		return width * height * 12;
@@ -283,6 +289,9 @@ void *get_pixel_addr(struct surface_t *surface, int x, int y)
 	case SURFACE_24BITALPHA8BIT:
 		return &surface->buf[y * surface->pitch + x * 3];
 
+	case SURFACE_24BITPADDING8BIT:
+		return &surface->buf[y * surface->pitch + x * 4];
+	
 	case SURFACE_FLOATS:
 	case SURFACE_FLOATSALPHAFLOATS:
 		return &surface->buf[y * surface->pitch + x * 12];
@@ -290,7 +299,7 @@ void *get_pixel_addr(struct surface_t *surface, int x, int y)
 	default:
 		return NULL;
 	}
-}	
+}
 
 
 void *get_alpha_pixel_addr(struct surface_t *surface, int x, int y)

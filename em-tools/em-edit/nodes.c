@@ -858,31 +858,37 @@ struct node_t *get_node_from_index(int index)
 
 void draw_nodes()
 {
+	struct blit_params_t params;
+		
+	params.dest = s_backbuffer;
+	params.source = s_node;
+	
+	
 	struct node_t *cnode = node0;
-	blit_source = s_node;
 	
 	while(cnode)
 	{
 		int x, y;
 		world_to_screen(cnode->x, cnode->y, &x, &y);
-		blit_destx = x - 3;
-		blit_desty = y - 3;
-		alpha_surface_blit_surface();
+		params.dest_x = x - 3;
+		params.dest_y = y - 3;
+		alpha_surface_blit_surface(&params);
 
 		cnode = cnode->next;
 	}
 
 	
+	params.source = s_select;
+	
 	struct node_pointer_t *cnodep = selected_node0;
-	blit_source = s_select;
 	
 	while(cnodep)
 	{
 		int x, y;
 		world_to_screen(cnodep->node->x, cnodep->node->y, &x, &y);
-		blit_destx = x - 11;
-		blit_desty = y - 11;
-		alpha_surface_blit_surface();
+		params.dest_x = x - 11;
+		params.dest_y = y - 11;
+		alpha_surface_blit_surface(&params);
 		
 		cnodep = cnodep->next;
 	}
@@ -891,8 +897,6 @@ void draw_nodes()
 
 void draw_sat_lines()
 {
-	blit_colour = 0xffff;
-	
 	struct node_pointer_t *cnodep = hover_nodes;
 
 	while(cnodep)
@@ -915,8 +919,12 @@ void draw_sat_lines()
 
 void draw_sats()
 {
+	struct blit_params_t params;
+		
+	params.dest = s_backbuffer;
+	params.source = s_vectsat;
+
 	struct node_t *cnode = node0;
-	blit_source = s_vectsat;
 		
 	while(cnode)
 	{
@@ -929,9 +937,9 @@ void draw_sats()
 			{
 				world_to_screen(cnode->x + cnode->sats[n].x, cnode->y + cnode->sats[n].y, &x, &y);
 	
-				blit_destx = x - 3;
-				blit_desty = y - 3;
-				alpha_surface_blit_surface();
+				params.dest_x = x - 3;
+				params.dest_y = y - 3;
+				alpha_surface_blit_surface(&params);
 			}
 		}
 
@@ -948,8 +956,11 @@ void draw_width_sat_lines()
 
 void draw_width_sats()
 {
+	struct blit_params_t params;
+	params.dest = s_backbuffer;
+	params.source = s_widthsat;
+
 	struct node_t *cnode = node0;
-	blit_source = s_widthsat;
 
 	while(cnode)
 	{
@@ -966,9 +977,9 @@ void draw_width_sats()
 
 			world_to_screen(worldx, worldy, &x, &y);
 
-			blit_destx = x - 3;
-			blit_desty = y - 3;
-			alpha_surface_blit_surface();
+			params.dest_x = x - 3;
+			params.dest_y = y - 3;
+			alpha_surface_blit_surface(&params);
 		}
 	
 		cnode = cnode->next;

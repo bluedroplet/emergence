@@ -50,6 +50,7 @@
 #include "worker.h"
 #include "main_lock.h"
 #include "interface.h"
+#include "main.h"
 
 
 #define TILEWIDTH 200
@@ -513,6 +514,9 @@ int conn_fully_rendered(struct conn_t *conn)
 
 void draw_tiles()
 {
+	struct blit_params_t params;
+	params.dest = s_backbuffer;
+	
 	struct tile_t *tile = clean_tile0;
 
 	while(tile)
@@ -524,19 +528,15 @@ void draw_tiles()
 
 		if(tile->surface)
 		{
-			blit_destx = minx;
-			blit_desty = miny;
+			params.dest_x = minx;
+			params.dest_y = miny;
 
 			if(zoom == 1.0)
-			{
-				blit_source = tile->surface;
-				alpha_surface_blit_surface();
-			}
+				params.source = tile->surface;
 			else
-			{
-				blit_source = tile->scaled_surface;
-				alpha_surface_blit_surface();
-			}
+				params.source = tile->scaled_surface;
+			
+			alpha_surface_blit_surface(&params);
 		}
 		
 		tile = tile->next;
@@ -546,8 +546,6 @@ void draw_tiles()
 
 void draw_boxes()
 {
-	blit_colour = 0xffff;
-	
 	struct tile_t *tile = clean_tile0;
 
 	while(tile)

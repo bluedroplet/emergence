@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 1998-2002 Jonathan Brown
+	Copyright (C) 1998-2003 Jonathan Brown
 	
     This file is part of the gsub graphics library.
 	
@@ -40,65 +40,55 @@ void alpha_pixel_plot_x86()	__attribute__ ((cdecl));
 void alpha_rect_draw_mmx() __attribute__ ((cdecl));
 void surface_blit_mmx() __attribute__ ((cdecl));
 
-// Blit variables
-
-struct surface_t *blit_source;
-int blit_sourcex, blit_sourcey;
-struct surface_t *blit_dest;
-int blit_destx, blit_desty;
-int blit_width, blit_height;
-
-uint16_t blit_colour;
-uint8_t blit_alpha;
 
 
-void rect_draw_c()
+void rect_draw_c(struct blit_params_t *params)
 {
-	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 	
-	int x, y = blit_height;
+	int x, y = params->height;
 
 	while(y)
 	{
-		for(x = 0; x != blit_width; x++)
-			((uint16_t*)dst)[x] = blit_colour;
+		for(x = 0; x != params->width; x++)
+			((uint16_t*)dst)[x] = params->colour16;
 
-		dst += blit_dest->pitch;
+		dst += params->dest->pitch;
 		y--;
 	}
 }
 
 
-void alpha_pixel_plot_c()
+void alpha_pixel_plot_c(struct blit_params_t *params)
 {
-	uint16_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
+	uint16_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 	uint16_t oldcolour = *dst;
-	uint8_t negalpha = ~blit_alpha;
+	uint8_t negalpha = ~params->alpha;
 
-	*dst = (vid_redalphalookup[((blit_colour & 0xf800) >> 3) | blit_alpha] + 
+	*dst = (vid_redalphalookup[((params->colour16 & 0xf800) >> 3) | params->alpha] + 
 		vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
-		(vid_greenalphalookup[((blit_colour & 0x7e0) << 3) | blit_alpha] +
+		(vid_greenalphalookup[((params->colour16 & 0x7e0) << 3) | params->alpha] +
 		vid_greenalphalookup[((oldcolour & 0x7e0) << 3) | negalpha]) |
-		(vid_bluealphalookup[((blit_colour & 0x1f) << 8) | blit_alpha] + 
+		(vid_bluealphalookup[((params->colour16 & 0x1f) << 8) | params->alpha] + 
 		vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
 }
 
 
-void alpha_rect_draw_c()
+void alpha_rect_draw_c(struct blit_params_t *params)
 {
-	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 
-	uint16_t redalpha = vid_redalphalookup[((blit_colour & 0xf800) >> 3) | blit_alpha];
-	uint16_t greenalpha = vid_greenalphalookup[((blit_colour & 0x7e0) << 3) | blit_alpha];
-	uint16_t bluealpha = vid_bluealphalookup[((blit_colour & 0x1f) << 8) | blit_alpha];
+	uint16_t redalpha = vid_redalphalookup[((params->colour16 & 0xf800) >> 3) | params->alpha];
+	uint16_t greenalpha = vid_greenalphalookup[((params->colour16 & 0x7e0) << 3) | params->alpha];
+	uint16_t bluealpha = vid_bluealphalookup[((params->colour16 & 0x1f) << 8) | params->alpha];
 
-	uint8_t negalpha = ~blit_alpha;
+	uint8_t negalpha = ~params->alpha;
 
-	int x, y = blit_height;
+	int x, y = params->height;
 	
 	while(y)
 	{
-		for(x = 0; x != blit_width; x++)
+		for(x = 0; x != params->width; x++)
 		{
 			uint16_t oldcolour = ((uint16_t*)dst)[x];
 
@@ -107,44 +97,44 @@ void alpha_rect_draw_c()
 				(bluealpha + vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
 		}
 
-		dst += blit_dest->pitch;
+		dst += params->dest->pitch;
 		y--;
 	}
 }
 
 
-void surface_blit_c()
+void surface_blit_c(struct blit_params_t *params)
 {
-	uint8_t *src = get_pixel_addr(blit_source, blit_sourcex, blit_sourcey);
-	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
+	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 
-	int y = blit_height;
+	int y = params->height;
 
 	while(y)
 	{
-		memcpy(dst, src, blit_width * 2);
+		memcpy(dst, src, params->width * 2);
 
-		src += blit_source->pitch;
-		dst += blit_dest->pitch;
+		src += params->source->pitch;
+		dst += params->dest->pitch;
 		y--;
 	}
 }
 
 
-void alpha_surface_blit_c()
+void alpha_surface_blit_c(struct blit_params_t *params)
 {
-	uint8_t *src = get_alpha_pixel_addr(blit_source, blit_sourcex, blit_sourcey);
-	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
+	uint8_t *src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 
-	uint16_t red = (blit_colour & 0xf800) >> 3;
-	uint16_t green = (blit_colour & 0x7e0) << 3;
-	uint16_t blue = (blit_colour & 0x1f) << 8;
+	uint16_t red = (params->colour16 & 0xf800) >> 3;
+	uint16_t green = (params->colour16 & 0x7e0) << 3;
+	uint16_t blue = (params->colour16 & 0x1f) << 8;
 
-	int x, y = blit_height;
+	int x, y = params->height;
 
 	while(y)
 	{
-		for(x = 0; x != blit_width; x++)
+		for(x = 0; x != params->width; x++)
 		{
 			uint16_t oldcolour = ((uint16_t*)dst)[x];
 			uint8_t alpha = src[x];
@@ -158,30 +148,30 @@ void alpha_surface_blit_c()
 				vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
 		}
 
-		src += blit_source->alpha_pitch;
-		dst += blit_dest->pitch;
+		src += params->source->alpha_pitch;
+		dst += params->dest->pitch;
 		y--;
 	}
 }
 
 
-void alpha_surface_alpha_blit_c()
+void alpha_surface_alpha_blit_c(struct blit_params_t *params)
 {
-	uint8_t *src = get_alpha_pixel_addr(blit_source, blit_sourcex, blit_sourcey);
-	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
+	uint8_t *src = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 
-	uint16_t red = (blit_colour & 0xf800) >> 3;
-	uint16_t green = (blit_colour & 0x7e0) << 3;
-	uint16_t blue = (blit_colour & 0x1f) << 8;
+	uint16_t red = (params->colour16 & 0xf800) >> 3;
+	uint16_t green = (params->colour16 & 0x7e0) << 3;
+	uint16_t blue = (params->colour16 & 0x1f) << 8;
 
-	int x, y = blit_height;
+	int x, y = params->height;
 
 	while(y)
 	{
-		for(x = 0; x != blit_width; x++)
+		for(x = 0; x != params->width; x++)
 		{
 			uint16_t oldcolour = ((uint16_t*)dst)[x];
-			uint8_t alpha = ((int)src[x] * (int)blit_alpha) >> 8;
+			uint8_t alpha = ((int)src[x] * (int)params->alpha) >> 8;
 			uint8_t negalpha = ~alpha;
 
 			((uint16_t*)dst)[x] = (vid_redalphalookup[red | alpha] + 
@@ -192,55 +182,55 @@ void alpha_surface_alpha_blit_c()
 				vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
 		}
 
-		src += blit_source->alpha_pitch;
-		dst += blit_dest->pitch;
+		src += params->source->alpha_pitch;
+		dst += params->dest->pitch;
 		y--;
 	}
 }
 
 
-void surface_alpha_blit_c()
+void surface_alpha_blit_c(struct blit_params_t *params)
 {
-	uint8_t *src = get_pixel_addr(blit_source, blit_sourcex, blit_sourcey);
-	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
+	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 
-	uint8_t negalpha = ~blit_alpha;
+	uint8_t negalpha = ~params->alpha;
 
-	int x, y = blit_height;
+	int x, y = params->height;
 
 	while(y)
 	{
-		for(x = 0; x != blit_width; x++)
+		for(x = 0; x != params->width; x++)
 		{
 			uint16_t oldcolour = ((uint16_t*)dst)[x];
 			uint16_t blendcolour = ((uint16_t*)src)[x];
 
-			((uint16_t*)dst) = (vid_redalphalookup[((blendcolour & 0xf800) >> 3) | blit_alpha] + 
+			((uint16_t*)dst) = (vid_redalphalookup[((blendcolour & 0xf800) >> 3) | params->alpha] + 
 				vid_redalphalookup[((oldcolour & 0xf800) >> 3) | negalpha]) |
-				(vid_greenalphalookup[((blendcolour & 0x7e0) << 3) | blit_alpha] +
+				(vid_greenalphalookup[((blendcolour & 0x7e0) << 3) | params->alpha] +
 				vid_greenalphalookup[((oldcolour & 0x7e0) << 3) | negalpha]) |
-				(vid_bluealphalookup[((blendcolour & 0x1f) << 8) | blit_alpha] + 
+				(vid_bluealphalookup[((blendcolour & 0x1f) << 8) | params->alpha] + 
 				vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
 		}
 
-		src += blit_source->pitch;
-		dst += blit_dest->pitch;
+		src += params->source->pitch;
+		dst += params->dest->pitch;
 		y--;
 	}
 }
 
 
-void surface_alpha_surface_blit_c()
+void surface_alpha_surface_blit_c(struct blit_params_t *params)
 {
-	uint8_t *alphasrc = get_alpha_pixel_addr(blit_source, blit_sourcex, blit_sourcey);
-	uint8_t *src = get_pixel_addr(blit_source, blit_sourcex, blit_sourcey);
-	uint8_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
+	uint8_t *alphasrc = get_alpha_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *src = get_pixel_addr(params->source, params->source_x, params->source_y);
+	uint8_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
 
-	int x, y = blit_height;
+	int x, y = params->height;
 
 	while(y)
 	{
-		for(x = 0; x != blit_width; x++)
+		for(x = 0; x != params->width; x++)
 		{
 			uint8_t alpha = alphasrc[x];
 			if(alpha == 0)
@@ -258,216 +248,216 @@ void surface_alpha_surface_blit_c()
 				vid_bluealphalookup[((oldcolour & 0x1f) << 8) | negalpha]);
 		}
 
-		alphasrc += blit_source->alpha_pitch;
-		src += blit_source->pitch;
-		dst += blit_dest->pitch;
+		alphasrc += params->source->alpha_pitch;
+		src += params->source->pitch;
+		dst += params->dest->pitch;
 		y--;
 	}
 }
 
 
-void (*rect_draw)() = rect_draw_c;
-void (*alpha_pixel_plot)() = alpha_pixel_plot_c;
-void (*alpha_rect_draw)() = alpha_rect_draw_c;
-void (*surface_blit)() = surface_blit_c;
-void (*alpha_surface_blit)() = alpha_surface_blit_c;
-void (*alpha_surface_alpha_blit)() = alpha_surface_alpha_blit_c;
-void (*surface_alpha_blit)() = surface_alpha_blit_c;
-void (*surface_alpha_surface_blit)() = surface_alpha_surface_blit_c;
+void (*rect_draw)(struct blit_params_t *params) = rect_draw_c;
+void (*alpha_pixel_plot)(struct blit_params_t *params) = alpha_pixel_plot_c;
+void (*alpha_rect_draw)(struct blit_params_t *params) = alpha_rect_draw_c;
+void (*surface_blit)(struct blit_params_t *params) = surface_blit_c;
+void (*alpha_surface_blit)(struct blit_params_t *params) = alpha_surface_blit_c;
+void (*alpha_surface_alpha_blit)(struct blit_params_t *params) = alpha_surface_alpha_blit_c;
+void (*surface_alpha_blit)(struct blit_params_t *params) = surface_alpha_blit_c;
+void (*surface_alpha_surface_blit)(struct blit_params_t *params) = surface_alpha_surface_blit_c;
 
 
-int clip_blit_coords()
+int clip_blit_coords(struct blit_params_t *params)
 {
-	if(blit_width == 0 || blit_height == 0)
+	if(params->width == 0 || params->height == 0)
 		return 0;
 
-	if((blit_destx + blit_width <= 0) || (blit_desty + blit_height <= 0) ||
-		(blit_destx >= blit_dest->width) || (blit_desty >= blit_dest->height))
+	if((params->dest_x + params->width <= 0) || (params->dest_y + params->height <= 0) ||
+		(params->dest_x >= params->dest->width) || (params->dest_y >= params->dest->height))
 		return 0;
 
-	if(blit_destx < 0)
+	if(params->dest_x < 0)
 	{
-		blit_sourcex -= blit_destx;
-		blit_width += blit_destx;
-		blit_destx = 0;
+		params->source_x -= params->dest_x;
+		params->width += params->dest_x;
+		params->dest_x = 0;
 	}
 
-	if(blit_destx + blit_width > blit_dest->width)
-		blit_width = blit_dest->width - blit_destx;
+	if(params->dest_x + params->width > params->dest->width)
+		params->width = params->dest->width - params->dest_x;
 
-	if(blit_desty < 0)
+	if(params->dest_y < 0)
 	{
-		blit_sourcey -= blit_desty;
-		blit_height += blit_desty;
-		blit_desty = 0;
+		params->source_y -= params->dest_y;
+		params->height += params->dest_y;
+		params->dest_y = 0;
 	}
 
-	if(blit_desty + blit_height > blit_dest->height)
-		blit_height = blit_dest->height - blit_desty;
+	if(params->dest_y + params->height > params->dest->height)
+		params->height = params->dest->height - params->dest_y;
 
 	return 1;
 }
 
 
-void plot_pixel()
+void plot_pixel(struct blit_params_t *params)
 {
-	if(blit_destx < 0 || blit_destx >= blit_dest->width ||
-		blit_desty < 0 || blit_desty >= blit_dest->height)
+	if(params->dest_x < 0 || params->dest_x >= params->dest->width ||
+		params->dest_y < 0 || params->dest_y >= params->dest->height)
 		return;
 
-	uint16_t *dst = get_pixel_addr(blit_dest, blit_destx, blit_desty);
-	*dst = blit_colour;
+	uint16_t *dst = get_pixel_addr(params->dest, params->dest_x, params->dest_y);
+	*dst = params->colour16;
 }
 
 
-void draw_rect()
+void draw_rect(struct blit_params_t *params)
 {
-	if(!clip_blit_coords())
+	if(!clip_blit_coords(params))
 		return;
 
-	rect_draw();
+	rect_draw(params);
 }
 
 
-void plot_alpha_pixel()
+void plot_alpha_pixel(struct blit_params_t *params)
 {
-	if(blit_destx < 0 || blit_destx >= blit_dest->width ||
-		blit_desty < 0 || blit_desty >= blit_dest->height)
+	if(params->dest_x < 0 || params->dest_x >= params->dest->width ||
+		params->dest_y < 0 || params->dest_y >= params->dest->height)
 		return;
 
-	alpha_pixel_plot();
+	alpha_pixel_plot(params);
 }
 
 
-void draw_alpha_rect()
+void draw_alpha_rect(struct blit_params_t *params)
 {
-	if(!clip_blit_coords())
+	if(!clip_blit_coords(params))
 		return;
 
-	alpha_rect_draw();
+	alpha_rect_draw(params);
 }
 
 
-void blit_surface()
+void blit_partial_surface(struct blit_params_t *params)
 {
-	if(!blit_source)
+	if(!params->source)
 		return;
 
-	blit_sourcex = 0;
-	blit_sourcey = 0;
-	blit_width = blit_source->width;
-	blit_height = blit_source->height;
-
-	if(clip_blit_coords())
-		surface_blit();
+	if(clip_blit_coords(params))
+		surface_blit(params);
 }
 
 
-void blit_surface_rect()
+void blit_surface(struct blit_params_t *params)
 {
-	if(!blit_source)
+	if(!params->source)
 		return;
-
-	if(clip_blit_coords())
-		surface_blit();
-}
-
-
-void blit_alpha_surface()
-{
-	if(!blit_source)
-		return;
-
-	blit_sourcex = 0;
-	blit_sourcey = 0;
-	blit_width = blit_source->width;
-	blit_height = blit_source->height;
 	
-	if(clip_blit_coords())
-		alpha_surface_blit();
+	params->source_x = 0;
+	params->source_y = 0;
+	params->width = params->source->width;
+	params->height = params->source->height;
+
+	if(clip_blit_coords(params))
+		surface_blit(params);
 }
 
 
-void blit_alpha_surface_rect()
+void blit_partial_alpha_surface(struct blit_params_t *params)
 {
-	if(!blit_source)
+	if(!params->source)
 		return;
 
-	if(clip_blit_coords())
-		alpha_surface_blit();
+	if(clip_blit_coords(params))
+		alpha_surface_blit(params);
 }
 
 
-void alpha_blit_alpha_surface()
+void blit_alpha_surface(struct blit_params_t *params)
 {
-	if(!blit_source)
+	if(!params->source)
 		return;
 
-	blit_sourcex = 0;
-	blit_sourcey = 0;
-	blit_width = blit_source->width;
-	blit_height = blit_source->height;
-	
-	if(clip_blit_coords())
-		alpha_surface_alpha_blit();
+	params->source_x = 0;
+	params->source_y = 0;
+	params->width = params->source->width;
+	params->height = params->source->height;
+
+	if(clip_blit_coords(params))
+		alpha_surface_blit(params);
 }
 
 
-void alpha_blit_alpha_surface_rect()
+void alpha_blit_partial_alpha_surface(struct blit_params_t *params)
 {
-	if(!blit_source)
+	if(!params->source)
 		return;
 
-	if(clip_blit_coords())
-		alpha_surface_alpha_blit();
+	if(clip_blit_coords(params))
+		alpha_surface_alpha_blit(params);
 }
 
 
-void alpha_blit_surface()
+void alpha_blit_alpha_surface(struct blit_params_t *params)
 {
-	if(!blit_source)
+	if(!params->source)
 		return;
 
-	blit_sourcex = 0;
-	blit_sourcey = 0;
-	blit_width = blit_source->width;
-	blit_height = blit_source->height;
+	params->source_x = 0;
+	params->source_y = 0;
+	params->width = params->source->width;
+	params->height = params->source->height;
 
-	if(clip_blit_coords())
-		surface_alpha_blit();
+	if(clip_blit_coords(params))
+		alpha_surface_alpha_blit(params);
 }
 
 
-void alpha_blit_surface_rect()
+void alpha_blit_partial_surface(struct blit_params_t *params)
 {
-	if(!blit_source)
+	if(!params->source)
 		return;
 
-	if(clip_blit_coords())
-		surface_alpha_blit();
+	if(clip_blit_coords(params))
+		surface_alpha_blit(params);
 }
 
 
-void alpha_surface_blit_surface()
+void alpha_blit_surface(struct blit_params_t *params)
 {
-	if(!blit_source)
+	if(!params->source)
 		return;
 
-	blit_sourcex = 0;
-	blit_sourcey = 0;
-	blit_width = blit_source->width;
-	blit_height = blit_source->height;
-	
-	if(clip_blit_coords())
-		surface_alpha_surface_blit();
+	params->source_x = 0;
+	params->source_y = 0;
+	params->width = params->source->width;
+	params->height = params->source->height;
+
+	if(clip_blit_coords(params))
+		surface_alpha_blit(params);
 }
 
 
-void alpha_surface_blit_surface_rect()
+void alpha_surface_blit_partial_surface(struct blit_params_t *params)
 {
-	if(!blit_source)
+	if(!params->source)
 		return;
 
-	if(clip_blit_coords())
-		surface_alpha_surface_blit();
+	if(clip_blit_coords(params))
+		surface_alpha_surface_blit(params);
+}
+
+
+void alpha_surface_blit_surface(struct blit_params_t *params)
+{
+	if(!params->source)
+		return;
+
+	params->source_x = 0;
+	params->source_y = 0;
+	params->width = params->source->width;
+	params->height = params->source->height;
+
+	if(clip_blit_coords(params))
+		surface_alpha_surface_blit(params);
 }

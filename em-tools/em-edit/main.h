@@ -30,6 +30,7 @@ void update_client_area();
 void destroy_window();
 
 extern int vid_width, vid_height;
+extern struct surface_t *s_backbuffer;
 
 #ifdef __GTK_H__
 extern GtkWidget *window;

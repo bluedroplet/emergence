@@ -224,12 +224,14 @@ void draw_world_clipped_line(double x1, double y1, double x2, double y2)
 		}
 	}
 
-	int sx1, sy1, sx2, sy2;
+	struct blit_params_t params;
+	params.dest = s_backbuffer;
+	params.colour16 = 0xffff;
 	
-	world_to_screen(x1, y1, &sx1, &sy1);
-	world_to_screen(x2, y2, &sx2, &sy2);
+	world_to_screen(x1, y1, &params.x1, &params.y1);
+	world_to_screen(x2, y2, &params.x2, &params.y2);
 	
-	draw_line(sx1, sy1, sx2, sy2);
+	draw_line(&params);
 }
 
 
@@ -892,8 +894,6 @@ void run_space_menu()
 
 void draw_selection_box()
 {
-	blit_colour = 0xffff;
-	
 	draw_world_clipped_line(left_button_down_worldx, left_button_down_worldy, 
 		mouse_worldx, left_button_down_worldy);
 	

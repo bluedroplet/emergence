@@ -33,10 +33,22 @@
 #define SURFACE_16BITALPHA8BIT		2
 #define SURFACE_24BIT				3
 #define SURFACE_24BITALPHA8BIT		4
-#define SURFACE_FLOATS				5
-#define SURFACE_ALPHAFLOATS 		6
-#define SURFACE_FLOATSALPHAFLOATS	7
+#define SURFACE_24BITPADDING8BIT	5
+#define SURFACE_FLOATS				6
+#define SURFACE_ALPHAFLOATS 		7
+#define SURFACE_FLOATSALPHAFLOATS	8
 
+/*
+#define SURFACE_A8		0
+#define SURFACE_565		1
+#define SURFACE_565A8	2
+#define SURFACE_888		3
+#define SURFACE_888A8	4
+#define SURFACE_888P8	5
+#define SURFACE_fff		6
+#define SURFACE_Af 		7
+#define SURFACE_fffAf	8
+*/
 
 struct surface_t
 {
@@ -47,6 +59,54 @@ struct surface_t
 	uint8_t *alpha_buf;
 };
 
+
+struct blit_params_t
+{
+	union
+	{
+		struct
+		{
+			uint8_t red, green, blue;
+			
+		} colour24;
+		
+		uint16_t colour16;
+	};
+	
+	uint8_t alpha;
+	
+	struct surface_t *source;
+	int source_x;
+	int source_y;
+	
+	struct surface_t *dest;
+		
+	union
+	{
+		int dest_x;
+		int x1;
+	};
+	
+	union
+	{
+		int dest_y;
+		int y1;
+	};
+	
+	union
+	{
+		int width;
+		int x2;
+	};
+	
+	union
+	{
+		int height;
+		int y2;
+	};
+};
+
+	
 void *get_pixel_addr(struct surface_t *suface, int x, int y);
 void *get_alpha_pixel_addr(struct surface_t *suface, int x, int y);
 
@@ -106,34 +166,25 @@ extern uint16_t *vid_greenalphalookup;
 extern uint16_t *vid_bluealphalookup;
 
 
-extern uint16_t blit_colour;
-extern uint8_t blit_alpha;
-
 
 // blit_ops.cpp
 
-extern struct surface_t *blit_source;
-extern struct surface_t *blit_dest;
-
-extern int blit_sourcex, blit_sourcey;
-extern int blit_destx, blit_desty;
-extern int blit_width, blit_height;
 
 
-void plot_pixel();
-void draw_rect();
-void plot_alpha_pixel();
-void draw_alpha_rect();
-void blit_surface();
-void blit_surface_rect();
-void blit_alpha_surface();
-void blit_alpha_surface_rect();
-void alpha_blit_alpha_surface();
-void alpha_blit_alpha_surface_rect();
-void alpha_blit_surface();
-void alpha_blit_surface_rect();
-void alpha_surface_blit_surface();
-void alpha_surface_blit_surface_rect();
+void plot_pixel(struct blit_params_t *params);
+void draw_rect(struct blit_params_t *params);
+void plot_alpha_pixel(struct blit_params_t *params);
+void blit_partial_surface(struct blit_params_t *params);
+void blit_surface(struct blit_params_t *params);
+void blit_partial_alpha_surface(struct blit_params_t *params);
+void blit_alpha_surface(struct blit_params_t *params);
+void alpha_blit_partial_alpha_surface(struct blit_params_t *params);
+void alpha_blit_alpha_surface(struct blit_params_t *params);
+void alpha_blit_partial_surface(struct blit_params_t *params);
+void alpha_blit_surface(struct blit_params_t *params);
+void alpha_surface_blit_partial_surface(struct blit_params_t *params);
+void alpha_surface_blit_surface(struct blit_params_t *params);
+
 
 
 
@@ -148,7 +199,9 @@ int blit_text(int x, int y, uint16_t colour, char *text);
 
 // line.cpp
 
-void draw_line(int x1, int y1, int x2, int y2);
+void draw_line(struct blit_params_t *params);
+	
+
 
 struct surface_t *resize(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)());
 struct surface_t *resizea(struct surface_t *src_texture, int dst_width, int dst_height, int (*callback)());

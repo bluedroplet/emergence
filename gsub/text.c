@@ -84,23 +84,25 @@ void init_text()
 
 int blit_text(int x, int y, uint16_t colour, char *text)
 {
-	blit_source = smallfont;
-	blit_colour = colour;
+	struct blit_params_t params;
 
+	params.colour16 = colour;
+	params.source = smallfont;
+	
 	int w = 0;
 
 	while(*text)
 	{
-		blit_sourcex = ((int)*((uint8_t*)text)) << 3;
-		blit_sourcey = 0;
-		blit_destx = x + w;
-		blit_desty = y;
-		blit_height = 13;
-		blit_width = charlengths[*((uint8_t*)text)];
+		params.source_x = ((int)*((uint8_t*)text)) << 3;
+		params.source_y = 0;
+		params.dest_x = x + w;
+		params.dest_y = y;
+		params.height = 13;
+		params.width = charlengths[*((uint8_t*)text)];
 
-		w += blit_width;
+		w += params.width;
 
-		blit_alpha_surface_rect();
+		blit_partial_alpha_surface(&params);
 		
 		text++;
 	}

@@ -1211,8 +1211,6 @@ void invalidate_conns_with_node(struct node_t *node)		// always called while not
 
 void draw_straight_conn(struct conn_t *conn)
 {
-	blit_colour = 0xffff;
-	
 	struct node_t *node1, *node2;
 	int left1, right1, left2, right2;
 	double x1, y1, x2, y2;
@@ -1445,13 +1443,6 @@ void draw_conic_conn(struct conn_t *conn)
 
 	draw_conic_conn_sub_left(conn, cx, cy, hyp, theta1, theta2, 0, 1);
 	draw_conic_conn_sub_right(conn, cx, cy, hyp, theta1, theta2, 0, 1);
-	
-	int sx, sy;
-	world_to_screen(cx, cy, &sx, &sy);
-	blit_destx = sx;
-	blit_desty = sy;
-	
-	plot_pixel();
 }
 
 
@@ -1559,8 +1550,6 @@ void draw_bezier_conn_sub_right(struct conn_t *conn, struct bezier_t *bezier, do
 
 void draw_bezier_conn(struct conn_t *conn)
 {
-	blit_colour = 0xffff;
-	
 	struct bezier_t bezier;
 	
 	bezier.x1 = conn->node1->effective_x[conn->sat1];

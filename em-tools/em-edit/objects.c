@@ -1769,6 +1769,9 @@ void run_object_menu(struct object_t *object)
 
 void draw_objects()
 {
+	struct blit_params_t params;
+	params.dest = s_backbuffer;
+	
 	struct object_t *object = object0;
 		
 	while(object)
@@ -1786,10 +1789,10 @@ void draw_objects()
 				
 				if(s_spawn_point_placeholder)
 				{
-					blit_destx = x - s_spawn_point_placeholder->width / 2;
-					blit_desty = y - s_spawn_point_placeholder->height / 2;
-					blit_source = s_spawn_point_placeholder;
-					alpha_surface_blit_surface();
+					params.source = s_spawn_point_placeholder;
+					params.dest_x = x - s_spawn_point_placeholder->width / 2;
+					params.dest_y = y - s_spawn_point_placeholder->height / 2;
+					alpha_surface_blit_surface(&params);
 				}
 				break;
 			
@@ -1799,10 +1802,10 @@ void draw_objects()
 				
 				if(s_teleporter_placeholder)
 				{
-					blit_destx = x - s_teleporter_placeholder->width / 2;
-					blit_desty = y - s_teleporter_placeholder->height / 2;
-					blit_source = s_teleporter_placeholder;
-					alpha_surface_blit_surface();
+					params.source = s_teleporter_placeholder;
+					params.dest_x = x - s_teleporter_placeholder->width / 2;
+					params.dest_y = y - s_teleporter_placeholder->height / 2;
+					alpha_surface_blit_surface(&params);
 				}
 				break;
 			
@@ -1812,10 +1815,10 @@ void draw_objects()
 				
 				if(s_gravity_well_placeholder)
 				{
-					blit_destx = x - s_gravity_well_placeholder->width / 2;
-					blit_desty = y - s_gravity_well_placeholder->height / 2;
-					blit_source = s_gravity_well_placeholder;
-					alpha_surface_blit_surface();
+					params.source = s_gravity_well_placeholder;
+					params.dest_x = x - s_gravity_well_placeholder->width / 2;
+					params.dest_y = y - s_gravity_well_placeholder->height / 2;
+					alpha_surface_blit_surface(&params);
 				}
 				break;
 			
@@ -1823,10 +1826,10 @@ void draw_objects()
 			default:
 				if(object->texture_surface)
 				{
-					blit_destx = x - object->texture_surface->width / 2;
-					blit_desty = y - object->texture_surface->height / 2;
-					blit_source = object->texture_surface;
-					alpha_surface_blit_surface();
+					params.source = object->texture_surface;
+					params.dest_x = x - object->texture_surface->width / 2;
+					params.dest_y = y - object->texture_surface->height / 2;
+					alpha_surface_blit_surface(&params);
 				}
 				break;
 			}
@@ -1841,10 +1844,10 @@ void draw_objects()
 				
 				if(s_scaled_spawn_point_placeholder)
 				{
-					blit_destx = x - s_scaled_spawn_point_placeholder->width / 2;
-					blit_desty = y - s_scaled_spawn_point_placeholder->height / 2;
-					blit_source = s_scaled_spawn_point_placeholder;
-					alpha_surface_blit_surface();
+					params.source = s_scaled_spawn_point_placeholder;
+					params.dest_x = x - s_scaled_spawn_point_placeholder->width / 2;
+					params.dest_y = y - s_scaled_spawn_point_placeholder->height / 2;
+					alpha_surface_blit_surface(&params);
 				}
 				break;
 			
@@ -1854,10 +1857,10 @@ void draw_objects()
 				
 				if(s_scaled_teleporter_placeholder)
 				{
-					blit_destx = x - s_scaled_teleporter_placeholder->width / 2;
-					blit_desty = y - s_scaled_teleporter_placeholder->height / 2;
-					blit_source = s_scaled_teleporter_placeholder;
-					alpha_surface_blit_surface();
+					params.source = s_scaled_teleporter_placeholder;
+					params.dest_x = x - s_scaled_teleporter_placeholder->width / 2;
+					params.dest_y = y - s_scaled_teleporter_placeholder->height / 2;
+					alpha_surface_blit_surface(&params);
 				}
 				break;
 			
@@ -1867,10 +1870,10 @@ void draw_objects()
 				
 				if(s_scaled_gravity_well_placeholder)
 				{
-					blit_destx = x - s_scaled_gravity_well_placeholder->width / 2;
-					blit_desty = y - s_scaled_gravity_well_placeholder->height / 2;
-					blit_source = s_scaled_gravity_well_placeholder;
-					alpha_surface_blit_surface();
+					params.source = s_scaled_gravity_well_placeholder;
+					params.dest_x = x - s_scaled_gravity_well_placeholder->width / 2;
+					params.dest_y = y - s_scaled_gravity_well_placeholder->height / 2;
+					alpha_surface_blit_surface(&params);
 				}
 				break;
 			
@@ -1878,10 +1881,10 @@ void draw_objects()
 			default:
 				if(object->scaled_texture_surface)
 				{
-					blit_destx = x - object->scaled_texture_surface->width / 2;
-					blit_desty = y - object->scaled_texture_surface->height / 2;
-					blit_source = object->scaled_texture_surface;
-					alpha_surface_blit_surface();
+					params.source = object->scaled_texture_surface;
+					params.dest_x = x - object->scaled_texture_surface->width / 2;
+					params.dest_y = y - object->scaled_texture_surface->height / 2;
+					alpha_surface_blit_surface(&params);
 				}
 				break;
 			}
@@ -1891,15 +1894,15 @@ void draw_objects()
 	}
 	
 	struct object_pointer_t *cobjectp = selected_object0;
-	blit_source = s_select;
+	params.source = s_select;
 	
 	while(cobjectp)
 	{
 		int x, y;
 		world_to_screen(cobjectp->object->x, cobjectp->object->y, &x, &y);
-		blit_destx = x - 11;
-		blit_desty = y - 11;
-		alpha_surface_blit_surface();
+		params.dest_x = x - 11;
+		params.dest_y = y - 11;
+		alpha_surface_blit_surface(&params);
 		
 		cobjectp = cobjectp->next;
 	}

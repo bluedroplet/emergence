@@ -46,6 +46,7 @@
 #include "curves.h"
 #include "points.h"
 #include "interface.h"
+#include "main.h"
 
 #define POINT_THRESHOLD 12
 #define POINT_THRESHOLD_SQUARED (POINT_THRESHOLD * POINT_THRESHOLD)
@@ -669,16 +670,19 @@ void delete_all_points()		// always called when not working
 
 void draw_points()
 {
+	struct blit_params_t params;
+	params.source = s_pointnode;
+	params.dest = s_backbuffer;
+	
 	struct point_t *point = point0;
 		
 	while(point)
 	{
 		int x, y;
 		world_to_screen(point->x, point->y, &x, &y);
-		blit_source = s_pointnode;
-		blit_destx = x - 2;
-		blit_desty = y - 2;
-		alpha_surface_blit_surface();
+		params.dest_x = x - 2;
+		params.dest_y = y - 2;
+		alpha_surface_blit_surface(&params);
 
 		point = point->next;
 	}

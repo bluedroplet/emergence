@@ -58,14 +58,19 @@ void draw_grid()
 	endx = (int)(world_x / this_grid_spacing) + 1;
 	endy = (int)(world_y / this_grid_spacing) + 1;
 
+	
+	struct blit_params_t params;
+		
+	params.colour16 = 0xffff;
+	params.dest = s_backbuffer;
+	
 	int x, y;
-	blit_colour = 0xffff;
 
 	for(x = startx; x != endx; x++)
 		for(y = starty; y != endy; y++)
 		{
-			world_to_screen(x * this_grid_spacing, y * this_grid_spacing, &blit_destx, &blit_desty);
-			plot_pixel();
+			world_to_screen(x * this_grid_spacing, y * this_grid_spacing, &params.dest_x, &params.dest_y);
+			plot_pixel(&params);
 		}
 }
 

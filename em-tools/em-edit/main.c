@@ -53,6 +53,8 @@ GdkImage *image;
 uint16_t *preimage;
 
 
+struct surface_t *s_backbuffer;
+
 int vid_width, vid_height;
 
 void destroy_window()
@@ -63,13 +65,13 @@ void destroy_window()
 
 void draw()
 {
-	clear_surface(blit_dest);
+	clear_surface(s_backbuffer);
 
 	draw_all();
 
 	if(visual->depth == 24)
 	{
-		convert_16bit_to_32bit_mmx(image->mem, blit_dest->buf, vid_width * vid_height / 32);
+		convert_16bit_to_32bit_mmx(image->mem, s_backbuffer->buf, vid_width * vid_height / 32);
 	}
 }	
 
@@ -231,8 +233,8 @@ gint on_configure(GtkWidget *widget, GdkEventConfigure *event, gpointer callback
 		
 		if(visual->depth == 24)
 		{
-			free_surface(blit_dest);
-			blit_dest = NULL;
+			free_surface(s_backbuffer);
+			s_backbuffer = NULL;
 		}
 		
 		worker_thread_cont();
@@ -251,7 +253,7 @@ gint on_configure(GtkWidget *widget, GdkEventConfigure *event, gpointer callback
 
 	if(visual->depth == 24)
 	{
-		blit_dest = new_surface(SURFACE_16BIT, vid_width, vid_height);
+		s_backbuffer = new_surface(SURFACE_16BIT, vid_width, vid_height);
 	}
 	else
 	{

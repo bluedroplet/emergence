@@ -34,29 +34,29 @@
 #include "gsub.h"
 
 
-void draw_horiz_run(uint16_t **dest, int xadvance, int runlength)
+void draw_horiz_run(struct blit_params_t *params, uint16_t **dest, int xadvance, int runlength)
 {
 	uint16_t *cdest = *dest;
 
 	while(runlength)
 	{
-		*cdest = blit_colour;
+		*cdest = params->colour16;
 		cdest += xadvance;
 		runlength--;
 	}
 
-	*dest = (uint16_t*)((uint8_t*)cdest + blit_dest->pitch);
+	*dest = (uint16_t*)((uint8_t*)cdest + params->dest->pitch);
 }
 
 
-void draw_vert_run(uint16_t **dest, int xadvance, int runlength)
+void draw_vert_run(struct blit_params_t *params, uint16_t **dest, int xadvance, int runlength)
 {
 	uint16_t *cdest = *dest;
 
 	while(runlength)
 	{
-		*cdest = blit_colour;
-		(uint8_t*)cdest += blit_dest->pitch;
+		*cdest = params->colour16;
+		(uint8_t*)cdest += params->dest->pitch;
 		runlength--;
 	}
 	
@@ -64,75 +64,75 @@ void draw_vert_run(uint16_t **dest, int xadvance, int runlength)
 }
 
 
-void draw_line(int x1, int y1, int x2, int y2)
+void draw_line(struct blit_params_t *params)
 {
 	int temp, i, adjup, adjdown, errorterm, xadvance, xdelta, ydelta, 
 		wholestep, initialpixelcount, finalpixelcount, runlength;
 
-	if(y1 > y2)
+	if(params->y1 > params->y2)
 	{
-		temp = y1;
-		y1 = y2;
-		y2 = temp;
+		temp = params->y1;
+		params->y1 = params->y2;
+		params->y2 = temp;
 
-		temp = x1;
-		x1 = x2;
-		x2 = temp;
+		temp = params->x1;
+		params->x1 = params->x2;
+		params->x2 = temp;
 	}
 
-	if((y2 < 0) || (y1 >= blit_dest->height))
+	if((params->y2 < 0) || (params->y1 >= params->dest->height))
 		return;
 
-	if(y1 < 0)
+	if(params->y1 < 0)
 	{
-		x1 -= ((x2 - x1) * y1) / (y2 - y1);
-		y1 = 0;
+		params->x1 -= ((params->x2 - params->x1) * params->y1) / (params->y2 - params->y1);
+		params->y1 = 0;
 	}
 
-	if(y2 >= blit_dest->height)
+	if(params->y2 >= params->dest->height)
 	{
-		x2 -= ((x2 - x1) * (y2 - blit_dest->height + 1)) / (y2 - y1);
-		y2 = blit_dest->height - 1;
+		params->x2 -= ((params->x2 - params->x1) * (params->y2 - params->dest->height + 1)) / (params->y2 - params->y1);
+		params->y2 = params->dest->height - 1;
 	}
 
-	if(x1 < x2)
+	if(params->x1 < params->x2)
 	{
-		if((x2 < 0) || (x1 >= blit_dest->width))
+		if((params->x2 < 0) || (params->x1 >= params->dest->width))
 			return;
 
-		if(x1 < 0)
+		if(params->x1 < 0)
 		{
-			y1 -= ((y2 - y1) * x1) / (x2 - x1);
-			x1 = 0;
+			params->y1 -= ((params->y2 - params->y1) * params->x1) / (params->x2 - params->x1);
+			params->x1 = 0;
 		}
 
-		if(x2 >= blit_dest->width)
+		if(params->x2 >= params->dest->width)
 		{
-			y2 -= ((y2 - y1) * (x2 - blit_dest->width + 1)) / (x2 - x1);
-			x2 = blit_dest->width - 1;
+			params->y2 -= ((params->y2 - params->y1) * (params->x2 - params->dest->width + 1)) / (params->x2 - params->x1);
+			params->x2 = params->dest->width - 1;
 		}
 	}
 	else
 	{
-		if((x1 < 0) || (x2 >= blit_dest->width))
+		if((params->x1 < 0) || (params->x2 >= params->dest->width))
 			return;
 
-		if(x2 < 0)
+		if(params->x2 < 0)
 		{
-			y2 += ((y2 - y1) * x2) / (x1 - x2);
-			x2 = 0;
+			params->y2 += ((params->y2 - params->y1) * params->x2) / (params->x1 - params->x2);
+			params->x2 = 0;
 		}
 
-		if(x1 >= blit_dest->width)
+		if(params->x1 >= params->dest->width)
 		{
-			y1 += ((y2 - y1) * (x1 - blit_dest->width + 1)) / (x1 - x2);
-			x1 = blit_dest->width - 1;
+			params->y1 += ((params->y2 - params->y1) * (params->x1 - params->dest->width + 1)) / (params->x1 - params->x2);
+			params->x1 = params->dest->width - 1;
 		}
 	}
 
-	uint16_t *dest = get_pixel_addr(blit_dest, x1, y1);
+	uint16_t *dest = get_pixel_addr(params->dest, params->x1, params->y1);
 
-	if((xdelta = x2 - x1) < 0)
+	if((xdelta = params->x2 - params->x1) < 0)
 	{
 		xadvance = -1;
 		xdelta = -xdelta;
@@ -142,14 +142,14 @@ void draw_line(int x1, int y1, int x2, int y2)
 		xadvance = 1;
 	}
 
-	ydelta = y2 - y1;
+	ydelta = params->y2 - params->y1;
 
 	if(xdelta == 0)
 	{
 		for(i = 0; i <= ydelta; i++)
 		{
-			*dest = blit_colour;
-			(uint8_t*)dest += blit_dest->pitch;
+			*dest = params->colour16;
+			(uint8_t*)dest += params->dest->pitch;
 		}
 
 		return;
@@ -159,7 +159,7 @@ void draw_line(int x1, int y1, int x2, int y2)
 	{
 		for(i = 0; i <= xdelta; i++)
 		{
-			*dest = blit_colour;
+			*dest = params->colour16;
 			dest += xadvance;
 		}
 
@@ -170,8 +170,8 @@ void draw_line(int x1, int y1, int x2, int y2)
 	{
 		for(i = 0; i <= xdelta; i++)
 		{
-			*dest = blit_colour;
-			(uint8_t*)dest += xadvance * 2 + blit_dest->pitch;
+			*dest = params->colour16;
+			(uint8_t*)dest += xadvance * 2 + params->dest->pitch;
 		}
 
 		return;
@@ -192,7 +192,7 @@ void draw_line(int x1, int y1, int x2, int y2)
 		if((wholestep & 0x01) != 0)
 			errorterm += ydelta;
 
-		draw_horiz_run(&dest, xadvance, initialpixelcount);
+		draw_horiz_run(params, &dest, xadvance, initialpixelcount);
 
 		for(i = 0; i < (ydelta - 1); i++)
 		{
@@ -204,10 +204,10 @@ void draw_line(int x1, int y1, int x2, int y2)
 				errorterm -= adjdown;
 			}
 
-			draw_horiz_run(&dest, xadvance, runlength);
+			draw_horiz_run(params, &dest, xadvance, runlength);
 		}
 
-		draw_horiz_run(&dest, xadvance, finalpixelcount);
+		draw_horiz_run(params, &dest, xadvance, finalpixelcount);
 
 		return;
 	}
@@ -226,7 +226,7 @@ void draw_line(int x1, int y1, int x2, int y2)
 		if((wholestep & 0x01) != 0)
 			errorterm += xdelta;
 
-		draw_vert_run(&dest, xadvance, initialpixelcount);
+		draw_vert_run(params, &dest, xadvance, initialpixelcount);
 
 		for(i = 0; i < (xdelta - 1); i++)
 		{
@@ -238,10 +238,10 @@ void draw_line(int x1, int y1, int x2, int y2)
 				errorterm -= adjdown;
 			}
 
-			draw_vert_run(&dest, xadvance, runlength);
+			draw_vert_run(params, &dest, xadvance, runlength);
 		}
 
-		draw_vert_run(&dest, xadvance, finalpixelcount);			
+		draw_vert_run(params, &dest, xadvance, finalpixelcount);			
 
 		return;
 	}
