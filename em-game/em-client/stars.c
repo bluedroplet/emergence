@@ -13,7 +13,8 @@
 #include "game.h"
 #include "render.h"
 
-double star_zs = 1.0f;
+float star_zs = 1.0;
+float star_max_depth = 1.0;
 
 struct star_t
 {
@@ -62,16 +63,19 @@ void init_stars()
 
 void init_stars()
 {
-	numstars = 100;
+	numstars = 120;
 	
 	stars = malloc(numstars * sizeof(struct star_t));
 
+	double star_width = (1600.0 * (star_zs + star_max_depth)) / star_zs;
+	double star_height = (1600.0 * (star_zs + star_max_depth)) / star_zs;
+	
 	int s;
 	for(s = 0; s < numstars; s++)
 	{
-		stars[s].z = drand48() * star_zs + 1.0f;
-		stars[s].x = drand48() * 1600 * 2;
-		stars[s].y = drand48() * 1200 * 2;
+		stars[s].z = drand48() * star_max_depth + star_zs;
+		stars[s].x = drand48() * star_width;
+		stars[s].y = drand48() * star_height;
 
 		stars[s].alpha = lround(drand48() * 255.0f);
 	}
@@ -89,10 +93,10 @@ void render_stars()
 		
 	params.dest = s_backbuffer;
 	
-	double minx = (-1600.0 / star_zs) + viewx;
-	double maxx = (1600.0 / star_zs) + viewx;
-	double miny = (-1200.0 / star_zs) + viewy;
-	double maxy = (1200.0 / star_zs) + viewy;
+	double minx = (-800.0 * (star_zs + star_max_depth)) / star_zs + viewx;
+	double maxx = (800.0 * (star_zs + star_max_depth)) / star_zs + viewx;
+	double miny = (-600.0 * (star_zs + star_max_depth)) / star_zs + viewy;
+	double maxy = (600.0 * (star_zs + star_max_depth)) / star_zs + viewy;
 
 	for(s = 0; s < numstars; s++)
 	{
