@@ -204,7 +204,6 @@ struct game_state_t
 
 
 uint32_t demo_first_tick;
-uint64_t demo_first_tsc;
 uint32_t demo_last_tick;
 uint32_t demo_follow_me;
 
@@ -1724,7 +1723,17 @@ void explosion(struct entity_t *entity)
 		particle.xvel = entity->xvel - sin_theta * force * r;
 		particle.yvel = entity->xvel + cos_theta * force * r;
 		
-		particle.creation = particle.last = get_double_time();
+		switch(game_state)
+		{
+		case GAMESTATE_PLAYING:
+			particle.creation = particle.last = get_time_from_game_tick(cgame_tick + 
+				(float)p / (float)np - 1.0);
+			break;
+		
+		case GAMESTATE_DEMO:
+			particle.creation = particle.last = (double)(demo_last_tick - demo_first_tick) / 200.0;
+			break;
+		}
 		
 		create_upper_particle(&particle);
 	}
@@ -1768,12 +1777,13 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis)
 			switch(game_state)
 			{
 			case GAMESTATE_PLAYING:
-				particle.creation = particle.last = get_tsc_from_game_tick(cgame_tick + 
+				particle.creation = particle.last = get_time_from_game_tick(cgame_tick + 
 					(float)p / (float)np - 1.0);
 				break;
 			
 			case GAMESTATE_DEMO:
-				particle.creation = particle.last = get_double_time();
+				particle.creation = particle.last = (double)(demo_last_tick + 
+					(float)p / (float)np - 1.0 - demo_first_tick) / 200.0;
 				break;
 			}
 			
@@ -1813,12 +1823,13 @@ void tick_craft(struct entity_t *craft, float xdis, float ydis)
 			switch(game_state)
 			{
 			case GAMESTATE_PLAYING:
-				particle.creation = particle.last = get_tsc_from_game_tick(cgame_tick + 
+				particle.creation = particle.last = get_time_from_game_tick(cgame_tick + 
 					(float)p / (float)np - 1.0);
 				break;
 			
 			case GAMESTATE_DEMO:
-				particle.creation = particle.last = get_double_time();
+				particle.creation = particle.last = (double)(demo_last_tick + 
+					(float)p / (float)np - 1.0 - demo_first_tick) / 200.0;
 				break;
 			}
 			
@@ -1891,12 +1902,13 @@ void tick_rocket(struct entity_t *rocket, float xdis, float ydis)
 		switch(game_state)
 		{
 		case GAMESTATE_PLAYING:
-			particle.creation = particle.last = get_tsc_from_game_tick(cgame_tick + 
+			particle.creation = particle.last = get_time_from_game_tick(cgame_tick + 
 				(float)p / (float)np - 1.0);
 			break;
 		
 		case GAMESTATE_DEMO:
-				particle.creation = particle.last = get_double_time();
+				particle.creation = particle.last = (double)(demo_last_tick + 
+					(float)p / (float)np - 1.0 - demo_first_tick) / 200.0;
 			break;
 		}
 		
@@ -2250,18 +2262,15 @@ void update_demo()
 {
 	uint32_t tick;
 	
-	if(demo_first_tick)
+	if(demo_first_tick)		// i.e. not the first event
 	{
-		uint64_t stamp = rdtsc();
-		
-		tick = (uint32_t)(((double)(stamp - demo_first_tsc) / (double)counts_per_second) * 200.0) + 
-			demo_first_tick;
+		tick = get_tick() + demo_first_tick;
 	}
 	else
 	{
 		message_reader_new_message();
 	}
-		
+	
 	
 	do
 	{
@@ -2279,7 +2288,7 @@ void update_demo()
 				demo_last_tick = demo_first_tick = 
 					tick = message_reader.event_tick;
 				
-				demo_first_tsc = rdtsc();
+				reset_start_count();	// demo_first_tick is being rendered now
 			}
 			
 			if(message_reader.event_tick > tick)
@@ -2308,7 +2317,7 @@ void update_demo()
 	{
 		s_tick_entities(&centity0);
 		process_tick_events(demo_last_tick);
-		cgame_tick = ++demo_last_tick;
+		cgame_tick = ++demo_last_tick;		// cgame_tick is presumed to start at 0!!!
 	}
 }
 

@@ -94,7 +94,8 @@ void update_tick_parameters()
 	game_tick_mean /= (double)table_entries_used;
 	tsc_mean /= (double)table_entries_used;
 	
-	double bigb = ((game_tick_squared_total - table_entries_used * game_tick_mean * game_tick_mean) - 
+	double bigb = ((game_tick_squared_total - 
+		table_entries_used * game_tick_mean * game_tick_mean) - 
 		(tsc_squared_total - table_entries_used * tsc_mean * tsc_mean)) /
 		(2.0 * (table_entries_used * game_tick_mean * tsc_mean - tsc_times_game_tick_total));
 	
@@ -114,11 +115,12 @@ uint32_t get_game_tick()
 	if(!different_ticks)
 		return tick_times[0].game_tick;
 	
-	return lround(tick_a + tick_b * ((double)rdtsc() - (latency * (tracking - 1.0) - time_shift) * (double)counts_per_second));
+	return lround(tick_a + tick_b * ((double)rdtsc() - (latency * (tracking - 1.0) - time_shift) * 
+		(double)counts_per_second));
 }
 
 
-double get_tsc_from_game_tick(double tick)
+double get_time_from_game_tick(double tick)
 {
 	return (tick - tick_a) / (tick_b * (double)counts_per_second) + 
 		(latency * (tracking - 1.0) - time_shift);

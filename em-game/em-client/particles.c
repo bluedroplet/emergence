@@ -13,6 +13,7 @@
 #include "../common/stringbuf.h"
 #include "../common/buffer.h"
 #include "../common/minmax.h"
+#include "../shared/rdtsc.h"
 #include "../gsub/gsub.h"
 #include "shared/timer.h"
 #include "main.h"
@@ -78,7 +79,7 @@ void render_upper_particles()
 {
 	int p;
 	
-	float time = get_double_time();
+	float time = (double)(rdtsc() - start_count) / (double)counts_per_second;
 	
 	struct blit_params_t params;
 		
@@ -166,7 +167,7 @@ void render_lower_particles()
 {
 	int p;
 	
-	float time = get_double_time();
+	float time = (double)(rdtsc() - start_count) / (double)counts_per_second;
 	
 	struct blit_params_t params;
 		
