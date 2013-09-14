@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @copyright 1998-2004 Jonathan Brown <jbrown@bluedroplet.com>
+ * @license https://www.gnu.org/licenses/gpl-3.0.html
+ * @homepage https://github.com/bluedroplet/emergence
+ */
+
 #define _GNU_SOURCE
 #define _REENTRANT
 
@@ -35,7 +42,7 @@ void terminate_process()
 }
 
 const char *argp_program_version = "em-client " VERSION;
-const char *argp_program_bug_address = "<jbrown@emergence.uk.net>";
+const char *argp_program_bug_address = "<jbrown@bluedroplet.com>";
 
 static char doc[] = "Emergence Client";
 
