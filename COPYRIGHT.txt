@@ -1,0 +1,30 @@
+All Emergence code is Copyright 1998-2004 Jonathan Brown
+<jbrown@bluedroplet.com>.
+
+Emergence is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License version 3 as published by the Free
+Software Foundation.
+
+Emergence is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License version 3 for more
+details.
+
+You should have received a copy of the GNU General Public License version 3
+along with Emergence. If not, see <https://www.gnu.org/licenses/gpl-3.0.html>.
+
+Emergence includes works under other copyright notices and distributed according
+to the terms of the GNU General Public License or a compatible license,
+including:
+
+BinReloc (public domain):
+  Mike Hearn <mike@theoretic.com>
+  Hongli Lai <h.lai@chello.nl>
+
+abs2rel() / rel2abs():
+  Copyright 1997 Shigio Yamaguchi <shigio@tamacom.com>
+  Copyright 1999 Tama Communications Corporation
+
+Autotools:
+  Copyright 1994 X Consortium
+  Copyright 1996, 1997, 1999, 2000, 2002 Free Software Foundation, Inc.
